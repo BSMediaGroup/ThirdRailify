@@ -64,7 +64,7 @@ export function ShopPage() {
         <div className="container shop-hero__grid">
           <div className="shop-hero__copy">
             <p className="eyebrow">The official store · Migration snapshot</p>
-            <h1>Wear the<br /><span>lore.</span></h1>
+            <h1>Wear the<br /><span className="hero-feature-text">lore.</span></h1>
             <p>A purpose-built storefront foundation using only products and CAD prices verified from the current Wix catalogue.</p>
             <div className="button-row"><a className="button button--primary" href="#catalogue">Shop the snapshot <ArrowIcon /></a><button className="button button--secondary" type="button" onClick={cart.open}><BagIcon /> Local cart · {cart.count}</button></div>
             <div className="shop-facts"><span><strong>8</strong><small>Captured products</small></span><span><strong>49</strong><small>Reported by Wix</small></span><span><strong>CAD</strong><small>Verified currency</small></span></div>

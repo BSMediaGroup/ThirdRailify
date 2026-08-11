@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import logo from "../../assets/logos/thirdrail-logo4.png";
+import boltMark from "../../assets/logos/boltv2.svg";
 import { useCart } from "../store/cart";
 import { ArrowIcon, BagIcon, BoltIcon, CloseIcon, MenuIcon } from "./Icons";
 import { CartDrawer } from "./CartDrawer";
@@ -39,8 +39,8 @@ export function SiteShell() {
       <header className="site-header">
         <div className="container site-header__inner">
           <Link className="brand" to="/" aria-label="Third Railify home">
-            <img src={logo} alt="" />
-            <span><strong>THIRD RAILIFY</strong><small>OFFICIAL</small></span>
+            <span className="brand__mark" aria-hidden="true"><img src={boltMark} alt="" /></span>
+            <span className="brand__type"><strong>THIRD RAILIFY</strong><small>OFFICIAL</small></span>
           </Link>
           <nav className="desktop-nav" aria-label="Primary navigation">
             {navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.to === "/"}>{item.label}</NavLink>)}
@@ -74,7 +74,7 @@ function SiteFooter() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <div className="brand brand--footer"><img src={logo} alt="" /><span><strong>THIRD RAILIFY</strong><small>OFFICIAL</small></span></div>
+          <div className="brand brand--footer"><span className="brand__mark" aria-hidden="true"><img src={boltMark} alt="" /></span><span className="brand__type"><strong>THIRD RAILIFY</strong><small>OFFICIAL</small></span></div>
           <p>A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.</p>
           <a href="mailto:info@thirdrailify.com">info@thirdrailify.com</a>
         </div>

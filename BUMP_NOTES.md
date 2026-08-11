@@ -21,6 +21,12 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Added Cloudflare Pages `_headers`, `_redirects`, `.node-version`, staging documentation, and noindex policy. No Pages project, deployment, DNS, or domain change was performed.
 - Added a durable live Wix audit covering routes, content, socials, VIP/support/legal concepts, 13 category labels, verified product evidence, omissions, and migration risks.
 - Added lint, TypeScript, and production-build scripts. Validation evidence belongs in the completion report for this milestone.
+- Polished document, cart, and horizontal-filter scrollbars with a narrow graphite/gold treatment adapted from the approved POC.
+- Rebuilt the shared header/footer lockup around the exact `assets/logos/boltv2.svg` silhouette, a POC-derived dark square, gradient-gold mask paint, and a larger American Captain title while retaining a filtered-image fallback.
+- Replaced the temporary inline favicon with the exact `assets/icons/boltv2.ico` asset.
+- Added the slow gold feature-text gradient to `CHAOS.` and the `/shop` hero feature word, with a static reduced-motion treatment.
+- Replaced the four `Pick your signal.` initials with full-color Rumble, YouTube, Pilled, and X SVG artwork copied from the approved local StreamSuites Public reference.
+- Checked the visual-polish milestone responsively at 390px, 768px, and 1440px, including overflow, built assets, reduced motion, and browser-console behavior.
 
 ### Human-readable
 

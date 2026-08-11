@@ -51,8 +51,9 @@ ThirdRailify/
 │   ├── backgrounds/        Seeded Third Railify backgrounds
 │   ├── catalogue/          Local copies of eight audited Wix product images
 │   ├── fonts/              Seeded font files and licences
+│   ├── icons/              Favicon and local platform SVG artwork
 │   ├── illustrations/      Joined editorial hero artwork
-│   ├── logos/              Seeded Third Railify brand assets
+│   ├── logos/              Seeded marks and the header bolt silhouette
 │   ├── people/             Seeded host imagery
 │   └── video/              Seeded media (not used as a decorative hero loop)
 ├── pocv1/                  Reference-only approved inspiration POC

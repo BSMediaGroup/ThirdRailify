@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
+import pilledIcon from "../../assets/icons/pilled.svg";
+import rumbleIcon from "../../assets/icons/rumble.svg";
+import twitterIcon from "../../assets/icons/twitter.svg";
+import youtubeIcon from "../../assets/icons/youtube.svg";
 import shawnGinaHero from "../../assets/illustrations/shawn-gina-hero.webp";
 import ginaPortrait from "../../assets/people/pfp-gina.webp";
 import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
@@ -9,12 +13,12 @@ import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { wixSnapshot } from "../data/wixSnapshot";
 
 const platforms = [
-  { label: "Rumble", note: "Primary channel", href: "https://rumble.com/ThirdRailify" },
-  { label: "YouTube", note: "Videos + clips", href: "https://www.youtube.com/@ThirdRailify" },
-  { label: "Pilled", note: "Live community", href: "https://pilled.net/ThirdRailify" },
-  { label: "X", note: "Posts + updates", href: "https://x.com/ThirdRailify" },
-  { label: "TikTok", note: "Short-form chaos", href: "https://www.tiktok.com/@thirdrailifyoffical" },
-  { label: "Discord", note: "Join the herd", href: "https://discord.com/invite/Bd8hU5aFxA" },
+  { label: "Rumble", note: "Primary channel", href: "https://rumble.com/ThirdRailify", icon: rumbleIcon },
+  { label: "YouTube", note: "Videos + clips", href: "https://www.youtube.com/@ThirdRailify", icon: youtubeIcon },
+  { label: "Pilled", note: "Live community", href: "https://pilled.net/ThirdRailify", icon: pilledIcon },
+  { label: "X", note: "Posts + updates", href: "https://x.com/ThirdRailify", icon: twitterIcon },
+  { label: "TikTok", note: "Short-form chaos", href: "https://www.tiktok.com/@thirdrailifyoffical", icon: null },
+  { label: "Discord", note: "Join the herd", href: "https://discord.com/invite/Bd8hU5aFxA", icon: null },
 ];
 
 export function HomePage() {
@@ -25,7 +29,7 @@ export function HomePage() {
         <div className="container home-hero__grid">
           <div className="home-hero__copy">
             <p className="eyebrow"><i /> A daily podcast · Sunday—Friday</p>
-            <h1>News.<br />Culture.<br /><span>Chaos.</span></h1>
+            <h1>News.<br />Culture.<br /><span className="hero-feature-text">Chaos.</span></h1>
             <p className="hero-lede">News, crime, and pop culture stories filtered through Shawn and Gina—and the detours nobody planned.</p>
             <div className="button-row">
               <a className="button button--primary" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer"><PlayIcon /> Watch the show</a>
@@ -59,7 +63,7 @@ export function HomePage() {
         <div className="container platform-grid">
           <div className="platform-intro"><span className="eyebrow">Transmission</span><h2 id="platform-title">Pick your signal.</h2></div>
           {platforms.slice(0, 4).map((platform) => (
-            <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><i>{platform.label.charAt(0)}</i><span><strong>{platform.label}</strong><small>{platform.note}</small></span><ArrowIcon /></a>
+            <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{platform.note}</small></span><ArrowIcon /></a>
           ))}
         </div>
       </section>

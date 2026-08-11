@@ -70,6 +70,42 @@
 html {
   scroll-behavior: smooth;
   background: var(--ink);
+  scrollbar-color: var(--gold) #0d0e0b;
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar,
+.cart-drawer__items::-webkit-scrollbar,
+.filter-bar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+html::-webkit-scrollbar-track,
+.cart-drawer__items::-webkit-scrollbar-track,
+.filter-bar::-webkit-scrollbar-track {
+  background: #0d0e0b;
+}
+
+html::-webkit-scrollbar-thumb,
+.cart-drawer__items::-webkit-scrollbar-thumb,
+.filter-bar::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  border: 2px solid #0d0e0b;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #b77a12, var(--gold));
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.cart-drawer__items::-webkit-scrollbar-thumb:hover,
+.filter-bar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--gold), var(--gold-pale));
+}
+
+.cart-drawer__items,
+.filter-bar {
+  scrollbar-color: var(--gold) #0d0e0b;
+  scrollbar-width: thin;
 }
 
 body {
@@ -329,21 +365,69 @@ h3 {
   gap: 10px;
 }
 
-.brand img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+.brand__mark {
+  position: relative;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid rgba(255, 209, 47, 0.38);
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 25%, rgba(255, 209, 47, 0.16), transparent 66%), #10110d;
+  box-shadow: inset 0 1px 0 rgba(255, 230, 129, 0.12), inset 0 0 18px rgba(255, 209, 47, 0.05), 0 0 22px rgba(255, 171, 25, 0.08);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
 }
 
-.brand span {
+.brand__mark::after {
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(255, 230, 129, 0.07);
+  border-radius: 9px;
+  content: "";
+  pointer-events: none;
+}
+
+.brand__mark img {
+  width: 24px;
+  height: 28px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(83%) sepia(93%) saturate(1508%) hue-rotate(328deg) brightness(104%) contrast(103%);
+}
+
+.brand:hover .brand__mark {
+  border-color: rgba(255, 230, 129, 0.58);
+  box-shadow: inset 0 1px 0 rgba(255, 230, 129, 0.16), inset 0 0 18px rgba(255, 209, 47, 0.07), 0 0 26px rgba(255, 171, 25, 0.12);
+}
+
+@supports ((-webkit-mask-image: url("")) or (mask-image: url(""))) {
+  .brand__mark::before {
+    position: absolute;
+    width: 24px;
+    height: 28px;
+    background: linear-gradient(145deg, #9b6614 0%, var(--gold) 38%, #ffe681 58%, #d88a12 78%, #8f5a0c 100%);
+    background-size: 180% 180%;
+    content: "";
+    -webkit-mask: url("../../assets/logos/boltv2.svg") center / contain no-repeat;
+    mask: url("../../assets/logos/boltv2.svg") center / contain no-repeat;
+    transition: background-position 220ms ease;
+  }
+
+  .brand:hover .brand__mark::before { background-position: 100% 100%; }
+  .brand__mark img { opacity: 0; }
+}
+
+.brand__type {
   display: flex;
   flex-direction: column;
+  line-height: 1;
 }
 
 .brand strong {
   font-family: var(--display);
-  font-size: 14px;
-  letter-spacing: -0.025em;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.025em;
 }
 
 .brand small {
@@ -351,8 +435,15 @@ h3 {
   font-family: var(--mono);
   font-size: 7px;
   font-weight: 800;
-  letter-spacing: 0.19em;
+  letter-spacing: 0.24em;
+  margin-top: 4px;
 }
+
+.brand--footer .brand__mark { width: 38px; height: 38px; flex-basis: 38px; border-radius: 11px; }
+.brand--footer .brand__mark::after { border-radius: 8px; }
+.brand--footer .brand__mark img,
+.brand--footer .brand__mark::before { width: 22px; height: 26px; }
+.brand--footer strong { font-size: 17px; }
 
 .desktop-nav {
   display: flex;
@@ -536,9 +627,22 @@ h3 {
   line-height: 0.82;
 }
 
-.home-hero__copy h1 span,
-.shop-hero h1 span {
+.hero-feature-text {
   color: var(--gold);
+}
+
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .hero-feature-text {
+    display: inline-block;
+    color: transparent;
+    background: linear-gradient(96deg, #9b6614 0%, #d89416 18%, var(--gold) 38%, #ffe27a 52%, #e7a91e 70%, #a86a10 86%, #8f5a0c 100%);
+    background-size: 220% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 18px rgba(255, 190, 35, 0.12));
+    animation: hero-feature-gold 11s ease-in-out infinite alternate;
+  }
 }
 
 .hero-lede,
@@ -958,7 +1062,7 @@ h3 {
   background: rgba(255, 209, 47, 0.035);
 }
 
-.platform-grid > a > i {
+.platform-icon {
   display: grid;
   width: 30px;
   height: 30px;
@@ -966,11 +1070,15 @@ h3 {
   place-items: center;
   border: 1px solid var(--line);
   border-radius: 8px;
-  color: var(--gold);
-  font-family: var(--mono);
-  font-size: 10px;
   font-style: normal;
-  font-weight: 800;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.platform-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .platform-grid > a span {
@@ -2583,6 +2691,7 @@ h3 {
 @keyframes skeleton { to { background-position: -200% 0; } }
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes drawer-in { from { transform: translateX(100%); } }
+@keyframes hero-feature-gold { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
 
 @media (max-width: 1120px) {
   .desktop-nav { display: none; }
@@ -2654,8 +2763,11 @@ h3 {
   .staging-rail { padding-inline: 14px; font-size: 7px; }
   .staging-rail strong { display: none; }
   .site-header__inner { min-height: 64px; }
-  .brand img { width: 32px; height: 32px; }
-  .brand strong { font-size: 12px; }
+  .brand__mark { width: 38px; height: 38px; flex-basis: 38px; border-radius: 11px; }
+  .brand__mark::after { border-radius: 8px; }
+  .brand__mark img,
+  .brand__mark::before { width: 22px; height: 26px; }
+  .brand strong { font-size: 16px; }
   .cart-button span { display: none; }
   .home-hero__grid,
   .shop-hero__grid,
@@ -2778,4 +2890,5 @@ h3 {
   .signal-rail__pulse,
   .signal-scan { display: none; }
   .hero-ticker > div { transform: none; }
+  .hero-feature-text { animation: none !important; background-position: 48% 50%; }
 }
