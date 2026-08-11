@@ -14,6 +14,9 @@ type WidgetState =
   | { status: "ready"; data: DiscordWidgetData }
   | { status: "error"; data: null };
 
+const DEFAULT_MEMBER_LIMIT = 12;
+const EXPANDED_MEMBER_LIMIT = 24;
+
 const statusLabels: Record<DiscordMember["status"], string> = {
   online: "Online",
   idle: "Idle",
@@ -46,11 +49,11 @@ function ChannelList({ channels, limit }: { channels: DiscordChannel[]; limit: n
   );
 }
 
-function MemberList({ members, limit }: { members: DiscordMember[]; limit: number }) {
+function MemberList({ id, members, limit }: { id: string; members: DiscordMember[]; limit: number }) {
   const visibleMembers = members.slice(0, limit);
   if (!visibleMembers.length) return <p className="discord-widget__empty">No public member presence is visible right now.</p>;
   return (
-    <ul className="discord-widget__members">
+    <ul className="discord-widget__members" id={id}>
       {visibleMembers.map((member) => (
         <li key={member.id} data-status={member.status}>
           <span className="discord-widget__avatar" aria-hidden="true">
@@ -67,9 +70,11 @@ function MemberList({ members, limit }: { members: DiscordMember[]; limit: numbe
 
 export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
   const [state, setState] = useState<WidgetState>({ status: "loading", data: null });
+  const [membersExpanded, setMembersExpanded] = useState(false);
   const headingId = useId();
   const channelHeadingId = useId();
   const memberHeadingId = useId();
+  const memberListId = useId();
 
   const load = useCallback(async (refresh = false) => {
     setState({ status: "loading", data: null });
@@ -105,7 +110,10 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
       ? "Community presence refreshed from Discord's public widget."
       : "Live Discord preview unavailable. The community link is still available.";
   const channelLimit = mode === "compact" ? 2 : 8;
-  const memberLimit = mode === "compact" ? 6 : 12;
+  const memberLimit = membersExpanded ? EXPANDED_MEMBER_LIMIT : DEFAULT_MEMBER_LIMIT;
+  const returnedMemberCount = isReady ? state.data.members.length : 0;
+  const visibleMemberCount = Math.min(returnedMemberCount, memberLimit);
+  const canExpandMembers = returnedMemberCount > DEFAULT_MEMBER_LIMIT;
 
   return (
     <section
@@ -142,7 +150,23 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
           {isLoading
             ? <LoadingDirectory label="Loading public member presence" />
             : isReady
-              ? <MemberList members={state.data.members} limit={memberLimit} />
+              ? <>
+                  <MemberList id={memberListId} members={state.data.members} limit={memberLimit} />
+                  {canExpandMembers && (
+                    <div className="discord-widget__member-controls">
+                      <span>{visibleMemberCount} of {returnedMemberCount} public presences shown</span>
+                      <button
+                        className="discord-widget__member-toggle"
+                        type="button"
+                        aria-controls={memberListId}
+                        aria-expanded={membersExpanded}
+                        onClick={() => setMembersExpanded((expanded) => !expanded)}
+                      >
+                        {membersExpanded ? "Show fewer members" : "Show more members"}
+                      </button>
+                    </div>
+                  )}
+                </>
               : <p className="discord-widget__empty">Live member presence is temporarily unavailable.</p>}
         </section>
       </div>

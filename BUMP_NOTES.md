@@ -35,6 +35,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Completed the `Follow the rail.` platform artwork with exact local TikTok and Discord SVG copies while preserving all established destination URLs, including the source-spelled TikTok handle.
 - Validated the milestone with Public lint, TypeScript, production build, diff checks, live/manual-refresh Discord requests, deterministic loading/empty/error states, exact built-favicon bytes and content type, and rendered 390px/768px/1440px home and Community checks with no overflow, broken images, or normal-path console errors.
 - Corrected the shipped Pages Content Security Policy so the live Discord widget may connect to `https://discord.com` and its validated public avatars may load from `cdn.discordapp.com` or `media.discordapp.net`; all other connection and remote-image sources remain denied. Wrangler Pages local validation confirmed live homepage/full-page data, avatar loading, manual Refresh, and zero CSP or application-console errors under the emitted production headers.
+- Aligned the homepage and Community Discord directories at 12 public member presences by default and added the same accessible Show more/Show fewer control to both, with a strict rendered maximum of 24 and truthful returned-presence progress copy.
 
 ### Human-readable
 
