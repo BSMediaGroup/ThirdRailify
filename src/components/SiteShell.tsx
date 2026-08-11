@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import boltMark from "../../assets/logos/boltv2.svg";
+import boltMark from "../../assets/logos/boltv2straight.svg";
 import { useCart } from "../store/cart";
 import { ArrowIcon, BagIcon, BoltIcon, CloseIcon, MenuIcon } from "./Icons";
 import { CartDrawer } from "./CartDrawer";

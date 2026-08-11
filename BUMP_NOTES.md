@@ -26,7 +26,14 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Replaced the temporary inline favicon with the exact `assets/icons/boltv2.ico` asset.
 - Added the slow gold feature-text gradient to `CHAOS.` and the `/shop` hero feature word, with a static reduced-motion treatment.
 - Replaced the four `Pick your signal.` initials with full-color Rumble, YouTube, Pilled, and X SVG artwork copied from the approved local StreamSuites Public reference.
+- Simplified the browser/document title to `Third Railify™` without the former Daily Podcast suffix.
 - Checked the visual-polish milestone responsively at 390px, 768px, and 1440px, including overflow, built assets, reduced motion, and browser-console behavior.
+- Switched the shared header/footer lockup from `boltv2.svg` to the exact user-supplied `boltv2straight.svg` silhouette while preserving the established gold-gradient mask, dark rounded square, inset edge, hover polish, responsive sizing, and fallback image.
+- Replaced the active Public favicon with the exact user-supplied `assets/icons/thirdfavstraight.ico`; previous bolt assets remain preserved but inactive.
+- Added a reusable React Discord community system with one validated fetch boundary, bounded eight-second unauthenticated requests, exact guild validation, safe invite/avatar allowlists, compact/full modes, manual refresh, and truthful loading, ready/empty, and error states.
+- Integrated the compact live Discord view into the existing goat-led homepage community composition and replaced the `/community` migration shell with a substantial Third Railify Community page using the full live widget.
+- Completed the `Follow the rail.` platform artwork with exact local TikTok and Discord SVG copies while preserving all established destination URLs, including the source-spelled TikTok handle.
+- Validated the milestone with Public lint, TypeScript, production build, diff checks, live/manual-refresh Discord requests, deterministic loading/empty/error states, exact built-favicon bytes and content type, and rendered 390px/768px/1440px home and Community checks with no overflow, broken images, or normal-path console errors.
 
 ### Human-readable
 

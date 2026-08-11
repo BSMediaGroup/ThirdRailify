@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { SiteShell } from "./components/SiteShell";
+import { CommunityPage } from "./pages/CommunityPage";
 import { HomePage } from "./pages/HomePage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
@@ -21,7 +22,7 @@ export function App() {
         <Route path="/gina" element={<RouteShellPage routeKey="gina" />} />
         <Route path="/about" element={<RouteShellPage routeKey="about" />} />
         <Route path="/friends" element={<RouteShellPage routeKey="friends" />} />
-        <Route path="/community" element={<RouteShellPage routeKey="community" />} />
+        <Route path="/community" element={<CommunityPage />} />
         <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />
         <Route path="/support" element={<RouteShellPage routeKey="support" />} />
         <Route path="/gift-cards" element={<RouteShellPage routeKey="giftCards" />} />

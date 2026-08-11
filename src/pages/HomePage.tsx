@@ -1,13 +1,16 @@
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
+import discordIcon from "../../assets/icons/discord.svg";
 import pilledIcon from "../../assets/icons/pilled.svg";
 import rumbleIcon from "../../assets/icons/rumble.svg";
+import tiktokIcon from "../../assets/icons/tiktok.svg";
 import twitterIcon from "../../assets/icons/twitter.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import shawnGinaHero from "../../assets/illustrations/shawn-gina-hero.webp";
 import ginaPortrait from "../../assets/people/pfp-gina.webp";
 import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
 import { ProductCard } from "../components/ProductCard";
+import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { SignalField } from "../components/SignalField";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { wixSnapshot } from "../data/wixSnapshot";
@@ -17,8 +20,8 @@ const platforms = [
   { label: "YouTube", note: "Videos + clips", href: "https://www.youtube.com/@ThirdRailify", icon: youtubeIcon },
   { label: "Pilled", note: "Live community", href: "https://pilled.net/ThirdRailify", icon: pilledIcon },
   { label: "X", note: "Posts + updates", href: "https://x.com/ThirdRailify", icon: twitterIcon },
-  { label: "TikTok", note: "Short-form chaos", href: "https://www.tiktok.com/@thirdrailifyoffical", icon: null },
-  { label: "Discord", note: "Join the herd", href: "https://discord.com/invite/Bd8hU5aFxA", icon: null },
+  { label: "TikTok", note: "Short-form chaos", href: "https://www.tiktok.com/@thirdrailifyoffical", icon: tiktokIcon },
+  { label: "Discord", note: "Join the herd", href: "https://discord.com/invite/Bd8hU5aFxA", icon: discordIcon },
 ];
 
 export function HomePage() {
@@ -126,9 +129,12 @@ export function HomePage() {
       </section>
 
       <section className="section community-section">
-        <div className="container community-grid">
-          <div className="community-image"><img src={goatField} alt="Third Railify goat community artwork" /><span>THE HERD / IN THE WILD</span></div>
-          <div className="community-copy"><p className="eyebrow">The herd is part of the show</p><h2>Community without the clutter.</h2><p>Find friends of the show, see GOATs in the wild, explore VIP, or support the production—each with a clear home.</p><div className="community-links"><Link to="/friends">Friends <ArrowIcon /></Link><Link to="/community">Wild Goats <ArrowIcon /></Link><Link to="/vip">VIP <ArrowIcon /></Link><Link to="/support">Support <ArrowIcon /></Link></div></div>
+        <div className="container community-stage">
+          <div className="community-grid">
+            <div className="community-image"><img src={goatField} alt="Third Railify goat community artwork" /><span>THE HERD / IN THE WILD</span></div>
+            <div className="community-copy"><p className="eyebrow">The herd is part of the show</p><h2>Community without the clutter.</h2><p>Find friends of the show, see GOATs in the wild, explore VIP, or support the production—each with a clear home.</p><div className="community-links"><Link to="/friends">Friends <ArrowIcon /></Link><Link to="/community">Wild Goats <ArrowIcon /></Link><Link to="/vip">VIP <ArrowIcon /></Link><Link to="/support">Support <ArrowIcon /></Link></div></div>
+          </div>
+          <DiscordCommunityWidget mode="compact" />
         </div>
       </section>
 
@@ -136,7 +142,7 @@ export function HomePage() {
         <div className="container follow-grid">
           <div><p className="eyebrow">Across the signal</p><h2>Follow the rail.</h2></div>
           <div className="follow-links">
-            {platforms.map((platform, index) => <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><strong>{platform.label}</strong><small>{platform.note}</small><ArrowIcon /></a>)}
+            {platforms.map((platform, index) => <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><i className="follow-icon" aria-hidden="true"><img src={platform.icon} alt="" /></i><strong>{platform.label}</strong><small>{platform.note}</small><ArrowIcon /></a>)}
           </div>
         </div>
       </section>
