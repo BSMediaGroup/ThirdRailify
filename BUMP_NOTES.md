@@ -42,6 +42,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Upgraded both Discord widgets to prefer the enriched bot snapshot, fall back truthfully to the existing basic Discord public widget, and show an intentional unavailable state only when both sources fail.
 - Added a bounded whitelisted public-channel directory, fresh/delayed/stale copy, stale-presence neutralization, and Third Railify-styled member profile cards supporting hover preview, keyboard focus, click/tap pinning, Escape/outside close, viewport collision handling, and reduced motion.
 - Preserved 12 collapsed and 24 expanded member limits. Compact homepage mode shows fewer public/voice channels; full `/community` mode shows the larger bounded directory without changing routes or surrounding layouts.
+- Increased the compact homepage community-channel display from three to four, reduced the full `/community` default to six, and added a responsive, keyboard-accessible Show all/Show fewer control that exposes every sanitized public channel returned by the existing API contract.
 - Expanded Cloudflare setup documentation with manual KV/secret/bot environment steps. No Cloudflare resource, secret, deployment, DNS, Wix, custom-domain, commit, or push change was performed.
 
 ### Human-readable

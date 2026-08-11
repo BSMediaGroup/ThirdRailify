@@ -24,6 +24,8 @@ type ProfileState = {
 
 const DEFAULT_MEMBER_LIMIT = 12;
 const EXPANDED_MEMBER_LIMIT = 24;
+const COMPACT_PUBLIC_CHANNEL_LIMIT = 4;
+const DEFAULT_PUBLIC_CHANNEL_LIMIT = 6;
 
 const statusLabels: Record<DiscordMember["status"], string> = {
   online: "Online",
@@ -44,11 +46,11 @@ function LoadingDirectory({ label }: { label: string }) {
   return <div className="discord-widget__placeholder" aria-hidden="true"><i /><span>{label}</span></div>;
 }
 
-function ChannelList({ channels, limit, empty }: { channels: DiscordChannel[]; limit: number; empty: string }) {
+function ChannelList({ id, channels, limit, empty }: { id?: string; channels: DiscordChannel[]; limit: number; empty: string }) {
   const visibleChannels = channels.slice(0, limit);
   if (!visibleChannels.length) return <p className="discord-widget__empty">{empty}</p>;
   return (
-    <ul className="discord-widget__channels">
+    <ul className="discord-widget__channels" id={id}>
       {visibleChannels.map((channel) => (
         <li key={channel.id}>
           <span className="discord-widget__channel-icon" aria-hidden="true">{channelIcons[channel.type]}</span>
@@ -229,16 +231,19 @@ function MemberProfile({
 export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
   const [state, setState] = useState<WidgetState>({ status: "loading", data: null });
   const [membersExpanded, setMembersExpanded] = useState(false);
+  const [channelsExpanded, setChannelsExpanded] = useState(false);
   const [profile, setProfile] = useState<ProfileState>(null);
   const headingId = useId();
   const publicChannelHeadingId = useId();
   const voiceHeadingId = useId();
   const memberHeadingId = useId();
   const memberListId = useId();
+  const publicChannelListId = useId();
 
   const load = useCallback(async (refresh = false) => {
     setState({ status: "loading", data: null });
     setMembersExpanded(false);
+    setChannelsExpanded(false);
     setProfile(null);
     try {
       setState({ status: "ready", data: await getDiscordWidget({ refresh }) });
@@ -264,7 +269,12 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
   const returnedMemberCount = data?.members.length ?? 0;
   const visibleMemberCount = Math.min(returnedMemberCount, memberLimit);
   const canExpandMembers = returnedMemberCount > DEFAULT_MEMBER_LIMIT;
-  const publicChannelLimit = mode === "compact" ? 3 : 24;
+  const returnedPublicChannelCount = data?.publicChannels.length ?? 0;
+  const publicChannelLimit = mode === "compact"
+    ? COMPACT_PUBLIC_CHANNEL_LIMIT
+    : channelsExpanded ? returnedPublicChannelCount : DEFAULT_PUBLIC_CHANNEL_LIMIT;
+  const visiblePublicChannelCount = Math.min(returnedPublicChannelCount, publicChannelLimit);
+  const canExpandPublicChannels = mode === "full" && returnedPublicChannelCount > DEFAULT_PUBLIC_CHANNEL_LIMIT;
   const voiceLimit = mode === "compact" ? 2 : 8;
   const freshnessMessage = data ? freshnessCopy(data) : isLoading ? "Reading the community signal…" : "The live preview is unavailable; the Discord invite still works.";
   const onlineLabel = data?.freshness === "stale" ? "online when published" : data?.source === "basic" ? "Discord preview count" : "members online";
@@ -291,7 +301,17 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
           {isLoading
             ? <LoadingDirectory label="Loading public channels" />
             : data
-              ? <ChannelList channels={data.publicChannels} limit={publicChannelLimit} empty={data.source === "basic" ? "Text channels need the richer bot snapshot; this is the basic Discord preview." : "No whitelisted public channels are published right now."} />
+              ? <>
+                  <ChannelList id={publicChannelListId} channels={data.publicChannels} limit={publicChannelLimit} empty={data.source === "basic" ? "Text channels need the richer bot snapshot; this is the basic Discord preview." : "No whitelisted public channels are published right now."} />
+                  {canExpandPublicChannels && (
+                    <div className="discord-widget__channel-controls">
+                      <span>{visiblePublicChannelCount} of {returnedPublicChannelCount} public channels shown</span>
+                      <button className="discord-widget__channel-toggle" type="button" aria-controls={publicChannelListId} aria-expanded={channelsExpanded} onClick={() => setChannelsExpanded((expanded) => !expanded)}>
+                        {channelsExpanded ? "Show fewer channels" : "Show all channels"}
+                      </button>
+                    </div>
+                  )}
+                </>
               : <p className="discord-widget__empty">Public channel information is temporarily unavailable.</p>}
         </section>
         <section className="discord-widget__panel" aria-labelledby={voiceHeadingId}>

@@ -2015,6 +2015,49 @@ h3 {
   color: var(--paper);
 }
 
+.discord-widget__channel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+
+.discord-widget__channel-controls > span {
+  color: var(--muted-deep);
+  font-family: var(--mono);
+  font-size: 7px;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.discord-widget__channel-toggle {
+  min-height: 34px;
+  flex: none;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 209, 47, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 209, 47, 0.06);
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.discord-widget__channel-toggle:hover,
+.discord-widget__channel-toggle:focus-visible {
+  border-color: rgba(255, 209, 47, 0.5);
+  background: rgba(255, 209, 47, 0.12);
+  color: var(--paper);
+}
+
 .discord-widget__avatar img {
   width: 100%;
   height: 100%;
@@ -3669,8 +3712,10 @@ h3 {
   .discord-widget--compact .discord-widget__members { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .discord-widget__actions { width: 100%; }
   .discord-widget__actions .button { flex: 1 1 0; padding-inline: 10px; }
-  .discord-widget__member-controls { align-items: stretch; flex-direction: column; }
-  .discord-widget__member-toggle { width: 100%; }
+  .discord-widget__member-controls,
+  .discord-widget__channel-controls { align-items: stretch; flex-direction: column; }
+  .discord-widget__member-toggle,
+  .discord-widget__channel-toggle { width: 100%; }
   .community-paths > a { min-height: 0; grid-template-columns: 32px minmax(0, 1fr) 18px; gap: 12px; padding: 20px 17px; }
   .community-boundary-section { padding-top: 64px; }
   .community-boundary h2 { font-size: clamp(38px, 12vw, 58px); }
@@ -3758,5 +3803,6 @@ h3 {
   .discord-widget__channels li:hover,
   .discord-widget__members li:hover,
   .community-paths > a:hover { transform: none; }
-  .discord-widget__member-toggle { transition: none; }
+  .discord-widget__member-toggle,
+  .discord-widget__channel-toggle { transition: none; }
 }
