@@ -8,3 +8,5 @@ dist/
 vite.config.js
 vite.config.d.ts
 output/playwright/
+.playwright-cli/
+.wrangler/

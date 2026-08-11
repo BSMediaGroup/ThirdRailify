@@ -5,8 +5,8 @@ Production-oriented public website and storefront foundation for Third Railify. 
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
-- Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact live Discord community module, and staged support surfaces.
-- First-class `/community` destination with the full live Discord public-widget view, existing goat artwork, verified community paths, and explicit public-data boundaries.
+- Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and staged support surfaces.
+- First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Substantial `/shop` with a bounded, dated eight-product Wix snapshot, search, verified broad facets, sorting, loading/error/empty states, details, and a local cart.
 - Product routes at `/products/:slug`; legacy `/product-page/:slug` paths are preserved client-side.
 - Polished migration shells for discovered major routes and a branded 404.
@@ -28,6 +28,7 @@ Quality gates:
 ```powershell
 npm run lint
 npm run typecheck
+npm run test:functions
 npm run build
 npm run preview
 ```
@@ -58,9 +59,12 @@ ThirdRailify/
 │   ├── people/             Seeded host imagery
 │   └── video/              Seeded media (not used as a decorative hero loop)
 ├── pocv1/                  Reference-only approved inspiration POC
+├── functions/
+│   └── api/community/       Signed Discord ingest and public snapshot Pages Functions
 ├── public/
 │   ├── _headers            Cloudflare static response policy
-│   └── _redirects          Aliases and SPA fallback
+│   ├── _redirects          Aliases and SPA fallback
+│   └── _routes.json        Invoke Functions only for /api/community/*
 ├── src/
 │   ├── components/         Shared shell, Discord community widget, rail field, product and cart UI
 │   ├── data/               Dated bounded Wix snapshot
@@ -70,6 +74,7 @@ ThirdRailify/
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
+├── tests/                  Node validation for ingest, GET, KV, HMAC, and freshness
 ├── CLOUDFLARE_SETUP.md
 ├── LIVE_SITE_AUDIT.md
 ├── BUMP_NOTES.md
@@ -82,8 +87,12 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 `src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` currently returns `src/data/wixSnapshot.ts` asynchronously so loading/error UI exists without coupling components to Wix. A future server/API adapter can replace that provider. Provider credentials and write operations must remain server-side; no provider environment names or APIs are invented here.
 
-`src/lib/discordWidget.ts` reads Discord's public server widget for guild `1114717958573396008` at `https://discord.com/api/guilds/1114717958573396008/widget.json`. The guild ID and endpoint are public configuration, not secrets. The integration uses no bot token, API token, cookie, authenticated member API, or private Discord authority. It validates the exact guild ID and payload shape, bounds rendered text/counts, accepts only safe Discord invite and widget-avatar URLs, applies an eight-second request limit with `cache: no-store` and omitted credentials, and exposes loading, ready/empty, error, and manual-refresh states. The homepage mounts the compact variant; `/community` mounts the full variant. Both modes show up to 12 returned public member presences by default and share an accessible expand/collapse control capped at 24; this directory count remains distinct from Discord's live `presence_count`. The Pages CSP permits connections only to `https://discord.com` beyond the application origin and permits remote images only from the two Discord widget-avatar hosts accepted by the validator.
+`src/lib/discordWidget.ts` first requests the same-origin `/api/community/discord` projection published by the local Third Railify bot. That projection contains only whitelisted/revalidated public channels and bounded public presentation fields; the browser never receives a Discord token, ingest secret, admin-role configuration, permissions, roles, messages, or private metadata. The shared widget labels fresh, delayed, and stale data, neutralizes stale presence, shows public text/community channels, and provides keyboard/click/tap-accessible profile cards for enriched members. The homepage bounds the channel directory more tightly; `/community` shows the full capped directory. Both retain 12 collapsed and 24 expanded member limits.
+
+If the enriched endpoint is absent or unavailable, the client falls back to Discord's public server widget for guild `1114717958573396008`. Basic mode is explicitly labelled and shows only the server name, Discord presence count, public voice spaces, and anonymized widget members. It does not invent text channels, joined dates, usernames, IDs, or rich profiles. If both sources fail, the widget shows an intentional unavailable state while preserving the public invite. All fetches are bounded to eight seconds with `cache: no-store` and omitted credentials.
+
+The Pages bridge consists of `POST /api/community/discord/ingest` and `GET /api/community/discord`. Ingest verifies a five-minute HMAC replay window, a 96 KiB maximum, the exact v1 schema/guild/count/type/URL bounds, and strips unknown fields before writing the versioned `discord:community:snapshot:v1` KV record. GET derives fresh under 180 seconds, delayed under 600 seconds, and stale thereafter. `public/_routes.json` restricts Functions invocation to `/api/community/*`, preserving static Vite and SPA routing.
 
 ## Cloudflare and domain safety
 
-See `CLOUDFLARE_SETUP.md` for the exact staging configuration. There is no Pages project or deployment claimed by this repository. Do not attach `thirdrailify.com` while Wix is production.
+See `CLOUDFLARE_SETUP.md` for the exact manual KV binding and secret configuration. No namespace, binding, secret, Pages project, or deployment is claimed merely because the code exists. Do not attach `thirdrailify.com` while Wix is production.

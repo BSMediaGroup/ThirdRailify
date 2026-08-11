@@ -35,8 +35,8 @@ export function CommunityPage() {
 
       <section className="section community-live-section" aria-labelledby="community-live-title">
         <div className="container split-heading">
-          <div><p className="eyebrow">Live from Discord</p><h2 id="community-live-title">The herd, live.</h2></div>
-          <p>See only the presence and voice spaces Discord exposes through the official public server widget, then join the community when you are ready.</p>
+          <div><p className="eyebrow">Public community signal</p><h2 id="community-live-title">The herd, live.</h2></div>
+          <p>Explore public community channels and bounded member profiles from the Third Railify bot, with Discord's basic public preview retained whenever that richer signal is unavailable.</p>
         </div>
         <div className="container"><DiscordCommunityWidget mode="full" /></div>
       </section>
@@ -60,7 +60,7 @@ export function CommunityPage() {
         <div className="container community-boundary">
           <p className="eyebrow">What is live now</p>
           <h2>Community presence, without pretending there is more.</h2>
-          <p>The Discord module shows the server name, online presence count, publicly visible voice spaces, and a bounded public member directory. Third Railify does not read private channels, messages, roles, accounts, or hidden membership data here.</p>
+          <p>The Discord module can show whitelisted public channels, visible voice spaces, and a bounded member directory. It never publishes messages, private channels, permissions, internal roles, moderation data, credentials, or hidden membership data.</p>
           <a className="text-link" href={THIRD_RAILIFY_DISCORD_FALLBACK_INVITE} target="_blank" rel="noopener noreferrer">Open Discord <ArrowIcon /></a>
         </div>
       </section>
