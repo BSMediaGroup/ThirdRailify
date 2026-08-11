@@ -5,7 +5,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
-- Substantial `/` landing page with Third Railify branding, show/host hierarchy, current verified schedule copy, merch preview, and staged community/support surfaces.
+- Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, and staged community/support surfaces.
 - Substantial `/shop` with a bounded, dated eight-product Wix snapshot, search, verified broad facets, sorting, loading/error/empty states, details, and a local cart.
 - Product routes at `/products/:slug`; legacy `/product-page/:slug` paths are preserved client-side.
 - Polished migration shells for discovered major routes and a branded 404.
@@ -51,6 +51,7 @@ ThirdRailify/
 │   ├── backgrounds/        Seeded Third Railify backgrounds
 │   ├── catalogue/          Local copies of eight audited Wix product images
 │   ├── fonts/              Seeded font files and licences
+│   ├── illustrations/      Joined editorial hero artwork
 │   ├── logos/              Seeded Third Railify brand assets
 │   ├── people/             Seeded host imagery
 │   └── video/              Seeded media (not used as a decorative hero loop)
@@ -73,7 +74,7 @@ ThirdRailify/
 └── package.json
 ```
 
-The display system uses the seeded American Captain asset for the primary header voice, with seeded Blinker and Geist Mono for readable body and technical roles.
+The display system uses the seeded American Captain asset at its real weight with lightly relaxed tracking for the primary header voice, with seeded Blinker and Geist Mono for readable body and technical roles.
 
 ## Data and provider boundaries
 

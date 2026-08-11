@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
+import shawnGinaHero from "../../assets/illustrations/shawn-gina-hero.webp";
 import ginaPortrait from "../../assets/people/pfp-gina.webp";
 import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
 import { ProductCard } from "../components/ProductCard";
@@ -24,7 +25,7 @@ export function HomePage() {
         <div className="container home-hero__grid">
           <div className="home-hero__copy">
             <p className="eyebrow"><i /> A daily podcast · Sunday—Friday</p>
-            <h1>News.<br />Crime.<br /><span>Chaos.</span></h1>
+            <h1>News.<br />Culture.<br /><span>Chaos.</span></h1>
             <p className="hero-lede">News, crime, and pop culture stories filtered through Shawn and Gina—and the detours nobody planned.</p>
             <div className="button-row">
               <a className="button button--primary" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer"><PlayIcon /> Watch the show</a>
@@ -36,21 +37,19 @@ export function HomePage() {
               <span><strong>Daily</strong><small>News + hangout</small></span>
             </div>
           </div>
-          <div className="hero-console">
-            <div className="hero-console__top"><span><RadioIcon /> Broadcast pair</span><b>TR / SIGNAL 01</b></div>
-            <div className="hero-hosts">
-              <Link to="/shawn" className="hero-host hero-host--shawn">
-                <span className="hero-host__number">01</span>
-                <img src={shawnPortrait} alt="Shawn, host of Third Railify" />
-                <div><small>Third Railify</small><strong>Shawn</strong></div>
-              </Link>
-              <Link to="/gina" className="hero-host hero-host--gina">
-                <span className="hero-host__number">02</span>
-                <img src={ginaPortrait} alt="Gina, host of Just Gina and co-host of Third Railify" />
-                <div><small>Just Gina™</small><strong>Gina</strong></div>
-              </Link>
+          <div className="hero-portrait">
+            <div className="hero-portrait__top"><span><RadioIcon /> Shawn + Gina</span><b>TR / SIGNAL 01</b></div>
+            <div className="hero-portrait__field" aria-hidden="true">
+              <span className="hero-portrait__orbit hero-portrait__orbit--outer" />
+              <span className="hero-portrait__orbit hero-portrait__orbit--inner" />
+              <span className="hero-portrait__rail" />
             </div>
-            <div className="hero-console__bottom"><span><i /> Signal ready</span><span>Two hosts. One live wire.</span></div>
+            <img className="hero-portrait__image" src={shawnGinaHero} alt="Illustrated joined portrait of Shawn and Gina divided by the Third Railify wordmark" />
+            <div className="hero-portrait__links" aria-label="Meet the hosts">
+              <Link to="/shawn"><span>01 / Third Railify</span><strong>Shawn</strong></Link>
+              <Link to="/gina"><span>02 / Just Gina™</span><strong>Gina</strong></Link>
+            </div>
+            <div className="hero-portrait__bottom"><span><i /> Signal ready</span><span>Two hosts. One live wire.</span></div>
           </div>
         </div>
         <div className="hero-ticker" aria-hidden="true"><div>THIRD RAILIFY <i>↯</i> NEWS HANGOUT <i>↯</i> ABOOT NOTHING <i>↯</i> POP CULTURE BEAT DOWN <i>↯</i> THIRD RAILIFY <i>↯</i> NEWS HANGOUT <i>↯</i> ABOOT NOTHING <i>↯</i> POP CULTURE BEAT DOWN <i>↯</i></div></div>
