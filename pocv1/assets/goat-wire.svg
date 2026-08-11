@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title">
+<title id="title">Abstract goat line illustration</title>
+<defs>
+ <linearGradient id="rail" x1="0" x2="1"><stop stop-color="#ffd84d"/><stop offset="1" stop-color="#ff6a00"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<g fill="none" stroke="url(#rail)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
+ <path d="M204 142c-62-72-147-48-170-105 79-3 137 27 180 86M436 142c62-72 147-48 170-105-79-3-137 27-180 86"/>
+ <path d="M212 128c34-38 72-57 108-57s74 19 108 57l39 91-28 133-119 106-119-106-28-133z"/>
+ <path d="m236 232 48 21M404 232l-48 21M270 327c32 21 68 21 100 0M320 252v75"/>
+ <path d="M215 154c-42-8-77 1-107 31M425 154c42-8 77 1 107 31" opacity=".5"/>
+</g>
+<circle cx="263" cy="248" r="10" fill="#fff8d5"/><circle cx="377" cy="248" r="10" fill="#fff8d5"/>
+</svg>

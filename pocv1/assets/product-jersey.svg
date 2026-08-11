@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">Live Wire sports jersey mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#413016"/><stop offset="1" stop-color="#08090b"/></radialGradient>
+ <linearGradient id="j" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22252a"/><stop offset=".55" stop-color="#07080a"/><stop offset="1" stop-color="#2d3035"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffe05d"/><stop offset="1" stop-color="#ff7300"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="28" stdDeviation="28" flood-opacity=".6"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<g filter="url(#s)">
+ <path d="M344 156 211 220 85 388l150 106 78-93v422h374V401l78 93 150-106-126-168-133-64-81 76H425z" fill="url(#j)" stroke="#4a4e55" stroke-width="6"/>
+ <path d="M425 157c13 56 137 75 150 0" fill="none" stroke="#f0b522" stroke-width="19"/>
+ <path d="M311 387h378M313 742h374M225 247l120 90M775 247l-120 90" fill="none" stroke="url(#g)" stroke-width="21" opacity=".95"/>
+ <text x="500" y="458" text-anchor="middle" fill="#f7f3ea" font-family="Arial Black,Arial" font-size="51" letter-spacing="5">LIVE WIRE</text>
+ <text x="500" y="674" text-anchor="middle" fill="url(#g)" font-family="Arial Black,Arial" font-size="196" letter-spacing="-8">03</text>
+ <text x="500" y="771" text-anchor="middle" fill="#f7f3ea" font-family="Arial,Helvetica" font-size="28" letter-spacing="12">THIRD RAILIFY</text>
+</g>
+</svg>

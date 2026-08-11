@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en" data-page="home">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Third Railify version-two homepage design proof of concept." />
+  <title>Third Railify — Daily news, crime & pop-culture chaos</title>
+  <link rel="icon" href="./assets/thirdrailify-mark.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <div class="ambient" aria-hidden="true">
+    <span class="ambient__flare ambient__flare--gold"></span>
+    <span class="ambient__flare ambient__flare--pink"></span>
+    <span class="ambient__grid"></span>
+    <span class="ambient__grain"></span>
+  </div>
+
+  <aside class="prototype-flag" aria-label="Prototype notice">
+    <span>POC V1</span>
+    <strong>Design prototype — no live commerce</strong>
+    <button type="button" aria-label="Dismiss prototype notice" data-dismiss-prototype>×</button>
+  </aside>
+
+  <div class="announcement" data-announcement>
+    <div class="shell announcement__inner">
+      <p><strong>THIRD RAILIFY DAILY</strong><span>News. Crime. Pop culture. ADHD-grade commentary.</span></p>
+      <a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Watch on Rumble <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+
+  <header class="site-header" data-site-header>
+    <div class="shell site-header__inner">
+      <a class="brand" href="./index.html" aria-label="Third Railify home">
+        <span class="brand__mark"><img src="./assets/thirdrailify-mark.svg" alt="" /></span>
+        <span class="brand__type"><b>THIRD RAILIFY</b><small>OFFICIAL</small></span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+        <span></span><span></span><span></span><i class="sr-only">Open navigation</i>
+      </button>
+
+      <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation" data-primary-nav>
+        <a class="is-active" href="#top">Home</a>
+        <a href="#watch">Watch</a>
+        <a href="#hosts">Shawn + Gina</a>
+        <a href="./shop/">Shop</a>
+        <a href="#community">Community</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="header-link" href="https://www.thirdrailify.com/pricing-plans/list" target="_blank" rel="noreferrer">Join VIP</a>
+        <button class="cart-button" type="button" data-cart-open aria-label="Open prototype cart">
+          <span class="cart-button__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6.1M10 20h.01M18 20h.01"/></svg>
+          </span>
+          <span>Cart</span><b data-cart-count>0</b>
+        </button>
+        <a class="button button--gold button--small" href="./shop/">Shop merch</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section id="top" class="hero">
+      <div class="hero__signal-field" aria-hidden="true">
+        <span class="hero__rail hero__rail--one"></span>
+        <span class="hero__rail hero__rail--two"></span>
+        <span class="hero__rail hero__rail--three"></span>
+        <span class="hero__pulse"></span>
+      </div>
+
+      <div class="shell hero__grid">
+        <div class="hero__copy reveal">
+          <div class="eyebrow"><span class="live-dot"></span> A daily podcast with very ADHD commentary</div>
+          <h1>NEWS.<br />CRIME.<br /><span>CHAOS.</span></h1>
+          <p class="hero__lede">
+            Shawn and Gina hit the stories everyone is already arguing about—then take the conversation somewhere nobody sensible planned to go.
+          </p>
+          <div class="hero__actions">
+            <a class="button button--gold button--large" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">
+              Watch the latest <span aria-hidden="true">↗</span>
+            </a>
+            <a class="button button--glass button--large" href="./shop/">Enter the merch store</a>
+          </div>
+          <div class="hero__proof" aria-label="Show topics and format">
+            <span><i></i> Daily episodes</span>
+            <span><i></i> News + crime</span>
+            <span><i></i> Pop-culture detours</span>
+          </div>
+        </div>
+
+        <div class="hero__visual reveal reveal--delay" data-tilt>
+          <div class="broadcast-shell">
+            <div class="broadcast-shell__glow" aria-hidden="true"></div>
+            <div class="broadcast-topbar">
+              <div class="broadcast-topbar__brand">
+                <img src="./assets/thirdrailify-mark.svg" alt="" />
+                <span><b>THIRD RAILIFY DAILY</b><small>THE INTERNET'S UNSUPERVISED NEWS DESK</small></span>
+              </div>
+              <div class="live-chip"><i></i> LIVE</div>
+            </div>
+
+            <div class="broadcast-stage">
+              <div class="broadcast-stage__grid" aria-hidden="true"></div>
+              <article class="host-frame host-frame--shawn">
+                <div class="host-frame__wash" aria-hidden="true"></div>
+                <img src="./assets/shawn-costume.png" alt="Shawn from Third Railify" />
+                <div class="host-frame__label"><small>THIRD RAILIFY</small><strong>SHAWN</strong></div>
+              </article>
+              <article class="host-frame host-frame--gina">
+                <div class="host-frame__wash" aria-hidden="true"></div>
+                <img src="./assets/gina-portrait.webp" alt="Gina from Third Railify" />
+                <div class="host-frame__label"><small>JUST GINA</small><strong>GINA</strong></div>
+              </article>
+              <div class="stage-bolt" aria-hidden="true"><img src="./assets/thirdrailify-mark.svg" alt="" /></div>
+              <div class="stage-topic"><span>ON THE THIRD RAIL</span><strong>THE STORY CHANGED THREE TANGENTS AGO</strong></div>
+              <div class="stage-chat" aria-hidden="true"><i>GOAT_CHAT</i><span>“This escalated with impressive efficiency.”</span></div>
+            </div>
+
+            <div class="broadcast-footer">
+              <div class="waveform" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <span>RUMBLE • YOUTUBE • X • INSTAGRAM</span>
+              <b>DAILY</b>
+            </div>
+          </div>
+
+          <div class="floating-tag floating-tag--one"><small>FORMAT</small><strong>News Hangout</strong></div>
+          <div class="floating-tag floating-tag--two"><small>COMMUNITY</small><strong>Certified GOATED</strong></div>
+        </div>
+      </div>
+
+      <div class="hero-marquee" aria-hidden="true">
+        <div>
+          <span>TOUCH THE THIRD RAIL</span><i>⚡</i><span>NEWS HANGOUT</span><i>⚡</i><span>ABOOT NOTHING</span><i>⚡</i><span>THIRD RAIL LORE</span><i>⚡</i>
+          <span>TOUCH THE THIRD RAIL</span><i>⚡</i><span>NEWS HANGOUT</span><i>⚡</i><span>ABOOT NOTHING</span><i>⚡</i><span>THIRD RAIL LORE</span><i>⚡</i>
+        </div>
+      </div>
+    </section>
+
+    <section class="platform-rail" aria-label="Watch and follow Third Railify">
+      <div class="shell platform-rail__grid">
+        <div class="platform-rail__intro"><span>WATCH + FOLLOW</span><strong>Pick your algorithm.</strong></div>
+        <a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer"><i class="platform-icon platform-icon--rumble">R</i><span><b>Rumble</b><small>Primary channel</small></span><em>↗</em></a>
+        <a href="https://www.youtube.com/@thirdrailify" target="_blank" rel="noreferrer"><i class="platform-icon platform-icon--youtube">▶</i><span><b>YouTube</b><small>Videos + clips</small></span><em>↗</em></a>
+        <a href="https://x.com/ThirdRailify" target="_blank" rel="noreferrer"><i class="platform-icon platform-icon--x">𝕏</i><span><b>X</b><small>Posts + chaos</small></span><em>↗</em></a>
+        <a href="https://www.instagram.com/thirdrailify/" target="_blank" rel="noreferrer"><i class="platform-icon platform-icon--instagram">◎</i><span><b>Instagram</b><small>Reels + moments</small></span><em>↗</em></a>
+      </div>
+    </section>
+
+    <section id="watch" class="section section--episode">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <div><p class="kicker">LATEST FROM THE RAIL</p><h2>Start with the argument<br />already in progress.</h2></div>
+          <a class="text-arrow" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Browse all episodes <span>↗</span></a>
+        </div>
+
+        <article class="episode-feature reveal">
+          <a class="episode-feature__visual" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer" aria-label="Watch the latest Third Railify episode">
+            <div class="episode-feature__art">
+              <img src="./assets/goat-wire.svg" alt="" />
+              <span class="episode-feature__scan"></span>
+              <div class="episode-feature__logo"><img src="./assets/thirdrailify-mark.svg" alt="" /><b>THIRD RAILIFY</b></div>
+              <strong>NEWS<br />HANGOUT</strong>
+              <small>LIVE / DAILY / UNREASONABLY CONFIDENT</small>
+            </div>
+            <span class="play-button"><i></i></span>
+            <span class="duration-chip">LATEST</span>
+          </a>
+          <div class="episode-feature__copy">
+            <p class="episode-meta"><span>NEW EPISODE</span><i></i> NEWS • CRIME • POP CULTURE</p>
+            <h3>The day's biggest stories, filtered through two people who refuse to stay on topic.</h3>
+            <p>
+              Third Railify is built for the second-screen crowd: sharp takes, live-chat energy, recurring lore, and the kind of conversational derailment that becomes the best part of the show.
+            </p>
+            <div class="topic-list"><span>News Hangout</span><span>Community chat</span><span>Clips + reactions</span></div>
+            <a class="button button--outline" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Watch on Rumble <span>↗</span></a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--manifesto">
+      <div class="shell manifesto-grid">
+        <div class="manifesto-copy reveal">
+          <p class="kicker">WHAT YOU'RE GETTING INTO</p>
+          <h2>A professional home for a deeply unserious show.</h2>
+          <p>
+            Version two should feel like a real media brand without sanding off the reason the audience is here: Shawn, Gina, the GOAT community, recurring bits, and a store full of jokes that escaped containment.
+          </p>
+          <a class="text-arrow" href="#hosts">Meet the hosts <span>↓</span></a>
+        </div>
+        <div class="manifesto-cards">
+          <article class="manifesto-card reveal"><span>01</span><i class="manifesto-card__bolt">⚡</i><h3>Daily current-events energy</h3><p>Fast access to the newest show, clips, and the platforms where the community actually watches.</p></article>
+          <article class="manifesto-card reveal reveal--delay"><span>02</span><i class="manifesto-card__bolt">↯</i><h3>Two distinct host brands</h3><p>Third Railify and Just Gina remain connected but visually legible as their own content lanes.</p></article>
+          <article class="manifesto-card reveal reveal--long"><span>03</span><i class="manifesto-card__bolt">♜</i><h3>Lore becomes commerce</h3><p>The shop elevates recurring jokes, show moments, and community identity into first-class collections.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="hosts" class="section section--hosts">
+      <div class="shell">
+        <div class="section-heading section-heading--hosts reveal">
+          <div><p class="kicker">MEET THE INSTIGATORS</p><h2>Two hosts.<br />One live wire.</h2></div>
+          <p class="section-heading__aside">Separate personalities, shared universe, extremely questionable impulse control.</p>
+        </div>
+
+        <div class="host-cards">
+          <article class="host-card host-card--shawn reveal" data-tilt>
+            <div class="host-card__media">
+              <span class="host-card__number">01</span>
+              <img src="./assets/shawn-costume.png" alt="Shawn, host of Third Railify" />
+              <span class="host-card__glow"></span>
+            </div>
+            <div class="host-card__body">
+              <p>THIRD RAILIFY</p><h3>Shawn</h3>
+              <span>Stay-at-home dad. Professional tangent chaser. The man most likely to touch the third rail first.</span>
+              <div><a href="https://www.thirdrailify.com/shawn" target="_blank" rel="noreferrer">Meet Shawn <b>↗</b></a><small>NEWS • HANGOUT • LORE</small></div>
+            </div>
+          </article>
+
+          <article class="host-card host-card--gina reveal reveal--delay" data-tilt>
+            <div class="host-card__media">
+              <span class="host-card__number">02</span>
+              <img src="./assets/gina-portrait.webp" alt="Gina, host of Just Gina" />
+              <span class="host-card__glow"></span>
+            </div>
+            <div class="host-card__body">
+              <p>JUST GINA</p><h3>Gina</h3>
+              <span>Conspiracies, culture, and chaos delivered with wit, humor, flair, and very little patience.</span>
+              <div><a href="https://www.thirdrailify.com/gina" target="_blank" rel="noreferrer">Meet Gina <b>↗</b></a><small>CONSPIRACY • CULTURE • COMMENTARY</small></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="merch" class="section section--merch">
+      <div class="merch-backdrop" aria-hidden="true"><span>MERCH STORE</span><span>MERCH STORE</span></div>
+      <div class="shell">
+        <div class="section-heading reveal">
+          <div><p class="kicker">WEAR THE LORE</p><h2>Merch with an actual<br />reason to exist.</h2></div>
+          <p class="section-heading__aside">Official Third Railify + Just Gina apparel, accessories, and artifacts from the show's increasingly complicated mythology.</p>
+        </div>
+
+        <div class="merch-preview-grid">
+          <a class="merch-preview merch-preview--wide reveal" href="./shop/">
+            <span class="merch-preview__badge">CORE COLLECTION</span>
+            <img src="./assets/product-rail-tee.svg" alt="Third Railify heavyweight tee prototype" />
+            <div><small>THIRD RAILIFY BRANDED</small><h3>Heavyweight Rail Tee</h3><p>From CA$47.50</p></div>
+            <i>↗</i>
+          </a>
+          <a class="merch-preview reveal reveal--delay" href="./shop/">
+            <span class="merch-preview__badge">COMMUNITY FAVORITE</span>
+            <img src="./assets/product-raid-mug.svg" alt="I Raided Third Railify mug prototype" />
+            <div><small>ACCESSORIES</small><h3>I Raided Third Railify Mug</h3><p>Sample product</p></div>
+            <i>↗</i>
+          </a>
+          <a class="merch-preview reveal reveal--long" href="./shop/">
+            <span class="merch-preview__badge">JUST GINA</span>
+            <img src="./assets/product-gina-tee.svg" alt="Just Gina tee prototype" />
+            <div><small>JUST GINA BRANDED</small><h3>Chaos Tee</h3><p>Sample product</p></div>
+            <i>↗</i>
+          </a>
+        </div>
+
+        <div class="merch-cta reveal">
+          <div><img src="./assets/thirdrailify-mark.svg" alt="" /><span><small>THE FULL STORE IS A CORE PRODUCT</small><strong>Collections, filters, product detail, cart, checkout states, and proper mobile UX.</strong></span></div>
+          <a class="button button--gold button--large" href="./shop/">Explore shop POC <span>→</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section id="community" class="section section--community">
+      <div class="shell community-grid">
+        <article class="community-feature community-feature--vip reveal">
+          <div class="community-feature__art"><img src="./assets/goat-wire.svg" alt="" /><span>GOAT<br />STATUS</span></div>
+          <div class="community-feature__body">
+            <p class="kicker">THIRD RAILIFY VIP</p><h2>Discover the GOAT within.</h2>
+            <p>Support the show, unlock member content, earn sponsor recognition, and access higher-tier community benefits.</p>
+            <div class="vip-mini-tiers"><span><b>CA$3</b> Baby GOAT</span><span><b>CA$9</b> Blossom GOAT</span><span><b>CA$18</b> Mega GOAT</span><span><b>CA$99</b> Improbable GOAT</span></div>
+            <a class="button button--glass" href="https://www.thirdrailify.com/pricing-plans/list" target="_blank" rel="noreferrer">Review current VIP plans <span>↗</span></a>
+          </div>
+        </article>
+
+        <div class="community-stack">
+          <a class="community-link community-link--friends reveal reveal--delay" href="https://www.thirdrailify.com/friends" target="_blank" rel="noreferrer">
+            <span><small>THE EXTENDED UNIVERSE</small><strong>Support our frens.</strong><p>Discover creators from the Third Railify community.</p></span><b>↗</b>
+          </a>
+          <a class="community-link community-link--goats reveal reveal--long" href="https://www.thirdrailify.com/goats" target="_blank" rel="noreferrer">
+            <span><small>WILD GOATS</small><strong>See the herd.</strong><p>A community gallery with an unreasonable number of goats.</p></span><b>↗</b>
+          </a>
+          <a class="community-link community-link--donate reveal" href="https://www.thirdrailify.com/donate-1" target="_blank" rel="noreferrer">
+            <span><small>KEEP THE MICS HOT</small><strong>Support the show.</strong><p>One-time and recurring support options.</p></span><b>↗</b>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <div class="shell newsletter__inner reveal">
+        <div class="newsletter__bolt"><img src="./assets/thirdrailify-mark.svg" alt="" /></div>
+        <div><p class="kicker">TRANSMISSIONS FROM THE RAIL</p><h2>New drops. New episodes.<br />New reasons to be concerned.</h2></div>
+        <form class="newsletter__form" data-demo-form>
+          <label for="email">Email address</label>
+          <div><input id="email" name="email" type="email" placeholder="you@example.com" required /><button class="button button--gold" type="submit">Subscribe</button></div>
+          <small>Prototype form. No submission endpoint is connected.</small>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell site-footer__top">
+      <a class="brand brand--footer" href="#top"><span class="brand__mark"><img src="./assets/thirdrailify-mark.svg" alt="" /></span><span class="brand__type"><b>THIRD RAILIFY</b><small>OFFICIAL</small></span></a>
+      <p>A daily podcast with some very ADHD commentary on news, crime, and pop culture.</p>
+      <div class="footer-socials"><a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Rumble</a><a href="https://www.youtube.com/@thirdrailify" target="_blank" rel="noreferrer">YouTube</a><a href="https://x.com/ThirdRailify" target="_blank" rel="noreferrer">X</a><a href="https://www.instagram.com/thirdrailify/" target="_blank" rel="noreferrer">Instagram</a></div>
+    </div>
+    <div class="shell site-footer__grid">
+      <div><h3>Navigate</h3><a href="#watch">Watch</a><a href="#hosts">Hosts</a><a href="./shop/">Shop</a><a href="#community">Community</a></div>
+      <div><h3>More</h3><a href="https://www.thirdrailify.com/friends" target="_blank" rel="noreferrer">Friends</a><a href="https://www.thirdrailify.com/goats" target="_blank" rel="noreferrer">Wild Goats</a><a href="https://www.thirdrailify.com/gift" target="_blank" rel="noreferrer">Gift Cards</a><a href="https://www.thirdrailify.com/donate-1" target="_blank" rel="noreferrer">Donate</a></div>
+      <div><h3>Legal</h3><a href="https://www.thirdrailify.com/policies" target="_blank" rel="noreferrer">Policy index</a><a href="https://www.thirdrailify.com/terms-conditions" target="_blank" rel="noreferrer">Terms</a><a href="https://www.thirdrailify.com/privacy-policy" target="_blank" rel="noreferrer">Privacy</a><a href="https://www.thirdrailify.com/accessibility-statement" target="_blank" rel="noreferrer">Accessibility</a></div>
+      <div class="footer-contact"><h3>Contact</h3><a href="mailto:INFO@thirdrailify.COM">INFO@thirdrailify.COM</a><span>Third Railify Official™</span><span>Canada / Internet</span></div>
+    </div>
+    <div class="shell site-footer__bottom"><span>© 2026 Third Railify Official™ — Version 2 design POC.</span><span>Existing Wix production site remains untouched.</span></div>
+  </footer>
+
+  <div class="cart-backdrop" data-cart-backdrop hidden></div>
+  <aside class="cart-drawer" aria-label="Shopping cart" aria-hidden="true" data-cart-drawer>
+    <div class="cart-drawer__head"><span><small>PROTOTYPE CART</small><strong>Your rail haul</strong></span><button type="button" aria-label="Close cart" data-cart-close>×</button></div>
+    <div class="cart-drawer__body" data-cart-items><div class="cart-empty"><img src="./assets/thirdrailify-mark.svg" alt="" /><strong>Your cart is off the rails.</strong><span>Add a sample product from the shop POC.</span></div></div>
+    <div class="cart-drawer__foot"><div><span>Subtotal</span><strong data-cart-subtotal>CA$0.00</strong></div><button class="button button--gold button--full" type="button" data-demo-checkout>Prototype checkout</button><small>Taxes, shipping, provider APIs, and payment are not connected.</small></div>
+  </aside>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+</body>
+</html>

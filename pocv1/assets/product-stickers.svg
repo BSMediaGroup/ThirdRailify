@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">Pop Culture Beatdown sticker pack mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#2f1b37"/><stop offset="1" stop-color="#08080b"/></radialGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffdf5d"/><stop offset="1" stop-color="#ff6d00"/></linearGradient>
+ <linearGradient id="p" x1="0" x2="1"><stop stop-color="#ff73c2"/><stop offset="1" stop-color="#923cff"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="20" stdDeviation="20" flood-opacity=".7"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<g filter="url(#s)">
+ <g transform="rotate(-12 302 410)"><rect x="135" y="230" width="335" height="360" rx="70" fill="#f4f0e7"/><path d="M300 278 232 394h58l-15 112 103-136h-61l22-92z" fill="url(#g)"/><text x="302" y="548" text-anchor="middle" fill="#17171a" font-family="Arial Black,Arial" font-size="32">TOUCH GRASS</text></g>
+ <g transform="rotate(10 677 418)"><circle cx="677" cy="418" r="186" fill="#f4f0e7"/><circle cx="677" cy="418" r="157" fill="#17171a"/><text x="677" y="391" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="31">POP CULTURE</text><text x="677" y="455" text-anchor="middle" fill="url(#p)" font-family="Arial Black,Arial" font-size="50">BEATDOWN</text></g>
+ <g transform="rotate(-4 526 712)"><path d="m526 547 54 76 93-20-12 94 82 47-82 47 12 94-93-20-54 76-54-76-93 20 12-94-82-47 82-47-12-94 93 20z" fill="#f4f0e7"/><text x="526" y="698" text-anchor="middle" fill="#17171a" font-family="Arial Black,Arial" font-size="38">FACT</text><text x="526" y="758" text-anchor="middle" fill="url(#g)" font-family="Arial Black,Arial" font-size="54">CHECKED?</text><text x="526" y="808" text-anchor="middle" fill="#17171a" font-family="Arial Black,Arial" font-size="25">NEVER HEARD OF HER</text></g>
+</g>
+</svg>

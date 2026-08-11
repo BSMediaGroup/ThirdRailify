@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">Aboot Nothing snapback mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#24394f"/><stop offset="1" stop-color="#080b0f"/></radialGradient>
+ <linearGradient id="cap" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#242931"/><stop offset=".55" stop-color="#090a0d"/><stop offset="1" stop-color="#30343c"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffdf5e"/><stop offset="1" stop-color="#ff6f00"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="28" stdDeviation="28" flood-opacity=".65"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<ellipse cx="511" cy="755" rx="358" ry="68" fill="#000" opacity=".45"/>
+<g filter="url(#s)">
+ <path d="M216 619c0-256 122-414 303-414 166 0 274 137 294 359-172-64-403-45-597 55z" fill="url(#cap)" stroke="#555c68" stroke-width="7"/>
+ <path d="M493 209v378M240 598c168-68 368-80 568-28" fill="none" stroke="#4e5560" stroke-width="5" opacity=".8"/>
+ <path d="M413 646c190-75 389-71 489 6-60 89-235 120-466 85-81-13-95-56-23-91z" fill="#111318" stroke="#454b55" stroke-width="6"/>
+ <text x="510" y="441" text-anchor="middle" fill="#f7f3e9" font-family="Arial Black,Arial" font-size="62" letter-spacing="5">ABOOT</text>
+ <text x="510" y="526" text-anchor="middle" fill="url(#g)" font-family="Arial Black,Arial" font-size="72" letter-spacing="2">NOTHING</text>
+ <path d="M486 553 445 623h35l-9 55 72-91h-38l14-34z" fill="url(#g)"/>
+</g>
+</svg>

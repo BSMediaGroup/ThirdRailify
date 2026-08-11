@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">I Raided Third Railify mug mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#39280c"/><stop offset="1" stop-color="#090909"/></radialGradient>
+ <linearGradient id="m" x1="0" x2="1"><stop stop-color="#0b0b0d"/><stop offset=".45" stop-color="#2a2a30"/><stop offset=".7" stop-color="#09090a"/><stop offset="1" stop-color="#3b3b41"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffe164"/><stop offset="1" stop-color="#ff7a00"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="28" stdDeviation="30" flood-opacity=".65"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<ellipse cx="480" cy="815" rx="320" ry="64" fill="#000" opacity=".45"/>
+<g filter="url(#s)">
+ <path d="M224 235h466v503c0 78-56 121-233 121s-233-43-233-121z" fill="url(#m)" stroke="#5a5a61" stroke-width="6"/>
+ <path d="M690 343h83c115 0 146 72 146 151 0 104-66 170-182 170h-47v-80h50c64 0 93-31 93-88 0-49-22-75-73-75h-70z" fill="none" stroke="#28282d" stroke-width="70"/>
+ <ellipse cx="457" cy="238" rx="233" ry="56" fill="#44444b"/><ellipse cx="457" cy="236" rx="204" ry="38" fill="#121214"/>
+ <text x="457" y="386" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="42">I RAIDED</text>
+ <text x="457" y="461" text-anchor="middle" fill="url(#g)" font-family="Arial Black,Arial" font-size="58" letter-spacing="2">THIRD RAILIFY</text>
+ <text x="457" y="519" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="31">AND ALL I GOT WAS</text>
+ <path d="M442 548 386 648h47l-12 86 91-124h-49l17-62z" fill="url(#g)"/>
+ <text x="547" y="639" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="42">THIS MUG</text>
+</g>
+</svg>

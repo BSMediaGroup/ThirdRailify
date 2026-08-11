@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">Christmas Shit crewneck mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#28402b"/><stop offset="1" stop-color="#090c0a"/></radialGradient>
+ <linearGradient id="sweat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#203226"/><stop offset=".5" stop-color="#0c150f"/><stop offset="1" stop-color="#2c4733"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffe06a"/><stop offset="1" stop-color="#ff6500"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="28" stdDeviation="28" flood-opacity=".65"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<g filter="url(#s)">
+ <path d="M358 165 207 236 73 431l157 111 91-108v394h358V434l91 108 157-111-134-195-151-71-74 69H432z" fill="url(#sweat)" stroke="#49624f" stroke-width="6"/>
+ <path d="M432 165c16 64 120 92 136 0" fill="none" stroke="#7e9b83" stroke-width="18"/>
+ <g fill="none" stroke="#d84747" stroke-width="10"><path d="M342 372h316M321 710h358"/></g>
+ <g fill="#f4f0e7"><circle cx="361" cy="336" r="12"/><circle cx="438" cy="336" r="12"/><circle cx="562" cy="336" r="12"/><circle cx="639" cy="336" r="12"/><circle cx="361" cy="746" r="12"/><circle cx="438" cy="746" r="12"/><circle cx="562" cy="746" r="12"/><circle cx="639" cy="746" r="12"/></g>
+ <text x="500" y="477" text-anchor="middle" fill="#fff" font-family="Arial Black,Arial" font-size="47">CHRISTMAS</text>
+ <text x="500" y="580" text-anchor="middle" fill="url(#g)" font-family="Arial Black,Arial" font-size="112">SHIT</text>
+ <path d="M484 604 450 665h29l-7 45 58-74h-31l11-32z" fill="url(#g)"/>
+</g>
+</svg>

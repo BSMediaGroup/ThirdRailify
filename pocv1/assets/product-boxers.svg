@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">Third Rail boxer briefs mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#34343b"/><stop offset="1" stop-color="#09090b"/></radialGradient>
+ <linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#202126"/><stop offset=".52" stop-color="#08090b"/><stop offset="1" stop-color="#2e3037"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffdf5a"/><stop offset="1" stop-color="#ff6a00"/></linearGradient>
+ <pattern id="p" width="110" height="110" patternUnits="userSpaceOnUse"><path d="M53 3 21 55h27l-7 52 48-63H62L74 3z" fill="url(#g)" opacity=".85"/></pattern>
+ <filter id="s"><feDropShadow dx="0" dy="30" stdDeviation="30" flood-opacity=".65"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<g filter="url(#s)">
+ <path d="M213 248h574l-41 534-203-5-43-215-43 215-203 5z" fill="url(#b)" stroke="#4a4d55" stroke-width="7"/>
+ <path d="M213 248h574v91H213z" fill="url(#g)"/>
+ <text x="500" y="312" text-anchor="middle" fill="#111" font-family="Arial Black,Arial" font-size="45" letter-spacing="7">THIRD RAILIFY</text>
+ <path d="M239 357h522l-28 371-166-4-67-264-67 264-166 4z" fill="url(#p)" opacity=".66"/>
+ <path d="M500 340v222" stroke="#484a52" stroke-width="7"/>
+</g>
+</svg>

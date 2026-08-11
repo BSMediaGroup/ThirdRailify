@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en" data-page="shop">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Third Railify version-two merchandise storefront design proof of concept." />
+  <title>Shop — Third Railify Official</title>
+  <link rel="icon" href="../assets/thirdrailify-mark.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../styles.css" />
+  <script src="../app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to products</a>
+
+  <div class="ambient ambient--shop" aria-hidden="true">
+    <span class="ambient__flare ambient__flare--gold"></span>
+    <span class="ambient__flare ambient__flare--pink"></span>
+    <span class="ambient__grid"></span>
+    <span class="ambient__grain"></span>
+  </div>
+
+  <aside class="prototype-flag" aria-label="Prototype notice">
+    <span>POC V1</span>
+    <strong>Sample catalogue — no live commerce</strong>
+    <button type="button" aria-label="Dismiss prototype notice" data-dismiss-prototype>×</button>
+  </aside>
+
+  <div class="announcement" data-announcement>
+    <div class="shell announcement__inner">
+      <p><strong>OFFICIAL THIRD RAILIFY MERCH</strong><span>Wear the show. Explain nothing.</span></p>
+      <a href="../index.html#watch">Watch the daily show <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+
+  <header class="site-header" data-site-header>
+    <div class="shell site-header__inner">
+      <a class="brand" href="../index.html" aria-label="Third Railify home">
+        <span class="brand__mark"><img src="../assets/thirdrailify-mark.svg" alt="" /></span>
+        <span class="brand__type"><b>THIRD RAILIFY</b><small>OFFICIAL</small></span>
+      </a>
+
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+        <span></span><span></span><span></span><i class="sr-only">Open navigation</i>
+      </button>
+
+      <nav id="primary-nav" class="primary-nav" aria-label="Primary navigation" data-primary-nav>
+        <a href="../index.html">Home</a>
+        <a href="../index.html#watch">Watch</a>
+        <a href="../index.html#hosts">Shawn + Gina</a>
+        <a class="is-active" href="./">Shop</a>
+        <a href="../index.html#community">Community</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="header-link" href="https://www.thirdrailify.com/pricing-plans/list" target="_blank" rel="noreferrer">Join VIP</a>
+        <button class="cart-button" type="button" data-cart-open aria-label="Open prototype cart">
+          <span class="cart-button__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L21 7H6.1M10 20h.01M18 20h.01"/></svg>
+          </span>
+          <span>Cart</span><b data-cart-count>0</b>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="shop-hero">
+      <div class="shop-hero__backdrop" aria-hidden="true">
+        <span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span>
+      </div>
+      <div class="shell shop-hero__grid">
+        <div class="shop-hero__copy reveal">
+          <p class="eyebrow"><span class="live-dot"></span> THE OFFICIAL STORE — VERSION 2 CONCEPT</p>
+          <h1>WEAR<br />THE <span>LORE.</span></h1>
+          <p>Third Railify, Just Gina, Aboot Nothing, community memes, and artifacts from a daily show that refuses to stay inside the third rail.</p>
+          <div class="shop-hero__actions">
+            <a class="button button--gold button--large" href="#catalogue">Shop all drops <span>↓</span></a>
+            <a class="button button--glass button--large" href="#collections">Browse collections</a>
+          </div>
+          <div class="shop-hero__facts" aria-label="Storefront prototype status">
+            <span><b>10</b><small>Illustrative products</small></span>
+            <span><b>11</b><small>Current category concepts</small></span>
+            <span><b>API</b><small>Printful / Printify target</small></span>
+          </div>
+        </div>
+
+        <div class="shop-hero__visual reveal reveal--delay" data-tilt>
+          <div class="hero-product hero-product--main">
+            <span class="hero-product__tag">CORE COLLECTION</span>
+            <img src="../assets/product-rail-tee.svg" alt="Third Railify heavyweight rail tee prototype" />
+            <div><small>THIRD RAILIFY BRANDED</small><strong>Heavyweight Rail Tee</strong><span>Verified current starting price: CA$47.50</span></div>
+          </div>
+          <div class="hero-product hero-product--left"><img src="../assets/product-raid-mug.svg" alt="Third Railify mug prototype" /><span>RAID SUPPLY</span></div>
+          <div class="hero-product hero-product--right"><img src="../assets/product-gina-tee.svg" alt="Just Gina tee prototype" /><span>JUST GINA</span></div>
+          <div class="shop-hero__stamp" aria-hidden="true"><img src="../assets/thirdrailify-mark.svg" alt="" /><span>OFFICIAL<br />MERCH</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shop-assurance" aria-label="Storefront standards">
+      <div class="shell shop-assurance__grid">
+        <span><i>01</i><b>Real product data</b><small>Provider APIs at implementation</small></span>
+        <span><i>02</i><b>Server validation</b><small>Price, stock, shipping, checkout</small></span>
+        <span><i>03</i><b>Mobile-first cart</b><small>Drawer + full cart route</small></span>
+        <span><i>04</i><b>Honest states</b><small>Loading, errors, empty catalogue</small></span>
+      </div>
+    </section>
+
+    <section id="collections" class="shop-collections section">
+      <div class="shell">
+        <div class="section-heading reveal">
+          <div><p class="kicker">SHOP BY CHAOS</p><h2>Pick your corner<br />of the universe.</h2></div>
+          <p class="section-heading__aside">The current Wix categories are retained as business source material, then reorganized into a sharper, easier-to-scan discovery system.</p>
+        </div>
+        <div class="collection-rail reveal" aria-label="Featured collections">
+          <button class="collection-tile collection-tile--rail" type="button" data-filter-shortcut="thirdrailify">
+            <span><small>THE FLAGSHIP</small><strong>Third Railify™</strong><em>Core show marks + daily-show staples</em></span><b>01</b>
+          </button>
+          <button class="collection-tile collection-tile--gina" type="button" data-filter-shortcut="justgina">
+            <span><small>UNFILTERED</small><strong>Just Gina™</strong><em>Sass, conspiracies + violent color</em></span><b>02</b>
+          </button>
+          <button class="collection-tile collection-tile--lore" type="button" data-filter-shortcut="lore">
+            <span><small>DEEP CUTS</small><strong>Third Rail Lore</strong><em>Merch that requires an explanation</em></span><b>03</b>
+          </button>
+          <button class="collection-tile collection-tile--aboot" type="button" data-filter-shortcut="aboot">
+            <span><small>THE SIDE QUEST</small><strong>Aboot Nothing</strong><em>Unscheduled Canadian nonsense</em></span><b>04</b>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="catalogue" class="catalogue section">
+      <div class="shell">
+        <div class="catalogue-heading reveal">
+          <div><p class="kicker">THE MERCH CATALOGUE</p><h2>Artifacts for the terminally online.</h2></div>
+          <div class="catalogue-heading__status"><span class="status-dot"></span><strong>POC sample inventory</strong><small>Only the CA$47.50 tee price is verified from the current shop scan.</small></div>
+        </div>
+
+        <div class="shop-toolbar reveal">
+          <div class="shop-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+            <label class="sr-only" for="product-search">Search products</label>
+            <input id="product-search" type="search" placeholder="Search the lore…" autocomplete="off" data-product-search />
+          </div>
+          <label class="shop-sort">Sort
+            <select data-product-sort>
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name: A–Z</option>
+            </select>
+          </label>
+          <div class="catalogue-count"><b data-product-count>10</b><span>products shown</span></div>
+        </div>
+
+        <div class="category-scroller reveal" role="group" aria-label="Filter products by category">
+          <button class="category-chip is-active" type="button" data-filter="all"><span>All Products</span><b>10</b></button>
+          <button class="category-chip" type="button" data-filter="apparel"><span>Apparel</span><b>4</b></button>
+          <button class="category-chip" type="button" data-filter="sportswear"><span>Sportswear</span><b>1</b></button>
+          <button class="category-chip" type="button" data-filter="underwear"><span>Underwear</span><b>1</b></button>
+          <button class="category-chip" type="button" data-filter="accessories"><span>Accessories &amp; Other</span><b>4</b></button>
+          <button class="category-chip" type="button" data-filter="thirdrailify"><span>Third Railify™ Branded</span><b>4</b></button>
+          <button class="category-chip" type="button" data-filter="lore"><span>Third Rail Lore</span><b>4</b></button>
+          <button class="category-chip" type="button" data-filter="justgina"><span>Just Gina™ Branded</span><b>1</b></button>
+          <button class="category-chip" type="button" data-filter="aboot"><span>Aboot Nothing</span><b>1</b></button>
+          <button class="category-chip" type="button" data-filter="popculture"><span>Pop Culture Beat Down</span><b>1</b></button>
+          <button class="category-chip" type="button" data-filter="christmas"><span>Christmas Shit</span><b>1</b></button>
+        </div>
+
+        <div class="product-grid" data-product-grid>
+          <article class="product-card reveal" data-product-card data-id="rail-tee" data-name="Heavyweight Rail Tee" data-price="47.50" data-categories="apparel thirdrailify" data-image="../assets/product-rail-tee.svg" data-description="A heavyweight Third Railify core tee concept with the official high-voltage mark." data-colour="Black / Rail Gold" data-badge="VERIFIED PRICE">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Heavyweight Rail Tee">
+              <span class="product-badge">VERIFIED PRICE</span><img src="../assets/product-rail-tee.svg" alt="Heavyweight Rail Tee prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>THIRD RAILIFY™ BRANDED</small><h3>Heavyweight Rail Tee</h3><p>Official core mark. Built for the daily-show uniform.</p><div class="product-card__foot"><strong>CA$47.50</strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--delay" data-product-card data-id="raid-mug" data-name="I Raided Third Railify Mug" data-price="31.00" data-categories="accessories thirdrailify lore" data-image="../assets/product-raid-mug.svg" data-description="A wraparound mug concept commemorating time spent inside the Third Railify raid vortex." data-colour="Black / Gold" data-badge="RAID SUPPLY">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view I Raided Third Railify Mug">
+              <span class="product-badge product-badge--pink">RAID SUPPLY</span><img src="../assets/product-raid-mug.svg" alt="I Raided Third Railify Mug prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>ACCESSORIES &amp; THIRD RAIL LORE</small><h3>I Raided Third Railify Mug</h3><p>The souvenir nobody asked for and everybody earned.</p><div class="product-card__foot"><strong>CA$31.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--long" data-product-card data-id="goated-hoodie" data-name="Terminally GOATED Hoodie" data-price="72.00" data-categories="apparel lore" data-image="../assets/product-goated-hoodie.svg" data-description="A premium heavyweight hoodie concept for verified members of the herd." data-colour="Black / Electric Gold" data-badge="HERD FAVORITE">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Terminally GOATED Hoodie">
+              <span class="product-badge">HERD FAVORITE</span><img src="../assets/product-goated-hoodie.svg" alt="Terminally GOATED Hoodie prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>THIRD RAIL LORE</small><h3>Terminally GOATED Hoodie</h3><p>Heavyweight herd credentials for uncertain weather.</p><div class="product-card__foot"><strong>CA$72.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal" data-product-card data-id="gina-chaos-tee" data-name="Just Gina Chaos Tee" data-price="45.00" data-categories="apparel justgina" data-image="../assets/product-gina-tee.svg" data-description="A high-contrast Just Gina tee concept with maximum conspiracy-board energy." data-colour="Black / Hot Magenta" data-badge="JUST GINA">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Just Gina Chaos Tee">
+              <span class="product-badge product-badge--pink">JUST GINA</span><img src="../assets/product-gina-tee.svg" alt="Just Gina Chaos Tee prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>JUST GINA™ BRANDED</small><h3>Just Gina Chaos Tee</h3><p>Sass, lore, and evidence connected by red string.</p><div class="product-card__foot"><strong>CA$45.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--delay" data-product-card data-id="aboot-cap" data-name="Aboot Nothing Cap" data-price="39.00" data-categories="accessories aboot" data-image="../assets/product-aboot-cap.svg" data-description="An embroidered cap concept for conversations going nowhere with confidence." data-colour="Black / Ice Blue" data-badge="ABOOT NOTHING">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Aboot Nothing Cap">
+              <span class="product-badge product-badge--blue">ABOOT NOTHING</span><img src="../assets/product-aboot-cap.svg" alt="Aboot Nothing Cap prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>ABOOT NOTHING</small><h3>Aboot Nothing Cap</h3><p>A structured cap for aggressively unstructured commentary.</p><div class="product-card__foot"><strong>CA$39.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--long" data-product-card data-id="lore-tote" data-name="Deep Lore Utility Tote" data-price="32.00" data-categories="accessories lore" data-image="../assets/product-lore-tote.svg" data-description="A utility tote concept for carrying receipts, source documents, and increasingly elaborate lore." data-colour="Natural / Black / Gold" data-badge="DEEP CUT">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Deep Lore Utility Tote">
+              <span class="product-badge">DEEP CUT</span><img src="../assets/product-lore-tote.svg" alt="Deep Lore Utility Tote prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>THIRD RAIL LORE</small><h3>Deep Lore Utility Tote</h3><p>Carry the evidence. Decline to provide context.</p><div class="product-card__foot"><strong>CA$32.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal" data-product-card data-id="live-wire-jersey" data-name="Live Wire Broadcast Jersey" data-price="68.00" data-categories="sportswear thirdrailify" data-image="../assets/product-jersey.svg" data-description="A performance-jersey concept built around the show's high-voltage broadcast identity." data-colour="Black / Gold / White" data-badge="SPORTSWEAR">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Live Wire Broadcast Jersey">
+              <span class="product-badge product-badge--blue">SPORTSWEAR</span><img src="../assets/product-jersey.svg" alt="Live Wire Broadcast Jersey prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>SPORTSWEAR</small><h3>Live Wire Broadcast Jersey</h3><p>Home-team kit for the most online show in the building.</p><div class="product-card__foot"><strong>CA$68.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--delay" data-product-card data-id="rail-boxers" data-name="Third Rail Boxer Briefs" data-price="34.00" data-categories="underwear thirdrailify" data-image="../assets/product-boxers.svg" data-description="An all-over-print boxer brief concept with a warning-label energy level." data-colour="Black / Rail Gold" data-badge="UNDERCOVER LORE">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Third Rail Boxer Briefs">
+              <span class="product-badge">UNDERCOVER LORE</span><img src="../assets/product-boxers.svg" alt="Third Rail Boxer Briefs prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>UNDERWEAR</small><h3>Third Rail Boxer Briefs</h3><p>Official branding in a location nobody requested.</p><div class="product-card__foot"><strong>CA$34.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal reveal--long" data-product-card data-id="beatdown-stickers" data-name="Pop Culture Beat Down Sticker Pack" data-price="16.00" data-categories="accessories lore popculture" data-image="../assets/product-stickers.svg" data-description="A die-cut sticker pack concept built from pop-culture arguments and recurring show mythology." data-colour="Assorted" data-badge="5 PIECE PACK">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Pop Culture Beat Down Sticker Pack">
+              <span class="product-badge product-badge--pink">5 PIECE PACK</span><img src="../assets/product-stickers.svg" alt="Pop Culture Beat Down Sticker Pack prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>POP CULTURE BEAT DOWN</small><h3>Beat Down Sticker Pack</h3><p>Five arguments ready for laptops, cases, and property damage.</p><div class="product-card__foot"><strong>CA$16.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+
+          <article class="product-card reveal" data-product-card data-id="christmas-crew" data-name="Christmas Shit Crewneck" data-price="65.00" data-categories="apparel christmas" data-image="../assets/product-christmas.svg" data-description="A limited seasonal crewneck concept for the least silent night of the year." data-colour="Black / Festive Hazard" data-badge="SEASONAL">
+            <button class="product-card__visual" type="button" data-product-view aria-label="Quick view Christmas Shit Crewneck">
+              <span class="product-badge product-badge--red">SEASONAL</span><img src="../assets/product-christmas.svg" alt="Christmas Shit Crewneck prototype" /><i>QUICK VIEW</i>
+            </button>
+            <div class="product-card__body"><small>CHRISTMAS SHIT</small><h3>Christmas Shit Crewneck</h3><p>Festive enough to create a workplace incident.</p><div class="product-card__foot"><strong>CA$65.00 <em>sample</em></strong><button type="button" data-add-to-cart>Add +</button></div></div>
+          </article>
+        </div>
+
+        <div class="catalogue-empty" data-catalogue-empty hidden>
+          <img src="../assets/thirdrailify-mark.svg" alt="" /><h3>No artifacts found.</h3><p>Try another category or remove part of the search.</p><button class="button button--glass" type="button" data-reset-filters>Reset filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="drop-feature section">
+      <div class="shell drop-feature__grid reveal">
+        <div class="drop-feature__art"><img src="../assets/product-goated-hoodie.svg" alt="Terminally GOATED Hoodie prototype" /><span>THE HERD<br />HAS SPOKEN</span></div>
+        <div class="drop-feature__copy"><p class="kicker">DROP 001 / THIRD RAIL LORE</p><h2>Objects with<br />backstory.</h2><p>The Version 2 store should sell collections as stories—not merely dump provider products into a generic grid. Every drop gets a point of view, visual world, and direct path into the catalogue.</p><button class="button button--gold button--large" type="button" data-filter-shortcut="lore">Shop the lore <span>→</span></button></div>
+      </div>
+    </section>
+
+    <section class="shop-foundation section">
+      <div class="shell">
+        <div class="section-heading reveal"><div><p class="kicker">BUILT FOR REAL COMMERCE</p><h2>High style.<br />No invented plumbing.</h2></div><p class="section-heading__aside">The eventual implementation should hydrate from real provider and admin data, while the public client receives only safe product information and checkout handoffs.</p></div>
+        <div class="foundation-grid">
+          <article class="foundation-card reveal"><span>01</span><h3>Product discovery</h3><p>Search, sort, collection filters, inventory-aware variants, deep links, and intentional empty states.</p></article>
+          <article class="foundation-card reveal reveal--delay"><span>02</span><h3>Product detail</h3><p>Galleries, size and colour variants, fit guides, fulfillment notices, accessible controls, and shareable slugs.</p></article>
+          <article class="foundation-card reveal reveal--long"><span>03</span><h3>Cart + checkout</h3><p>Server-side price and availability validation before provider, shipping, tax, and payment handoff.</p></article>
+          <article class="foundation-card reveal"><span>04</span><h3>Admin control</h3><p>Publishing, copy overrides, imagery, ordering, promotions, visibility, and audit-safe privileged operations.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="newsletter newsletter--shop">
+      <div class="shell newsletter__inner reveal">
+        <div class="newsletter__bolt"><img src="../assets/thirdrailify-mark.svg" alt="" /></div>
+        <div><p class="kicker">DROP ALERTS</p><h2>New artifacts.<br />Before the herd finds them.</h2></div>
+        <form class="newsletter__form" data-demo-form>
+          <label for="shop-email">Email address</label>
+          <div><input id="shop-email" name="email" type="email" placeholder="you@example.com" required /><button class="button button--gold" type="submit">Notify me</button></div>
+          <small>Prototype form. No submission endpoint is connected.</small>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell site-footer__top">
+      <a class="brand brand--footer" href="../index.html"><span class="brand__mark"><img src="../assets/thirdrailify-mark.svg" alt="" /></span><span class="brand__type"><b>THIRD RAILIFY</b><small>OFFICIAL</small></span></a>
+      <p>Official show merch, host collections, community lore, and artifacts from the rail.</p>
+      <div class="footer-socials"><a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Rumble</a><a href="https://www.youtube.com/@thirdrailify" target="_blank" rel="noreferrer">YouTube</a><a href="https://x.com/ThirdRailify" target="_blank" rel="noreferrer">X</a><a href="https://www.instagram.com/thirdrailify/" target="_blank" rel="noreferrer">Instagram</a></div>
+    </div>
+    <div class="shell site-footer__grid">
+      <div><h3>Navigate</h3><a href="../index.html">Home</a><a href="../index.html#watch">Watch</a><a href="../index.html#hosts">Hosts</a><a href="#catalogue">Shop all</a></div>
+      <div><h3>Collections</h3><button type="button" data-filter-shortcut="thirdrailify">Third Railify™</button><button type="button" data-filter-shortcut="justgina">Just Gina™</button><button type="button" data-filter-shortcut="lore">Third Rail Lore</button><button type="button" data-filter-shortcut="aboot">Aboot Nothing</button></div>
+      <div><h3>More</h3><a href="https://www.thirdrailify.com/gift" target="_blank" rel="noreferrer">Gift Cards</a><a href="https://www.thirdrailify.com/pricing-plans/list" target="_blank" rel="noreferrer">VIP plans</a><a href="https://www.thirdrailify.com/policies" target="_blank" rel="noreferrer">Policies</a><a href="mailto:INFO@thirdrailify.COM">Product help</a></div>
+      <div class="footer-contact"><h3>Prototype status</h3><span>No live products or APIs</span><span>No checkout or payments</span><span>Wix production remains active</span></div>
+    </div>
+    <div class="shell site-footer__bottom"><span>© 2026 Third Railify Official™ — Storefront Version 2 design POC.</span><span>Sample inventory is illustrative unless marked verified.</span></div>
+  </footer>
+
+  <div class="cart-backdrop" data-cart-backdrop hidden></div>
+  <aside class="cart-drawer" aria-label="Shopping cart" aria-hidden="true" data-cart-drawer>
+    <div class="cart-drawer__head"><span><small>PROTOTYPE CART</small><strong>Your rail haul</strong></span><button type="button" aria-label="Close cart" data-cart-close>×</button></div>
+    <div class="cart-drawer__body" data-cart-items><div class="cart-empty"><img src="../assets/thirdrailify-mark.svg" alt="" /><strong>Your cart is off the rails.</strong><span>Add an illustrative product from the POC catalogue.</span></div></div>
+    <div class="cart-drawer__foot"><div><span>Subtotal</span><strong data-cart-subtotal>CA$0.00</strong></div><button class="button button--gold button--full" type="button" data-demo-checkout>Prototype checkout</button><small>Taxes, shipping, provider APIs, and payment are not connected.</small></div>
+  </aside>
+
+  <dialog class="product-dialog" data-product-dialog>
+    <button class="product-dialog__close" type="button" aria-label="Close product quick view" data-product-dialog-close>×</button>
+    <div class="product-dialog__grid">
+      <div class="product-dialog__visual"><span data-dialog-badge>PRODUCT</span><img src="../assets/product-rail-tee.svg" alt="" data-dialog-image /></div>
+      <div class="product-dialog__copy"><p class="kicker" data-dialog-category>COLLECTION</p><h2 data-dialog-name>Product name</h2><p data-dialog-description>Product description.</p><div class="product-dialog__price"><strong data-dialog-price>CA$0.00</strong><small>Prototype price; provider validation required.</small></div><div class="product-dialog__option"><span>Prototype colour</span><b data-dialog-colour>Black</b></div><label class="product-dialog__select">Sample size<select data-dialog-size><option>XS</option><option>S</option><option selected>M</option><option>L</option><option>XL</option><option>2XL</option></select></label><button class="button button--gold button--full" type="button" data-dialog-add>Add to prototype cart</button><small class="product-dialog__notice">Quick view demonstrates interaction only. Variant, stock, price, shipping, and checkout data are not connected.</small></div>
+    </div>
+  </dialog>
+
+  <div class="toast" role="status" aria-live="polite" data-toast></div>
+</body>
+</html>

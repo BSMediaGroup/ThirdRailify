@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" role="img" aria-labelledby="title">
+<title id="title">GOATED pullover hoodie mockup</title>
+<defs>
+ <radialGradient id="bg"><stop stop-color="#3d2d12"/><stop offset="1" stop-color="#0b0b0e"/></radialGradient>
+ <linearGradient id="h" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#26262b"/><stop offset=".5" stop-color="#0d0d10"/><stop offset="1" stop-color="#33333a"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#ffdc54"/><stop offset="1" stop-color="#ff6a00"/></linearGradient>
+ <filter id="s"><feDropShadow dx="0" dy="25" stdDeviation="26" flood-opacity=".55"/></filter>
+</defs>
+<rect width="1000" height="1000" rx="80" fill="url(#bg)"/>
+<g filter="url(#s)">
+ <path d="M376 174c21-68 227-68 248 0l-34 126 124 49 160 208-116 91-71-82v270H313V566l-71 82-116-91 160-208 124-49z" fill="url(#h)" stroke="#4b4b54" stroke-width="6"/>
+ <path d="M399 181c22 98 180 98 202 0l-12 126c-37 30-141 30-178 0z" fill="#111114" stroke="#414148" stroke-width="4"/>
+ <path d="M413 329c26 39 148 39 174 0M456 326l-20 187M544 326l20 187" fill="none" stroke="#85858c" stroke-width="8" stroke-linecap="round"/>
+ <path d="M381 655c53-27 185-27 238 0v116H381z" fill="#151518" stroke="#39393f" stroke-width="4"/>
+ <path d="M433 448c-37-43-87-29-101-63 47-2 82 16 108 51M567 448c37-43 87-29 101-63-47-2-82 16-108 51" fill="none" stroke="url(#g)" stroke-width="9" stroke-linecap="round"/>
+ <path d="M438 441c22-24 43-36 62-36s40 12 62 36l21 51-16 74-67 57-67-57-16-74z" fill="none" stroke="url(#g)" stroke-width="9"/>
+ <circle cx="468" cy="497" r="7" fill="#fff2b8"/><circle cx="532" cy="497" r="7" fill="#fff2b8"/>
+ <text x="500" y="704" text-anchor="middle" fill="#f6f1e8" font-family="Arial Black,Arial" font-size="62" letter-spacing="7">GOATED</text>
+</g>
+</svg>

@@ -1,0 +1,53 @@
+import type { SVGProps } from "react";
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+const base = {
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+export function BoltIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="m13.2 2-8 11.1h6.3L10.8 22l8-11.1h-6.3L13.2 2Z" /></svg>;
+}
+
+export function ArrowIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M5 19 19 5M8 5h11v11" /></svg>;
+}
+
+export function MenuIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M4 7h16M4 12h16M4 17h16" /></svg>;
+}
+
+export function CloseIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="m6 6 12 12M18 6 6 18" /></svg>;
+}
+
+export function BagIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M6 8h12l1 13H5L6 8Z" /><path d="M9 9V6a3 3 0 0 1 6 0v3" /></svg>;
+}
+
+export function PlayIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="m9 7 8 5-8 5V7Z" /></svg>;
+}
+
+export function SearchIcon(props: IconProps) {
+  return <svg {...base} {...props}><circle cx="11" cy="11" r="7" /><path d="m16 16 4 4" /></svg>;
+}
+
+export function PlusIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M12 5v14M5 12h14" /></svg>;
+}
+
+export function MinusIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M5 12h14" /></svg>;
+}
+
+export function RadioIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.5 18.5a9 9 0 0 1 0-13M18.5 5.5a9 9 0 0 1 0 13" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /></svg>;
+}
