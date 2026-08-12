@@ -44,6 +44,9 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Preserved 12 collapsed and 24 expanded member limits. Compact homepage mode shows fewer public/voice channels; full `/community` mode shows the larger bounded directory without changing routes or surrounding layouts.
 - Increased the compact homepage community-channel display from three to four, reduced the full `/community` default to six, and added a responsive, keyboard-accessible Show all/Show fewer control that exposes every sanitized public channel returned by the existing API contract.
 - Expanded Cloudflare setup documentation with manual KV/secret/bot environment steps. No Cloudflare resource, secret, deployment, DNS, Wix, custom-domain, commit, or push change was performed.
+- Aligned the existing Discord GET freshness contract with the bounded bot cadence: fresh below 720 seconds, delayed from 720 through 1199 seconds, and stale from 1200 seconds, with exact boundary tests and unchanged stale-presence neutralization.
+- Documented the bridge's Free-tier-conscious five-minute automatic floor, semantic deduplication, and ten-minute unchanged heartbeat without changing the KV binding/key, API routes, payload schema, HMAC secret/algorithm/replay window, sanitization, browser loading behavior, or Discord widget UX.
+- Excluded generated `.wrangler` output from the flat ESLint input set so local Pages tooling artifacts no longer masquerade as application lint failures.
 
 ### Human-readable
 

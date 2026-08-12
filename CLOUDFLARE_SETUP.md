@@ -44,7 +44,7 @@ These resources do not exist merely because code references them. Perform these 
 
 The local machine makes outbound HTTPS requests only. Do not port-forward, tunnel, or expose an inbound bot endpoint. The staging `pages.dev` URL may be used initially; do not attach a custom domain.
 
-The public GET freshness contract is fresh under 180 seconds, delayed from 180 through 599 seconds, and stale at 600 seconds or later. Stale data retains last-published channel/profile details but member presence is neutralized. Missing KV data returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback.
+The bot intentionally bounds KV writes with an immediate startup snapshot, a five-minute automatic floor, semantic deduplication, and a ten-minute unchanged heartbeat. The public GET freshness contract is therefore fresh under 720 seconds, delayed from 720 through 1199 seconds, and stale at 1200 seconds or later. One normal heartbeat cycle remains fresh, one missed or late heartbeat becomes delayed, and clearly old data becomes stale. Stale data retains last-published channel/profile details but member presence is neutralized. Missing KV data returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback. The HMAC replay window remains five minutes and is independent of display freshness.
 
 ## Staging verification
 

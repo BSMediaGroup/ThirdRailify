@@ -3,8 +3,8 @@ export const COMMUNITY_GUILD_ID = "1114717958573396008";
 export const COMMUNITY_KV_KEY = "discord:community:snapshot:v1";
 export const COMMUNITY_MAX_BODY_BYTES = 96 * 1024;
 export const COMMUNITY_REPLAY_WINDOW_SECONDS = 300;
-export const FRESH_SECONDS = 180;
-export const DELAYED_SECONDS = 600;
+export const FRESH_SECONDS = 720;
+export const DELAYED_SECONDS = 1200;
 
 const CHANNEL_TYPES = new Set(["text", "announcement", "forum", "voice", "stage"]);
 const PRESENCE_STATES = new Set(["online", "idle", "dnd"]);

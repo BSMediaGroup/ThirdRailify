@@ -4,7 +4,7 @@ import { test } from "node:test";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
-import { COMMUNITY_KV_KEY } from "../functions/api/community/_community.js";
+import { COMMUNITY_KV_KEY, freshnessForAge } from "../functions/api/community/_community.js";
 import { onRequest as getCommunity } from "../functions/api/community/discord.js";
 import { onRequest as ingestCommunity } from "../functions/api/community/discord/ingest.js";
 
@@ -157,7 +157,7 @@ test("ingest rejects wrong guild, malformed schema, and oversized body", async (
 
 test("GET derives fresh, delayed, and stale metadata and neutralizes stale presence", async () => {
   await withNow(async () => {
-    for (const [age, expected] of [[60, "fresh"], [300, "delayed"], [700, "stale"]]) {
+    for (const [age, expected] of [[719, "fresh"], [720, "delayed"], [1199, "delayed"], [1200, "stale"]]) {
       const kv = new MemoryKv();
       const generatedAt = new Date(NOW - age * 1000).toISOString();
       kv.values.set(COMMUNITY_KV_KEY, JSON.stringify({ snapshot: snapshot(generatedAt), receivedAt: new Date(NOW).toISOString() }));
@@ -172,6 +172,13 @@ test("GET derives fresh, delayed, and stale metadata and neutralizes stale prese
       assert.equal(body.members[0].status, expected === "stale" ? "unknown" : "online");
     }
   });
+});
+
+test("freshness helper uses the bounded-publisher boundary seconds exactly", () => {
+  assert.equal(freshnessForAge(719), "fresh");
+  assert.equal(freshnessForAge(720), "delayed");
+  assert.equal(freshnessForAge(1199), "delayed");
+  assert.equal(freshnessForAge(1200), "stale");
 });
 
 test("GET returns a truthful unavailable response when no snapshot exists", async () => {
