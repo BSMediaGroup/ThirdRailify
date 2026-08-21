@@ -30,6 +30,7 @@ export function HomePage() {
   const { data, loading } = useBroadcast();
   const primary = data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
+  const livePlatforms: ReadonlySet<string> = new Set(data?.liveNow.map((candidate) => candidate.platform) ?? []);
   return (
     <>
       <section className="home-hero">
@@ -70,9 +71,10 @@ export function HomePage() {
       <section className="platform-strip" aria-labelledby="platform-title">
         <div className="container platform-grid">
           <div className="platform-intro"><span className="eyebrow">Transmission</span><h2 id="platform-title">Pick your signal.</h2></div>
-          {platforms.slice(0, 4).map((platform) => (
-            <a key={platform.label} className={data?.liveNow.some((item) => item.platform === platform.label.toLowerCase()) ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{data?.liveNow.some((item) => item.platform === platform.label.toLowerCase()) ? "Live now" : platform.note}</small></span><ArrowIcon /></a>
-          ))}
+          {platforms.slice(0, 4).map((platform) => {
+            const isLive = livePlatforms.has(platform.label.toLowerCase());
+            return <a key={platform.label} className={isLive ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small></span><ArrowIcon /></a>;
+          })}
         </div>
       </section>
 
@@ -141,7 +143,10 @@ export function HomePage() {
         <div className="container follow-grid">
           <div><p className="eyebrow">Across the signal</p><h2>Follow the rail.</h2></div>
           <div className="follow-links">
-            {platforms.map((platform, index) => <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><i className="follow-icon" aria-hidden="true"><img src={platform.icon} alt="" /></i><strong>{platform.label}</strong><small>{platform.note}</small><ArrowIcon /></a>)}
+            {platforms.map((platform, index) => {
+              const isLive = livePlatforms.has(platform.label.toLowerCase());
+              return <a key={platform.label} className={isLive ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><i className="follow-icon" aria-hidden="true"><img src={platform.icon} alt="" /></i><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small><ArrowIcon /></a>;
+            })}
           </div>
         </div>
       </section>

@@ -15,6 +15,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Added one visibility-aware `BroadcastProvider`, reusable player/status/metadata/selector components, dynamic header/mobile live state, homepage live/latest CTA and platform markers, and a lazy homepage player. Browser code never scrapes a provider or receives ingest credentials.
 - Tightened CSP only for exact YouTube privacy-enhanced/YouTube/Rumble frame and YouTube thumbnail hosts while preserving the existing security directives. Added deterministic Function and browser fixtures covering the full state matrix at 390/768/1440 pixels, reduced motion, platform switching, overflow, and console cleanliness.
 - Kept `thirdrailify.com`, Wix, Pages projects, KV resources, bindings, secrets, DNS, custom domains, and deployment untouched. No Public version change was made; this remains additive under pending `0.1.0-alpha.0`.
+- Strengthened the shared header's verified-live treatment with a redder chip and gentle reduced-motion-safe pulse. The homepage `Follow the rail.` Rumble and YouTube rows now consume the same normalized `liveNow` platform state as the existing platform rail, so live highlighting and `Live now` copy remain consistent without another poller or provider guess.
 
 - Added a Vite/React/TypeScript/React Router public application and deterministic npm lockfile.
 - Added a tokenized responsive dark/gold design system, shared shell, accessible navigation, branded 404, and route migration shells/aliases.
@@ -64,6 +65,8 @@ Third Railify V2 now has its first real public-site foundation: a cinematic show
 The Discord directory now keeps conversation channels and live audio spaces distinct: Discord-authored descriptions are easier to scan, while every published Voice and Stage space remains reachable without stretching the homepage indefinitely.
 
 Every Public page now uses the supplied `thirdfav3.ico` browser icon.
+
+Verified live broadcasts now carry the same red live signal in the header and both homepage platform lists.
 
 ### Known deferrals
 
