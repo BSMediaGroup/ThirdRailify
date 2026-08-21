@@ -4106,8 +4106,8 @@ h3 {
 
 .broadcast-card.is-live,
 .watch-stage.is-live {
-  border-color: rgba(128, 225, 160, 0.4);
-  box-shadow: var(--shadow), 0 0 34px rgba(128, 225, 160, 0.1);
+  border-color: rgba(170, 222, 73, 0.48);
+  box-shadow: var(--shadow), 0 0 34px rgba(170, 222, 73, 0.12);
   animation: live-player-pulse 4.2s ease-in-out infinite;
 }
 
@@ -4222,8 +4222,8 @@ h3 {
 }
 
 @keyframes live-player-pulse {
-  0%, 100% { border-color: rgba(128, 225, 160, 0.34); box-shadow: var(--shadow), 0 0 28px rgba(128, 225, 160, 0.08); }
-  50% { border-color: rgba(128, 225, 160, 0.58); box-shadow: var(--shadow), 0 0 48px rgba(128, 225, 160, 0.18); }
+  0%, 100% { border-color: rgba(170, 222, 73, 0.42); box-shadow: var(--shadow), 0 0 28px rgba(170, 222, 73, 0.09); }
+  50% { border-color: rgba(170, 222, 73, 0.72); box-shadow: var(--shadow), 0 0 48px rgba(170, 222, 73, 0.22); }
 }
 
 @keyframes hero-portrait-enter {
