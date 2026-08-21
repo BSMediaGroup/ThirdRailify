@@ -46,23 +46,39 @@ function LoadingDirectory({ label }: { label: string }) {
   return <div className="discord-widget__placeholder" aria-hidden="true"><i /><span>{label}</span></div>;
 }
 
-function ChannelList({ id, channels, limit, empty }: { id?: string; channels: DiscordChannel[]; limit: number; empty: string }) {
-  const visibleChannels = channels.slice(0, limit);
+function ChannelList({
+  id,
+  channels,
+  limit,
+  empty,
+  showCategory = false,
+}: {
+  id?: string;
+  channels: DiscordChannel[];
+  limit?: number;
+  empty: string;
+  showCategory?: boolean;
+}) {
+  const visibleChannels = typeof limit === "number" ? channels.slice(0, limit) : channels;
   if (!visibleChannels.length) return <p className="discord-widget__empty">{empty}</p>;
   return (
     <ul className="discord-widget__channels" id={id}>
-      {visibleChannels.map((channel) => (
-        <li key={channel.id}>
-          <span className="discord-widget__channel-icon" aria-hidden="true">{channelIcons[channel.type]}</span>
-          <span>
-            <strong>{channel.name}</strong>
-            <small>{[channel.categoryName, channel.topic].filter(Boolean).join(" · ") || channelTypeLabel(channel.type)}</small>
-          </span>
-          {channel.url
-            ? <a href={channel.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${channel.name} in Discord`}>Open <ArrowIcon /></a>
-            : <b>{channelTypeLabel(channel.type)}</b>}
-        </li>
-      ))}
+      {visibleChannels.map((channel) => {
+        const isAudio = channel.type === "voice" || channel.type === "stage";
+        return (
+          <li className={`discord-widget__channel${isAudio ? " discord-widget__channel--audio" : ""}`} key={channel.id}>
+            <span className="discord-widget__channel-icon" aria-hidden="true">{channelIcons[channel.type]}</span>
+            <div className="discord-widget__channel-copy">
+              <strong className="discord-widget__channel-title">{channel.name}</strong>
+              {!isAudio && channel.topic && <p className="discord-widget__channel-description">{channel.topic}</p>}
+              {!isAudio && showCategory && channel.categoryName && <small className="discord-widget__channel-meta">{channel.categoryName}</small>}
+            </div>
+            {channel.url
+              ? <a href={channel.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${channel.name} in Discord`}>Open <ArrowIcon /></a>
+              : <b>{channelTypeLabel(channel.type)}</b>}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -269,13 +285,14 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
   const returnedMemberCount = data?.members.length ?? 0;
   const visibleMemberCount = Math.min(returnedMemberCount, memberLimit);
   const canExpandMembers = returnedMemberCount > DEFAULT_MEMBER_LIMIT;
-  const returnedPublicChannelCount = data?.publicChannels.length ?? 0;
+  const communityChannels = data?.publicChannels.filter((channel) => channel.type === "text" || channel.type === "announcement" || channel.type === "forum") ?? [];
+  const voiceSpaces = data?.voiceSpaces.filter((channel) => channel.type === "voice" || channel.type === "stage") ?? [];
+  const returnedCommunityChannelCount = communityChannels.length;
   const publicChannelLimit = mode === "compact"
     ? COMPACT_PUBLIC_CHANNEL_LIMIT
-    : channelsExpanded ? returnedPublicChannelCount : DEFAULT_PUBLIC_CHANNEL_LIMIT;
-  const visiblePublicChannelCount = Math.min(returnedPublicChannelCount, publicChannelLimit);
-  const canExpandPublicChannels = mode === "full" && returnedPublicChannelCount > DEFAULT_PUBLIC_CHANNEL_LIMIT;
-  const voiceLimit = mode === "compact" ? 2 : 8;
+    : channelsExpanded ? returnedCommunityChannelCount : DEFAULT_PUBLIC_CHANNEL_LIMIT;
+  const visibleCommunityChannelCount = Math.min(returnedCommunityChannelCount, publicChannelLimit);
+  const canExpandPublicChannels = mode === "full" && returnedCommunityChannelCount > DEFAULT_PUBLIC_CHANNEL_LIMIT;
   const freshnessMessage = data ? freshnessCopy(data) : isLoading ? "Reading the community signal…" : "The live preview is unavailable; the Discord invite still works.";
   const onlineLabel = data?.freshness === "stale" ? "online when published" : data?.source === "basic" ? "Discord preview count" : "members online";
 
@@ -302,10 +319,10 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
             ? <LoadingDirectory label="Loading public channels" />
             : data
               ? <>
-                  <ChannelList id={publicChannelListId} channels={data.publicChannels} limit={publicChannelLimit} empty={data.source === "basic" ? "Text channels need the richer bot snapshot; this is the basic Discord preview." : "No whitelisted public channels are published right now."} />
+                  <ChannelList id={publicChannelListId} channels={communityChannels} limit={publicChannelLimit} empty={data.source === "basic" ? "Text channels need the richer bot snapshot; this is the basic Discord preview." : "No whitelisted public channels are published right now."} showCategory={mode === "full"} />
                   {canExpandPublicChannels && (
                     <div className="discord-widget__channel-controls">
-                      <span>{visiblePublicChannelCount} of {returnedPublicChannelCount} public channels shown</span>
+                      <span>{visibleCommunityChannelCount} of {returnedCommunityChannelCount} community channels shown</span>
                       <button className="discord-widget__channel-toggle" type="button" aria-controls={publicChannelListId} aria-expanded={channelsExpanded} onClick={() => setChannelsExpanded((expanded) => !expanded)}>
                         {channelsExpanded ? "Show fewer channels" : "Show all channels"}
                       </button>
@@ -314,12 +331,12 @@ export function DiscordCommunityWidget({ mode }: { mode: "compact" | "full" }) {
                 </>
               : <p className="discord-widget__empty">Public channel information is temporarily unavailable.</p>}
         </section>
-        <section className="discord-widget__panel" aria-labelledby={voiceHeadingId}>
+        <section className="discord-widget__panel discord-widget__panel--voice" aria-labelledby={voiceHeadingId}>
           <div className="discord-widget__panel-heading"><span aria-hidden="true">◉</span><h3 id={voiceHeadingId}>Voice spaces</h3></div>
           {isLoading
             ? <LoadingDirectory label="Loading visible voice spaces" />
             : data
-              ? <ChannelList channels={data.voiceSpaces} limit={voiceLimit} empty="No public voice spaces are visible right now." />
+              ? <ChannelList channels={voiceSpaces} empty="No public voice spaces are visible right now." />
               : <p className="discord-widget__empty">Live voice-space information is temporarily unavailable.</p>}
         </section>
         <section className="discord-widget__panel discord-widget__panel--members" aria-labelledby={memberHeadingId}>

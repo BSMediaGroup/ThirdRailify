@@ -76,20 +76,23 @@ html {
 
 html::-webkit-scrollbar,
 .cart-drawer__items::-webkit-scrollbar,
-.filter-bar::-webkit-scrollbar {
+.filter-bar::-webkit-scrollbar,
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 html::-webkit-scrollbar-track,
 .cart-drawer__items::-webkit-scrollbar-track,
-.filter-bar::-webkit-scrollbar-track {
+.filter-bar::-webkit-scrollbar-track,
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels::-webkit-scrollbar-track {
   background: #0d0e0b;
 }
 
 html::-webkit-scrollbar-thumb,
 .cart-drawer__items::-webkit-scrollbar-thumb,
-.filter-bar::-webkit-scrollbar-thumb {
+.filter-bar::-webkit-scrollbar-thumb,
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels::-webkit-scrollbar-thumb {
   min-height: 40px;
   border: 2px solid #0d0e0b;
   border-radius: 999px;
@@ -98,12 +101,14 @@ html::-webkit-scrollbar-thumb,
 
 html::-webkit-scrollbar-thumb:hover,
 .cart-drawer__items::-webkit-scrollbar-thumb:hover,
-.filter-bar::-webkit-scrollbar-thumb:hover {
+.filter-bar::-webkit-scrollbar-thumb:hover,
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, var(--gold), var(--gold-pale));
 }
 
 .cart-drawer__items,
-.filter-bar {
+.filter-bar,
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels {
   scrollbar-color: var(--gold) #0d0e0b;
   scrollbar-width: thin;
 }
@@ -1657,7 +1662,7 @@ h3 {
 
 .discord-widget__brand > span:last-child,
 .discord-widget__footer > div:first-child,
-.discord-widget__channel > span:nth-child(2),
+.discord-widget__channel-copy,
 .discord-widget__member-trigger > span:last-child {
   display: grid;
   min-width: 0;
@@ -1685,7 +1690,7 @@ h3 {
 .discord-widget__connection,
 .discord-widget__overview span,
 .discord-widget__panel-heading,
-.discord-widget__channels small,
+.discord-widget__channel-meta,
 .discord-widget__channels b,
 .discord-widget__members small {
   font-family: var(--mono);
@@ -1860,6 +1865,10 @@ h3 {
   padding: 9px 11px;
 }
 
+.discord-widget__channels .discord-widget__channel--audio {
+  min-height: 49px;
+}
+
 .discord-widget__channel-icon {
   display: grid;
   width: 31px;
@@ -1880,7 +1889,22 @@ h3 {
   white-space: nowrap;
 }
 
-.discord-widget__channels small,
+.discord-widget__channel-description {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--muted-deep);
+  font-size: 6.4px;
+  letter-spacing: 0;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  text-transform: none;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.discord-widget__channel-meta,
 .discord-widget__members small {
   color: var(--muted-deep);
   font-size: 6px;
@@ -2256,6 +2280,13 @@ h3 {
 
 .discord-widget--compact .discord-widget__members {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.discord-widget--compact .discord-widget__panel--voice .discord-widget__channels {
+  max-height: 236px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 @keyframes discord-loading {

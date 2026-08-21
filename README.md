@@ -54,7 +54,7 @@ ThirdRailify/
 │   ├── backgrounds/        Seeded Third Railify backgrounds
 │   ├── catalogue/          Local copies of eight audited Wix product images
 │   ├── fonts/              Seeded font files and licences
-│   ├── icons/              Straight-bolt favicon plus local Discord, TikTok, and platform SVG artwork
+│   ├── icons/              Active Public favicon plus local Discord, TikTok, and platform SVG artwork
 │   ├── illustrations/      Joined editorial hero artwork
 │   ├── logos/              Seeded marks and the active straight header/footer bolt silhouette
 │   ├── people/             Seeded host imagery

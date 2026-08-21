@@ -53,10 +53,17 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Aligned the existing Discord GET freshness contract with the bounded bot cadence: fresh below 720 seconds, delayed from 720 through 1199 seconds, and stale from 1200 seconds, with exact boundary tests and unchanged stale-presence neutralization.
 - Documented the bridge's Free-tier-conscious five-minute automatic floor, semantic deduplication, and ten-minute unchanged heartbeat without changing the KV binding/key, API routes, payload schema, HMAC secret/algorithm/replay window, sanitization, browser loading behavior, or Discord widget UX.
 - Excluded generated `.wrangler` output from the flat ESLint input set so local Pages tooling artifacts no longer masquerade as application lint failures.
+- Removed the compact two-item and full eight-item Voice/Stage presentation caps so both modes render every bounded `voiceSpaces` entry returned by the existing snapshot. Community channels now derive only text, announcement, and forum entries while Voice spaces derives only voice and stage entries; the overview total still represents the complete configured public directory.
+- Refined channel-card semantics and spacing so dynamic Discord topics sit on their own readable two-line description row, with category names retained only as tertiary metadata in full mode. Voice/Stage cards remain shorter and never render topic placeholders. Compact audio overflow now activates only beyond a 236px panel bound using the existing graphite/gold scrollbar treatment; deterministic 390px, 768px, and 1440px browser checks covered six audio entries, Stage reachability, a four-entry no-scroll fit, full 6-to-8 Community expansion, wrapping, focus, partitioning, and horizontal overflow.
+- Replaced the active Public-route favicon with the user-supplied `assets/icons/thirdfav3.ico`; the shared SPA document applies it across every Public page without changing Admin branding or the preserved prior favicon assets.
 
 ### Human-readable
 
 Third Railify V2 now has its first real public-site foundation: a cinematic show homepage and a shop that uses only a small, clearly labelled slice of the current catalogue. Visitors can explore products and try the cart interaction, but nothing takes payment and no private or provider system is connected. The site is ready for a separate staging review while Wix remains untouched in production.
+
+The Discord directory now keeps conversation channels and live audio spaces distinct: Discord-authored descriptions are easier to scan, while every published Voice and Stage space remains reachable without stretching the homepage indefinitely.
+
+Every Public page now uses the supplied `thirdfav3.ico` browser icon.
 
 ### Known deferrals
 
