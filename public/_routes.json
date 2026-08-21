@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/api/community/*"],
+  "include": ["/api/community/*", "/api/watch", "/api/watch/*"],
   "exclude": []
 }

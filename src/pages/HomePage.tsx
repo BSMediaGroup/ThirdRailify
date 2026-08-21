@@ -13,6 +13,8 @@ import { ProductCard } from "../components/ProductCard";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { SignalField } from "../components/SignalField";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
+import { BroadcastMetadata, BroadcastPlayer } from "../components/BroadcastComponents";
+import { useBroadcast } from "../hooks/useBroadcast";
 import { wixSnapshot } from "../data/wixSnapshot";
 
 const platforms = [
@@ -25,6 +27,9 @@ const platforms = [
 ];
 
 export function HomePage() {
+  const { data, loading } = useBroadcast();
+  const primary = data?.primary ?? null;
+  const live = Boolean(data?.liveNow.length);
   return (
     <>
       <section className="home-hero">
@@ -35,7 +40,7 @@ export function HomePage() {
             <h1>News.<br />Culture.<br /><span className="hero-feature-text">Chaos.</span></h1>
             <p className="hero-lede">News, crime, and pop culture stories filtered through Shawn and Gina—and the detours nobody planned.</p>
             <div className="button-row">
-              <a className="button button--primary" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer"><PlayIcon /> Watch the show</a>
+              <Link className={`button button--primary${live ? " button--live" : ""}`} to="/watch"><PlayIcon /> {live ? "Watch live now" : "Watch latest episode"}</Link>
               <Link className="button button--secondary" to="/shop">Explore merch <ArrowIcon /></Link>
             </div>
             <div className="hero-facts" aria-label="Show facts">
@@ -66,7 +71,7 @@ export function HomePage() {
         <div className="container platform-grid">
           <div className="platform-intro"><span className="eyebrow">Transmission</span><h2 id="platform-title">Pick your signal.</h2></div>
           {platforms.slice(0, 4).map((platform) => (
-            <a key={platform.label} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{platform.note}</small></span><ArrowIcon /></a>
+            <a key={platform.label} className={data?.liveNow.some((item) => item.platform === platform.label.toLowerCase()) ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{data?.liveNow.some((item) => item.platform === platform.label.toLowerCase()) ? "Live now" : platform.note}</small></span><ArrowIcon /></a>
           ))}
         </div>
       </section>
@@ -76,18 +81,12 @@ export function HomePage() {
           <div><p className="eyebrow">Start here</p><h2>The argument is already in progress.</h2></div>
           <div><p>Third Railify is a daily podcast built around current events, crime, pop culture, community energy, and an intentionally unpredictable route through all of it.</p><Link className="text-link" to="/watch">Find the latest show <ArrowIcon /></Link></div>
         </div>
-        <div className="container broadcast-card">
-          <div className="broadcast-card__visual">
-            <div className="broadcast-orbit"><BoltIcon /></div>
-            <span>LIVE / ARCHIVE</span>
-            <h3>NEWS<br />HANGOUT</h3>
-            <a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer" aria-label="Watch Third Railify on Rumble"><PlayIcon /></a>
-          </div>
+        <div className={`container broadcast-card${live ? " is-live" : ""}`}>
+          <BroadcastPlayer candidate={primary} />
           <div className="broadcast-card__copy">
-            <p className="eyebrow">Primary channel</p>
-            <h3>Start with the show, not a maze of links.</h3>
-            <p>The current live destination remains Rumble. V2 keeps the path direct while watch and archive migration is prepared.</p>
-            <a className="button button--outline" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Watch on Rumble <ArrowIcon /></a>
+            {primary && data ? <BroadcastMetadata candidate={primary} freshness={data.freshness} /> : (
+              <><p className="eyebrow">Validated signal</p><h3>{loading ? "Acquiring the latest broadcast." : "The signal is temporarily unavailable."}</h3><p>The browser does not scrape providers or invent a live state. Direct platform routes remain available on the Watch page.</p><Link className="button button--outline" to="/watch">Open Watch <ArrowIcon /></Link></>
+            )}
           </div>
         </div>
       </section>

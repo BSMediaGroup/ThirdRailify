@@ -4,6 +4,8 @@ import boltMark from "../../assets/logos/boltv2straight.svg";
 import { useCart } from "../store/cart";
 import { ArrowIcon, BagIcon, BoltIcon, CloseIcon, MenuIcon } from "./Icons";
 import { CartDrawer } from "./CartDrawer";
+import { LiveNowIndicator } from "./BroadcastComponents";
+import { useBroadcast } from "../hooks/useBroadcast";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -17,6 +19,7 @@ export function SiteShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const cart = useCart();
+  const { data } = useBroadcast();
 
   useEffect(() => {
     setMenuOpen(false);
@@ -46,7 +49,7 @@ export function SiteShell() {
             {navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.to === "/"}>{item.label}</NavLink>)}
           </nav>
           <div className="header-actions">
-            <a className="header-watch" href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Live + latest <ArrowIcon /></a>
+            <Link className="header-watch" to="/watch"><LiveNowIndicator candidates={data?.liveNow ?? []} compact /><ArrowIcon /></Link>
             <button className="cart-button" type="button" onClick={cart.open} aria-label={`Open cart, ${cart.count} items`}>
               <BagIcon /><span>Cart</span><b>{cart.count}</b>
             </button>
@@ -58,7 +61,7 @@ export function SiteShell() {
         <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
           <div className="container">
             {navItems.map((item, index) => <NavLink key={item.to} to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>)}
-            <a href="https://rumble.com/ThirdRailify" target="_blank" rel="noreferrer">Watch on Rumble <ArrowIcon /></a>
+            <Link to="/watch"><span>06</span>{data?.liveNow.length ? "Watch live now" : "Watch latest"}<ArrowIcon /></Link>
           </div>
         </nav>
       </header>

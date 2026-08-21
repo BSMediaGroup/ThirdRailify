@@ -6,6 +6,7 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { RouteShellPage } from "./pages/RouteShellPage";
 import { ShopPage } from "./pages/ShopPage";
+import { WatchPage } from "./pages/WatchPage";
 
 export function App() {
   return (
@@ -17,7 +18,7 @@ export function App() {
         <Route path="/products/:category" element={<ShopPage />} />
         <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
         <Route path="/product-page/:slug" element={<ProductDetailPage />} />
-        <Route path="/watch" element={<RouteShellPage routeKey="watch" />} />
+        <Route path="/watch" element={<WatchPage />} />
         <Route path="/shawn" element={<RouteShellPage routeKey="shawn" />} />
         <Route path="/gina" element={<RouteShellPage routeKey="gina" />} />
         <Route path="/about" element={<RouteShellPage routeKey="about" />} />

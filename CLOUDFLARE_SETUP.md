@@ -15,7 +15,7 @@ This describes the dashboard values for the current static Vite scaffold. It doe
 | Build output directory | `dist` |
 | Node version | `22.16.0`, pinned by `.node-version` |
 
-Cloudflare's current Pages documentation lists `npm run build` and `dist` for React/Vite, treats an unspecified root as the repository root, and supports `.node-version` for selecting Node. The build copies `public/_headers`, `public/_redirects`, and `public/_routes.json` into `dist/`. The routes file includes only `/api/community/*`, so ordinary static and SPA requests do not unnecessarily invoke Functions.
+Cloudflare's current Pages documentation lists `npm run build` and `dist` for React/Vite, treats an unspecified root as the repository root, and supports `.node-version` for selecting Node. The build copies `public/_headers`, `public/_redirects`, and `public/_routes.json` into `dist/`. The routes file includes only the community and watch API paths, so ordinary static and SPA requests do not unnecessarily invoke Functions.
 
 ## Environment names
 
@@ -25,6 +25,8 @@ The catalogue remains a local dated snapshot. The community Pages Functions add 
 | --- | --- | --- |
 | `THIRDRAILIFY_COMMUNITY_KV` | Workers KV binding | Stores the latest validated community record at `discord:community:snapshot:v1` |
 | `THIRDRAILIFY_COMMUNITY_INGEST_SECRET` | Encrypted Pages secret | Verifies bot HMAC signatures at ingest |
+
+The broadcast bridge reuses both entries above. Its record is stored under a separate KV key, so no second KV namespace, binding, or ingest secret is required.
 
 Never prefix the secret with `VITE_`, copy it into browser source, return it from GET, place it in Git, or paste the repository's local `.env` into Cloudflare.
 
@@ -42,6 +44,8 @@ These resources do not exist merely because code references them. Perform these 
 6. Run the bot's `run-bot.cmd --check`; it verifies that URL/secret are either both present or both absent and does not publish.
 7. After a separate live-smoke approval, start the bot manually and verify one bounded signed snapshot at `GET /api/community/discord` before relying on the UI's enriched mode.
 
+For the watch bridge, add the same staging origin to the bot's untracked `.env` as `THIRDRAILIFY_BROADCAST_INGEST_URL=https://<staging-project>.pages.dev/api/watch/ingest`. Keep the existing community secret value unchanged. A clean supervised bot restart is required before the new URL is loaded. After separate approval, Bot Admin `/streams website-status` can inspect safe local status and Super Admin `/streams website-publish` can request one signed snapshot without Discord delivery/history. This setup does not authorize a bot restart, Pages deployment, secret mutation, custom-domain attachment, or live command during code review.
+
 The local machine makes outbound HTTPS requests only. Do not port-forward, tunnel, or expose an inbound bot endpoint. The staging `pages.dev` URL may be used initially; do not attach a custom domain.
 
 The bot intentionally bounds KV writes with an immediate startup snapshot, a five-minute automatic floor, semantic deduplication, and a ten-minute unchanged heartbeat. The public GET freshness contract is therefore fresh under 720 seconds, delayed from 720 through 1199 seconds, and stale at 1200 seconds or later. One normal heartbeat cycle remains fresh, one missed or late heartbeat becomes delayed, and clearly old data becomes stale. Stale data retains last-published channel/profile details but member presence is neutralized. Missing KV data returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback. The HMAC replay window remains five minutes and is independent of display freshness.
@@ -51,11 +55,12 @@ The bot intentionally bounds KV writes with an immediate startup snapshot, a fiv
 1. Before connecting Git, run `npm ci`, `npm run lint`, `npm run typecheck`, `npm run test:functions`, and `npm run build` locally.
 2. Connect the repository with the values above and allow only a `pages.dev` staging URL.
 3. Confirm `/`, `/shop`, a known `/products/:slug`, a migration shell, a preserved alias, and an unknown route on the deployed preview.
-4. Confirm `/_redirects` provides direct-load SPA behavior, `/store` redirects to `/shop`, and `_routes.json` invokes Functions only for `/api/community/*`.
+4. Confirm `/_redirects` provides direct-load SPA behavior, `/store` redirects to `/shop`, `/watch` loads directly, `/api/watch` is not swallowed by the SPA, and `_routes.json` invokes Functions only for the named community/watch API paths.
 5. Confirm static responses include `X-Robots-Tag: noindex, nofollow, noarchive` plus the checked-in security headers.
 6. With local test secrets only, validate good/bad/expired HMAC, wrong guild/schema, oversized bodies, normalized persistence, missing/fresh/delayed/stale GET, and no-store responses. Never use or print the production secret during local validation.
 7. Check enriched, basic fallback, and unavailable widget modes at phone, tablet, and desktop widths, including profile focus/tap/Escape/outside close, 12/24 member bounds, long text, reduced motion, overflow, and console/network errors.
-8. Keep Wix as production until content, commerce, legal, redirects, analytics, and cutover acceptance are complete.
+8. Validate watch loading, YouTube live, Rumble live, simultaneous live, offline latest on each provider, Rumble no-embed fallback, upcoming, delayed, stale, and unavailable states at phone/tablet/desktop widths. Confirm exact frame CSP, bounded same-origin thumbnail behavior, platform switching, reduced motion, no overflow, and no application console errors.
+9. Keep Wix as production until content, commerce, legal, redirects, analytics, and cutover acceptance are complete.
 
 ## Domain hold
 

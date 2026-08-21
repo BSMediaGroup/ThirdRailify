@@ -10,6 +10,12 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Replaced the `/watch` migration shell with a production-shaped read-only broadcast destination driven by the bot-owned `thirdrailify-broadcast-v1` snapshot: live/latest player, Rumble-first simultaneous-live selection, platform switcher, metadata, schedule, direct links, and truthful loading/delayed/stale/unavailable/no-embed states.
+- Added signed `POST /api/watch/ingest`, public `GET /api/watch`, exact schema/URL/freshness validation, the separate `broadcast:current:snapshot:v1` record in the existing KV binding, and a key-bound bounded Rumble thumbnail proxy. The existing HMAC secret is reused; no second KV namespace or secret was introduced.
+- Added one visibility-aware `BroadcastProvider`, reusable player/status/metadata/selector components, dynamic header/mobile live state, homepage live/latest CTA and platform markers, and a lazy homepage player. Browser code never scrapes a provider or receives ingest credentials.
+- Tightened CSP only for exact YouTube privacy-enhanced/YouTube/Rumble frame and YouTube thumbnail hosts while preserving the existing security directives. Added deterministic Function and browser fixtures covering the full state matrix at 390/768/1440 pixels, reduced motion, platform switching, overflow, and console cleanliness.
+- Kept `thirdrailify.com`, Wix, Pages projects, KV resources, bindings, secrets, DNS, custom domains, and deployment untouched. No Public version change was made; this remains additive under pending `0.1.0-alpha.0`.
+
 - Added a Vite/React/TypeScript/React Router public application and deterministic npm lockfile.
 - Added a tokenized responsive dark/gold design system, shared shell, accessible navigation, branded 404, and route migration shells/aliases.
 - Established the seeded American Captain face as the main display/header font, supported by Blinker and Geist Mono.

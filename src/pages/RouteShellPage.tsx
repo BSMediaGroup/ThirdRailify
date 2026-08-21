@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import ginaPortrait from "../../assets/people/pfp-gina.webp";
 import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
-import { ArrowIcon, BoltIcon, PlayIcon } from "../components/Icons";
+import { ArrowIcon, BoltIcon } from "../components/Icons";
 
-type RouteKey = "watch" | "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards" | "policies" | "terms" | "privacy" | "refunds" | "accessibility";
+type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards" | "policies" | "terms" | "privacy" | "refunds" | "accessibility";
 
 type RouteContent = {
   eyebrow: string;
@@ -18,15 +18,6 @@ type RouteContent = {
 };
 
 const content: Record<RouteKey, RouteContent> = {
-  watch: {
-    eyebrow: "Live + latest",
-    title: "The show is already in progress.",
-    description: "The V2 watch hub is staged for migration. Rumble remains the verified primary channel today.",
-    status: "Archive and live-status integration are not connected in this milestone.",
-    sourceHref: "https://rumble.com/ThirdRailify",
-    sourceLabel: "Watch on Rumble",
-    points: ["Sunday—Friday", "10 PM Eastern", "News Hangout · Aboot Nothing · Pop Culture Beat Down"],
-  },
   shawn: {
     eyebrow: "Host · @ThirdRailify",
     title: "Shawn",
@@ -141,7 +132,7 @@ export function RouteShellPage({ routeKey }: { routeKey: RouteKey }) {
           <p className="route-lede">{route.description}</p>
           <div className="route-status"><BoltIcon /><span><strong>Migration-stage route</strong>{route.status}</span></div>
           <div className="button-row">
-            {route.sourceHref ? <a className="button button--primary" href={route.sourceHref} target="_blank" rel="noreferrer">{routeKey === "watch" ? <PlayIcon /> : null}{route.sourceLabel} <ArrowIcon /></a> : null}
+            {route.sourceHref ? <a className="button button--primary" href={route.sourceHref} target="_blank" rel="noreferrer">{route.sourceLabel} <ArrowIcon /></a> : null}
             <Link className="button button--secondary" to="/">Back home</Link>
           </div>
         </div>
