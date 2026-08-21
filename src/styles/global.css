@@ -704,6 +704,8 @@ h3 {
   bottom: 0;
   width: 72%;
   overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.28) 8%, #000 20%);
+  mask-image: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.28) 8%, #000 20%);
   opacity: 0.82;
   perspective: 900px;
   pointer-events: none;
@@ -948,6 +950,8 @@ h3 {
   justify-self: center;
   margin-bottom: 24px;
   filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.54));
+  transform-origin: 50% 72%;
+  animation: hero-portrait-enter 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .hero-portrait__links {
@@ -3882,6 +3886,9 @@ h3 {
   background: linear-gradient(100deg, rgba(137, 13, 36, 0.68), rgba(46, 10, 18, 0.9));
   color: var(--paper);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 18px rgba(255, 37, 68, 0.13);
+}
+
+.header-watch .live-indicator.is-live {
   animation: live-chip-pulse 3.4s ease-in-out infinite;
 }
 
@@ -4090,15 +4097,18 @@ h3 {
 .broadcast-metadata h2 { margin: 16px 0 12px; font-size: clamp(32px, 3.5vw, 54px); line-height: 0.94; }
 .broadcast-metadata > p { margin: 20px 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
 .broadcast-metadata .button { width: fit-content; }
+.broadcast-metadata .broadcast-metadata__action-icon { width: 17px; height: 17px; object-fit: contain; }
 
 .broadcast-card > .broadcast-player {
   align-self: center;
   border-right: 1px solid var(--line);
 }
 
-.broadcast-card.is-live {
-  border-color: rgba(255, 209, 47, 0.22);
-  box-shadow: var(--shadow), 0 0 50px rgba(126, 12, 31, 0.08);
+.broadcast-card.is-live,
+.watch-stage.is-live {
+  border-color: rgba(128, 225, 160, 0.4);
+  box-shadow: var(--shadow), 0 0 34px rgba(128, 225, 160, 0.1);
+  animation: live-player-pulse 4.2s ease-in-out infinite;
 }
 
 .broadcast-card__copy .broadcast-metadata h2 { font-size: clamp(30px, 3vw, 45px); }
@@ -4211,6 +4221,16 @@ h3 {
   50% { border-color: rgba(255, 92, 113, 0.76); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 0 25px rgba(255, 37, 68, 0.22); }
 }
 
+@keyframes live-player-pulse {
+  0%, 100% { border-color: rgba(128, 225, 160, 0.34); box-shadow: var(--shadow), 0 0 28px rgba(128, 225, 160, 0.08); }
+  50% { border-color: rgba(128, 225, 160, 0.58); box-shadow: var(--shadow), 0 0 48px rgba(128, 225, 160, 0.18); }
+}
+
+@keyframes hero-portrait-enter {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
 @media (max-width: 1120px) {
   .watch-stage { grid-template-columns: 1fr; }
   .watch-stage > .broadcast-metadata { border-top: 1px solid var(--line); border-left: 0; }
@@ -4268,7 +4288,10 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .live-indicator.is-live,
+  .header-watch .live-indicator.is-live,
   .live-indicator.is-live > i,
-  .broadcast-status--live i { animation: none; }
+  .broadcast-status--live i,
+  .broadcast-card.is-live,
+  .watch-stage.is-live,
+  .hero-portrait__image { animation: none; }
 }

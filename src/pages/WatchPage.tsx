@@ -19,6 +19,7 @@ export function WatchPage() {
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
+  const selectedIsLive = selected?.presentationState === "live";
   const secondary = data ? options.find((candidate) => candidate.key !== selected?.key && candidate.presentationState !== "live") ?? null : null;
 
   return (
@@ -49,7 +50,7 @@ export function WatchPage() {
                 <BroadcastStatusBadge candidate={selected} />
               </div>
               <PlatformSelector candidates={options} selectedKey={selected.key} onSelect={(candidate) => setSelectedKey(candidate.key)} />
-              <div className="watch-stage">
+              <div className={`watch-stage${selectedIsLive ? " is-live" : ""}`}>
                 <BroadcastPlayer candidate={selected} eager />
                 <BroadcastMetadata candidate={selected} freshness={data.freshness} />
               </div>

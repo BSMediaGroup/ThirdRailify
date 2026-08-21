@@ -57,6 +57,9 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Removed the compact two-item and full eight-item Voice/Stage presentation caps so both modes render every bounded `voiceSpaces` entry returned by the existing snapshot. Community channels now derive only text, announcement, and forum entries while Voice spaces derives only voice and stage entries; the overview total still represents the complete configured public directory.
 - Refined channel-card semantics and spacing so dynamic Discord topics sit on their own readable two-line description row, with category names retained only as tertiary metadata in full mode. Voice/Stage cards remain shorter and never render topic placeholders. Compact audio overflow now activates only beyond a 236px panel bound using the existing graphite/gold scrollbar treatment; deterministic 390px, 768px, and 1440px browser checks covered six audio entries, Stage reachability, a four-entry no-scroll fit, full 6-to-8 Community expansion, wrapping, focus, partitioning, and horizontal overflow.
 - Replaced the active Public-route favicon with the user-supplied `assets/icons/thirdfav3.ico`; the shared SPA document applies it across every Public page without changing Admin branding or the preserved prior favicon assets.
+- Scoped the red outer `LIVE NOW` chip pulse to the shared header and added a restrained green live-state pulse to the currently displayed homepage and Watch player cards. Candidate-specific state keeps archive selections on their established static presentation, while reduced-motion users retain static signal styling.
+- Prefixed shared Rumble broadcast actions with the existing Rumble SVG, eased the homepage hero portrait into view on load, and feathered the left edge of its right-side signal field so the established midpoint start no longer appears as a hard vertical boundary.
+- Routed live entries in both homepage social rails to the validated broadcast candidate's direct `watchUrl`; non-live entries continue using their established platform profile destinations.
 
 ### Human-readable
 
@@ -67,6 +70,10 @@ The Discord directory now keeps conversation channels and live audio spaces dist
 Every Public page now uses the supplied `thirdfav3.ico` browser icon.
 
 Verified live broadcasts now carry the same red live signal in the header and both homepage platform lists.
+
+Live player cards now carry a gentle green signal on Home and Watch, Rumble actions include their platform mark, and the homepage portrait arrives with a softer edge and entrance.
+
+When a listed provider is live, both homepage social rails now open that confirmed stream directly; otherwise they continue opening the provider profile.
 
 ### Known deferrals
 

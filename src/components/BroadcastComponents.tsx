@@ -110,6 +110,7 @@ export function BroadcastMetadata({ candidate, freshness }: { candidate: Broadca
       </div>
       {candidate.description && <p>{candidate.description}</p>}
       <a className="button button--outline" href={candidate.watchUrl} target="_blank" rel="noreferrer">
+        {candidate.platform === "rumble" && <img className="broadcast-metadata__action-icon" src={rumbleIcon} alt="" aria-hidden="true" />}
         Open on {platformLabel(candidate.platform)} <ArrowIcon />
       </a>
     </div>

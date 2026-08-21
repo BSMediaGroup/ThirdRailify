@@ -30,7 +30,9 @@ export function HomePage() {
   const { data, loading } = useBroadcast();
   const primary = data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
+  const primaryIsLive = primary?.presentationState === "live";
   const livePlatforms: ReadonlySet<string> = new Set(data?.liveNow.map((candidate) => candidate.platform) ?? []);
+  const liveDestinations: ReadonlyMap<string, string> = new Map(data?.liveNow.map((candidate) => [candidate.platform, candidate.watchUrl]) ?? []);
   return (
     <>
       <section className="home-hero">
@@ -72,8 +74,9 @@ export function HomePage() {
         <div className="container platform-grid">
           <div className="platform-intro"><span className="eyebrow">Transmission</span><h2 id="platform-title">Pick your signal.</h2></div>
           {platforms.slice(0, 4).map((platform) => {
-            const isLive = livePlatforms.has(platform.label.toLowerCase());
-            return <a key={platform.label} className={isLive ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small></span><ArrowIcon /></a>;
+            const platformKey = platform.label.toLowerCase();
+            const isLive = livePlatforms.has(platformKey);
+            return <a key={platform.label} className={isLive ? "is-live" : ""} href={liveDestinations.get(platformKey) ?? platform.href} target="_blank" rel="noreferrer"><i className="platform-icon" aria-hidden="true"><img src={platform.icon ?? ""} alt="" /></i><span><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small></span><ArrowIcon /></a>;
           })}
         </div>
       </section>
@@ -83,7 +86,7 @@ export function HomePage() {
           <div><p className="eyebrow">Start here</p><h2>The argument is already in progress.</h2></div>
           <div><p>Third Railify is a daily podcast built around current events, crime, pop culture, community energy, and an intentionally unpredictable route through all of it.</p><Link className="text-link" to="/watch">Find the latest show <ArrowIcon /></Link></div>
         </div>
-        <div className={`container broadcast-card${live ? " is-live" : ""}`}>
+        <div className={`container broadcast-card${primaryIsLive ? " is-live" : ""}`}>
           <BroadcastPlayer candidate={primary} />
           <div className="broadcast-card__copy">
             {primary && data ? <BroadcastMetadata candidate={primary} freshness={data.freshness} /> : (
@@ -144,8 +147,9 @@ export function HomePage() {
           <div><p className="eyebrow">Across the signal</p><h2>Follow the rail.</h2></div>
           <div className="follow-links">
             {platforms.map((platform, index) => {
-              const isLive = livePlatforms.has(platform.label.toLowerCase());
-              return <a key={platform.label} className={isLive ? "is-live" : ""} href={platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><i className="follow-icon" aria-hidden="true"><img src={platform.icon} alt="" /></i><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small><ArrowIcon /></a>;
+              const platformKey = platform.label.toLowerCase();
+              const isLive = livePlatforms.has(platformKey);
+              return <a key={platform.label} className={isLive ? "is-live" : ""} href={liveDestinations.get(platformKey) ?? platform.href} target="_blank" rel="noreferrer"><span>0{index + 1}</span><i className="follow-icon" aria-hidden="true"><img src={platform.icon} alt="" /></i><strong>{platform.label}</strong><small>{isLive ? "Live now" : platform.note}</small><ArrowIcon /></a>;
             })}
           </div>
         </div>
