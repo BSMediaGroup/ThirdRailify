@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import ginaPortrait from "../../assets/people/pfp-gina.webp";
-import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
+import ginaPortrait from "../../assets/people/gina1x.webp";
+import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 
 type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards" | "policies" | "terms" | "privacy" | "refunds" | "accessibility";
