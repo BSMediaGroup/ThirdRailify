@@ -72,7 +72,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Scoped the red outer `LIVE NOW` chip pulse to the shared header and added a restrained Rumble-lime live-state pulse to the currently displayed homepage and Watch player cards. Candidate-specific state keeps archive selections on their established static presentation, while reduced-motion users retain static signal styling.
 - Prefixed shared Rumble broadcast actions with the existing Rumble SVG, eased the homepage hero portrait into view on load, and feathered the left edge of its right-side signal field so the established midpoint start no longer appears as a hard vertical boundary.
 - Routed live entries in both homepage social rails to the validated broadcast candidate's direct `watchUrl`; non-live entries continue using their established platform profile destinations.
-- Reframed the homepage host cards into shorter, near-square compositions using the supplied `shawn1x.webp` and `gina1x.webp` portraits, with a gentle bottom falloff into the existing biography area. Removed the corner numbers so Shawn and Gina are presented by name rather than as numbered entries.
+- Reframed the homepage host cards with slightly taller, near-square `7:5` image areas using the supplied `shawn1x.webp` and `gina1x.webp` portraits, with a gentle bottom falloff into the existing biography area. Removed the corner numbers so Shawn and Gina are presented by name rather than as numbered entries.
 
 ### Human-readable
 

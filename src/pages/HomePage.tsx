@@ -117,7 +117,7 @@ export function HomePage() {
           </article>
           <article className="host-card host-card--gina">
             <div className="host-card__image"><img src={ginaPortrait} alt="Portrait of Gina" /></div>
-            <div className="host-card__body"><small>Host · @JustGina</small><h3>Gina</h3><p>Sass, smarts, humor, conspiracies, and culture in a distinct Just Gina lane inside the shared show universe.</p><Link className="text-link" to="/gina">Meet Gina <ArrowIcon /></Link></div>
+            <div className="host-card__body"><small>Host · @JustGina</small><h3>Gina</h3><p>Sass, smarts, humor, mysteries, and culture in a distinct Just Gina lane inside the shared show universe.</p><Link className="text-link" to="/gina">Meet Gina <ArrowIcon /></Link></div>
           </article>
         </div>
       </section>
