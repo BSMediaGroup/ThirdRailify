@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "thirdrailify",
+  "compatibility_date": "2026-08-11",
+  "pages_build_output_dir": "./dist",
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "THIRDRAILIFY_PUBLIC_STATE",
+        "class_name": "ThirdRailifyPublicState",
+        "script_name": "thirdrailify-public-state"
+      }
+    ]
+  }
+}

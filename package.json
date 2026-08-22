@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/kv-write-budget.test.mjs",
+    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs",
+    "test:kv-ban": "node scripts/assert-no-kv-mutations.mjs",
+    "test:state-budget": "node scripts/state-backend-budget.mjs",
+    "test:state-fingerprint": "node scripts/state-backend-fingerprint.mjs --check",
+    "verify:state-backend": "node scripts/verify-cloudflare-state-backend.mjs",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview --host 127.0.0.1"
   },
@@ -27,6 +31,7 @@
     "globals": "15.14.0",
     "typescript": "5.6.3",
     "typescript-eslint": "8.18.0",
-    "vite": "5.4.19"
+    "vite": "5.4.19",
+    "wrangler": "4.60.0"
   }
 }

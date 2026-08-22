@@ -1,71 +1,102 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { COMMUNITY_CHECKPOINT_SECONDS } from "../functions/api/community/_community.js";
-import {
-  WATCH_INACTIVE_CHECKPOINT_SECONDS,
-  WATCH_LIVE_CHECKPOINT_SECONDS,
-} from "../functions/api/watch/_watch.js";
+import { MemoryStateNamespace } from "./state-function-harness.mjs";
 
 const DAY_SECONDS = 24 * 60 * 60;
 
-function writesForDuration(durationSeconds, cadenceSeconds) {
+function operationsForDuration(durationSeconds, cadenceSeconds) {
   return Math.ceil(durationSeconds / cadenceSeconds);
 }
 
-test("current producer cadence deterministically explains the pre-dedupe KV write rate", () => {
-  const current = {
-    communityIdle: writesForDuration(DAY_SECONDS, 600),
-    communityContinuousChange: writesForDuration(DAY_SECONDS, 300),
-    broadcastOffline: writesForDuration(DAY_SECONDS, 600),
-    broadcastUpcoming: writesForDuration(DAY_SECONDS, 150),
-    broadcastLive: writesForDuration(DAY_SECONDS, 75),
+test("pre-migration community-only optimization could not eliminate shared namespace writes", () => {
+  const previous = {
+    communityIdleProducerPosts: operationsForDuration(DAY_SECONDS, 600),
+    communityContinuousProducerPosts: operationsForDuration(DAY_SECONDS, 300),
+    communityQuietKvPuts: operationsForDuration(DAY_SECONDS, 1800),
+    broadcastOfflineProducerPosts: operationsForDuration(DAY_SECONDS, 600),
+    broadcastLiveProducerPosts: operationsForDuration(DAY_SECONDS, 75),
+    broadcastQuietKvPuts: operationsForDuration(DAY_SECONDS, 1800),
+    broadcastFullLiveKvPuts: operationsForDuration(DAY_SECONDS, 150),
   };
-  assert.deepEqual(current, {
-    communityIdle: 144,
-    communityContinuousChange: 288,
-    broadcastOffline: 144,
-    broadcastUpcoming: 576,
-    broadcastLive: 1152,
+  assert.deepEqual(previous, {
+    communityIdleProducerPosts: 144,
+    communityContinuousProducerPosts: 288,
+    communityQuietKvPuts: 48,
+    broadcastOfflineProducerPosts: 144,
+    broadcastLiveProducerPosts: 1152,
+    broadcastQuietKvPuts: 48,
+    broadcastFullLiveKvPuts: 576,
   });
-  assert.equal(current.communityIdle + current.broadcastOffline, 288);
-  assert.equal(current.communityIdle + current.broadcastLive, 1296);
+  assert.equal(previous.communityQuietKvPuts + previous.broadcastQuietKvPuts, 96);
+  assert.equal(previous.communityQuietKvPuts + previous.broadcastFullLiveKvPuts, 624);
 });
 
-test("24-hour quiet, normal-live, and busy-live server budgets stay bounded", () => {
-  const communityQuiet = writesForDuration(DAY_SECONDS, COMMUNITY_CHECKPOINT_SECONDS);
-  const broadcastQuiet = writesForDuration(DAY_SECONDS, WATCH_INACTIVE_CHECKPOINT_SECONDS);
-  const quietCombined = communityQuiet + broadcastQuiet;
-
-  const normalLiveHours = 4;
-  const normalBroadcast = writesForDuration(normalLiveHours * 3600, WATCH_LIVE_CHECKPOINT_SECONDS)
-    + writesForDuration((24 - normalLiveHours) * 3600, WATCH_INACTIVE_CHECKPOINT_SECONDS)
-    + 2;
-  const normalCombined = communityQuiet + normalBroadcast;
-
-  const busyLiveHours = 6;
-  const busyBroadcast = writesForDuration(busyLiveHours * 3600, WATCH_LIVE_CHECKPOINT_SECONDS)
-    + writesForDuration((24 - busyLiveHours) * 3600, WATCH_INACTIVE_CHECKPOINT_SECONDS)
-    + 2;
-  const busyCombined = communityQuiet + busyBroadcast;
-
-  assert.equal(communityQuiet, 48);
-  assert.equal(broadcastQuiet, 48);
-  assert.equal(quietCombined, 96);
-  assert.equal(normalCombined, 186);
-  assert.equal(busyCombined, 230);
-  assert.ok(quietCombined < 100);
-  assert.ok(normalCombined < 500, "normal scenario must fail before approaching 500 KV PUTs/day");
-  assert.ok(busyCombined < 250);
-  assert.ok(busyCombined < 1000);
+test("24-hour migrated simulation has exact zero steady-state KV operations", async () => {
+  let now = Date.parse("2026-08-23T00:00:00Z");
+  const state = new MemoryStateNamespace({ now: () => now });
+  await state.ready;
+  assert.deepEqual(state.legacyOperations, { reads: 2, puts: 0, deletes: 0, lists: 0 });
+  state.legacyOperations.reads = 0;
+  for (let minute = 0; minute < 24 * 60; minute += 1) {
+    now += 60_000;
+    await state.service.write("community", { snapshot: communitySnapshot(now, minute), checkpointSeconds: 600 });
+    await state.service.write("broadcast", { snapshot: broadcastSnapshot(now, minute), checkpointSeconds: 150 });
+  }
+  assert.deepEqual(state.legacyOperations, { reads: 0, puts: 0, deletes: 0, lists: 0 });
 });
 
-test("30-day projections preserve account-wide daily headroom", () => {
-  const quietDaily = writesForDuration(DAY_SECONDS, COMMUNITY_CHECKPOINT_SECONDS)
-    + writesForDuration(DAY_SECONDS, WATCH_INACTIVE_CHECKPOINT_SECONDS);
-  const busyDaily = 230;
-  assert.equal(quietDaily * 30, 2880);
-  assert.equal(busyDaily * 30, 6900);
-  assert.ok(quietDaily < 1000);
-  assert.ok(busyDaily < 1000);
+test("30-day migrated simulation has exact zero steady-state KV operations", async () => {
+  let now = Date.parse("2026-08-23T00:00:00Z");
+  const state = new MemoryStateNamespace({ now: () => now });
+  await state.ready;
+  state.legacyOperations.reads = 0;
+  for (let interval = 0; interval < 30 * 24 * 6; interval += 1) {
+    now += 600_000;
+    await state.service.write("community", { snapshot: communitySnapshot(now, interval), checkpointSeconds: 600 });
+    await state.service.write("broadcast", { snapshot: broadcastSnapshot(now, interval), checkpointSeconds: 600 });
+  }
+  assert.deepEqual(state.legacyOperations, { reads: 0, puts: 0, deletes: 0, lists: 0 });
 });
+
+test("unmigrated bootstrap reads exactly two legacy keys without mutations", async () => {
+  const state = new MemoryStateNamespace();
+  await state.ready;
+  assert.deepEqual(state.legacyOperations, { reads: 2, puts: 0, deletes: 0, lists: 0 });
+});
+
+function communitySnapshot(milliseconds, revision) {
+  return {
+    schema: "thirdrailify-discord-community-v1",
+    generatedAt: new Date(milliseconds).toISOString(),
+    guild: {
+      id: "1114717958573396008",
+      name: `Third Railify ${revision % 3}`,
+      iconUrl: null,
+      inviteUrl: "https://discord.com/invite/Bd8hU5aFxA",
+    },
+    source: { kind: "thirdrailify-bot", botVersion: "1.1.0" },
+    counts: { onlineMembers: revision % 10, publishedMembers: 0, publicChannels: 0 },
+    channels: [],
+    voiceSpaces: [],
+    members: [],
+  };
+}
+
+function broadcastSnapshot(milliseconds, revision) {
+  const generatedAt = new Date(milliseconds).toISOString();
+  return {
+    schema: "thirdrailify-broadcast-v1",
+    generatedAt,
+    source: { kind: "thirdrailify-bot", botVersion: "1.1.0" },
+    providerStatus: {
+      youtube: { state: revision % 4 ? "offline" : "unknown", checkedAt: generatedAt },
+      rumble: { state: "offline", checkedAt: generatedAt },
+    },
+    liveNow: [],
+    primary: null,
+    latest: null,
+    latestByPlatform: { youtube: null, rumble: null },
+    upcoming: null,
+  };
+}

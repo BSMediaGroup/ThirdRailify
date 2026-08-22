@@ -1,9 +1,7 @@
 import {
   COMMUNITY_CHECKPOINT_SECONDS,
-  COMMUNITY_KV_KEY,
   COMMUNITY_MAX_BODY_BYTES,
   COMMUNITY_MIN_CHECKPOINT_SECONDS,
-  communitySemanticSnapshot,
   jsonResponse,
   normalizeSnapshot,
   verifySignedRequest,
@@ -17,7 +15,7 @@ import {
 export async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
-  if (!env.THIRDRAILIFY_COMMUNITY_KV || !env.THIRDRAILIFY_COMMUNITY_INGEST_SECRET) {
+  if (!env.THIRDRAILIFY_PUBLIC_STATE || !env.THIRDRAILIFY_COMMUNITY_INGEST_SECRET) {
     return jsonResponse({ error: "community_bridge_not_configured" }, 503);
   }
   const contentType = request.headers.get("Content-Type") ?? "";
@@ -50,19 +48,18 @@ export async function onRequest(context) {
   if (generatedMilliseconds > Date.now() + 5 * 60 * 1000) return jsonResponse({ error: "invalid_snapshot_time" }, 400);
 
   const result = await persistSemanticSnapshot({
-    kv: env.THIRDRAILIFY_COMMUNITY_KV,
-    key: COMMUNITY_KV_KEY,
+    env,
+    kind: "community",
     snapshot,
-    normalizeSnapshot,
-    semanticSnapshot: communitySemanticSnapshot,
     checkpointSeconds: checkpointSeconds(
-      env.THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS,
+      env.THIRDRAILIFY_COMMUNITY_FRESHNESS_CHECKPOINT_SECONDS
+        ?? env.THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS,
       COMMUNITY_CHECKPOINT_SECONDS,
       COMMUNITY_MIN_CHECKPOINT_SECONDS,
     ),
   });
   if (result.persisted) {
-    console.info(`community ingest accepted persisted=true reason=${result.reason} kvWrites=1`);
+    console.info(`community ingest accepted persisted=true reason=${result.reason} sqliteWrites=${result.storageWrites}`);
   }
   return ingestSuccessResponse(result);
 }

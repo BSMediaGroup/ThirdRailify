@@ -9,10 +9,17 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["functions/**/*.js"],
+    files: ["functions/**/*.js", "cloudflare/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.worker,
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: { ...globals.node, ...globals.worker },
     },
   },
   {

@@ -30,6 +30,9 @@ Quality gates:
 npm run lint
 npm run typecheck
 npm run test:functions
+npm run test:kv-ban
+npm run test:state-budget
+npm run test:state-fingerprint
 npm run build
 npm run preview
 ```
@@ -61,14 +64,18 @@ ThirdRailify/
 │   └── video/              Seeded media (not used as a decorative hero loop)
 ├── pocv1/                  Reference-only approved inspiration POC
 ├── functions/
-│   ├── api/_snapshot-persistence.js  Shared semantic fingerprint, envelope, and checkpoint gate
+│   ├── api/_snapshot-persistence.js  Shared checkpoint and DO persistence adapter
+│   ├── api/_state-backend.js         Stable singleton Durable Object request boundary
+│   ├── api/_state-contract.js        Deployment identity and storage contract
+│   ├── api/state-backend.js          Public-safe storage diagnostics
 │   ├── api/community/       Signed Discord ingest and public snapshot Pages Functions
 │   ├── api/watch.js         Public validated broadcast snapshot projection
 │   └── api/watch/           Signed ingest, strict normalizer, and bounded Rumble thumbnail proxy
+├── cloudflare/state-worker/ SQLite-backed singleton Durable Object Worker and Wrangler config
 ├── public/
 │   ├── _headers            Cloudflare static response policy
 │   ├── _redirects          Aliases and SPA fallback
-│   └── _routes.json        Invoke Functions only for community and watch APIs
+│   └── _routes.json        Invoke Functions only for community, watch, and storage diagnostics APIs
 ├── src/
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
 │   ├── data/               Dated bounded Wix snapshot
@@ -78,8 +85,12 @@ ThirdRailify/
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
-├── tests/                  Node Function validation, KV budget projection, and deterministic watch browser fixtures
+├── scripts/                KV mutation ban, budget/fingerprint checks, and live backend verifier
+├── tests/                  Function, Durable Object, migration, isolation, and watch browser fixtures
+├── Verify-Cloudflare-State-Backend.cmd  Double-clickable read-only live verifier
+├── wrangler.jsonc          Pages external Durable Object binding
 ├── CLOUDFLARE_SETUP.md
+├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
 ├── LIVE_SITE_AUDIT.md
 ├── BUMP_NOTES.md
 └── package.json
@@ -95,16 +106,18 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 If the enriched endpoint is absent or unavailable, the client falls back to Discord's public server widget for guild `1114717958573396008`. Basic mode is explicitly labelled and shows only the server name, Discord presence count, public voice spaces, and anonymized widget members. It does not invent text channels, joined dates, usernames, IDs, or rich profiles. If both sources fail, the widget shows an intentional unavailable state while preserving the public invite. All fetches are bounded to eight seconds with `cache: no-store` and omitted credentials.
 
-The Pages bridge consists of `POST /api/community/discord/ingest` and `GET /api/community/discord`. Ingest verifies a five-minute HMAC replay window, a 96 KiB maximum, the exact v1 schema/guild/count/type/URL bounds, and strips unknown fields before considering the versioned `discord:community:snapshot:v1` KV record. The Pages Function then hashes every normalized public field except volatile root `generatedAt`; repeated bodies, timestamp-only variants, retries, restarts, and manual replays return compatible HTTP 204 success without a PUT. Meaningful member, presence, count, channel, guild, or source changes persist on the next accepted ingest. Unchanged state receives one coarse 1,800-second checkpoint, configurable with `THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS` but guarded to at least 900 seconds. The internal envelope records its schema, semantic fingerprint, producer observation, persistence time, and `semantic_change` or `freshness_checkpoint` reason while GET preserves the existing safe response contract. GET continues to derive fresh under 720 seconds, delayed from 720 through 1199 seconds, and stale at 1200 seconds or later; stale presence neutralization is unchanged. `public/_routes.json` restricts Functions invocation to the named community/watch API paths, preserving static Vite and SPA routing.
+The Pages bridge consists of `POST /api/community/discord/ingest` and `GET /api/community/discord`. Ingest verifies the existing five-minute HMAC replay window, 96 KiB maximum, exact v1 schema/guild/count/type/URL bounds, and privacy sanitation before sending the normalized public snapshot to one stable `ThirdRailifyPublicState` Durable Object. The object stores only the latest `community` row in SQLite, hashes every normalized public field except volatile root `generatedAt`, and rewrites that row only for semantic change or the bounded 600-second freshness checkpoint. Repeated bodies, timestamp-only variants, retries, and restarts remain compatible HTTP 204 successes without a row rewrite. GET preserves the public response shape and the existing fresh/delayed/stale rules, including stale presence neutralization.
 
 `BroadcastProvider` is the single public-site poller for same-origin `GET /api/watch`: one active request, omitted credentials, an eight-second bound, visibility pause/resume, live/upcoming/offline cadence of 25/50/100 seconds, and capped error backoff. The strict client accepts only the versioned validated projection. The shared header and mobile menu show current verified live count, while the homepage CTA/platform rail and lazy broadcast card consume the same context; there is no second page-level polling loop.
 
-The watch bridge reuses the existing HMAC secret and `THIRDRAILIFY_COMMUNITY_KV`, storing the independent `broadcast:current:snapshot:v1` record. `POST /api/watch/ingest` rejects unsigned, replayed/future, oversized, unknown-field, and unsafe-URL payloads, then applies its own semantic fingerprint rather than sharing community state. Broadcast transitions, selected-stream changes, provider state, and public title/metadata changes persist immediately. Poll-only `generatedAt`, provider `checkedAt`, candidate `observedAt`, live lease renewal, and viewer-count churn do not trigger writes; the full latest viewer count is still sampled into each checkpoint. Identical live state checkpoints every 150 seconds because the existing safe live lease can be as short as 180 seconds, upcoming state every 600 seconds, and inactive/offline state every 1,800 seconds. `GET /api/watch` keeps the existing response and freshness contract: fresh below 180 seconds, delayed from 180 through 899 seconds, stale from 900 seconds; expired or stale live presence is demoted and viewer counts are removed. Rumble thumbnails remain read-only and are projected through a key-bound, bounded same-origin proxy only when the signed snapshot already contains the URL.
+The watch bridge reuses the existing HMAC secret and the same singleton Durable Object, but owns only the independent `broadcast` SQLite row. `POST /api/watch/ingest` rejects unsigned, replayed/future, oversized, unknown-field, and unsafe-URL payloads, then applies its own semantic fingerprint. Broadcast transitions, selected-stream changes, provider state, and public title/metadata changes persist immediately without rewriting community state. Poll-only `generatedAt`, provider `checkedAt`, candidate `observedAt`, live lease renewal, and viewer-count churn do not trigger row writes; the full latest viewer count is sampled into each checkpoint. Identical live and upcoming state checkpoints every 150 seconds, and inactive/offline state every 600 seconds, so a healthy producer is not presented as stale merely to conserve a retired KV budget. `GET /api/watch` and `/api/watch/thumbnail` preserve their existing contracts, stale-live demotion, viewer-count removal, and bounded Rumble proxy behavior.
 
-KV writes are deliberately account-budgeted rather than tied to observation or POST cadence. The prior unconditional ingest behavior projected 288 PUTs/day while both surfaces were quiet and about 1,296 PUTs/day during a continuously live broadcast. Server-side dedupe now projects 48 community plus 48 inactive-broadcast writes on a quiet day (96 combined). A representative four-hour live day is 186 combined writes including start/end transitions; a six-hour busy live day is 230, leaving limited headroom for additional meaningful metadata transitions. Thirty-day projections are 2,880 quiet or 6,900 at that busy daily model. These are ThirdRailify budgets, not an exclusive claim on Cloudflare's account-wide allowance; other present or future namespaces also need headroom.
+Workers KV is now a read-only legacy migration source. On first object initialization, missing rows are seeded from `discord:community:snapshot:v1` and `broadcast:current:snapshot:v1` through the current normalizers, then a SQLite migration marker prevents every later KV read. Existing Durable Object rows always win, so legacy state cannot overwrite newer state. Normal ThirdRailify KV PUT, DELETE, LIST, and post-migration GET counts are exactly zero; static and behavioral tests enforce that contract. This replacement was necessary because the earlier community-only optimization could not cover the later Watch publisher sharing the same namespace.
+
+The storage contract is available at `GET /api/state-backend`. It exposes only deployment identity, SQLite schema version, snapshot availability, read-only migration status, and expected zero KV operations. `Verify-Cloudflare-State-Backend.cmd` compares the checked-in release/fingerprint with the live Pages contract and reports `CURRENT`, `STALE`, `UNREACHABLE`, or `INCOMPATIBLE` without writing production state. Keep the legacy namespace for the migration/audit window. Roll forward on faults where possible: reverting to KV would reintroduce quota usage and lose any state updates accepted only by the Durable Object. Historical Cloudflare KV totals remain visible until analytics retention ages them out; success is zero new live namespace operations.
 
 `BroadcastPlayer`, `BroadcastMetadata`, `BroadcastStatusBadge`, `LiveNowIndicator`, and `PlatformSelector` are reusable. Iframes are created only for validated HTTPS YouTube privacy-enhanced or Rumble embed URLs; no guessed embed, `srcdoc`, provider script, autoplay, credentialed browser request, or unsafe HTML injection is used. A missing Rumble embed renders a poster/direct-watch fallback. CSP names only the required provider frame/image hosts and retains `object-src 'none'` and `frame-ancestors 'none'`.
 
 ## Cloudflare and domain safety
 
-See `CLOUDFLARE_SETUP.md` for the exact manual KV binding and secret configuration. No namespace, binding, secret, Pages project, or deployment is claimed merely because the code exists. Do not attach `thirdrailify.com` while Wix is production.
+See `CLOUDFLARE_SETUP.md` for the proven `thirdrailify` Pages project, the internal `thirdrailify-public-state` Worker binding, migration order, rollback constraints, and read-only verifier. The dedicated Worker is required because Pages can bind to but cannot host a Durable Object class. Do not attach `thirdrailify.com` while Wix is production.

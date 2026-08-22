@@ -8,15 +8,10 @@ import { WATCH_KV_KEY, watchFreshness } from "../functions/api/watch/_watch.js";
 import { onRequest as getWatch } from "../functions/api/watch.js";
 import { onRequest as ingestWatch } from "../functions/api/watch/ingest.js";
 import { onRequest as getWatchThumbnail } from "../functions/api/watch/thumbnail.js";
+import { MemoryStateNamespace as MemoryKv } from "./state-function-harness.mjs";
 
 const SECRET = "local-watch-functions-secret";
 const NOW = Date.parse("2026-08-22T06:00:00Z");
-
-class MemoryKv {
-  constructor() { this.values = new Map(); this.putCalls = 0; }
-  async get(key) { return this.values.get(key) ?? null; }
-  async put(key, value) { this.putCalls += 1; this.values.set(key, value); }
-}
 
 function candidate(platform = "youtube", state = "live") {
   const youtube = platform === "youtube";
@@ -94,12 +89,12 @@ async function withNow(callback) {
   try { return await callback(); } finally { Date.now = original; }
 }
 
-test("watch ingest accepts a signed exact snapshot under the separate KV key", async () => {
+test("watch ingest accepts a signed exact snapshot in the isolated broadcast row", async () => {
   await withNow(async () => {
     const kv = new MemoryKv();
     const response = await ingestWatch({
       request: signedRequest(snapshot()),
-      env: { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET },
+      env: { THIRDRAILIFY_PUBLIC_STATE: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET },
     });
     assert.equal(response.status, 204);
     assert.equal(response.headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
@@ -108,23 +103,23 @@ test("watch ingest accepts a signed exact snapshot under the separate KV key", a
   });
 });
 
-test("repeated offline watch state does not PUT before the 30-minute checkpoint", async () => {
+test("repeated offline watch state does not rewrite SQLite before the 10-minute checkpoint", async () => {
   const original = Date.now;
   let now = NOW;
   Date.now = () => now;
   const kv = new MemoryKv();
-  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const env = { THIRDRAILIFY_PUBLIC_STATE: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
   const ingest = async () => ingestWatch({
     request: signedRequest(offlineSnapshot(new Date(now).toISOString()), Math.floor(now / 1000)),
     env,
   });
   try {
     assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "true");
-    for (let index = 1; index <= 100; index += 1) {
+    for (let index = 1; index <= 59; index += 1) {
       now = NOW + index * 10_000;
       assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
     }
-    now = NOW + 1800_000;
+    now = NOW + 600_000;
     assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "freshness_checkpoint");
     assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
   } finally {
@@ -138,7 +133,7 @@ test("watch live start, metadata change, and live end persist while volatile liv
   let now = NOW;
   Date.now = () => now;
   const kv = new MemoryKv();
-  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const env = { THIRDRAILIFY_PUBLIC_STATE: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
   const ingest = async (body) => ingestWatch({ request: signedRequest(body, Math.floor(now / 1000)), env });
   try {
     assert.equal((await ingest(offlineSnapshot())).headers.get("X-ThirdRailify-Persisted"), "true");
@@ -175,7 +170,7 @@ test("identical live watch state checkpoints at the bounded 150-second lease cad
   let now = NOW;
   Date.now = () => now;
   const kv = new MemoryKv();
-  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const env = { THIRDRAILIFY_PUBLIC_STATE: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
   const ingest = async () => ingestWatch({
     request: signedRequest(snapshot(new Date(now).toISOString()), Math.floor(now / 1000)),
     env,
@@ -196,7 +191,7 @@ test("identical live watch state checkpoints at the bounded 150-second lease cad
 test("watch ingest rejects bad, expired, and future signatures or snapshots", async () => {
   await withNow(async () => {
     const kv = new MemoryKv();
-    const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+    const env = { THIRDRAILIFY_PUBLIC_STATE: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
     assert.equal((await ingestWatch({ request: signedRequest(snapshot(), Math.floor(NOW / 1000), "wrong"), env })).status, 401);
     assert.equal((await ingestWatch({ request: signedRequest(snapshot(), Math.floor(NOW / 1000) - 301), env })).status, 401);
     const future = snapshot(new Date(NOW + 301_000).toISOString());
@@ -207,7 +202,7 @@ test("watch ingest rejects bad, expired, and future signatures or snapshots", as
 
 test("watch ingest rejects unknown fields, unsafe URLs, and mismatched embeds", async () => {
   await withNow(async () => {
-    const env = { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+    const env = { THIRDRAILIFY_PUBLIC_STATE: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
     const unknown = snapshot(); unknown.internal = "reject-me";
     assert.equal((await ingestWatch({ request: signedRequest(unknown), env })).status, 400);
     const unsafe = snapshot(); unsafe.primary.watchUrl = "https://evil.example/watch";
@@ -224,14 +219,14 @@ test("watch ingest permits a validated Rumble candidate without an embed", async
     const body = snapshot(); body.latestByPlatform.rumble.embedUrl = null;
     const response = await ingestWatch({
       request: signedRequest(body),
-      env: { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET },
+      env: { THIRDRAILIFY_PUBLIC_STATE: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET },
     });
     assert.equal(response.status, 204);
   });
 });
 
 test("watch ingest enforces content type and maximum body size", async () => {
-  const env = { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const env = { THIRDRAILIFY_PUBLIC_STATE: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
   const textRequest = new Request("https://staging.example/api/watch/ingest", { method: "POST", body: "{}" });
   assert.equal((await ingestWatch({ request: textRequest, env })).status, 415);
   const huge = new Request("https://staging.example/api/watch/ingest", {
@@ -246,7 +241,7 @@ test("watch GET derives fresh and delayed live state", async () => {
       const kv = new MemoryKv();
       const body = snapshot(new Date(NOW - age * 1000).toISOString());
       kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: body, receivedAt: new Date(NOW).toISOString() }));
-      const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_COMMUNITY_KV: kv } });
+      const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_PUBLIC_STATE: kv } });
       const result = await response.json();
       assert.equal(result.freshness, freshness);
       assert.equal(result.liveNow.length, 1);
@@ -265,7 +260,7 @@ test("watch GET suppresses expired or stale live and retains latest archive", as
       const body = snapshot(mode === "stale" ? new Date(NOW - 900_000).toISOString() : new Date(NOW - 60_000).toISOString());
       if (mode === "expired") body.liveNow[0].liveExpiresAt = "2026-08-22T05:59:59Z";
       kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: body, receivedAt: new Date(NOW).toISOString() }));
-      const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_COMMUNITY_KV: kv } });
+      const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_PUBLIC_STATE: kv } });
       const result = await response.json();
       assert.equal(result.liveNow.length, 0);
       assert.equal(result.primary.presentationState, "archive");
@@ -274,8 +269,8 @@ test("watch GET suppresses expired or stale live and retains latest archive", as
   });
 });
 
-test("watch GET is unavailable without KV state and rejects wrong methods", async () => {
-  const env = { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+test("watch GET is unavailable without Durable Object state and rejects wrong methods", async () => {
+  const env = { THIRDRAILIFY_PUBLIC_STATE: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
   assert.equal((await getWatch({ request: new Request("https://staging.example/api/watch"), env })).status, 503);
   assert.equal((await getWatch({ request: new Request("https://staging.example/api/watch", { method: "POST" }), env })).status, 405);
   assert.equal((await ingestWatch({ request: new Request("https://staging.example/api/watch/ingest"), env })).status, 405);
@@ -302,13 +297,13 @@ test("Rumble thumbnail proxy is snapshot-key bound and returns a bounded image",
   try {
     const unknown = await getWatchThumbnail({
       request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:unknown"),
-      env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+      env: { THIRDRAILIFY_PUBLIC_STATE: kv },
     });
     assert.equal(unknown.status, 404);
     assert.equal(calls, 0);
     const response = await getWatchThumbnail({
       request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
-      env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+      env: { THIRDRAILIFY_PUBLIC_STATE: kv },
     });
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("Content-Type"), "image/webp");
@@ -326,7 +321,7 @@ test("Rumble thumbnail proxy rejects private hosts and unbounded upstream bodies
   kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: privateSnapshot, receivedAt: new Date(NOW).toISOString() }));
   assert.equal((await getWatchThumbnail({
     request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
-    env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+    env: { THIRDRAILIFY_PUBLIC_STATE: kv },
   })).status, 502);
 
   kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: snapshot(), receivedAt: new Date(NOW).toISOString() }));
@@ -337,7 +332,7 @@ test("Rumble thumbnail proxy rejects private hosts and unbounded upstream bodies
   try {
     const response = await getWatchThumbnail({
       request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
-      env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+      env: { THIRDRAILIFY_PUBLIC_STATE: kv },
     });
     assert.equal(response.status, 502);
   } finally {
@@ -357,7 +352,7 @@ test("Rumble thumbnail proxy rejects upstream redirects without following them",
   try {
     const response = await getWatchThumbnail({
       request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
-      env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+      env: { THIRDRAILIFY_PUBLIC_STATE: kv },
     });
     assert.equal(response.status, 502);
   } finally {

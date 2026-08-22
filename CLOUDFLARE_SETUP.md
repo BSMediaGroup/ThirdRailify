@@ -1,6 +1,6 @@
-# Cloudflare Pages staging setup
+# Cloudflare Pages and public-state setup
 
-This describes the dashboard values for the current static Vite scaffold. It does not claim that a Pages project exists and does not authorize deployment, DNS, nameserver, Wix, or custom-domain changes.
+The established staging target is the Cloudflare Pages project `thirdrailify` at `https://thirdrailify.pages.dev`, built from `main`. Wix remains the public custom-domain authority; this setup does not authorize DNS, nameserver, Wix, or custom-domain changes.
 
 ## Project values
 
@@ -8,68 +8,78 @@ This describes the dashboard values for the current static Vite scaffold. It doe
 | --- | --- |
 | Repository | `ThirdRailify` |
 | Production branch | `main` |
-| Root directory | `/` (repository root; leave the dashboard field blank) |
-| Framework preset | React (Vite), if offered |
-| Dependency install | Cloudflare's lockfile install (`npm ci`) |
+| Root directory | repository root |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node version | `22.16.0`, pinned by `.node-version` |
+| Build output | `dist` |
+| Node | `22.16.0` from `.node-version` |
+| Pages project | `thirdrailify` |
+| State Worker | `thirdrailify-public-state` |
+| Durable Object class | `ThirdRailifyPublicState` |
+| Stable object name | `thirdrailify-public-state` |
 
-Cloudflare's current Pages documentation lists `npm run build` and `dist` for React/Vite, treats an unspecified root as the repository root, and supports `.node-version` for selecting Node. The build copies `public/_headers`, `public/_redirects`, and `public/_routes.json` into `dist/`. The routes file includes only the community and watch API paths, so ordinary static and SPA requests do not unnecessarily invoke Functions.
+Cloudflare Pages Functions can bind to a Durable Object but cannot host its class. The class therefore lives in the small `thirdrailify-public-state` Worker, with `workers_dev` disabled and no second public domain. Root `wrangler.jsonc` supplies the external binding to Pages. `cloudflare/state-worker/wrangler.jsonc` owns the SQLite class migration and the legacy KV bootstrap binding.
 
-## Environment names
+## Bindings and environment names
 
-The catalogue remains a local dated snapshot. The community Pages Functions add one server-only encrypted secret and one KV binding; neither is a browser/Vite variable:
-
-| Name | Type | Purpose |
+| Name | Location/type | Purpose |
 | --- | --- | --- |
-| `THIRDRAILIFY_COMMUNITY_KV` | Workers KV binding | Stores the latest validated community record at `discord:community:snapshot:v1` |
-| `THIRDRAILIFY_COMMUNITY_INGEST_SECRET` | Encrypted Pages secret | Verifies bot HMAC signatures at ingest |
-| `THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 1,800-second unchanged community checkpoint; values below 900 are clamped |
-| `THIRDRAILIFY_BROADCAST_KV_LIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 150-second live checkpoint; values below 150 are clamped for the existing live lease |
-| `THIRDRAILIFY_BROADCAST_KV_UPCOMING_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 600-second upcoming checkpoint; values below 300 are clamped |
-| `THIRDRAILIFY_BROADCAST_KV_INACTIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 1,800-second inactive checkpoint; values below 900 are clamped |
+| `THIRDRAILIFY_PUBLIC_STATE` | Pages external DO binding and Worker DO binding | One stable community/broadcast state object |
+| `THIRDRAILIFY_COMMUNITY_KV` | State Worker KV binding only | Read-only legacy migration source |
+| `THIRDRAILIFY_COMMUNITY_INGEST_SECRET` | Existing encrypted Pages secret | Verifies both signed bot ingest routes |
+| `THIRDRAILIFY_COMMUNITY_CHECKPOINT_SECONDS` | Optional Pages variable | Community unchanged checkpoint; default/minimum 600 |
+| `THIRDRAILIFY_BROADCAST_LIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Live unchanged checkpoint; default/minimum 150 |
+| `THIRDRAILIFY_BROADCAST_UPCOMING_CHECKPOINT_SECONDS` | Optional Pages variable | Upcoming unchanged checkpoint; default/minimum 150 |
+| `THIRDRAILIFY_BROADCAST_INACTIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Offline unchanged checkpoint; default/minimum 600 |
 
-The broadcast bridge reuses both entries above. Its record is stored under a separate KV key, so no second KV namespace, binding, or ingest secret is required.
+The former `*_KV_*_CHECKPOINT_SECONDS` names remain accepted as temporary fallbacks, but no checkpoint writes to KV. Never prefix the secret with `VITE_`, copy it into browser source, return it from GET, place it in Git, or paste a local `.env` into Cloudflare.
 
-Never prefix the secret with `VITE_`, copy it into browser source, return it from GET, place it in Git, or paste the repository's local `.env` into Cloudflare.
+## SQLite latest-state contract
 
-`NODE_VERSION` does not need to be added in the dashboard because `.node-version` already pins it. If dashboard policy requires an explicit build variable, use the same name/value and keep the file and dashboard synchronized.
+The single object stores two bounded rows:
 
-## Community bridge — manual post-Codex setup
+```sql
+CREATE TABLE snapshots (
+  key TEXT PRIMARY KEY,
+  schema_version INTEGER,
+  semantic_hash TEXT,
+  payload_json TEXT,
+  producer_observed_at TEXT,
+  persisted_at TEXT
+);
+```
 
-These resources do not exist merely because code references them. Perform these steps manually after code review; this milestone does not authorize dashboard changes or deployment.
+The keys are `community` and `broadcast`. A tiny `metadata(key PRIMARY KEY, value)` table records the schema and legacy migration state. No history row is created per request or poll.
 
-1. Create one Workers KV namespace for the Public Pages project, suggested display purpose **ThirdRailify Community**.
-2. Bind that namespace to the Pages project as `THIRDRAILIFY_COMMUNITY_KV` for the staging environment being tested.
-3. Add an encrypted Pages secret named `THIRDRAILIFY_COMMUNITY_INGEST_SECRET`.
-4. Put the same randomly generated secret value only in that Pages secret and the local bot's untracked `.env` under `THIRDRAILIFY_COMMUNITY_INGEST_SECRET`.
-5. Put the staging ingest endpoint in the bot's untracked `.env` as `THIRDRAILIFY_COMMUNITY_INGEST_URL`, ending in `/api/community/discord/ingest`.
-6. Run the bot's `run-bot.cmd --check`; it verifies that URL/secret are either both present or both absent and does not publish.
-7. After a separate live-smoke approval, start the bot manually and verify one bounded signed snapshot at `GET /api/community/discord` before relying on the UI's enriched mode.
+On first initialization, the object reads `discord:community:snapshot:v1` and `broadcast:current:snapshot:v1` only when their corresponding SQLite rows are absent. Both values pass through the current public normalizers before seeding. Existing SQLite rows are never overwritten. The object then records `legacy_kv_migration_completed=true` in SQLite. KV is never mutated, and the marker prevents normal requests from reading it again.
 
-For the watch bridge, add the same staging origin to the bot's untracked `.env` as `THIRDRAILIFY_BROADCAST_INGEST_URL=https://<staging-project>.pages.dev/api/watch/ingest`. Keep the existing community secret value unchanged. A clean supervised bot restart is required before the new URL is loaded. After separate approval, Bot Admin `/streams website-status` can inspect safe local status and Super Admin `/streams website-publish` can request one signed snapshot without Discord delivery/history. This setup does not authorize a bot restart, Pages deployment, secret mutation, custom-domain attachment, or live command during code review.
+## Deployment order
 
-The local machine makes outbound HTTPS requests only. Do not port-forward, tunnel, or expose an inbound bot endpoint. The staging `pages.dev` URL may be used initially; do not attach a custom domain.
+Run all local gates first. Then deploy only these exact targets:
 
-The bot may continue observing and POSTing at its existing cadence, but the Pages Functions now own the final idempotent KV budget gate. Community semantic hashing excludes only root `generatedAt`; broadcast hashing also excludes provider/candidate observation timestamps, live-lease renewal, and viewer-count churn while retaining every public transition and metadata field. Valid unchanged ingests return HTTP 204 with safe persistence/reason/write-count headers and do not PUT until the relevant checkpoint. The public GET contracts and stale neutralization/demotion behavior remain unchanged. Missing KV data still returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback. The HMAC replay window remains five minutes and is independent of display freshness.
+```powershell
+npx wrangler deploy --config cloudflare/state-worker/wrangler.jsonc
+npm run build
+npx wrangler pages deploy dist --project-name thirdrailify --branch main
+```
 
-## Staging verification
+The Worker must deploy first so the Pages external binding resolves. Do not create or attach a route/custom domain for it. Do not recreate, rename, clear, or delete `thirdrailify-community`; its exact existing namespace remains the read-only migration source during the audit window. Preserve the existing Pages ingest secret.
 
-1. Before connecting Git, run `npm ci`, `npm run lint`, `npm run typecheck`, `npm run test:functions`, and `npm run build` locally.
-2. Connect the repository with the values above and allow only a `pages.dev` staging URL.
-3. Confirm `/`, `/shop`, a known `/products/:slug`, a migration shell, a preserved alias, and an unknown route on the deployed preview.
-4. Confirm `/_redirects` provides direct-load SPA behavior, `/store` redirects to `/shop`, `/watch` loads directly, `/api/watch` is not swallowed by the SPA, and `_routes.json` invokes Functions only for the named community/watch API paths.
-5. Confirm static responses include `X-Robots-Tag: noindex, nofollow, noarchive` plus the checked-in security headers.
-6. With local test secrets only, validate good/bad/expired HMAC, wrong guild/schema, oversized bodies, normalized persistence, missing/fresh/delayed/stale GET, and no-store responses. Never use or print the production secret during local validation.
-7. Check enriched, basic fallback, and unavailable widget modes at phone, tablet, and desktop widths, including profile focus/tap/Escape/outside close, 12/24 member bounds, long text, reduced motion, overflow, and console/network errors.
-8. Validate watch loading, YouTube live, Rumble live, simultaneous live, offline latest on each provider, Rumble no-embed fallback, upcoming, delayed, stale, and unavailable states at phone/tablet/desktop widths. Confirm exact frame CSP, bounded same-origin thumbnail behavior, platform switching, reduced motion, no overflow, and no application console errors.
-9. Keep Wix as production until content, commerce, legal, redirects, analytics, and cutover acceptance are complete.
+After deployment, run the double-clickable `Verify-Cloudflare-State-Backend.cmd` or:
 
-## Domain hold
+```powershell
+npm run verify:state-backend
+```
 
-**DO NOT ATTACH `thirdrailify.com` OR `admin.thirdrailify.com` YET.**
+The verifier performs GET requests only. It checks the community and Watch endpoints plus `/api/state-backend`, requires `state_backend=durable_object_sqlite`, a completed read-only legacy migration, zero steady-state KV writes, and exact local/live release fingerprint parity. Results are `CURRENT`, `STALE`, `UNREACHABLE`, or `INCOMPATIBLE`; a live KV-backed contract is a failure.
 
-Do not change GoDaddy, DNS, nameservers, Wix bindings, redirects, or either custom domain during staging.
+## Acceptance and rollback
 
-Official references: [Cloudflare Pages build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/), [build image and Node version selection](https://developers.cloudflare.com/pages/configuration/build-image/), [serving SPAs](https://developers.cloudflare.com/pages/configuration/serving-pages/), and [custom headers](https://developers.cloudflare.com/pages/configuration/headers/).
+Do not issue a production write probe or manipulate Discord/provider state for testing. Normal signed bot publications will update the object after Pages cutover. Confirm the three public GET endpoints remain schema-compatible and that `/api/watch/thumbnail` retains its key-bound redirect behavior.
+
+Keep the legacy namespace for the migration/audit window. Prefer rolling forward if a fault appears. A code rollback to KV would immediately reintroduce account-level PUT consumption and could serve stale data because updates accepted after cutover exist only in SQLite. Removing the migration KV binding is a later cleanup after the audit window, not part of this milestone.
+
+Cloudflare analytics will continue showing historical monthly KV totals until retention ages them out. Do not attempt to reset the counter. The success signal is zero new live operations on `thirdrailify-community` after bootstrap, backed by the production-source mutation scan and storage contract.
+
+The conservative busy-day projection is 11,209 object requests, at most 33,627 billable rows read, at most 2,226 billable rows written, and no more than 200 KiB stored. Against the current Free allowances of 100,000 object requests/day, 5 million rows read/day, 100,000 rows written/day, and 5 GB total SQLite Durable Object storage, that uses approximately 11.209%, 0.673%, 2.226%, and 0.004%. Even the deliberately extreme model of a meaningful Discord change every five seconds for 24 hours plus continuous live broadcast polling and 10,000 public reads stays at 19.792% requests, 1.188% rows read, and 18.432% rows written. The row estimates apply 3× read and 2× write margins for activation/metadata/index work. These are ThirdRailify projections, not claims about unrelated account usage.
+
+Official references: [Pages Functions bindings](https://developers.cloudflare.com/pages/functions/bindings/), [Pages Wrangler configuration](https://developers.cloudflare.com/pages/functions/wrangler-configuration/), [Durable Object migrations](https://developers.cloudflare.com/durable-objects/reference/durable-objects-migrations/), [Durable Object pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/), [Durable Object limits](https://developers.cloudflare.com/durable-objects/platform/limits/), and [Pages build configuration](https://developers.cloudflare.com/pages/configuration/build-configuration/).
