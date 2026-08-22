@@ -21,7 +21,7 @@ export async function onRequest(context) {
   if (hostname === "localhost" || hostname.endsWith(".local") || /^[\d.]+$/.test(hostname) || hostname.includes(":")) {
     return jsonResponse({ error: "thumbnail_unavailable" }, 502);
   }
-  const response = await fetch(candidate.thumbnailUrl, { method: "GET", redirect: "error", headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" } });
+  const response = await fetch(candidate.thumbnailUrl, { method: "GET", redirect: "manual", headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" } });
   const contentType = response.headers.get("Content-Type") ?? "";
   const length = Number(response.headers.get("Content-Length") ?? 0);
   if (!response.ok || !/^image\/(?:avif|gif|jpeg|png|webp)$/i.test(contentType) || (length && length > 5 * 1024 * 1024)) {

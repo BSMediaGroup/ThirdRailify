@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs",
+    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/kv-write-budget.test.mjs",
     "typecheck": "tsc -b --pretty false",
     "preview": "vite preview --host 127.0.0.1"
   },

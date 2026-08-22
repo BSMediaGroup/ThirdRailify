@@ -3,6 +3,8 @@ export const COMMUNITY_GUILD_ID = "1114717958573396008";
 export const COMMUNITY_KV_KEY = "discord:community:snapshot:v1";
 export const COMMUNITY_MAX_BODY_BYTES = 96 * 1024;
 export const COMMUNITY_REPLAY_WINDOW_SECONDS = 300;
+export const COMMUNITY_CHECKPOINT_SECONDS = 1800;
+export const COMMUNITY_MIN_CHECKPOINT_SECONDS = 900;
 export const FRESH_SECONDS = 720;
 export const DELAYED_SECONDS = 1200;
 
@@ -80,6 +82,12 @@ export function normalizeSnapshot(value) {
     voiceSpaces,
     members,
   };
+}
+
+export function communitySemanticSnapshot(snapshot) {
+  const semantic = { ...snapshot };
+  delete semantic.generatedAt;
+  return semantic;
 }
 
 function normalizeGuild(value) {

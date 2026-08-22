@@ -1,5 +1,12 @@
 import { jsonResponse, verifySignedRequest } from "../community/_community.js";
-import { WATCH_KV_KEY, WATCH_MAX_BODY_BYTES, normalizeWatchSnapshot } from "./_watch.js";
+import {
+  WATCH_KV_KEY,
+  WATCH_MAX_BODY_BYTES,
+  normalizeWatchSnapshot,
+  watchCheckpointSeconds,
+  watchSemanticSnapshot,
+} from "./_watch.js";
+import { ingestSuccessResponse, persistSemanticSnapshot } from "../_snapshot-persistence.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -30,9 +37,16 @@ export async function onRequest(context) {
   const snapshot = normalizeWatchSnapshot(parsed);
   if (!snapshot) return jsonResponse({ error: "invalid_snapshot" }, 400);
   if (Date.parse(snapshot.generatedAt) > Date.now() + 5 * 60 * 1000) return jsonResponse({ error: "invalid_snapshot_time" }, 400);
-  await env.THIRDRAILIFY_COMMUNITY_KV.put(
-    WATCH_KV_KEY,
-    JSON.stringify({ snapshot, receivedAt: new Date().toISOString() }),
-  );
-  return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+  const result = await persistSemanticSnapshot({
+    kv: env.THIRDRAILIFY_COMMUNITY_KV,
+    key: WATCH_KV_KEY,
+    snapshot,
+    normalizeSnapshot: normalizeWatchSnapshot,
+    semanticSnapshot: watchSemanticSnapshot,
+    checkpointSeconds: watchCheckpointSeconds(snapshot, env),
+  });
+  if (result.persisted) {
+    console.info(`watch ingest accepted persisted=true reason=${result.reason} kvWrites=1`);
+  }
+  return ingestSuccessResponse(result);
 }

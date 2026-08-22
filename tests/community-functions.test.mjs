@@ -14,6 +14,7 @@ const NOW = Date.parse("2026-08-12T06:00:00Z");
 class MemoryKv {
   constructor() {
     this.values = new Map();
+    this.putCalls = 0;
   }
 
   async get(key) {
@@ -21,6 +22,7 @@ class MemoryKv {
   }
 
   async put(key, value) {
+    this.putCalls += 1;
     this.values.set(key, value);
   }
 }
@@ -120,7 +122,15 @@ test("ingest accepts valid HMAC and persists only normalized public fields", asy
     });
     assert.equal(response.status, 204);
     assert.equal(response.headers.get("Cache-Control"), "no-store");
+    assert.equal(response.headers.get("X-ThirdRailify-Persisted"), "true");
+    assert.equal(response.headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
+    assert.equal(response.headers.get("X-ThirdRailify-KV-Writes"), "1");
     const stored = JSON.parse(await kv.get(COMMUNITY_KV_KEY));
+    assert.equal(stored.envelopeSchema, "thirdrailify-kv-snapshot-envelope-v1");
+    assert.match(stored.semanticFingerprint, /^[a-f0-9]{64}$/);
+    assert.equal(stored.producerObservedAt, stored.snapshot.generatedAt);
+    assert.equal(stored.persistedAt, stored.receivedAt);
+    assert.equal(stored.checkpointReason, "semantic_change");
     assert.equal(stored.snapshot.topLevelUnknown, undefined);
     assert.equal(stored.snapshot.guild.unexpectedGuildField, undefined);
     assert.equal(stored.snapshot.channels[0].permissions, undefined);
@@ -129,11 +139,81 @@ test("ingest accepts valid HMAC and persists only normalized public fields", asy
   });
 });
 
+test("100 identical community requests and 100 timestamp-only variants cause one PUT", async () => {
+  const original = Date.now;
+  const kv = new MemoryKv();
+  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  try {
+    Date.now = () => NOW;
+    const identical = snapshot(new Date(NOW).toISOString());
+    for (let index = 0; index < 100; index += 1) {
+      const response = await ingestCommunity({ request: signedRequest(identical), env });
+      assert.equal(response.status, 204);
+      assert.equal(response.headers.get("X-ThirdRailify-Persisted"), index === 0 ? "true" : "false");
+    }
+    for (let index = 1; index <= 100; index += 1) {
+      const now = NOW + index * 1000;
+      Date.now = () => now;
+      const body = snapshot(new Date(now).toISOString());
+      const response = await ingestCommunity({ request: signedRequest(body, Math.floor(now / 1000)), env });
+      assert.equal(response.status, 204);
+      assert.equal(response.headers.get("X-ThirdRailify-Persisted"), "false");
+    }
+  } finally {
+    Date.now = original;
+  }
+  assert.equal(kv.putCalls, 1);
+  assert.equal((await kv.get(COMMUNITY_KV_KEY)).includes(SECRET), false);
+});
+
+test("community member and presence changes each persist immediately, then deduplicate", async () => {
+  await withNow(async () => {
+    const kv = new MemoryKv();
+    const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+    assert.equal((await ingestCommunity({ request: signedRequest(snapshot()), env })).status, 204);
+
+    const renamed = snapshot();
+    renamed.members[0].displayName = "Rail Member Updated";
+    assert.equal((await ingestCommunity({ request: signedRequest(renamed), env })).headers.get("X-ThirdRailify-Persisted"), "true");
+    assert.equal((await ingestCommunity({ request: signedRequest(renamed), env })).headers.get("X-ThirdRailify-Persisted"), "false");
+
+    const presence = structuredClone(renamed);
+    presence.members[0].status = "idle";
+    assert.equal((await ingestCommunity({ request: signedRequest(presence), env })).headers.get("X-ThirdRailify-Persisted"), "true");
+    assert.equal(kv.putCalls, 3);
+  });
+});
+
+test("community unchanged checkpoint writes once at 30 minutes without clock rounding repeats", async () => {
+  const original = Date.now;
+  let now = NOW;
+  Date.now = () => now;
+  const kv = new MemoryKv();
+  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const ingest = async () => ingestCommunity({
+    request: signedRequest(snapshot(new Date(now).toISOString()), Math.floor(now / 1000)),
+    env,
+  });
+  try {
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
+    now += 1799_000;
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "unchanged");
+    now += 1000;
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "freshness_checkpoint");
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "unchanged");
+  } finally {
+    Date.now = original;
+  }
+  assert.equal(kv.putCalls, 2);
+});
+
 test("ingest rejects bad and expired signatures", async () => {
   await withNow(async () => {
-    const env = { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+    const kv = new MemoryKv();
+    const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
     assert.equal((await ingestCommunity({ request: signedRequest(snapshot(), Math.floor(NOW / 1000), "wrong"), env })).status, 401);
     assert.equal((await ingestCommunity({ request: signedRequest(snapshot(), Math.floor(NOW / 1000) - 301), env })).status, 401);
+    assert.equal(kv.putCalls, 0);
   });
 });
 
@@ -170,6 +250,8 @@ test("GET derives fresh, delayed, and stale metadata and neutralizes stale prese
       assert.equal(body.ageSeconds, age);
       assert.equal(body.freshness, expected);
       assert.equal(body.members[0].status, expected === "stale" ? "unknown" : "online");
+      assert.equal(body.semanticFingerprint, undefined);
+      assert.equal(body.checkpointReason, undefined);
     }
   });
 });

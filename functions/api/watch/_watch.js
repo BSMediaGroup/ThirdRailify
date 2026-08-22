@@ -1,6 +1,14 @@
+import { checkpointSeconds } from "../_snapshot-persistence.js";
+
 export const WATCH_SCHEMA = "thirdrailify-broadcast-v1";
 export const WATCH_KV_KEY = "broadcast:current:snapshot:v1";
 export const WATCH_MAX_BODY_BYTES = 64 * 1024;
+export const WATCH_LIVE_CHECKPOINT_SECONDS = 150;
+export const WATCH_LIVE_MIN_CHECKPOINT_SECONDS = 150;
+export const WATCH_UPCOMING_CHECKPOINT_SECONDS = 600;
+export const WATCH_UPCOMING_MIN_CHECKPOINT_SECONDS = 300;
+export const WATCH_INACTIVE_CHECKPOINT_SECONDS = 1800;
+export const WATCH_INACTIVE_MIN_CHECKPOINT_SECONDS = 900;
 export const WATCH_FRESH_SECONDS = 180;
 export const WATCH_DELAYED_SECONDS = 900;
 
@@ -37,6 +45,56 @@ export function normalizeWatchSnapshot(value, { rejectUnknown = true } = {}) {
   if (liveNow.some((candidate) => candidate.presentationState !== "live" || !candidate.liveVerifiedAt || !candidate.liveExpiresAt)) return null;
   if (new Set(liveNow.map((candidate) => candidate.platform)).size !== liveNow.length) return null;
   return { schema: WATCH_SCHEMA, generatedAt, source, providerStatus, liveNow, primary, latest, latestByPlatform, upcoming };
+}
+
+export function watchSemanticSnapshot(snapshot) {
+  const semanticCandidate = (candidate) => {
+    if (!candidate) return null;
+    const semantic = { ...candidate };
+    delete semantic.liveVerifiedAt;
+    delete semantic.liveExpiresAt;
+    delete semantic.observedAt;
+    delete semantic.viewerCount;
+    return semantic;
+  };
+  return {
+    schema: snapshot.schema,
+    source: snapshot.source,
+    providerStatus: {
+      youtube: { state: snapshot.providerStatus.youtube.state },
+      rumble: { state: snapshot.providerStatus.rumble.state },
+    },
+    liveNow: snapshot.liveNow.map(semanticCandidate),
+    primary: semanticCandidate(snapshot.primary),
+    latest: semanticCandidate(snapshot.latest),
+    latestByPlatform: {
+      youtube: semanticCandidate(snapshot.latestByPlatform.youtube),
+      rumble: semanticCandidate(snapshot.latestByPlatform.rumble),
+    },
+    upcoming: semanticCandidate(snapshot.upcoming),
+  };
+}
+
+export function watchCheckpointSeconds(snapshot, env) {
+  if (snapshot.liveNow.length) {
+    return checkpointSeconds(
+      env.THIRDRAILIFY_BROADCAST_KV_LIVE_CHECKPOINT_SECONDS,
+      WATCH_LIVE_CHECKPOINT_SECONDS,
+      WATCH_LIVE_MIN_CHECKPOINT_SECONDS,
+    );
+  }
+  if (snapshot.upcoming) {
+    return checkpointSeconds(
+      env.THIRDRAILIFY_BROADCAST_KV_UPCOMING_CHECKPOINT_SECONDS,
+      WATCH_UPCOMING_CHECKPOINT_SECONDS,
+      WATCH_UPCOMING_MIN_CHECKPOINT_SECONDS,
+    );
+  }
+  return checkpointSeconds(
+    env.THIRDRAILIFY_BROADCAST_KV_INACTIVE_CHECKPOINT_SECONDS,
+    WATCH_INACTIVE_CHECKPOINT_SECONDS,
+    WATCH_INACTIVE_MIN_CHECKPOINT_SECONDS,
+  );
 }
 
 export function effectiveWatchResponse(snapshot, now = Date.now()) {

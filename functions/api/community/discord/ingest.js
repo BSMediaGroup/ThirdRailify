@@ -1,10 +1,18 @@
 import {
+  COMMUNITY_CHECKPOINT_SECONDS,
   COMMUNITY_KV_KEY,
   COMMUNITY_MAX_BODY_BYTES,
+  COMMUNITY_MIN_CHECKPOINT_SECONDS,
+  communitySemanticSnapshot,
   jsonResponse,
   normalizeSnapshot,
   verifySignedRequest,
 } from "../_community.js";
+import {
+  checkpointSeconds,
+  ingestSuccessResponse,
+  persistSemanticSnapshot,
+} from "../../_snapshot-persistence.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -41,9 +49,20 @@ export async function onRequest(context) {
   const generatedMilliseconds = Date.parse(snapshot.generatedAt);
   if (generatedMilliseconds > Date.now() + 5 * 60 * 1000) return jsonResponse({ error: "invalid_snapshot_time" }, 400);
 
-  await env.THIRDRAILIFY_COMMUNITY_KV.put(
-    COMMUNITY_KV_KEY,
-    JSON.stringify({ snapshot, receivedAt: new Date().toISOString() }),
-  );
-  return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
+  const result = await persistSemanticSnapshot({
+    kv: env.THIRDRAILIFY_COMMUNITY_KV,
+    key: COMMUNITY_KV_KEY,
+    snapshot,
+    normalizeSnapshot,
+    semanticSnapshot: communitySemanticSnapshot,
+    checkpointSeconds: checkpointSeconds(
+      env.THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS,
+      COMMUNITY_CHECKPOINT_SECONDS,
+      COMMUNITY_MIN_CHECKPOINT_SECONDS,
+    ),
+  });
+  if (result.persisted) {
+    console.info(`community ingest accepted persisted=true reason=${result.reason} kvWrites=1`);
+  }
+  return ingestSuccessResponse(result);
 }

@@ -25,6 +25,10 @@ The catalogue remains a local dated snapshot. The community Pages Functions add 
 | --- | --- | --- |
 | `THIRDRAILIFY_COMMUNITY_KV` | Workers KV binding | Stores the latest validated community record at `discord:community:snapshot:v1` |
 | `THIRDRAILIFY_COMMUNITY_INGEST_SECRET` | Encrypted Pages secret | Verifies bot HMAC signatures at ingest |
+| `THIRDRAILIFY_COMMUNITY_KV_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 1,800-second unchanged community checkpoint; values below 900 are clamped |
+| `THIRDRAILIFY_BROADCAST_KV_LIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 150-second live checkpoint; values below 150 are clamped for the existing live lease |
+| `THIRDRAILIFY_BROADCAST_KV_UPCOMING_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 600-second upcoming checkpoint; values below 300 are clamped |
+| `THIRDRAILIFY_BROADCAST_KV_INACTIVE_CHECKPOINT_SECONDS` | Optional Pages variable | Overrides the 1,800-second inactive checkpoint; values below 900 are clamped |
 
 The broadcast bridge reuses both entries above. Its record is stored under a separate KV key, so no second KV namespace, binding, or ingest secret is required.
 
@@ -48,7 +52,7 @@ For the watch bridge, add the same staging origin to the bot's untracked `.env` 
 
 The local machine makes outbound HTTPS requests only. Do not port-forward, tunnel, or expose an inbound bot endpoint. The staging `pages.dev` URL may be used initially; do not attach a custom domain.
 
-The bot intentionally bounds KV writes with an immediate startup snapshot, a five-minute automatic floor, semantic deduplication, and a ten-minute unchanged heartbeat. The public GET freshness contract is therefore fresh under 720 seconds, delayed from 720 through 1199 seconds, and stale at 1200 seconds or later. One normal heartbeat cycle remains fresh, one missed or late heartbeat becomes delayed, and clearly old data becomes stale. Stale data retains last-published channel/profile details but member presence is neutralized. Missing KV data returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback. The HMAC replay window remains five minutes and is independent of display freshness.
+The bot may continue observing and POSTing at its existing cadence, but the Pages Functions now own the final idempotent KV budget gate. Community semantic hashing excludes only root `generatedAt`; broadcast hashing also excludes provider/candidate observation timestamps, live-lease renewal, and viewer-count churn while retaining every public transition and metadata field. Valid unchanged ingests return HTTP 204 with safe persistence/reason/write-count headers and do not PUT until the relevant checkpoint. The public GET contracts and stale neutralization/demotion behavior remain unchanged. Missing KV data still returns a truthful unavailable response, allowing the React client to use Discord's basic public-widget fallback. The HMAC replay window remains five minutes and is independent of display freshness.
 
 ## Staging verification
 

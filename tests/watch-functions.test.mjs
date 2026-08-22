@@ -13,9 +13,9 @@ const SECRET = "local-watch-functions-secret";
 const NOW = Date.parse("2026-08-22T06:00:00Z");
 
 class MemoryKv {
-  constructor() { this.values = new Map(); }
+  constructor() { this.values = new Map(); this.putCalls = 0; }
   async get(key) { return this.values.get(key) ?? null; }
-  async put(key, value) { this.values.set(key, value); }
+  async put(key, value) { this.putCalls += 1; this.values.set(key, value); }
 }
 
 function candidate(platform = "youtube", state = "live") {
@@ -63,6 +63,17 @@ function snapshot(generatedAt = "2026-08-22T05:59:00Z") {
   };
 }
 
+function offlineSnapshot(generatedAt = "2026-08-22T05:59:00Z") {
+  const value = snapshot(generatedAt);
+  const youtube = candidate("youtube", "archive");
+  value.providerStatus.youtube = { state: "offline", checkedAt: generatedAt };
+  value.liveNow = [];
+  value.primary = youtube;
+  value.latest = youtube;
+  value.latestByPlatform.youtube = youtube;
+  return value;
+}
+
 function signedRequest(body, timestamp = Math.floor(NOW / 1000), secret = SECRET) {
   const raw = JSON.stringify(body);
   const signature = createHmac("sha256", secret).update(`${timestamp}.${raw}`).digest("hex");
@@ -91,18 +102,106 @@ test("watch ingest accepts a signed exact snapshot under the separate KV key", a
       env: { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET },
     });
     assert.equal(response.status, 204);
+    assert.equal(response.headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
     assert.ok(await kv.get(WATCH_KV_KEY));
     assert.equal(await kv.get("discord:community:snapshot:v1"), null);
   });
 });
 
+test("repeated offline watch state does not PUT before the 30-minute checkpoint", async () => {
+  const original = Date.now;
+  let now = NOW;
+  Date.now = () => now;
+  const kv = new MemoryKv();
+  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const ingest = async () => ingestWatch({
+    request: signedRequest(offlineSnapshot(new Date(now).toISOString()), Math.floor(now / 1000)),
+    env,
+  });
+  try {
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "true");
+    for (let index = 1; index <= 100; index += 1) {
+      now = NOW + index * 10_000;
+      assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
+    }
+    now = NOW + 1800_000;
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "freshness_checkpoint");
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
+  } finally {
+    Date.now = original;
+  }
+  assert.equal(kv.putCalls, 2);
+});
+
+test("watch live start, metadata change, and live end persist while volatile live polls deduplicate", async () => {
+  const original = Date.now;
+  let now = NOW;
+  Date.now = () => now;
+  const kv = new MemoryKv();
+  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const ingest = async (body) => ingestWatch({ request: signedRequest(body, Math.floor(now / 1000)), env });
+  try {
+    assert.equal((await ingest(offlineSnapshot())).headers.get("X-ThirdRailify-Persisted"), "true");
+
+    now += 10_000;
+    assert.equal((await ingest(snapshot(new Date(now).toISOString()))).headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
+
+    now += 10_000;
+    const volatile = snapshot(new Date(now).toISOString());
+    volatile.providerStatus.youtube.checkedAt = new Date(now).toISOString();
+    volatile.primary.observedAt = new Date(now).toISOString();
+    volatile.primary.liveVerifiedAt = new Date(now).toISOString();
+    volatile.primary.liveExpiresAt = new Date(now + 180_000).toISOString();
+    volatile.primary.viewerCount = 999;
+    assert.equal((await ingest(volatile)).headers.get("X-ThirdRailify-Persist-Reason"), "unchanged");
+
+    const metadata = structuredClone(volatile);
+    metadata.primary.title = "Updated public broadcast title";
+    metadata.liveNow[0].title = metadata.primary.title;
+    metadata.latest.title = metadata.primary.title;
+    metadata.latestByPlatform.youtube.title = metadata.primary.title;
+    assert.equal((await ingest(metadata)).headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
+
+    now += 10_000;
+    assert.equal((await ingest(offlineSnapshot(new Date(now).toISOString()))).headers.get("X-ThirdRailify-Persist-Reason"), "semantic_change");
+  } finally {
+    Date.now = original;
+  }
+  assert.equal(kv.putCalls, 4);
+});
+
+test("identical live watch state checkpoints at the bounded 150-second lease cadence", async () => {
+  const original = Date.now;
+  let now = NOW;
+  Date.now = () => now;
+  const kv = new MemoryKv();
+  const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+  const ingest = async () => ingestWatch({
+    request: signedRequest(snapshot(new Date(now).toISOString()), Math.floor(now / 1000)),
+    env,
+  });
+  try {
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "true");
+    now += 149_000;
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
+    now += 1000;
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persist-Reason"), "freshness_checkpoint");
+    assert.equal((await ingest()).headers.get("X-ThirdRailify-Persisted"), "false");
+  } finally {
+    Date.now = original;
+  }
+  assert.equal(kv.putCalls, 2);
+});
+
 test("watch ingest rejects bad, expired, and future signatures or snapshots", async () => {
   await withNow(async () => {
-    const env = { THIRDRAILIFY_COMMUNITY_KV: new MemoryKv(), THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
+    const kv = new MemoryKv();
+    const env = { THIRDRAILIFY_COMMUNITY_KV: kv, THIRDRAILIFY_COMMUNITY_INGEST_SECRET: SECRET };
     assert.equal((await ingestWatch({ request: signedRequest(snapshot(), Math.floor(NOW / 1000), "wrong"), env })).status, 401);
     assert.equal((await ingestWatch({ request: signedRequest(snapshot(), Math.floor(NOW / 1000) - 301), env })).status, 401);
     const future = snapshot(new Date(NOW + 301_000).toISOString());
     assert.equal((await ingestWatch({ request: signedRequest(future), env })).status, 400);
+    assert.equal(kv.putCalls, 0);
   });
 });
 
@@ -153,6 +252,8 @@ test("watch GET derives fresh and delayed live state", async () => {
       assert.equal(result.liveNow.length, 1);
       assert.equal(result.primary.key, "youtube:abc123DEF45");
       assert.match(result.latestByPlatform.rumble.thumbnailUrl, /^\/api\/watch\/thumbnail\?key=/);
+      assert.equal(result.semanticFingerprint, undefined);
+      assert.equal(result.checkpointReason, undefined);
     }
   });
 });
@@ -192,8 +293,10 @@ test("Rumble thumbnail proxy is snapshot-key bound and returns a bounded image",
   kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: snapshot(), receivedAt: new Date(NOW).toISOString() }));
   const originalFetch = globalThis.fetch;
   let calls = 0;
-  globalThis.fetch = async () => {
+  globalThis.fetch = async (url, options) => {
     calls += 1;
+    assert.equal(url, "https://image.example/rumble.webp");
+    assert.equal(options.redirect, "manual");
     return new Response(new Uint8Array([1, 2, 3]), { headers: { "Content-Type": "image/webp" } });
   };
   try {
@@ -231,6 +334,26 @@ test("Rumble thumbnail proxy rejects private hosts and unbounded upstream bodies
   globalThis.fetch = async () => new Response(new Uint8Array(5 * 1024 * 1024 + 1), {
     headers: { "Content-Type": "image/webp" },
   });
+  try {
+    const response = await getWatchThumbnail({
+      request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
+      env: { THIRDRAILIFY_COMMUNITY_KV: kv },
+    });
+    assert.equal(response.status, 502);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("Rumble thumbnail proxy rejects upstream redirects without following them", async () => {
+  const kv = new MemoryKv();
+  kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: snapshot(), receivedAt: new Date(NOW).toISOString() }));
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (url, options) => {
+    assert.equal(url, "https://image.example/rumble.webp");
+    assert.equal(options.redirect, "manual");
+    return new Response(null, { status: 302, headers: { Location: "https://redirect.example/image.webp" } });
+  };
   try {
     const response = await getWatchThumbnail({
       request: new Request("https://staging.example/api/watch/thumbnail?key=rumble:vabc123"),
