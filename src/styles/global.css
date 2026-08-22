@@ -1328,8 +1328,7 @@ h3 {
 
 .host-card {
   display: grid;
-  min-height: 560px;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -1338,7 +1337,7 @@ h3 {
 
 .host-card__image {
   position: relative;
-  min-height: 360px;
+  aspect-ratio: 3 / 2;
   overflow: hidden;
   background: radial-gradient(circle at 50% 55%, rgba(255, 209, 47, 0.13), transparent 46%), #0b0c08;
 }
@@ -1348,6 +1347,8 @@ h3 {
 }
 
 .host-card__image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -1355,18 +1356,16 @@ h3 {
   transition: transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.host-card:hover .host-card__image img {
-  transform: scale(1.025);
+.host-card__image::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 74%, var(--panel) 100%);
+  content: "";
+  pointer-events: none;
 }
 
-.host-card__image > span {
-  position: absolute;
-  z-index: 2;
-  top: 24px;
-  left: 26px;
-  color: rgba(255, 255, 255, 0.16);
-  font-family: var(--display);
-  font-size: 42px;
+.host-card:hover .host-card__image img {
+  transform: scale(1.025);
 }
 
 .host-card__body {
@@ -3634,7 +3633,6 @@ h3 {
   .universe-grid { grid-template-columns: 1fr; }
   .universe-grid article { min-height: 250px; }
   .universe-grid h3 { margin-top: 36px; }
-  .host-card { min-height: 500px; }
   .product-grid,
   .product-grid--featured { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .community-grid { grid-template-columns: 1fr; }
@@ -3728,7 +3726,6 @@ h3 {
   .broadcast-card__visual h3 { font-size: 64px; }
   .broadcast-orbit { width: 280px; height: 280px; }
   .host-grid { grid-template-columns: 1fr; }
-  .host-card__image { min-height: 330px; }
   .product-grid,
   .product-grid--featured { grid-template-columns: 1fr; }
   .product-card h3 { min-height: 0; }

@@ -7,8 +7,8 @@ import tiktokIcon from "../../assets/icons/tiktok.svg";
 import twitterIcon from "../../assets/icons/twitter.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import shawnGinaHero from "../../assets/illustrations/shawn-gina-hero.webp";
-import ginaPortrait from "../../assets/people/pfp-gina.webp";
-import shawnPortrait from "../../assets/people/PFPXTRO2F.webp";
+import ginaPortrait from "../../assets/people/gina1x.webp";
+import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ProductCard } from "../components/ProductCard";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { SignalField } from "../components/SignalField";
@@ -112,11 +112,11 @@ export function HomePage() {
         <div className="container section-heading"><p className="eyebrow">Meet the instigators</p><h2>Two hosts.<br />One live wire.</h2></div>
         <div className="container host-grid">
           <article className="host-card host-card--shawn">
-            <div className="host-card__image"><span>01</span><img src={shawnPortrait} alt="Shawn in his recurring costume" /></div>
+            <div className="host-card__image"><img src={shawnPortrait} alt="Portrait of Shawn" /></div>
             <div className="host-card__body"><small>Host · @ThirdRailify</small><h3>Shawn</h3><p>Daily news, crime, and pop culture with the perspective—and detours—that define Third Railify.</p><Link className="text-link" to="/shawn">Meet Shawn <ArrowIcon /></Link></div>
           </article>
           <article className="host-card host-card--gina">
-            <div className="host-card__image"><span>02</span><img src={ginaPortrait} alt="Gina, host of Just Gina" /></div>
+            <div className="host-card__image"><img src={ginaPortrait} alt="Portrait of Gina" /></div>
             <div className="host-card__body"><small>Host · @JustGina</small><h3>Gina</h3><p>Sass, smarts, humor, conspiracies, and culture in a distinct Just Gina lane inside the shared show universe.</p><Link className="text-link" to="/gina">Meet Gina <ArrowIcon /></Link></div>
           </article>
         </div>
