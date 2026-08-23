@@ -28,6 +28,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Tightened CSP only for exact YouTube privacy-enhanced/YouTube/Rumble frame and YouTube thumbnail hosts while preserving the existing security directives. Added deterministic Function and browser fixtures covering the full state matrix at 390/768/1440 pixels, reduced motion, platform switching, overflow, and console cleanliness.
 - Kept `thirdrailify.com`, Wix, Pages projects, KV resources, bindings, secrets, DNS, custom domains, and deployment untouched. No Public version change was made; this remains additive under pending `0.1.0-alpha.0`.
 - Strengthened the shared header's verified-live treatment with a redder chip and gentle reduced-motion-safe pulse. The homepage `Follow the rail.` Rumble and YouTube rows now consume the same normalized `liveNow` platform state as the existing platform rail, so live highlighting and `Live now` copy remain consistent without another poller or provider guess.
+- Added three original local WebP feature illustrations to the homepage show-universe cards for `Aboot Nothing`, `Pop Culture Beat Down`, and `News Hangout`, with stable responsive crops, gentle edge falloff, lazy decoding, and preserved card copy hierarchy.
 
 - Added a Vite/React/TypeScript/React Router public application and deterministic npm lockfile.
 - Added a tokenized responsive dark/gold design system, shared shell, accessible navigation, branded 404, and route migration shells/aliases.

@@ -58,7 +58,7 @@ ThirdRailify/
 │   ├── catalogue/          Local copies of eight audited Wix product images
 │   ├── fonts/              Seeded font files and licences
 │   ├── icons/              Active Public favicon plus local Discord, TikTok, and platform SVG artwork
-│   ├── illustrations/      Joined editorial hero artwork
+│   ├── illustrations/      Joined hero art and homepage show-format feature illustrations
 │   ├── logos/              Seeded marks and the active straight header/footer bolt silhouette
 │   ├── people/             Seeded host imagery
 │   └── video/              Seeded media (not used as a decorative hero loop)
