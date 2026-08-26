@@ -19,6 +19,12 @@ export type AuthConfig = {
   emailSignupConfigured: boolean;
   turnstileSiteKey: string | null;
   oauthProviders: Array<{ id: "discord" | "google" | "github" | "twitter"; label: string }>;
+  oauthProviderStates?: Array<{
+    id: "discord" | "google" | "github" | "twitter";
+    label: string;
+    status: "enabled" | "disabled" | "unavailable";
+    message?: string;
+  }>;
   publicOrigin: string | null;
   adminOrigin: string | null;
   environment: string;

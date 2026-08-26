@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Miniflare } from "miniflare";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { StaticRouter } from "react-router-dom/server.mjs";
+import { createServer } from "vite";
 import { onRequest as authRequest } from "../functions/api/auth/[[path]].js";
 import { sha256 } from "../functions/_shared/public-auth.js";
 
@@ -82,6 +86,54 @@ test("public auth consumes a one-time handoff, issues a host session, and enforc
   assert.deepEqual(audit, { event_type: "logout", result: "success" });
 });
 
+test("Public sign-in and sign-up render server-disabled Google as a non-activatable control", async (t) => {
+  const vite = await createServer({
+    appType: "custom",
+    logLevel: "silent",
+    server: { middlewareMode: true },
+  });
+  t.after(() => vite.close());
+  const { AuthDialog } = await vite.ssrLoadModule("/src/auth/AuthDialog.tsx");
+  const config = {
+    configured: true,
+    emailSignupConfigured: true,
+    turnstileSiteKey: "test-site-key",
+    oauthProviders: [{ id: "discord", label: "Discord" }],
+    oauthProviderStates: [
+      { id: "discord", label: "Discord", status: "enabled" },
+      { id: "google", label: "Google", status: "disabled", message: "Available after site migration" },
+      { id: "github", label: "GitHub", status: "unavailable" },
+    ],
+    publicOrigin: PUBLIC_ORIGIN,
+    adminOrigin: "https://thirdrailify-admin.pages.dev",
+    environment: "staging",
+    cookieMode: "host-only",
+  };
+
+  for (const initialMode of ["signin", "signup"]) {
+    const markup = renderToStaticMarkup(createElement(
+      StaticRouter,
+      { location: initialMode === "signin" ? "/account/login" : "/account" },
+      createElement(AuthDialog, {
+        initialMode,
+        initialError: "",
+        resetToken: "",
+        config,
+        onClose: () => {},
+        onSession: async () => {},
+      }),
+    ));
+    const googleButton = buttonContaining(markup, "Continue with Google");
+    const discordButton = buttonContaining(markup, "Continue with Discord");
+    assert.match(googleButton, /disabled=""/, `${initialMode} Google control uses native disabled semantics`);
+    assert.match(googleButton, /auth-provider--disabled/);
+    assert.match(googleButton, /Available after site migration/);
+    assert.doesNotMatch(googleButton, /href=/, "disabled Google is not a navigation control");
+    assert.doesNotMatch(discordButton, /disabled=""/, "Discord remains activatable");
+    assert.equal(markup.includes("Continue with GitHub"), false, "unconfigured providers remain hidden");
+  }
+});
+
 async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken } = {}, env) {
   const headers = new Headers({ Origin: origin, "CF-Connecting-IP": "192.0.2.20" });
   if (body !== undefined) headers.set("Content-Type", "application/json");
@@ -97,6 +149,15 @@ async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken
 
 function cookiePair(setCookie) {
   return String(setCookie || "").split(";", 1)[0];
+}
+
+function buttonContaining(markup, text) {
+  const marker = markup.indexOf(text);
+  assert.notEqual(marker, -1, `rendered auth dialog contains ${text}`);
+  const start = markup.lastIndexOf("<button", marker);
+  const end = markup.indexOf("</button>", marker);
+  assert.ok(start >= 0 && end > marker, `${text} is rendered inside a button`);
+  return markup.slice(start, end + "</button>".length);
 }
 
 async function createContractSchema(db) {

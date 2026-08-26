@@ -4011,8 +4011,13 @@ h3 {
 .auth-providers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .auth-provider { display: flex; min-height: 46px; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: rgba(255,255,255,.025); color: var(--paper); cursor: pointer; text-align: left; }
 .auth-provider:hover { border-color: rgba(255,209,47,.5); }
+.auth-provider:disabled,
+.auth-provider:disabled:hover { border-color: var(--line); color: var(--muted); cursor: not-allowed; opacity: .56; }
 .auth-provider img { width: 21px; height: 21px; object-fit: contain; }
 .auth-provider span { overflow-wrap: anywhere; }
+.auth-provider--disabled img { filter: grayscale(1); opacity: .72; }
+.auth-provider__copy { display: grid; gap: 2px; }
+.auth-provider__copy small { color: var(--muted-deep); font-family: var(--mono); font-size: 9px; line-height: 1.25; text-transform: uppercase; }
 .auth-provider--selected { width: 100%; margin-bottom: 14px; cursor: default; }
 .auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; color: var(--muted-deep); font-family: var(--mono); font-size: 9px; text-transform: uppercase; }
 .auth-divider::before,

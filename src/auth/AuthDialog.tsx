@@ -59,6 +59,11 @@ export function AuthDialog({ initialMode, initialError, resetToken, config, onCl
   }, []);
   const acceptToken = useCallback((token: string) => setTurnstileToken(token), []);
   const verificationUnavailable = useCallback((value: string) => setError(value), []);
+  const visibleProviders = useMemo(() => (
+    config?.oauthProviderStates
+    ?? config?.oauthProviders.map((provider) => ({ ...provider, status: "enabled" as const }))
+    ?? []
+  ).filter((provider) => provider.status !== "unavailable"), [config]);
 
   const switchMode = (nextMode: AuthMode) => {
     setMode(nextMode);
@@ -158,16 +163,33 @@ export function AuthDialog({ initialMode, initialError, resetToken, config, onCl
 
         {configured && !message && !oauthProvider && (
           <>
-            {(mode === "signin" || mode === "signup") && config!.oauthProviders.length > 0 && (
+            {(mode === "signin" || mode === "signup") && visibleProviders.length > 0 && (
               <div className="auth-providers" aria-label="Provider sign in options">
-                {config!.oauthProviders.map((provider) => (
-                  <button key={provider.id} type="button" className="auth-provider" onClick={() => { setOauthProvider(provider); setError(""); resetChallenge(); }}>
-                    <img src={providerIcons[provider.id]} alt="" /><span>Continue with {provider.label}</span>
+                {visibleProviders.map((provider) => (
+                  <button
+                    key={provider.id}
+                    type="button"
+                    className={`auth-provider${provider.status === "disabled" ? " auth-provider--disabled" : ""}`}
+                    disabled={provider.status !== "enabled"}
+                    aria-describedby={provider.status === "disabled" ? `auth-provider-${provider.id}-status` : undefined}
+                    title={provider.status === "disabled" ? provider.message : undefined}
+                    onClick={() => {
+                      if (provider.status !== "enabled") return;
+                      setOauthProvider(provider);
+                      setError("");
+                      resetChallenge();
+                    }}
+                  >
+                    <img src={providerIcons[provider.id]} alt="" />
+                    <span className="auth-provider__copy">
+                      <span>Continue with {provider.label}</span>
+                      {provider.status === "disabled" && <small id={`auth-provider-${provider.id}-status`}>{provider.message || "Currently unavailable"}</small>}
+                    </span>
                   </button>
                 ))}
               </div>
             )}
-            {(mode === "signin" || mode === "signup") && config!.oauthProviders.length > 0 && <div className="auth-divider"><span>or use email</span></div>}
+            {(mode === "signin" || mode === "signup") && visibleProviders.length > 0 && <div className="auth-divider"><span>or use email</span></div>}
             <form className="auth-form" onSubmit={submit}>
               {(mode === "signin" || mode === "signup") && (
                 <div className="auth-mode-tabs" role="group" aria-label="Account mode">
