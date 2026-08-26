@@ -10,6 +10,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Removed the Admin-access reference from the Public account dialog introduction so the login modal describes only the Public identity experience.
 - Added the Admin-supplied OAuth provider-state contract to the Public account dialog. Google now remains visible but natively disabled and greyed with migration-status copy while the server gate is disabled; unavailable providers stay hidden, Discord remains usable, and no Google credential is exposed client-side.
 - Added the Public half of the shared account milestone: an accessible OAuth-first/email login modal, explicit Turnstile lifecycle, same-origin session hydration/logout, one-time D1 handoff exchange, responsive account widget, and real `/account` plus `/account/login` routes.
 - Kept `ThirdRailify-Admin` authoritative for passwords, OAuth callbacks, email delivery, account/role state, and abuse controls. Public owns no credential validation or Admin mutation logic and persists no canonical browser identity.

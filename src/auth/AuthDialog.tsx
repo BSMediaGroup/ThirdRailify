@@ -146,7 +146,7 @@ export function AuthDialog({ initialMode, initialError, resetToken, config, onCl
           <img src={boltMark} alt="" />
           <div><span>Third Railify account</span><h2 id="auth-title">{heading}</h2></div>
         </header>
-        <p id="auth-intro" className="auth-dialog__intro">Sign in to carry your Third Railify identity across the public site and Admin access.</p>
+        <p id="auth-intro" className="auth-dialog__intro">Sign in to carry your Third Railify identity across the public site.</p>
 
         {!configured && <div className="auth-alert" role="alert">Account sign-in is not configured for this environment.</div>}
         {error && <div className="auth-alert" role="alert">{error}</div>}
