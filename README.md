@@ -10,10 +10,11 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Substantial `/shop` with a bounded, dated eight-product Wix snapshot, search, verified broad facets, sorting, loading/error/empty states, details, and a local cart.
 - Product routes at `/products/:slug`; legacy `/product-page/:slug` paths are preserved client-side.
+- Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, responsive header identity, and real `/account` routes.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
-Checkout, payments, tax, shipping, inventory, Printful/Printify APIs, accounts, memberships, donations, CMS writes, and newsletter submission are not connected. Cart contents exist only in browser memory and the cart explicitly disables checkout.
+Checkout, payments, tax, shipping, inventory, Printful/Printify APIs, memberships, donations, CMS writes, and newsletter submission are not connected. Accounts are implemented in code but are not live until the shared staging D1 binding, Admin secrets/providers, and deployment are configured. Cart contents exist only in browser memory and the cart explicitly disables checkout.
 
 ## Local development
 
@@ -41,7 +42,7 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/shop`, `/products/:slug`, `/community`.
+- Implemented: `/`, `/watch`, `/shop`, `/products/:slug`, `/community`, `/account`, `/account/login`.
 - Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
 - Preserved aliases: `/goats`, `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug`.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
@@ -64,6 +65,8 @@ ThirdRailify/
 │   └── video/              Seeded media (not used as a decorative hero loop)
 ├── pocv1/                  Reference-only approved inspiration POC
 ├── functions/
+│   ├── _shared/public-auth.js        Public session/handoff/logout primitives only
+│   ├── api/auth/                     Same-origin Public auth endpoints
 │   ├── api/_snapshot-persistence.js  Shared checkpoint and DO persistence adapter
 │   ├── api/_state-backend.js         Stable singleton Durable Object request boundary
 │   ├── api/_state-contract.js        Deployment identity and storage contract
@@ -75,13 +78,14 @@ ThirdRailify/
 ├── public/
 │   ├── _headers            Cloudflare static response policy
 │   ├── _redirects          Aliases and SPA fallback
-│   └── _routes.json        Invoke Functions only for community, watch, and storage diagnostics APIs
+│   └── _routes.json        Invoke Functions only for auth, community, watch, and storage diagnostics APIs
 ├── src/
+│   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
 │   ├── data/               Dated bounded Wix snapshot
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
-│   ├── pages/              Public routes, including full Watch and Community pages
+│   ├── pages/              Public routes, including Account, Watch, and Community pages
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
@@ -90,6 +94,7 @@ ThirdRailify/
 ├── Verify-Cloudflare-State-Backend.cmd  Double-clickable read-only live verifier
 ├── wrangler.jsonc          Pages external Durable Object binding
 ├── CLOUDFLARE_SETUP.md
+├── CLOUDFLARE_AUTH_SETUP.md
 ├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
 ├── LIVE_SITE_AUDIT.md
 ├── BUMP_NOTES.md
@@ -99,6 +104,8 @@ ThirdRailify/
 The display system uses the seeded American Captain asset at its real weight with lightly relaxed tracking for the primary header voice, with seeded Blinker and Geist Mono for readable body and technical roles.
 
 ## Data and provider boundaries
+
+Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, Admin mutation, or role authority.
 
 `src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` currently returns `src/data/wixSnapshot.ts` asynchronously so loading/error UI exists without coupling components to Wix. A future server/API adapter can replace that provider. Provider credentials and write operations must remain server-side; no provider environment names or APIs are invented here.
 
@@ -121,3 +128,5 @@ The storage contract is available at `GET /api/state-backend`. It exposes only d
 ## Cloudflare and domain safety
 
 See `CLOUDFLARE_SETUP.md` for the proven `thirdrailify` Pages project, the internal `thirdrailify-public-state` Worker binding, migration order, rollback constraints, and read-only verifier. The dedicated Worker is required because Pages can bind to but cannot host a Durable Object class. Do not attach `thirdrailify.com` while Wix is production.
+
+See `CLOUDFLARE_AUTH_SETUP.md` for the Public side of the shared D1 account setup. The real D1 ID is not present locally, so no account binding or live account acceptance is claimed.

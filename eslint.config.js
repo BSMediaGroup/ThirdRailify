@@ -5,7 +5,7 @@ import refresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "node_modules", "pocv1", ".playwright-cli", ".wrangler", "output"] },
+  { ignores: ["dist", "node_modules", "pocv1", ".playwright-cli", ".pytest_cache", ".wrangler", "output"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

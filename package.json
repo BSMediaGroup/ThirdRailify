@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs",
+    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs",
     "test:kv-ban": "node scripts/assert-no-kv-mutations.mjs",
     "test:state-budget": "node scripts/state-backend-budget.mjs",
     "test:state-fingerprint": "node scripts/state-backend-fingerprint.mjs --check",

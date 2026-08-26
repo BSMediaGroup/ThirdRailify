@@ -6,6 +6,8 @@ import { ArrowIcon, BagIcon, BoltIcon, CloseIcon, MenuIcon } from "./Icons";
 import { CartDrawer } from "./CartDrawer";
 import { LiveNowIndicator } from "./BroadcastComponents";
 import { useBroadcast } from "../hooks/useBroadcast";
+import { AccountWidget } from "../auth/AccountWidget";
+import { useAuth } from "../auth/AuthProvider";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -20,6 +22,7 @@ export function SiteShell() {
   const location = useLocation();
   const cart = useCart();
   const { data } = useBroadcast();
+  const { account, openAuth } = useAuth();
 
   useEffect(() => {
     setMenuOpen(false);
@@ -50,6 +53,7 @@ export function SiteShell() {
           </nav>
           <div className="header-actions">
             <Link className="header-watch" to="/watch"><LiveNowIndicator candidates={data?.liveNow ?? []} compact /><ArrowIcon /></Link>
+            <AccountWidget />
             <button className="cart-button" type="button" onClick={cart.open} aria-label={`Open cart, ${cart.count} items`}>
               <BagIcon /><span>Cart</span><b>{cart.count}</b>
             </button>
@@ -62,6 +66,9 @@ export function SiteShell() {
           <div className="container">
             {navItems.map((item, index) => <NavLink key={item.to} to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>)}
             <Link to="/watch"><span>06</span>{data?.liveNow.length ? "Watch live now" : "Watch latest"}<ArrowIcon /></Link>
+            {account
+              ? <Link to="/account"><span>07</span>Your account<ArrowIcon /></Link>
+              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>07</span>Log in</button>}
           </div>
         </nav>
       </header>

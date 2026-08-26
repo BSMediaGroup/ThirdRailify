@@ -10,6 +10,11 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Added the Public half of the shared account milestone: an accessible OAuth-first/email login modal, explicit Turnstile lifecycle, same-origin session hydration/logout, one-time D1 handoff exchange, responsive account widget, and real `/account` plus `/account/login` routes.
+- Kept `ThirdRailify-Admin` authoritative for passwords, OAuth callbacks, email delivery, account/role state, and abuse controls. Public owns no credential validation or Admin mutation logic and persists no canonical browser identity.
+- Added focused Public handoff/session/CSRF/replay tests, exact auth Function routing, minimal Turnstile/Admin-origin/avatar CSP allowances, safe staging origins, sanitized Public environment examples, and a manual shared-D1 setup guide.
+- Refreshed the existing state-backend source fingerprint because its protected input set includes Public Function routing and Wrangler configuration; the Durable Object implementation, SQLite snapshot contract, and legacy-KV read-only boundary are unchanged.
+- No live OAuth, Turnstile, Resend, Cloudflare D1 resource, binding, secret, deployment, DNS, Wix, Access, or custom-domain change was performed. The missing real D1 ID remains an explicit activation blocker.
 - Replaced active community and Watch Workers KV persistence with one stable SQLite-backed `ThirdRailifyPublicState` Durable Object. Its bounded `snapshots` table has independent `community` and `broadcast` rows plus small versioned migration metadata; no poll history is accumulated and cross-key writes remain isolated.
 - Kept `thirdrailify-community` unchanged as a read-only bootstrap source. First initialization validates and seeds only missing rows from `discord:community:snapshot:v1` and `broadcast:current:snapshot:v1`, records migration completion in SQLite, never overwrites newer Durable Object state, and performs no later KV reads.
 - Added a production-source KV mutation ban, deterministic 24-hour/30-day exact-zero KV operation simulations, SQLite migration/idempotency/concurrency/isolation tests, public-safe `/api/state-backend` diagnostics, source release/fingerprint parity, and the read-only double-clickable `Verify-Cloudflare-State-Backend.cmd` operator check.
@@ -77,6 +82,8 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Human-readable
 
+The Public header now has a real Third Railify account control and `/account` destination. Sign-in is designed to use the shared Admin-owned account service without putting credentials, provider secrets, or permanent identity state in the browser.
+
 Third Railify V2 now has its first real public-site foundation: a cinematic show homepage and a shop that uses only a small, clearly labelled slice of the current catalogue. Visitors can explore products and try the cart interaction, but nothing takes payment and no private or provider system is connected. The site is ready for a separate staging review while Wix remains untouched in production.
 
 The Discord directory now keeps conversation channels and live audio spaces distinct: Discord-authored descriptions are easier to scan, while every published Voice and Stage space remains reachable without stretching the homepage indefinitely.
@@ -93,5 +100,5 @@ When a listed provider is live, both homepage social rails now open that confirm
 
 - Complete Wix catalogue and collection mapping.
 - Printful/Printify APIs, server-side commerce, checkout, orders, tax, shipping, and inventory.
-- Accounts, VIP, community, donations, gift cards, newsletter delivery, CMS, and approved legal copy.
+- Live account infrastructure/configuration acceptance, VIP, donations, gift cards, newsletter delivery, CMS, and approved legal copy.
 - Cloudflare project creation, deployment, custom domains, DNS, analytics, and production cutover.
