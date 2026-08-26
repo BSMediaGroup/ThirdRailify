@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
@@ -23,26 +23,55 @@ export function AccountWidget() {
 
   if (loading) return <span className="account-widget account-widget--loading" aria-label="Loading account" />;
   if (!account) return <button className="account-login" type="button" onClick={() => openAuth("signin")}>Log in</button>;
+  const accountType = account.role === "admin" ? (account.adminLevel === "master" ? "Master Admin" : "Admin") : "Member";
+  const handleMenuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
+    const index = controls.indexOf(document.activeElement as HTMLElement);
+    if (event.key === "ArrowDown") { event.preventDefault(); controls[(index + 1 + controls.length) % controls.length]?.focus(); }
+    if (event.key === "ArrowUp") { event.preventDefault(); controls[(index - 1 + controls.length) % controls.length]?.focus(); }
+    if (event.key === "Home") { event.preventDefault(); controls[0]?.focus(); }
+    if (event.key === "End") { event.preventDefault(); controls.at(-1)?.focus(); }
+  };
 
   return (
     <div className="account-widget" ref={root}>
-      <button className="account-widget__trigger" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-haspopup="menu">
+      <button className="account-widget__trigger" type="button" onClick={() => setOpen((value) => !value)} aria-label={`${account.displayName} account menu`} aria-expanded={open} aria-haspopup="menu">
         <AccountAvatar account={account} />
-        <span>{account.displayName}</span>
+        <span className="account-widget__copy"><strong>{account.displayName}</strong><small>{accountType}</small></span>
         <b aria-hidden="true">&#9662;</b>
       </button>
       {open && (
-        <div className="account-menu" role="menu">
-          <div className="account-menu__identity"><strong>{account.displayName}</strong><span>{account.email || `@${account.username || "member"}`}</span></div>
-          <Link to="/account" role="menuitem" onClick={() => setOpen(false)}>Account</Link>
-          <Link to="/watch" role="menuitem" onClick={() => setOpen(false)}>Watch</Link>
-          <Link to="/shop" role="menuitem" onClick={() => setOpen(false)}>Shop</Link>
-          <Link to="/community" role="menuitem" onClick={() => setOpen(false)}>Community</Link>
-          <button type="button" role="menuitem" onClick={() => { setOpen(false); void signOut(); }}>Sign out</button>
+        <div className="account-menu" role="menu" aria-label="Account menu" onKeyDown={handleMenuKeyDown}>
+          <div className="account-menu__identity"><AccountAvatar account={account} /><div><strong>{account.displayName}</strong><span>{account.email || `@${account.username || "member"}`}</span><small>{accountType}</small></div></div>
+          <dl className="account-menu__overview">
+            <div><dt>Display name</dt><dd>{account.displayName}</dd></div>
+            <div><dt>Handle</dt><dd>{account.username ? `@${account.username}` : "Member"}</dd></div>
+            <div><dt>Account type</dt><dd>{account.role.toUpperCase()}</dd></div>
+            <div><dt>Status</dt><dd>{account.status === "active" ? "Active" : account.status.replace("_", " ")}</dd></div>
+          </dl>
+          <div className="account-menu__actions">
+            <Link to="/account" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="profile" /><span>Account settings</span></Link>
+            <Link to="/watch" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="watch" /><span>Watch</span></Link>
+            <Link to="/shop" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="shop" /><span>Shop</span></Link>
+            <Link to="/community" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="community" /><span>Community</span></Link>
+            <span className="account-menu__divider" role="separator" />
+            <button className="account-menu__logout" type="button" role="menuitem" onClick={() => { setOpen(false); void signOut(); }}><AccountMenuIcon name="logout" /><span>Sign out</span></button>
+          </div>
         </div>
       )}
     </div>
   );
+}
+
+function AccountMenuIcon({ name }: { name: "profile" | "watch" | "shop" | "community" | "logout" }) {
+  const paths: Record<typeof name, ReactNode> = {
+    profile: <><circle cx="12" cy="8" r="3"/><path d="M5 21c.6-4.7 3-7 7-7s6.4 2.3 7 7"/></>,
+    watch: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></>,
+    shop: <><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></>,
+    community: <><circle cx="9" cy="8" r="3"/><path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6M16 7a3 3 0 0 1 0 5M16 15c3 0 4.5 1.7 5 5"/></>,
+    logout: <><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/></>,
+  };
+  return <svg className="account-menu__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;
 }
 
 export function AccountAvatar({ account, large = false }: { account: { avatarUrl: string | null; displayName: string }; large?: boolean }) {

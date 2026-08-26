@@ -23,6 +23,7 @@ export function SiteShell() {
   const cart = useCart();
   const { data } = useBroadcast();
   const { account, openAuth } = useAuth();
+  const liveNow = data?.liveNow ?? [];
 
   useEffect(() => {
     setMenuOpen(false);
@@ -52,11 +53,11 @@ export function SiteShell() {
             {navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.to === "/"}>{item.label}</NavLink>)}
           </nav>
           <div className="header-actions">
-            <Link className="header-watch" to="/watch"><LiveNowIndicator candidates={data?.liveNow ?? []} compact /><ArrowIcon /></Link>
-            <AccountWidget />
+            {liveNow.length > 0 && <Link className="header-watch" to="/watch"><LiveNowIndicator candidates={liveNow} compact /><ArrowIcon /></Link>}
             <button className="cart-button" type="button" onClick={cart.open} aria-label={`Open cart, ${cart.count} items`}>
-              <BagIcon /><span>Cart</span><b>{cart.count}</b>
+              <BagIcon /><b>{cart.count}</b>
             </button>
+            <AccountWidget />
             <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-controls="mobile-menu" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
               {menuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
@@ -65,7 +66,7 @@ export function SiteShell() {
         <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
           <div className="container">
             {navItems.map((item, index) => <NavLink key={item.to} to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>)}
-            <Link to="/watch"><span>06</span>{data?.liveNow.length ? "Watch live now" : "Watch latest"}<ArrowIcon /></Link>
+            {liveNow.length > 0 && <Link to="/watch"><span>06</span>Watch live now<ArrowIcon /></Link>}
             {account
               ? <Link to="/account"><span>07</span>Your account<ArrowIcon /></Link>
               : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>07</span>Log in</button>}

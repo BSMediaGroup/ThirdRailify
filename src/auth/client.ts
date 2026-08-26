@@ -55,6 +55,26 @@ export async function endSession(csrfToken: string) {
   });
 }
 
+export async function uploadAvatar(csrfToken: string, file: File) {
+  const body = new FormData();
+  body.set("avatar", file);
+  return fetchJson<SessionPayload>("/api/auth/avatar", {
+    method: "POST",
+    credentials: "include",
+    headers: { "X-CSRF-Token": csrfToken },
+    body,
+  });
+}
+
+export async function importAvatarUrl(csrfToken: string, imageUrl: string) {
+  return fetchJson<SessionPayload>("/api/auth/avatar", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+    body: JSON.stringify({ imageUrl }),
+  });
+}
+
 export function validatedAuthorizationUrl(value: string) {
   const url = new URL(value);
   if (!OAUTH_ORIGINS.has(url.origin) || url.protocol !== "https:") {

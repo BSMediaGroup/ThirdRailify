@@ -12,6 +12,8 @@ const PUBLIC_ORIGIN = "https://thirdrailify.pages.dev";
 const envFor = (db) => ({
   THIRDRAILIFY_AUTH_DB: db,
   THIRDRAILIFY_PUBLIC_ORIGIN: PUBLIC_ORIGIN,
+  THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev",
+  THIRDRAILIFY_PROFILE_MEDIA_ORIGIN: "https://thirdrailify-admin.pages.dev",
   THIRDRAILIFY_AUTH_COOKIE_DOMAIN: "",
   THIRDRAILIFY_AUTH_RATE_LIMIT_SECRET: "test-only-rate-limit-secret",
 });
@@ -71,6 +73,27 @@ test("public auth consumes a one-time handoff, issues a host session, and enforc
   const session = await callAuth("session", { method: "GET", origin: PUBLIC_ORIGIN, cookie }, env);
   assert.equal(session.status, 200);
   assert.equal((await session.json()).authenticated, true);
+
+  let avatarProxyCalls = 0;
+  const avatar = await callAuth(
+    "avatar",
+    { origin: PUBLIC_ORIGIN, body: { imageUrl: "https://images.example.test/avatar.webp" }, cookie, csrfToken: payload.csrfToken },
+    env,
+    async (input, init) => {
+      avatarProxyCalls += 1;
+      assert.equal(String(input), "https://thirdrailify-admin.pages.dev/api/auth/avatar");
+      const headers = new Headers(init.headers);
+      assert.equal(headers.get("origin"), PUBLIC_ORIGIN);
+      assert.equal(headers.get("x-csrf-token"), payload.csrfToken);
+      assert.match(headers.get("cookie"), /^thirdrailify_session=/);
+      assert.deepEqual(JSON.parse(new TextDecoder().decode(init.body)), { imageUrl: "https://images.example.test/avatar.webp" });
+      return Response.json({ ...payload, account: { ...payload.account, avatarUrl: "https://thirdrailify-admin.pages.dev/u/account/avatar/hash.webp" } });
+    },
+  );
+  assert.equal(avatar.status, 200);
+  assert.equal((await avatar.json()).account.avatarUrl, "https://thirdrailify-admin.pages.dev/u/account/avatar/hash.webp");
+  assert.equal(avatarProxyCalls, 1);
+  assert.equal("THIRDRAILIFY_PROFILE_MEDIA" in env, false, "Public owns no profile-media object binding");
 
   const noCsrfLogout = await callAuth("logout", { origin: PUBLIC_ORIGIN, body: {}, cookie }, env);
   assert.equal(noCsrfLogout.status, 403);
@@ -134,7 +157,7 @@ test("Public sign-in and sign-up render server-disabled Google as a non-activata
   }
 });
 
-async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken } = {}, env) {
+async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken } = {}, env, authFetch) {
   const headers = new Headers({ Origin: origin, "CF-Connecting-IP": "192.0.2.20" });
   if (body !== undefined) headers.set("Content-Type", "application/json");
   if (cookie) headers.set("Cookie", cookie);
@@ -144,7 +167,7 @@ async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken
     headers,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  return authRequest({ request, env, data: {} });
+  return authRequest({ request, env, data: authFetch ? { authFetch } : {} });
 }
 
 function cookiePair(setCookie) {

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AccountAvatar } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
+import { importAvatarUrl, uploadAvatar } from "../auth/client";
 
 export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
-  const { account, loading, error, openAuth, signOut } = useAuth();
+  const { account, loading, error, openAuth, signOut, csrfToken, refresh } = useAuth();
   const opened = useRef(false);
 
   useEffect(() => {
@@ -31,6 +32,7 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
               <AccountAvatar account={account} large />
               <div><h2>{account.displayName}</h2><p>{account.email || (account.username ? `@${account.username}` : "No email supplied by provider")}</p></div>
             </div>
+            <AvatarSettings csrfToken={csrfToken} onUpdated={refresh} />
             <dl className="account-profile__facts">
               <div><dt>Status</dt><dd>{account.status === "active" ? "Active" : account.status}</dd></div>
               <div><dt>Connected providers</dt><dd>{account.providers.length ? account.providers.map(providerLabel).join(", ") : "Email and password"}</dd></div>
@@ -43,6 +45,46 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
       </div>
     </section>
   );
+}
+
+function AvatarSettings({ csrfToken, onUpdated }: { csrfToken: string; onUpdated: () => Promise<void> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState("");
+  const [busy, setBusy] = useState<"file" | "url" | "">("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  const saveFile = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!file || !csrfToken) return;
+    if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type) || file.size > 5 * 1024 * 1024) {
+      setError("Choose a JPG, PNG, or WebP image no larger than 5 MB."); return;
+    }
+    setBusy("file"); setError(""); setMessage("");
+    try {
+      await uploadAvatar(csrfToken, file); await onUpdated(); setFile(null); if (fileInput.current) fileInput.current.value = ""; setMessage("Avatar updated from your upload.");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar could not be updated."); }
+    finally { setBusy(""); }
+  };
+
+  const saveUrl = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!imageUrl.trim() || !csrfToken) return;
+    setBusy("url"); setError(""); setMessage("");
+    try { await importAvatarUrl(csrfToken, imageUrl.trim()); await onUpdated(); setImageUrl(""); setMessage("Avatar updated from the image URL."); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar could not be updated."); }
+    finally { setBusy(""); }
+  };
+
+  return <section className="public-avatar-settings" aria-labelledby="public-avatar-settings-title">
+    <div><p className="eyebrow">Profile image</p><h3 id="public-avatar-settings-title">Change your avatar</h3><p>Upload a JPG, PNG, or WebP up to 5 MB, or import a public HTTPS image URL. Your image is validated and stored as a clean immutable media path.</p></div>
+    <div className="public-avatar-settings__forms">
+      <form onSubmit={saveFile}><label><span>Upload image</span><input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => { setFile(event.target.files?.[0] || null); setError(""); setMessage(""); }} /></label><button type="submit" disabled={!file || Boolean(busy)}>{busy === "file" ? "Uploading..." : "Upload avatar"}</button></form>
+      <form onSubmit={saveUrl}><label><span>Direct image URL</span><input type="url" inputMode="url" value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setError(""); setMessage(""); }} placeholder="https://example.com/avatar.webp" /></label><button type="submit" disabled={!imageUrl.trim() || Boolean(busy)}>{busy === "url" ? "Importing..." : "Use image URL"}</button></form>
+    </div>
+    {(error || message) && <p className={`public-avatar-settings__status${error ? " is-error" : ""}`} role={error ? "alert" : "status"}>{error || message}</p>}
+  </section>;
 }
 
 function providerLabel(provider: string) {

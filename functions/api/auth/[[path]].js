@@ -1,4 +1,5 @@
 import {
+  AUTH_COOKIE_NAME,
   PublicAuthFailure,
   clearSessionCookie,
   consumeHandoff,
@@ -19,6 +20,7 @@ const ROUTE_PREFIX = "/api/auth";
 
 export async function onRequest(context) {
   const { request, env } = context;
+  const fetchImpl = context.data?.authFetch || fetch;
   try {
     if (request.method === "OPTIONS") return handleOptions(request, env);
     const path = new URL(request.url).pathname.slice(ROUTE_PREFIX.length).replace(/^\/+|\/+$/g, "");
@@ -31,10 +33,56 @@ export async function onRequest(context) {
     }
     if (path === "handoff") return await handleHandoff(request, env);
     if (path === "logout") return await handleLogout(request, env);
+    if (path === "avatar") return await handleAvatarProxy(request, env, fetchImpl);
     throw new PublicAuthFailure(404, "not_found", "The auth route was not found.");
   } catch (error) {
     return errorResponse(error, request, env);
   }
+}
+
+async function handleAvatarProxy(request, env, fetchImpl) {
+  const origin = requirePublicOrigin(request, env);
+  const session = await resolveSession(env, request);
+  if (!session) throw new PublicAuthFailure(401, "unauthenticated", "A signed-in account is required.");
+  await requireCsrf(request, session);
+  const adminOrigin = normalizeOrigin(env?.THIRDRAILIFY_ADMIN_ORIGIN);
+  if (!adminOrigin) throw new PublicAuthFailure(503, "auth_origin_not_configured", "The account service origin is not configured.");
+  const contentType = String(request.headers.get("content-type") || "");
+  if (!contentType.toLowerCase().startsWith("application/json") && !contentType.toLowerCase().startsWith("multipart/form-data")) {
+    throw new PublicAuthFailure(415, "avatar_content_type", "Upload a JPG, PNG, or WebP file, or provide an HTTPS image URL.");
+  }
+  const declaredLength = Number(request.headers.get("content-length") || 0);
+  if (Number.isFinite(declaredLength) && declaredLength > 5 * 1024 * 1024 + 64 * 1024) {
+    throw new PublicAuthFailure(413, "avatar_too_large", "Choose an image no larger than 5 MB.");
+  }
+  const body = await request.arrayBuffer();
+  if (body.byteLength > 5 * 1024 * 1024 + 64 * 1024) {
+    throw new PublicAuthFailure(413, "avatar_too_large", "Choose an image no larger than 5 MB.");
+  }
+  const upstream = await fetchImpl(`${adminOrigin}/api/auth/avatar`, {
+    method: "POST",
+    headers: {
+      "Content-Type": contentType,
+      "Cookie": `${AUTH_COOKIE_NAME}=${encodeURIComponent(session.token)}`,
+      "Origin": origin,
+      "X-CSRF-Token": session.csrfToken,
+    },
+    body,
+    redirect: "manual",
+  });
+  const responseType = String(upstream.headers.get("content-type") || "").toLowerCase();
+  if (!responseType.startsWith("application/json")) {
+    throw new PublicAuthFailure(502, "auth_unavailable", "The account service returned an invalid response.");
+  }
+  return new Response(await upstream.text(), {
+    status: upstream.status,
+    headers: {
+      ...corsHeaders(request, env),
+      "Cache-Control": "no-store",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }
 
 async function handleHandoff(request, env) {

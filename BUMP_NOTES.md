@@ -10,6 +10,9 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Reordered the shared header actions so the authenticated identity widget occupies the former far-right cart position, compacted the cart to its accessible bag/count control, and removed both desktop and mobile supplemental Watch links whenever the normalized broadcast snapshot has no confirmed `liveNow` candidate.
+- Upgraded the authenticated Public account widget from a basic link list to a responsive StreamSuites-reference identity menu with avatar header, four-field details matrix, icon-prefixed destinations, keyboard navigation, and a separated sign-out action in the existing Third Railify visual system.
+- Added self-service avatar upload and HTTPS URL import to `/account`. Public forwards the current session and CSRF proof through its same-origin Function to the Admin-owned avatar endpoint; it holds no R2 binding, does not update D1, and never persists `blob:` or `data:` URLs. Admin returns the immutable profile-media URL for normal session hydration.
 - Removed the Admin-access reference from the Public account dialog introduction so the login modal describes only the Public identity experience.
 - Added the Admin-supplied OAuth provider-state contract to the Public account dialog. Google now remains visible but natively disabled and greyed with migration-status copy while the server gate is disabled; unavailable providers stay hidden, Discord remains usable, and no Google credential is exposed client-side.
 - Added the Public half of the shared account milestone: an accessible OAuth-first/email login modal, explicit Turnstile lifecycle, same-origin session hydration/logout, one-time D1 handoff exchange, responsive account widget, and real `/account` plus `/account/login` routes.
@@ -83,6 +86,10 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Reframed the homepage host cards and `/shawn` and `/gina` route cards with near-square `6:5` image areas using the supplied `shawn1x.webp` and `gina1x.webp` portraits, with a gentle bottom falloff into the adjoining content. Removed the homepage corner numbers so Shawn and Gina are presented by name rather than as numbered entries.
 
 ### Human-readable
+
+The account control now sits at the far-right edge of the main header actions, the cart takes less space, and the extra live-watch signal appears only while a broadcast is actually confirmed live.
+
+Signed-in visitors now get a much richer account menu and can change their avatar from the account page using a JPG, PNG, WebP, or public image URL. The image is stored by the Admin account service behind a clean media path rather than embedded into browser/account state.
 
 The Public header now has a real Third Railify account control and `/account` destination. Sign-in is designed to use the shared Admin-owned account service without putting credentials, provider secrets, or permanent identity state in the browser.
 

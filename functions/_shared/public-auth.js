@@ -164,12 +164,13 @@ function cleanText(value, maxLength = 160) {
   return printable.replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
-function safeAvatarUrl(value) {
+function safeAvatarUrl(value, env = null) {
   if (!value) return null;
   try {
     const url = new URL(String(value));
     const hosts = new Set(["cdn.discordapp.com", "media.discordapp.net", "lh3.googleusercontent.com", "avatars.githubusercontent.com", "pbs.twimg.com"]);
-    return url.protocol === "https:" && hosts.has(url.hostname) ? url.toString().slice(0, 1024) : null;
+    const origins = new Set([env?.THIRDRAILIFY_ADMIN_ORIGIN, env?.THIRDRAILIFY_PROFILE_MEDIA_ORIGIN].map(normalizeOrigin).filter(Boolean));
+    return url.protocol === "https:" && (hosts.has(url.hostname) || origins.has(url.origin)) ? url.toString().slice(0, 1024) : null;
   } catch {
     return null;
   }
@@ -193,7 +194,7 @@ async function serializeAccount(env, row) {
     email: row.email_normalized || null,
     displayName: row.display_name,
     username: providerRows.find((identity) => identity.provider_username)?.provider_username || null,
-    avatarUrl: safeAvatarUrl(row.avatar_url),
+    avatarUrl: safeAvatarUrl(row.avatar_url, env),
     providers: providerRows.map((identity) => identity.provider),
     role: locked ? "admin" : row.role,
     adminLevel: locked ? "master" : row.admin_level,
@@ -232,7 +233,7 @@ export async function resolveSession(env, request) {
   if (Date.now() - Date.parse(row.last_seen_at) >= 15 * 60 * 1000) {
     await requireDb(env).prepare("UPDATE sessions SET last_seen_at = ? WHERE id = ?").bind(new Date().toISOString(), row.session_id).run();
   }
-  return { id: row.session_id, accountId: row.account_id, csrfToken, csrfTokenHash: row.csrf_token_hash, account: await serializeAccount(env, row) };
+  return { id: row.session_id, accountId: row.account_id, token, csrfToken, csrfTokenHash: row.csrf_token_hash, account: await serializeAccount(env, row) };
 }
 
 export async function sessionEnvelope(session) {
