@@ -4023,10 +4023,10 @@ h3 {
   padding: 28px;
 }
 
-@supports not selector(::-webkit-scrollbar) {
-  .auth-dialog { scrollbar-color: rgba(255, 209, 47, 0.62) transparent; scrollbar-width: thin; }
+@supports (-moz-appearance: none) {
+  .auth-dialog { scrollbar-color: var(--gold) #0d0e0b; scrollbar-width: thin; }
 }
-@supports selector(::-webkit-scrollbar) {
+@supports not (-moz-appearance: none) {
   .auth-dialog { scrollbar-color: auto; scrollbar-width: auto; }
 }
 .auth-dialog::-webkit-scrollbar { width: 5px; }

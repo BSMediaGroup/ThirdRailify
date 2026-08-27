@@ -10,6 +10,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Corrected the Firefox-only sign-in scrollbar regression caused by an unreliable WebKit-selector support probe: Firefox now explicitly retains its original narrow gold-on-dark `thin` scrollbar, while Chromium/Brave keeps the separate five-pixel treatment.
 - Made the shared sign-in dialog reliably viewport-bounded in Chromium/Brave as well as Firefox by removing grid-item shrink ambiguity, using dynamic-viewport height with a compatible fallback, and containing vertical scrolling inside the modal so verification and submit actions remain reachable through a minimal five-pixel Chromium scrollbar or Firefox's narrowest supported `thin` treatment.
 - Upgraded the Shop, Community, Watch, and About hero surfaces with the homepage's motion-gated signal field, animated gold feature typography, and route-specific product-orbit, community-radar, broadcast-scope, and show-format-map treatments. Existing catalogue, Discord, broadcast, migration-state, responsive, and reduced-motion behavior remains authoritative.
 - Corrected Public email sign-in so existing credentials are not blocked by the 12-character new-password policy while signup/reset keep that minimum. Added a bounded same-origin display-name proxy and `/account` editor that require the current Public session and CSRF proof, then delegate the D1 mutation to Admin authority.
