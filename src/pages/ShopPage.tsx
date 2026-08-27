@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import logo from "../../assets/logos/thirdrail-logo3.png";
 import { ArrowIcon, BagIcon, SearchIcon } from "../components/Icons";
 import { ProductCard } from "../components/ProductCard";
+import { SignalField } from "../components/SignalField";
 import { LIVE_WIX_CATEGORIES } from "../data/wixSnapshot";
 import { catalogueProvider, categorySlug } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
@@ -60,6 +61,7 @@ export function ShopPage() {
   return (
     <>
       <section className="shop-hero">
+        <SignalField />
         <div className="shop-hero__type" aria-hidden="true"><span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span></div>
         <div className="container shop-hero__grid">
           <div className="shop-hero__copy">
@@ -132,6 +134,8 @@ function ShopProductStack({ products }: { products: CatalogueProduct[] }) {
   const display = products.length ? products.slice(1, 4) : [];
   return (
     <div className="shop-stack" aria-label="Captured product preview">
+      <div className="shop-stack__hud" aria-hidden="true"><span>TR / DROP 01</span><strong>CATALOGUE SIGNAL</strong></div>
+      <div className="shop-stack__orbit" aria-hidden="true"><i /><i /></div>
       {display.map((product, index) => <Link className={`shop-stack__card shop-stack__card--${index + 1}`} key={product.id} to={`/products/all/${product.slug}`}><img src={product.image} alt="" /><span>{product.name}</span></Link>)}
       {!display.length ? <div className="shop-stack__placeholder"><img src={logo} alt="" /><span>Loading captured products</span></div> : null}
       <div className="shop-stack__stamp"><img src={logo} alt="" /><span>LIVE WIX<br />SNAPSHOT</span></div>

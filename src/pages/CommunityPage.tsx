@@ -3,6 +3,7 @@ import goatField from "../../assets/backgrounds/farm1.webp";
 import discordIcon from "../../assets/icons/discord.svg";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { ArrowIcon } from "../components/Icons";
+import { SignalField } from "../components/SignalField";
 import { THIRD_RAILIFY_DISCORD_FALLBACK_INVITE } from "../lib/discordWidget";
 
 const communityPaths = [
@@ -16,10 +17,11 @@ export function CommunityPage() {
   return (
     <>
       <section className="community-hero" aria-labelledby="community-page-title">
+        <SignalField />
         <div className="container community-hero__grid">
           <div className="community-hero__copy">
             <p className="eyebrow">Official community · The Herd</p>
-            <h1 id="community-page-title">The herd runs on a live wire.</h1>
+            <h1 id="community-page-title">The herd runs on a <span className="hero-feature-text">live wire.</span></h1>
             <p>Third Railify is built with the people who show up, laugh along, and keep the conversation moving after the show leaves the rail.</p>
             <div className="button-row">
               <a className="button button--primary" href={THIRD_RAILIFY_DISCORD_FALLBACK_INVITE} target="_blank" rel="noopener noreferrer"><img src={discordIcon} alt="" /> Join Discord</a>
@@ -28,7 +30,8 @@ export function CommunityPage() {
           </div>
           <div className="community-hero__art">
             <img src={goatField} alt="Third Railify goat community artwork" />
-            <div><span>TR / HERD 01</span><strong>COMMUNITY SIGNAL</strong></div>
+            <div className="community-hero__radar" aria-hidden="true"><i /><i /><b /></div>
+            <div className="community-hero__caption"><span>TR / HERD 01</span><strong>COMMUNITY SIGNAL</strong></div>
           </div>
         </div>
       </section>

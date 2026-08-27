@@ -10,6 +10,7 @@ import {
   formatDate,
 } from "../components/BroadcastComponents";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
+import { SignalField } from "../components/SignalField";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { RUMBLE_URL, YOUTUBE_URL } from "../lib/broadcast";
 
@@ -25,14 +26,16 @@ export function WatchPage() {
   return (
     <div className="watch-page">
       <section className={`watch-hero${live ? " is-live" : ""}`}>
+        <SignalField />
         <div className="watch-hero__signal" aria-hidden="true"><span /><span /><span /><BoltIcon /></div>
         <div className="container watch-hero__grid">
           <div>
             <p className="eyebrow"><i /> Third Railify broadcast control</p>
-            <h1>{live ? "The rail is live." : "Stay on the signal."}</h1>
+            <h1>{live ? <>The rail is <span className="hero-feature-text">live.</span></> : <>Stay on the <span className="hero-feature-text">signal.</span></>}</h1>
             <p>{live ? "A current provider check confirmed the broadcast below." : "Watch the latest validated broadcast, with no provider scraping in your browser."}</p>
           </div>
           <div className="watch-signal-card">
+            <div className="watch-signal-card__scope" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
             <span>{live ? "Signal acquired" : data?.freshness === "stale" ? "Stored transmission" : "Standing by"}</span>
             <strong>{live ? "LIVE NOW" : data?.upcoming ? "UPCOMING" : "LATEST BROADCAST"}</strong>
             <small>Sunday—Friday · 10 PM Eastern</small>
