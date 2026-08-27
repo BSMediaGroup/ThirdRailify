@@ -96,7 +96,7 @@ test("public archive API is visible-only, bounded, cache-safe, and returns 404 f
   assert.equal((await episodeRequest({ request: new Request("https://thirdrailify.pages.dev/api/watch/episodes/ep_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), env, params: { episodeId: "ep_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" } })).status, 404);
 });
 
-test("protected management rejects unsigned, expired, invalid, malformed, and unsupported requests then performs visibility actions", async () => {
+test("protected management uses a signed bodyless read, rejects invalid requests, and leaves mutation signing unchanged", async () => {
   const original = Date.now; Date.now = () => NOW;
   const state = new MemoryStateNamespace({ now: () => NOW });
   await state.ready;
@@ -104,9 +104,16 @@ test("protected management rejects unsigned, expired, invalid, malformed, and un
   const id = state.service.readArchive().episodes[0].id;
   const env = { THIRDRAILIFY_PUBLIC_STATE: state, THIRDRAILIFY_COMMUNITY_API_SECRET: MANAGEMENT_SECRET };
   try {
-    assert.equal((await manageRequest({ request: rawManagement({ action: "read" }), env })).status, 401);
-    assert.equal((await manageRequest({ request: signedManagement({ action: "read" }, Math.floor(NOW / 1000) - 301), env })).status, 401);
-    assert.equal((await manageRequest({ request: signedManagement({ action: "read" }, Math.floor(NOW / 1000), "wrong"), env })).status, 401);
+    assert.equal((await manageRequest({ request: new Request("https://thirdrailify.pages.dev/api/watch/manage"), env })).status, 401);
+    assert.equal((await manageRequest({ request: signedManagementRead(Math.floor(NOW / 1000) - 301), env })).status, 401);
+    assert.equal((await manageRequest({ request: signedManagementRead(Math.floor(NOW / 1000), "wrong"), env })).status, 401);
+    assert.equal((await manageRequest({ request: signedManagement({ action: "read" }), env })).status, 400);
+    assert.equal((await manageRequest({ request: new Request("https://thirdrailify.pages.dev/api/watch/manage", { method: "PUT" }), env })).status, 405);
+    const read = await manageRequest({ request: signedManagementRead(), env });
+    assert.equal(read.status, 200);
+    const readPayload = await read.json();
+    assert.equal(readPayload.summary.retained, 1);
+    assert.equal(readPayload.summary.visible, 1);
     assert.equal((await manageRequest({ request: signedManagement({ action: "hide", episodeId: "bad" }), env })).status, 400);
     assert.equal((await manageRequest({ request: signedManagement({ action: "delete" }), env })).status, 400);
     const hidden = await manageRequest({ request: signedManagement({ action: "hide", episodeId: id }), env });
@@ -114,6 +121,34 @@ test("protected management rejects unsigned, expired, invalid, malformed, and un
     assert.equal((await hidden.json()).summary.hidden, 1);
     const shown = await manageRequest({ request: signedManagement({ action: "show_all" }), env });
     assert.equal((await shown.json()).summary.visible, 1);
+  } finally { Date.now = original; }
+});
+
+test("protected read includes hidden records while public projection excludes them and current failure is fail-soft", async () => {
+  const original = Date.now; Date.now = () => NOW;
+  const state = new MemoryStateNamespace({ now: () => NOW });
+  await state.ready;
+  await state.service.ingestBroadcast({ snapshot: snapshot(12), checkpointSeconds: 600 });
+  const hidden = state.service.readArchive().episodes[0];
+  await state.service.changeArchiveVisibility("hide", hidden.id);
+  const failingCurrent = {
+    idFromName: (name) => state.idFromName(name),
+    get: (id) => ({ fetch: (request) => new URL(request.url).pathname === "/snapshot/broadcast"
+      ? Promise.reject(new Error("current unavailable"))
+      : state.get(id).fetch(request) }),
+  };
+  const env = { THIRDRAILIFY_PUBLIC_STATE: failingCurrent, THIRDRAILIFY_COMMUNITY_API_SECRET: MANAGEMENT_SECRET };
+  try {
+    const managed = await manageRequest({ request: signedManagementRead(), env });
+    assert.equal(managed.status, 200);
+    const managedPayload = await managed.json();
+    assert.equal(managedPayload.current, null);
+    assert.deepEqual(managedPayload.summary, { retained: 1, visible: 0, hidden: 1, remaining: 23, newest: { id: hidden.id, title: hidden.title, date: hidden.sortAt }, oldest: { id: hidden.id, title: hidden.title, date: hidden.sortAt } });
+    assert.equal(managedPayload.episodes[0].id, hidden.id);
+    assert.equal(managedPayload.episodes[0].publicRoute, null);
+    assert.equal(managedPayload.episodes[0].thumbnailState, "remote");
+    const publicList = await episodesRequest({ request: new Request("https://thirdrailify.pages.dev/api/watch/episodes"), env });
+    assert.equal((await publicList.json()).items.length, 0);
   } finally { Date.now = original; }
 });
 
@@ -163,15 +198,17 @@ function snapshot(index, presentation = "archive", provider = presentation === "
   };
 }
 
-function rawManagement(body) {
-  return new Request("https://thirdrailify.pages.dev/api/watch/manage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-}
-
 function signedManagement(body, timestamp = Math.floor(NOW / 1000), secret = MANAGEMENT_SECRET) {
   const raw = JSON.stringify(body);
   const bodyHash = createHashHex(raw);
   const signature = createHmac("sha256", secret).update(`${timestamp}\nPOST\n/api/watch/manage\n${bodyHash}`).digest("base64url");
   return new Request("https://thirdrailify.pages.dev/api/watch/manage", { method: "POST", headers: { "Content-Type": "application/json", "X-ThirdRailify-Timestamp": String(timestamp), "X-ThirdRailify-Signature": signature }, body: raw });
+}
+
+function signedManagementRead(timestamp = Math.floor(NOW / 1000), secret = MANAGEMENT_SECRET) {
+  const bodyHash = createHashHex("");
+  const signature = createHmac("sha256", secret).update(`${timestamp}\nGET\n/api/watch/manage\n${bodyHash}`).digest("base64url");
+  return new Request("https://thirdrailify.pages.dev/api/watch/manage", { headers: { "X-ThirdRailify-Timestamp": String(timestamp), "X-ThirdRailify-Signature": signature } });
 }
 
 function createHashHex(value) {

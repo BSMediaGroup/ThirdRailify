@@ -23,7 +23,7 @@ The main page always renders six featured positions and the gallery always rende
 
 ## Admin management boundary
 
-`POST /api/watch/manage` is an internal Pages Function, not a browser API. It accepts only the existing community HMAC format and shared encrypted `THIRDRAILIFY_COMMUNITY_API_SECRET`, enforces the replay window and bounded actions, and forwards atomic read/visibility operations through the Durable Object binding. The standalone state Worker exposes only health publicly; archive operations are reachable only through service binding requests.
+`GET /api/watch/manage` is the bodyless internal read contract and `POST /api/watch/manage` remains the mutation contract; neither is a browser API. Both accept only the existing community HMAC format and shared encrypted `THIRDRAILIFY_COMMUNITY_API_SECRET`. The read signature covers `GET`, the exact pathname, and the SHA-256 digest of an empty body. Mutations retain their existing JSON body digest and `POST` signature. The endpoint enforces the replay window and bounded actions, and forwards archive reads/visibility operations through the Durable Object binding. Current-snapshot failure is fail-soft and does not erase a successful archive read. The standalone state Worker exposes only health publicly; archive operations are reachable only through service binding requests.
 
 The Admin browser calls its own authenticated `/api/admin/watch` Function. ThirdRailify-Admin enforces Master Admin session, exact origin, CSRF, body validation, rate limit, and audit, then signs the server-to-server request. No secret, internal revision, audit record, or hidden episode enters a Public browser response. No new Cloudflare resource or secret is required.
 

@@ -4,9 +4,10 @@ import { changeWatchVisibility, readStateSnapshot, readWatchArchive } from "../_
 import { effectiveWatchResponse, normalizeWatchSnapshot, WATCH_EPISODE_ID_PATTERN } from "./_watch.js";
 
 const MAX_BODY_BYTES = 4 * 1024;
-const ACTIONS = new Set(["read", "show", "hide", "show_all", "hide_all"]);
+const ACTIONS = new Set(["show", "hide", "show_all", "hide_all"]);
 
 export async function onRequest({ request, env }) {
+  if (request.method === "GET") return readManagementState(request, env);
   if (request.method !== "POST") return jsonResponse({ error: "method_not_allowed" }, 405);
   if (!String(request.headers.get("Content-Type") || "").toLowerCase().startsWith("application/json")) return jsonResponse({ error: "unsupported_media_type" }, 415);
   const raw = new Uint8Array(await request.arrayBuffer());
@@ -18,19 +19,28 @@ export async function onRequest({ request, env }) {
   const individual = body.action === "show" || body.action === "hide";
   if (individual !== WATCH_EPISODE_ID_PATTERN.test(String(body.episodeId || ""))) return jsonResponse({ error: "invalid_episode_id" }, 400);
   try {
-    if (body.action !== "read") {
-      const result = await changeWatchVisibility(env, body.action, individual ? body.episodeId : null);
-      if (!result) return jsonResponse({ error: "episode_not_found" }, 404);
-    }
-    const [archive, currentRecord] = await Promise.all([
-      readWatchArchive(env),
-      readStateSnapshot(env, "broadcast").catch(() => null),
-    ]);
-    const snapshot = normalizeWatchSnapshot(currentRecord?.snapshot);
-    return jsonResponse(adminProjection(archive, snapshot ? effectiveWatchResponse(snapshot) : null, new URL(request.url).origin));
+    const result = await changeWatchVisibility(env, body.action, individual ? body.episodeId : null);
+    if (!result) return jsonResponse({ error: "episode_not_found" }, 404);
+    return await managementProjection(request, env);
   } catch {
     return jsonResponse({ error: "watch_management_unavailable" }, 503);
   }
+}
+
+async function readManagementState(request, env) {
+  if ([...new URL(request.url).searchParams].length) return jsonResponse({ error: "invalid_query" }, 400);
+  if (!(await verifyManagementRequest(request, env, new Uint8Array()))) return jsonResponse({ error: "invalid_signature" }, 401);
+  try { return await managementProjection(request, env); }
+  catch { return jsonResponse({ error: "watch_management_unavailable" }, 503); }
+}
+
+async function managementProjection(request, env) {
+  const [archive, currentRecord] = await Promise.all([
+    readWatchArchive(env),
+    readStateSnapshot(env, "broadcast").catch(() => null),
+  ]);
+  const snapshot = normalizeWatchSnapshot(currentRecord?.snapshot);
+  return jsonResponse(adminProjection(archive, snapshot ? effectiveWatchResponse(snapshot) : null, new URL(request.url).origin));
 }
 
 async function verifyManagementRequest(request, env, bytes) {
@@ -67,11 +77,12 @@ function adminProjection(archive, current, publicOrigin = "") {
       title: episode.title,
       description: episode.description,
       thumbnailUrl: episode.platform === "rumble" && episode.thumbnailUrl ? `${publicOrigin}/api/watch/thumbnail?episode=${encodeURIComponent(episode.id)}` : episode.thumbnailUrl,
+      thumbnailState: episode.thumbnailUrl ? (episode.platform === "rumble" ? "proxy" : "remote") : "fallback",
       watchUrl: episode.watchUrl,
       archiveDate: episode.sortAt,
       visible: episode.visible,
       archiveOrder: index + 1,
-      publicRoute: `${publicOrigin}/watch/v/${episode.id}`,
+      publicRoute: episode.visible ? `${publicOrigin}/watch/v/${episode.id}` : null,
     })),
   };
 }
@@ -81,4 +92,4 @@ async function digestHex(bytes) {
   return [...hash].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export { adminProjection, verifyManagementRequest };
+export { adminProjection, readManagementState, verifyManagementRequest };
