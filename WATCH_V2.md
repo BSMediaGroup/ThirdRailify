@@ -21,6 +21,12 @@ The stable public episode ID is `ep_` plus the SHA-256 digest of the immutable n
 
 The main page always renders six featured positions and the gallery always renders 24 positions. Visible real episodes replace newest-first positions. Every other position is a branded, non-clickable placeholder with no fabricated identity, title, date, duration, or provider claim.
 
+## Presentation contract
+
+The Public experience is a media-first broadcast hub rather than a source of Watch authority. `/watch` combines the validated current candidate with a segmented native-button provider selector, explicit live/upcoming/latest/delayed/stale/unavailable state language, a dedicated-player route, and a six-position horizontal archive rail. `/watch/episodes` keeps all 24 positions in a dense newest-first gallery with retained/available counts adjacent to the grid. `/watch/live` removes archive clutter around the selected current player, while retained detail pages provide archive position and visible-only previous/next navigation.
+
+Real cards always expose title, provider, archive date, and route without hover. Empty/hidden slots use deterministic visual variants but remain non-interactive articles with truthful awaiting-transmission labels. Signal sweeps use transform/opacity only and are removed for reduced-motion users. The responsive contract covers desktop, tablet portrait/landscape, and 390-pixel phone layouts without changing player selection, archive order, or routing.
+
 ## Admin management boundary
 
 `GET /api/watch/manage` is the bodyless internal read contract and `POST /api/watch/manage` remains the mutation contract; neither is a browser API. Both accept only the existing community HMAC format and shared encrypted `THIRDRAILIFY_COMMUNITY_API_SECRET`. The read signature covers `GET`, the exact pathname, and the SHA-256 digest of an empty body. Mutations retain their existing JSON body digest and `POST` signature. The endpoint enforces the replay window and bounded actions, and forwards archive reads/visibility operations through the Durable Object binding. Current-snapshot failure is fail-soft and does not erase a successful archive read. The standalone state Worker exposes only health publicly; archive operations are reachable only through service binding requests.

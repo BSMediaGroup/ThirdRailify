@@ -8,14 +8,14 @@ const ORIGIN = "http://127.0.0.1:4194";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const ID = `ep_${"a".repeat(64)}`;
 const MATRIX = {
-  watch: [[1920,1080],[1440,900],[1024,768],[768,1024],[390,844]],
+  watch: [[1920,1080],[1440,900],[1365,768],[1024,768],[768,1024],[390,844]],
   live: [[1440,900],[1024,768],[390,844]],
-  episodes: [[1920,1080],[1440,900],[768,1024],[390,844]],
+  episodes: [[1920,1080],[1440,900],[1024,768],[768,1024],[390,844]],
   detail: [[1365,768],[1024,768],[390,844]],
 };
 
 test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and responsive layouts", async (t) => {
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4194"], { stdio: "ignore" });
+  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4194"], { stdio: "ignore" });
   t.after(() => server.kill());
   await waitForPreview();
   const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close());
@@ -36,14 +36,16 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       if (route === "watch") {
         await page.locator(".episode-featured-grid .episode-card").first().waitFor();
         assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 6);
-        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 6);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 5);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder)").count(), 1);
         assert.equal(await page.getByRole("link", { name: /Open dedicated player/ }).getAttribute("href"), "/watch/live?platform=youtube");
       }
       if (route === "live") { await page.locator(".broadcast-player").waitFor(); assert.equal(await page.locator(".broadcast-player").count(), 1, "dedicated route has one player stack"); }
       if (route === "episodes") {
         assert.equal(await page.locator(".episode-gallery-grid .episode-card").count(), 24);
-        assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder").count(), 24);
-        assert.equal(await page.locator(".episode-gallery-grid .episode-card a").count(), 0, "placeholders are not clickable");
+        assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder").count(), 23);
+        assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder a").count(), 0, "placeholders are not clickable");
+        assert.equal(await page.locator(".episode-gallery-grid .episode-card:not(.episode-card--placeholder) a").count() > 0, true, "retained episode remains actionable");
       }
       if (route === "detail") assert.equal(await page.getByRole("heading", { level: 1, name: "Fixture retained transmission" }).count(), 1);
       if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-${route}-${width}.png`), fullPage: true });
@@ -66,7 +68,7 @@ async function mockApis(page, live) {
     if (url.pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (url.pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-28", rates: { CAD: 1, USD: .75 } });
     if (url.pathname === "/api/watch") return json(route, watchPayload(live));
-    if (url.pathname === "/api/watch/episodes") return json(route, { schema: "thirdrailify-watch-episodes-v1", items: [], summary: { slotCount: 24, visibleCount: 0, placeholderCount: 24 } });
+    if (url.pathname === "/api/watch/episodes") return json(route, { schema: "thirdrailify-watch-episodes-v1", items: [detailPayload().item], summary: { slotCount: 24, visibleCount: 1, placeholderCount: 23 } });
     if (url.pathname === `/api/watch/episodes/${ID}`) return json(route, detailPayload());
     if (url.pathname.startsWith("/api/watch/episodes/")) return json(route, { error: "episode_not_found" }, 404);
     return json(route, { error: "not_found" }, 404);

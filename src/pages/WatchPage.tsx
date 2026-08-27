@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import rumbleIcon from "../../assets/icons/rumble.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
-import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelector, broadcastCandidates, formatDate } from "../components/BroadcastComponents";
+import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelector, broadcastCandidates, broadcastStateLabel, formatDate } from "../components/BroadcastComponents";
 import { EpisodeCard } from "../components/EpisodeComponents";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
@@ -17,7 +17,8 @@ export function WatchPage() {
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
-  const featured = archive.data?.items.filter((episode) => episode.key !== selected?.key).slice(0, 6) ?? [];
+  const featured = archive.data?.items.slice(0, 6) ?? [];
+  const stateLabel = selected && data ? broadcastStateLabel(selected, data.freshness) : "Signal unavailable";
 
   return (
     <div className="watch-page watch-v2">
@@ -26,14 +27,14 @@ export function WatchPage() {
         <div className="watch-hero__signal" aria-hidden="true"><span /><span /><span /><BoltIcon /></div>
         <div className="container watch-hero__grid">
           <div>
-            <p className="eyebrow"><i /> Third Railify broadcast control</p>
+            <p className="eyebrow"><i /> Third Railify broadcast network</p>
             <h1>{live ? <>The rail is <span className="hero-feature-text">live.</span></> : <>Stay on the <span className="hero-feature-text">signal.</span></>}</h1>
             <p>{live ? "A current provider check confirmed the broadcast below." : "Current signal, completed transmissions, and direct provider routes — all from validated broadcast snapshots."}</p>
           </div>
           <div className="watch-signal-card">
             <div className="watch-signal-card__scope" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
             <span>{live ? "Signal acquired" : data?.freshness === "stale" ? "Stored transmission" : "Standing by"}</span>
-            <strong>{live ? "ON AIR" : data?.upcoming ? "UPCOMING" : "LATEST SIGNAL"}</strong>
+            <strong>{live ? "ON AIR" : data?.upcoming ? "UPCOMING" : data ? "LATEST EPISODE" : "NO SIGNAL"}</strong>
             <small>Sunday—Friday · 10 PM Eastern</small>
             {data && <b>{data.upcoming ? `Next: ${data.upcoming.title}${data.upcoming.scheduledStart ? ` · ${formatDate(data.upcoming.scheduledStart)}` : ""}` : data.freshness === "fresh" ? "Current snapshot" : data.freshness === "delayed" ? "Signal delayed" : `Last updated ${formatDate(data.generatedAt)}`}</b>}
           </div>
@@ -49,9 +50,10 @@ export function WatchPage() {
                 <BroadcastStatusBadge candidate={selected} />
               </div>
               <PlatformSelector candidates={options} selectedKey={selected.key} onSelect={(candidate) => setSelectedKey(candidate.key)} />
-              <div className={`watch-stage${selected.presentationState === "live" ? " is-live" : ""}`}>
-                <BroadcastPlayer candidate={selected} eager />
+              <div className={`watch-stage${selected.presentationState === "live" ? " is-live" : ""}`} data-state={selected.presentationState}>
+                <div className="watch-stage__player"><div className="watch-stage__scan" aria-hidden="true" /><BroadcastPlayer candidate={selected} eager /></div>
                 <div className="watch-stage__copy">
+                  <p className="watch-stage__state">TRF / {stateLabel}</p>
                   <BroadcastMetadata candidate={selected} freshness={data.freshness} />
                   <Link className="button button--primary watch-dedicated-link" to={`/watch/live?platform=${selected.platform}`}>Open dedicated player <ArrowIcon /></Link>
                 </div>
@@ -64,13 +66,13 @@ export function WatchPage() {
 
       <section className="section watch-archive-drawer" aria-labelledby="featured-episodes-title">
         <div className="container split-heading">
-          <div><p className="eyebrow">Retained transmissions</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
+          <div><p className="eyebrow">Six-slot broadcast rail</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
           <p>{archive.error ? "The archive is temporarily unavailable; current playback remains independent." : `${archive.data?.summary.visibleCount ?? 0} visible episode${archive.data?.summary.visibleCount === 1 ? "" : "s"} retained. New completed broadcasts arrive through the signed signal path.`}</p>
         </div>
-        <div className="container episode-featured-grid" aria-busy={archive.loading}>
+        <div className="container episode-featured-grid" aria-busy={archive.loading} aria-label="Latest archive slots">
           {Array.from({ length: 6 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-slot-${index}`} episode={featured[index] ?? null} index={index} featured />)}
         </div>
-        <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Open all 24 archive slots <ArrowIcon /></Link></div>
+        <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Explore the full archive <ArrowIcon /></Link></div>
       </section>
 
       <section className="section section--panel watch-schedule" aria-labelledby="watch-schedule-title">

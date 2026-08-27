@@ -36,6 +36,14 @@ export function BroadcastStatusBadge({ candidate }: { candidate: BroadcastCandid
   return <span className={`broadcast-status broadcast-status--${candidate.presentationState}`}><i />{label}</span>;
 }
 
+export function broadcastStateLabel(candidate: BroadcastCandidate, freshness: "fresh" | "delayed" | "stale") {
+  if (freshness === "stale") return "Stale signal";
+  if (freshness === "delayed") return "Signal delayed";
+  if (candidate.presentationState === "live") return "Live now";
+  if (candidate.presentationState === "upcoming") return "Upcoming";
+  return candidate.presentationState === "archive" ? "Latest episode" : "Latest broadcast";
+}
+
 export function BroadcastPlayer({
   candidate,
   eager = false,
@@ -130,7 +138,7 @@ export function PlatformSelector({
   return (
     <div className="platform-selector" role="group" aria-label="Choose broadcast platform">
       {candidates.map((candidate) => (
-        <button key={candidate.key} type="button" className={candidate.key === selectedKey ? "is-active" : ""} onClick={() => onSelect(candidate)}>
+        <button key={candidate.key} type="button" className={candidate.key === selectedKey ? "is-active" : ""} aria-pressed={candidate.key === selectedKey} onClick={() => onSelect(candidate)}>
           <img src={platformIcon(candidate.platform)} alt="" /><span>{platformLabel(candidate.platform)}</span>
           {candidate.presentationState === "live" && <b>Live</b>}
         </button>

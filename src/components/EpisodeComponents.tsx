@@ -9,9 +9,9 @@ export function EpisodeCard({ episode, index, featured = false }: { episode: Wat
   const slot = String(index + 1).padStart(2, "0");
   if (!episode) {
     return (
-      <article className={`episode-card episode-card--placeholder${featured ? " episode-card--featured" : ""}`} aria-label={`Archive slot ${slot}, awaiting transmission`}>
-        <EpisodeFallback placeholder />
-        <div className="episode-card__body"><span>Archive slot {slot}</span><h3>Awaiting transmission</h3><p>Future broadcasts will fill this position automatically.</p></div>
+      <article className={`episode-card episode-card--placeholder episode-card--pattern-${index % 4}${featured ? " episode-card--featured" : ""}`} aria-label={`Archive slot ${slot}, awaiting transmission`}>
+        <EpisodeFallback placeholder variant={index % 4} />
+        <div className="episode-card__body"><span>Archive slot {slot}</span><h3>Awaiting transmission</h3><p>Reserved for the next validated broadcast.</p></div>
       </article>
     );
   }
@@ -33,6 +33,6 @@ export function EpisodeCard({ episode, index, featured = false }: { episode: Wat
   );
 }
 
-export function EpisodeFallback({ placeholder = false }: { placeholder?: boolean }) {
-  return <div className={`episode-fallback${placeholder ? " episode-fallback--placeholder" : ""}`} aria-hidden="true"><span /><i /><BoltIcon /><b>{placeholder ? "FUTURE SIGNAL" : "THIRD RAILIFY ARCHIVE"}</b></div>;
+export function EpisodeFallback({ placeholder = false, variant = 0 }: { placeholder?: boolean; variant?: number }) {
+  return <div className={`episode-fallback${placeholder ? " episode-fallback--placeholder" : ""} episode-fallback--${variant}`} aria-hidden="true"><span /><i /><BoltIcon /><b>{placeholder ? "SIGNAL WAITING" : "THIRD RAILIFY ARCHIVE"}</b></div>;
 }

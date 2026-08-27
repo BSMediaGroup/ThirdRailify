@@ -1,5 +1,5 @@
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
-import { BroadcastMetadata, BroadcastPlayer, PlatformSelector } from "../components/BroadcastComponents";
+import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelector } from "../components/BroadcastComponents";
 import { ArrowIcon, RadioIcon } from "../components/Icons";
 import { useBroadcast } from "../hooks/useBroadcast";
 import type { BroadcastCandidate } from "../lib/broadcast";
@@ -14,13 +14,14 @@ export function WatchLivePage() {
   if (loading && !data) return <FocusedUnavailable loading />;
   if (!selected || !data) return <FocusedUnavailable />;
   return (
-    <section className="watch-theatre" aria-labelledby="watch-live-title">
-      <div className="container watch-theatre__top"><Link className="text-link" to="/watch">← Back to Watch</Link><span>{data.liveNow.length ? "Confirmed current signal" : "Validated current selection"}</span></div>
+    <section className={`watch-theatre${selected.presentationState === "live" ? " is-live" : ""}`} aria-labelledby="watch-live-title">
+      <div className="watch-theatre__signal" aria-hidden="true" />
+      <div className="container watch-theatre__top"><Link className="text-link" to="/watch">← Back to Watch</Link><span>{data.liveNow.length ? "Confirmed current signal" : "Validated current selection"}</span><Link className="text-link" to="/watch/episodes">Episode archive <ArrowIcon /></Link></div>
       <div className="container">
-        <p className="eyebrow"><RadioIcon /> Dedicated player</p>
+        <div className="watch-theatre__heading"><p className="eyebrow"><RadioIcon /> Dedicated player</p><BroadcastStatusBadge candidate={selected} /></div>
         <h1 id="watch-live-title">{selected.presentationState === "live" ? "Live on the rail." : selected.presentationState === "upcoming" ? "Next transmission." : "Latest transmission."}</h1>
         <PlatformSelector candidates={candidates} selectedKey={selected.key} onSelect={(candidate) => setSearch({ platform: candidate.platform }, { replace: true })} />
-        <div className="watch-theatre__stage"><BroadcastPlayer candidate={selected} eager /></div>
+        <div className="watch-theatre__stage"><div className="watch-stage__scan" aria-hidden="true" /><BroadcastPlayer candidate={selected} eager /></div>
         <div className="watch-theatre__metadata"><BroadcastMetadata candidate={selected} freshness={data.freshness} />{error && <p role="status">Refresh delayed. This remains the last validated signal.</p>}</div>
       </div>
     </section>
