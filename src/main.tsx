@@ -5,6 +5,7 @@ import { App } from "./App";
 import { CartProvider } from "./store/cart";
 import { BroadcastProvider } from "./components/BroadcastProvider";
 import { AuthProvider } from "./auth/AuthProvider";
+import { CurrencyProvider } from "./currency/CurrencyProvider";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -12,7 +13,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <BroadcastProvider><App /></BroadcastProvider>
+          <CurrencyProvider><BroadcastProvider><App /></BroadcastProvider></CurrencyProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

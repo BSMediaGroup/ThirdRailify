@@ -10,6 +10,10 @@ export type CatalogueProduct = {
   image: string;
   categories: string[];
   sourceUrl: string;
+  featured?: boolean;
+  featuredOrder?: number | null;
+  images?: string[];
+  description?: string;
 };
 
 export type CatalogueSnapshot = {

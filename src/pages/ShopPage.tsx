@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import logo from "../../assets/logos/thirdrail-logo3.png";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowIcon, BagIcon, SearchIcon } from "../components/Icons";
 import { ProductCard } from "../components/ProductCard";
+import { CurrencyDisclaimer, CurrencySelect, ProductPrice } from "../components/CurrencyPrice";
 import { SignalField } from "../components/SignalField";
 import { LIVE_WIX_CATEGORIES } from "../data/wixSnapshot";
 import { catalogueProvider, categorySlug } from "../lib/catalogueProvider";
@@ -11,32 +11,28 @@ import type { CatalogueProduct, CatalogueSnapshot } from "../types/catalogue";
 
 type SortMode = "featured" | "price-asc" | "price-desc" | "name";
 
-const snapshotFilters = ["All Products", "Apparel", "Accessories & Other", "Third Railify™ Branded", "Just Gina™ Branded"];
-
 export function ShopPage() {
   const { category = "all-products" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const cart = useCart();
+  const galleryHeading = useRef<HTMLHeadingElement>(null);
   const [snapshot, setSnapshot] = useState<CatalogueSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortMode>("featured");
+  const query = searchParams.get("q") || "";
+  const rawSort = searchParams.get("sort");
+  const sort: SortMode = rawSort === "price-asc" || rawSort === "price-desc" || rawSort === "name" ? rawSort : "featured";
 
   const load = useCallback(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-    catalogueProvider.load(controller.signal)
-      .then(setSnapshot)
-      .catch((reason: unknown) => {
-        if (reason instanceof DOMException && reason.name === "AbortError") return;
-        setError("The local catalogue snapshot could not be loaded.");
-      })
-      .finally(() => setLoading(false));
+    const controller = new AbortController(); setLoading(true); setError("");
+    catalogueProvider.load(controller.signal).then(setSnapshot).catch((reason: unknown) => {
+      if (reason instanceof DOMException && reason.name === "AbortError") return;
+      setError("The preview catalogue could not be loaded.");
+    }).finally(() => setLoading(false));
     return () => controller.abort();
   }, []);
-
   useEffect(load, [load]);
 
   const activeCategory = category === "all" ? "all-products" : categorySlug(category);
@@ -47,106 +43,75 @@ export function ShopPage() {
       const haystack = `${product.name} ${product.categories.join(" ")} ${product.optionTypes.join(" ")}`.toLowerCase();
       return matchesCategory && (!normalizedQuery || haystack.includes(normalizedQuery));
     });
-    if (sort === "price-asc") next.sort((left, right) => left.price - right.price);
-    if (sort === "price-desc") next.sort((left, right) => right.price - left.price);
+    if (sort === "featured") next.sort(featuredCompare);
+    if (sort === "price-asc") next.sort((left, right) => left.price - right.price || left.slug.localeCompare(right.slug));
+    if (sort === "price-desc") next.sort((left, right) => right.price - left.price || left.slug.localeCompare(right.slug));
     if (sort === "name") next.sort((left, right) => left.name.localeCompare(right.name));
     return next;
   }, [activeCategory, query, snapshot, sort]);
 
+  const updateQuery = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value); else next.delete(key);
+    setSearchParams(next, { replace: true });
+  };
   const chooseCategory = (label: string) => {
     const slug = categorySlug(label);
-    navigate(slug === "all-products" ? "/shop" : `/products/${slug}`);
+    const nextPath = slug === "all-products" ? "/shop" : `/products/${slug}`;
+    navigate({ pathname: nextPath, search: location.search, hash: location.hash });
+    window.requestAnimationFrame(() => { galleryHeading.current?.focus({ preventScroll: true }); document.getElementById("catalogue")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
   };
+  const clearFilters = () => {
+    const currency = searchParams.get("currency");
+    setSearchParams(currency ? new URLSearchParams({ currency }) : new URLSearchParams());
+    navigate({ pathname: "/shop", search: currency ? `?currency=${encodeURIComponent(currency)}` : "", hash: location.hash });
+  };
+  const allProducts = snapshot?.products ?? [];
+  const categoryGroups = LIVE_WIX_CATEGORIES.filter((label) => label !== "All Products").map((label) => ({ label, products: allProducts.filter((product) => product.categories.includes(label)) }));
+  const populatedCategories = categoryGroups.filter((entry) => entry.products.length);
+  const emptyCategories = categoryGroups.filter((entry) => !entry.products.length);
+  const filtersActive = activeCategory !== "all-products" || Boolean(query) || sort !== "featured";
 
-  return (
-    <>
-      <section className="shop-hero">
-        <SignalField />
-        <div className="shop-hero__type" aria-hidden="true"><span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span></div>
-        <div className="container shop-hero__grid">
-          <div className="shop-hero__copy">
-            <p className="eyebrow">The official store · Migration snapshot</p>
-            <h1>Wear the<br /><span className="hero-feature-text">lore.</span></h1>
-            <p>A purpose-built storefront foundation using only products and CAD prices verified from the current Wix catalogue.</p>
-            <div className="button-row"><a className="button button--primary" href="#catalogue">Shop the snapshot <ArrowIcon /></a><button className="button button--secondary" type="button" onClick={cart.open}><BagIcon /> Local cart · {cart.count}</button></div>
-            <div className="shop-facts"><span><strong>8</strong><small>Captured products</small></span><span><strong>49</strong><small>Reported by Wix</small></span><span><strong>CAD</strong><small>Verified currency</small></span></div>
-          </div>
-          <ShopProductStack products={snapshot?.products ?? []} />
-        </div>
-      </section>
+  return <>
+    <FeaturedHero products={allProducts} cartCount={cart.count} openCart={cart.open} />
+    <section className="collection-section collection-discovery" aria-labelledby="collections-title">
+      <div className="container split-heading split-heading--compact"><div><p className="eyebrow">Find your line</p><h2 id="collections-title">Shop by collection.</h2></div><p>Explore the categories represented in this preview catalogue, then jump directly to matching products.</p></div>
+      <div className="container collection-grid">{populatedCategories.map((entry, index) => <button className="collection-card" key={entry.label} type="button" onClick={() => chooseCategory(entry.label)}>
+        <span className="collection-card__index">{String(index + 1).padStart(2, "0")}</span><span className="collection-card__images" aria-hidden="true">{entry.products.slice(0, 2).map((product) => <img key={product.id} src={product.image} alt="" />)}</span>
+        <span className="collection-card__copy"><strong>{entry.label}</strong><small>{entry.products.length} {entry.products.length === 1 ? "product" : "products"} in preview</small></span><ArrowIcon />
+      </button>)}</div>
+      {emptyCategories.length ? <div className="container more-collections"><p>More collections</p><div>{emptyCategories.map((entry) => <button type="button" key={entry.label} onClick={() => chooseCategory(entry.label)}><span>{entry.label}</span><small>Catalogue category · no captured products</small></button>)}</div></div> : null}
+    </section>
 
-      <section className="collection-section">
-        <div className="container split-heading split-heading--compact">
-          <div><p className="eyebrow">Current Wix collection map</p><h2>Thirteen corners of the universe.</h2></div>
-          <p>These labels are preserved for migration planning. The bounded local snapshot only contains products in the filters below.</p>
-        </div>
-        <div className="container collection-marquee" aria-label="Current Wix category names">
-          {LIVE_WIX_CATEGORIES.map((category, index) => <span key={category}><i>{String(index + 1).padStart(2, "0")}</i>{category}</span>)}
-        </div>
-      </section>
-
-      <section id="catalogue" className="section section--panel catalogue-section">
-        <div className="container catalogue-heading">
-          <div><p className="eyebrow">Verified 11 August 2026</p><h2>Artifacts currently online.</h2></div>
-          <p>Snapshot availability and prices can become stale. Checkout remains on the production Wix site until provider integration is implemented.</p>
-        </div>
-
-        <div className="container shop-toolbar">
-          <label className="search-field"><SearchIcon /><span className="sr-only">Search products</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the captured store…" /></label>
-          <label className="sort-field"><span>Sort</span><select value={sort} onChange={(event) => setSort(event.target.value as SortMode)}><option value="featured">Snapshot order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select></label>
-          <div className="result-count" aria-live="polite"><strong>{loading ? "—" : products.length}</strong><span>results</span></div>
-        </div>
-
-        <div className="container filter-bar" aria-label="Catalogue filters">
-          {snapshotFilters.map((label) => {
-            const slug = categorySlug(label);
-            return <button key={label} className={slug === activeCategory ? "is-active" : ""} type="button" onClick={() => chooseCategory(label)}>{label}</button>;
-          })}
-        </div>
-
-        <div className="container">
-          {loading ? <LoadingGrid /> : null}
-          {error ? <ErrorState message={error} retry={load} /> : null}
-          {!loading && !error && products.length ? (
-            <div className="product-grid">{products.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div>
-          ) : null}
-          {!loading && !error && !products.length ? (
-            <div className="empty-state empty-state--catalogue"><SearchIcon /><p className="eyebrow">No snapshot matches</p><h3>Nothing captured on this section of rail.</h3><p>Try another filter or clear the search. No substitute products have been invented.</p><button className="button button--secondary" type="button" onClick={() => { setQuery(""); chooseCategory("All Products"); }}>Reset filters</button></div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="section commerce-boundary">
-        <div className="container commerce-boundary__grid">
-          <div><p className="eyebrow">Built for the next provider</p><h2>Real catalogue now.<br />Real plumbing later.</h2></div>
-          <div className="boundary-cards">
-            <article><span>01</span><h3>Today</h3><p>Dated Wix snapshot, local filtering, product routes, and a local-only cart shell.</p></article>
-            <article><span>02</span><h3>Next</h3><p>Server-side Printful and Printify projections with validated variants and availability.</p></article>
-            <article><span>03</span><h3>Deferred</h3><p>Inventory, shipping, taxes, checkout, payment, orders, and Admin writes.</p></article>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+    <section id="catalogue" className="section section--panel catalogue-section">
+      <div className="container catalogue-heading"><div><p className="eyebrow">Preview catalogue</p><h2 ref={galleryHeading} tabIndex={-1}>The complete captured drop.</h2></div><div><p>Inventory and checkout remain connected to the current store during migration.</p><CurrencyDisclaimer /></div></div>
+      <div className="shop-utility-wrap"><div className="container shop-toolbar shop-toolbar--commerce">
+        <label className="search-field"><SearchIcon /><span className="sr-only">Search products</span><input value={query} onChange={(event) => updateQuery("q", event.target.value)} placeholder="Search products and collections…" /></label>
+        <label className="sort-field"><span>Sort</span><select value={sort} onChange={(event) => updateQuery("sort", event.target.value)}><option value="featured">Featured order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select></label>
+        <CurrencySelect compact /><div className="result-count" aria-live="polite"><strong>{loading ? "—" : products.length}</strong><span>results</span></div>
+      </div><div className="container filter-bar" aria-label="Catalogue filters">{LIVE_WIX_CATEGORIES.map((label) => { const slug = categorySlug(label); return <button key={label} className={slug === activeCategory ? "is-active" : ""} type="button" onClick={() => chooseCategory(label)} aria-pressed={slug === activeCategory}>{label}</button>; })}{filtersActive ? <button className="filter-clear" type="button" onClick={clearFilters}>Clear filters</button> : null}</div></div>
+      <div className="container">{loading ? <LoadingGrid /> : null}{error ? <ErrorState message={error} retry={load} /> : null}{!loading && !error && products.length ? <div className="product-grid product-grid--store">{products.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div> : null}{!loading && !error && !products.length ? <div className="empty-state empty-state--catalogue"><SearchIcon /><p className="eyebrow">No matches</p><h3>No products are on this section of rail.</h3><p>Try another category or clear the current search and sort controls.</p><button className="button button--secondary" type="button" onClick={clearFilters}>Clear filters</button></div> : null}</div>
+    </section>
+  </>;
 }
 
-function ShopProductStack({ products }: { products: CatalogueProduct[] }) {
-  const display = products.length ? products.slice(1, 4) : [];
-  return (
-    <div className="shop-stack" aria-label="Captured product preview">
-      <div className="shop-stack__hud" aria-hidden="true"><span>TR / DROP 01</span><strong>CATALOGUE SIGNAL</strong></div>
-      <div className="shop-stack__orbit" aria-hidden="true"><i /><i /></div>
-      {display.map((product, index) => <Link className={`shop-stack__card shop-stack__card--${index + 1}`} key={product.id} to={`/products/all/${product.slug}`}><img src={product.image} alt="" /><span>{product.name}</span></Link>)}
-      {!display.length ? <div className="shop-stack__placeholder"><img src={logo} alt="" /><span>Loading captured products</span></div> : null}
-      <div className="shop-stack__stamp"><img src={logo} alt="" /><span>LIVE WIX<br />SNAPSHOT</span></div>
+function FeaturedHero({ products, cartCount, openCart }: { products: CatalogueProduct[]; cartCount: number; openCart: () => void }) {
+  const displayable = useMemo(() => products.filter((product) => product.image && Number.isFinite(product.price) && product.price >= 0), [products]);
+  const featured = useMemo(() => { const explicit = displayable.filter((product) => product.featured).sort(featuredCompare); return explicit.length ? explicit : [...displayable].sort((a, b) => a.slug.localeCompare(b.slug)); }, [displayable]);
+  const [activeIndex, setActiveIndex] = useState(0); const [paused, setPaused] = useState(false); const [engaged, setEngaged] = useState(false); const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => { const media = window.matchMedia("(prefers-reduced-motion: reduce)"); const sync = () => setReducedMotion(media.matches); sync(); media.addEventListener("change", sync); return () => media.removeEventListener("change", sync); }, []);
+  useEffect(() => { if (featured.length <= 1 || paused || engaged || reducedMotion || document.hidden) return; const timer = window.setInterval(() => { if (!document.hidden) setActiveIndex((current) => (current + 1) % featured.length); }, 7000); return () => window.clearInterval(timer); }, [engaged, featured.length, paused, reducedMotion]);
+  useEffect(() => { setActiveIndex((current) => Math.min(current, Math.max(0, featured.length - 1))); }, [featured.length]);
+  const active = featured[activeIndex]; const support = featured.filter((_, index) => index !== activeIndex).slice(0, 2);
+  const move = (offset: number) => setActiveIndex((current) => (current + offset + featured.length) % featured.length);
+  return <section className="shop-hero shop-hero--drop" onPointerEnter={() => setEngaged(true)} onPointerLeave={() => setEngaged(false)} onFocusCapture={() => setEngaged(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}>
+    <SignalField /><div className="shop-hero__type" aria-hidden="true"><span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span></div>
+    <div className="container shop-hero__grid"><div className="shop-hero__copy"><p className="eyebrow">The official store · Preview catalogue</p><h1>Wear the<br /><span className="hero-feature-text">lore.</span></h1><p>Podcast merch with a sharper signal—captured from the current collection and staged for the next chapter.</p><div className="button-row"><a className="button button--primary" href="#catalogue">Browse the store <ArrowIcon /></a>{active ? <Link className="button button--secondary" to={`/products/all/${active.slug}`}>Open featured product</Link> : <button className="button button--secondary" type="button" onClick={openCart}><BagIcon /> Local cart · {cartCount}</button>}</div><div className="shop-facts"><span><strong>{products.length || "—"}</strong><small>Preview products</small></span><span><strong>{featured.length || "—"}</strong><small>Featured rotation</small></span><span><strong>CAD</strong><small>Base prices</small></span></div></div>
+      <div className="featured-stage" aria-label="Featured products">{active ? <><div className="featured-stage__rails" aria-hidden="true" /><Link className="featured-stage__active" key={active.id} to={`/products/all/${active.slug}`}><img src={active.image} alt={active.name} width="720" height="900" /><span className="featured-stage__details"><small>Featured {String(activeIndex + 1).padStart(2, "0")} / {String(featured.length).padStart(2, "0")}</small><strong>{active.name}</strong><ProductPrice price={active.price} formattedPrice={active.formattedPrice} /></span></Link>{support.map((product, index) => <Link className={`featured-stage__support featured-stage__support--${index + 1}`} key={product.id} to={`/products/all/${product.slug}`} aria-label={`View ${product.name}`}><img src={product.image} alt="" /></Link>)}{featured.length > 1 && !reducedMotion ? <div className="featured-stage__controls"><button type="button" onClick={() => move(-1)} aria-label="Previous featured product">←</button><button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Resume featured product rotation" : "Pause featured product rotation"}>{paused ? "Play" : "Pause"}</button><button type="button" onClick={() => move(1)} aria-label="Next featured product">→</button></div> : null}</> : <div className="featured-stage__empty">Preview products are loading.</div>}</div>
     </div>
-  );
+  </section>;
 }
 
-function LoadingGrid() {
-  return <div className="product-grid" aria-label="Loading products" aria-busy="true">{Array.from({ length: 4 }, (_, index) => <div className="product-skeleton" key={index}><span /><i /><i /></div>)}</div>;
-}
-
-function ErrorState({ message, retry }: { message: string; retry: () => void }) {
-  return <div className="empty-state empty-state--error"><p className="eyebrow">Catalogue error</p><h3>{message}</h3><p>The storefront will not substitute unverified product data.</p><button className="button button--secondary" type="button" onClick={retry}>Try again</button></div>;
-}
+function featuredCompare(left: CatalogueProduct, right: CatalogueProduct) { if (left.featured !== right.featured) return left.featured ? -1 : 1; return (left.featuredOrder ?? Number.MAX_SAFE_INTEGER) - (right.featuredOrder ?? Number.MAX_SAFE_INTEGER) || left.slug.localeCompare(right.slug); }
+function LoadingGrid() { return <div className="product-grid product-grid--store" aria-label="Loading products" aria-busy="true">{Array.from({ length: 8 }, (_, index) => <div className="product-skeleton" key={index}><span /><i /><i /></div>)}</div>; }
+function ErrorState({ message, retry }: { message: string; retry: () => void }) { return <div className="empty-state empty-state--error"><p className="eyebrow">Catalogue unavailable</p><h3>{message}</h3><p>Authoritative CAD prices and the local cart remain unchanged.</p><button className="button button--secondary" type="button" onClick={retry}>Try again</button></div>; }

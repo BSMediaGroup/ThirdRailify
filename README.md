@@ -8,8 +8,9 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and staged support surfaces.
 - Real `/watch` destination with validated live/latest playback, provider switching, freshness-safe metadata, schedule/direct-link fallbacks, and no browser provider scraping.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
-- Substantial `/shop` with a bounded, dated eight-product Wix snapshot, search, verified broad facets, sorting, loading/error/empty states, details, and a local cart.
-- Product routes at `/products/:slug`; legacy `/product-page/:slug` paths are preserved client-side.
+- Premium `/shop` drop experience with a D1-merchandised featured rotation, graphical category discovery, URL-backed search/filter/sort state, responsive product cards, truthful loading/error/empty/image states, and the existing browser-local cart.
+- Product detail routes at `/products/:category/:slug`; legacy `/product-page/:slug` paths and category routes remain preserved client-side.
+- Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
@@ -31,6 +32,7 @@ Quality gates:
 npm run lint
 npm run typecheck
 npm run test:functions
+npm run test:storefront
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -42,7 +44,7 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/shop`, `/products/:slug`, `/community`, `/account`, `/account/login`.
+- Implemented: `/`, `/watch`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/account`, `/account/login`.
 - Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
 - Preserved aliases: `/goats`, `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug`.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
@@ -67,6 +69,8 @@ ThirdRailify/
 ├── functions/
 │   ├── _shared/public-auth.js        Public session/handoff/logout and narrow proxy primitives
 │   ├── api/auth/                     Same-origin Public auth plus Admin avatar-authority proxy
+│   ├── api/catalogue/                Fail-soft Admin merchandising projection proxy
+│   ├── api/currency-rates.js         Validated, cached same-origin CAD reference-rate projection
 │   ├── api/_snapshot-persistence.js  Shared checkpoint and DO persistence adapter
 │   ├── api/_state-backend.js         Stable singleton Durable Object request boundary
 │   ├── api/_state-contract.js        Deployment identity and storage contract
@@ -82,6 +86,7 @@ ThirdRailify/
 ├── src/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
+│   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
 │   ├── data/               Dated bounded Wix snapshot
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
@@ -107,7 +112,9 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
 
-`src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` currently returns `src/data/wixSnapshot.ts` asynchronously so loading/error UI exists without coupling components to Wix. A future server/API adapter can replace that provider. Provider credentials and write operations must remain server-side; no provider environment names or APIs are invented here.
+`src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` keeps `src/data/wixSnapshot.ts` as the authoritative product/image/CAD-price source and overlays only the bounded featured flag/order from the Admin public projection. If that projection is unavailable, the storefront deterministically falls back to displayable snapshot products. A future server/API adapter can replace the product provider without redesigning the pages. Provider credentials and write operations remain server-side.
+
+`GET /api/currency-rates` is the only storefront request path to the configured `CURRENCY_RATES_API_URL`. It requires HTTPS, validates CAD base, ISO date, three-letter codes, and finite positive rates, adds CAD=1, applies a bounded timeout, and publishes several-hour cache plus stale-while-revalidate headers. The browser shares one loader and namespaced preference/cache across hero, cards, details, and related products. Conversion is supplemental only; the snapshot's CAD prices and local cart identifiers never change.
 
 `src/lib/discordWidget.ts` first requests the same-origin `/api/community/discord` projection published by the local Third Railify bot. That projection contains only whitelisted/revalidated public channels and bounded public presentation fields; the browser never receives a Discord token, ingest secret, admin-role configuration, permissions, roles, messages, or private metadata. The shared widget labels fresh, delayed, and stale data, neutralizes stale presence, shows public text/community channels, and provides keyboard/click/tap-accessible profile cards for enriched members. The homepage bounds the channel directory more tightly; `/community` shows the full capped directory. Both retain 12 collapsed and 24 expanded member limits.
 

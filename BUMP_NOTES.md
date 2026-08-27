@@ -10,6 +10,12 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Rebuilt `/shop` and every existing product-detail route into a premium responsive merchandise drop: deterministic featured rotation with pause/previous/next, visibility/hover/focus/reduced-motion gates, graphical live-count category discovery, URL-backed filters/search/sort, redesigned product cards, truthful failure states, preserved semantic links, related products, and unchanged local-cart identifiers/behavior.
+- Added one shared USD-default approximate currency system across the hero, catalogue, product details, and related cards. The same-origin `/api/currency-rates` Function validates the configured HTTPS CAD upstream, positive three-letter rates and reference date, adds CAD=1, uses a 4.5-second timeout and cache/stale headers, while the browser persists a namespaced selection/cache and leaves authoritative CAD/cart values untouched on every failure path.
+- Added the fail-soft `/api/catalogue/merchandising` proxy and catalogue-provider overlay so Public consumes only Admin-owned featured ID/slug/order metadata. Missing or unavailable Admin projection deterministically falls back to displayable local snapshot products; no commerce D1 binding or privileged write was added to Public.
+- Added focused storefront commerce tests for rate normalization/rejection, CAD base, USD default, valid/invalid preferences, USD/AUD/JPY conversion, missing prices, upstream failure, cache headers, and merchandising projection bounds. Updated Function routing, Wrangler safe rate URL, README architecture, and the repository tree; no deployment or provider/domain mutation occurred.
+- Refreshed the deterministic state-backend source fingerprint because its protected inventory includes Public `_routes.json` and `wrangler.jsonc`; no Durable Object, SQLite snapshot, ingest, or legacy-KV behavior changed.
+- Validated with Node 22.16.0 lint/typecheck, 40 combined Function/state/storefront tests, exact-zero KV mutation and budget gates, current source fingerprint, and production build. Fixture-backed Edge browser checks covered 1920×1080, 1440×900, 1024×768, 768×1024, 390×844, 1365×768 product detail, all 16 current/legacy product-slug route combinations, pause/next, reduced motion, URL/back-forward category and currency state, zero broken images, one page heading, and zero horizontal overflow or final console errors.
 - Redrew the shared inline `BoltIcon` path as the correct three-part Third Railify zap, preserving its existing outlined current-color stroke, weight, sizing, and every placement across Public hero, signal, status, newsletter, staging, and not-found surfaces; no supplied or existing SVG/raster asset was substituted or modified.
 - Replaced only the Public `/community` hero's Join Discord button icon with the supplied pure-black `discord-0.svg` asset so it reads correctly against the gold primary action; all other Discord icon usages remain unchanged.
 - Corrected the Firefox-only sign-in scrollbar regression caused by an unreliable WebKit-selector support probe: Firefox now explicitly retains its original narrow gold-on-dark `thin` scrollbar, while Chromium/Brave keeps the separate five-pixel treatment.
@@ -92,6 +98,8 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Reframed the homepage host cards and `/shawn` and `/gina` route cards with near-square `6:5` image areas using the supplied `shawn1x.webp` and `gina1x.webp` portraits, with a gentle bottom falloff into the adjoining content. Removed the homepage corner numbers so Shawn and Gina are presented by name rather than as numbered entries.
 
 ### Human-readable
+
+The shop now feels like a proper Third Railify merch drop instead of a migration worksheet: the hero cycles through the products chosen in Admin, collections lead with real product art, the catalogue is faster to explore, and every product page carries the same polished presentation. CAD stays the real price everywhere, with an optional approximate display conversion that can never block shopping or alter the local cart.
 
 Existing account passwords now work at sign-in even when they predate the current new-password length rule. The account page also lets signed-in visitors update their display name alongside their avatar.
 
