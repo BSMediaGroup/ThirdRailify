@@ -32,7 +32,7 @@ async function proxyRead(request, env, path, fetchImpl) {
     if (session?.accountId) headers.set("x-thirdrailify-account-id", session.accountId);
   }
   const response = await boundedFetch(fetchImpl, target, { method: request.method, headers }, 8_000);
-  if (path === "config" && response.ok) {
+  if (request.method === "GET" && path === "config" && response.ok) {
     const payload = await response.json();
     return jsonResponse({ ...payload, turnstileSiteKey: clean(env?.THIRDRAILIFY_TURNSTILE_SITE_KEY, 160) || null }, { status: response.status, headers: forwardedHeaders(response, false) });
   }
@@ -131,7 +131,7 @@ function adminUrl(env, pathname) {
 
 async function boundedFetch(fetchImpl, input, init, timeoutMs) {
   const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try { return await fetchImpl(input, { ...init, signal: controller.signal, redirect: "error" }); }
+  try { return await fetchImpl(input, { ...init, signal: controller.signal }); }
   catch { throw failure(503, "community_unavailable", "The GOATS service is temporarily unavailable."); }
   finally { clearTimeout(timeout); }
 }
@@ -161,4 +161,4 @@ function failure(status, code, message) { return new PublicAuthFailure(status, c
 function clean(value, max) { return Array.from(String(value || "")).filter((character) => { const code = character.charCodeAt(0); return code >= 32 && code !== 127; }).join("").trim().slice(0, max); }
 async function digestHex(bytes) { const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)); return Array.from(hash, (byte) => byte.toString(16).padStart(2, "0")).join(""); }
 
-export { internalPathFor, isReadPath, proxyRead, proxyWrite };
+export { boundedFetch, internalPathFor, isReadPath, proxyRead, proxyWrite };
