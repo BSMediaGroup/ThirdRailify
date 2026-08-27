@@ -95,6 +95,29 @@ test("public auth consumes a one-time handoff, issues a host session, and enforc
   assert.equal(avatarProxyCalls, 1);
   assert.equal("THIRDRAILIFY_PROFILE_MEDIA" in env, false, "Public owns no profile-media object binding");
 
+  const noCsrfProfile = await callAuth("profile", { origin: PUBLIC_ORIGIN, body: { displayName: "Updated Person" }, cookie }, env);
+  assert.equal(noCsrfProfile.status, 403);
+
+  let profileProxyCalls = 0;
+  const profile = await callAuth(
+    "profile",
+    { origin: PUBLIC_ORIGIN, body: { displayName: "Updated Person" }, cookie, csrfToken: payload.csrfToken },
+    env,
+    async (input, init) => {
+      profileProxyCalls += 1;
+      assert.equal(String(input), "https://thirdrailify-admin.pages.dev/api/auth/profile");
+      const headers = new Headers(init.headers);
+      assert.equal(headers.get("origin"), PUBLIC_ORIGIN);
+      assert.equal(headers.get("x-csrf-token"), payload.csrfToken);
+      assert.match(headers.get("cookie"), /^thirdrailify_session=/);
+      assert.deepEqual(JSON.parse(new TextDecoder().decode(init.body)), { displayName: "Updated Person" });
+      return Response.json({ ...payload, account: { ...payload.account, displayName: "Updated Person" } });
+    },
+  );
+  assert.equal(profile.status, 200);
+  assert.equal((await profile.json()).account.displayName, "Updated Person");
+  assert.equal(profileProxyCalls, 1);
+
   const noCsrfLogout = await callAuth("logout", { origin: PUBLIC_ORIGIN, body: {}, cookie }, env);
   assert.equal(noCsrfLogout.status, 403);
   assert.equal((await noCsrfLogout.json()).error, "csrf_invalid");
@@ -148,12 +171,15 @@ test("Public sign-in and sign-up render server-disabled Google as a non-activata
     ));
     const googleButton = buttonContaining(markup, "Continue with Google");
     const discordButton = buttonContaining(markup, "Continue with Discord");
+    const passwordInput = markup.match(/<input[^>]*name="password"[^>]*>/)?.[0] || "";
     assert.match(googleButton, /disabled=""/, `${initialMode} Google control uses native disabled semantics`);
     assert.match(googleButton, /auth-provider--disabled/);
     assert.match(googleButton, /Available after site migration/);
     assert.doesNotMatch(googleButton, /href=/, "disabled Google is not a navigation control");
     assert.doesNotMatch(discordButton, /disabled=""/, "Discord remains activatable");
     assert.equal(markup.includes("Continue with GitHub"), false, "unconfigured providers remain hidden");
+    if (initialMode === "signin") assert.doesNotMatch(passwordInput, /minlength="12"/i, "sign-in accepts existing credentials without applying the new-password policy");
+    else assert.match(passwordInput, /minlength="12"/i, "new passwords retain the 12-character minimum");
   }
 });
 

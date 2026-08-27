@@ -55,6 +55,15 @@ export async function endSession(csrfToken: string) {
   });
 }
 
+export async function updateDisplayName(csrfToken: string, displayName: string) {
+  return fetchJson<SessionPayload>("/api/auth/profile", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+    body: JSON.stringify({ displayName }),
+  });
+}
+
 export async function uploadAvatar(csrfToken: string, file: File) {
   const body = new FormData();
   body.set("avatar", file);

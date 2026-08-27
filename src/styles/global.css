@@ -4079,6 +4079,7 @@ h3 {
 .public-avatar-settings > div:first-child > p:last-child { max-width: 700px; margin: 7px 0 0; color: var(--muted); line-height: 1.55; }
 .public-avatar-settings__forms { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
 .public-avatar-settings__forms form { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; min-width: 0; padding: 13px; border: 1px solid var(--line); border-radius: 10px; background: rgba(255,255,255,.018); }
+.public-avatar-settings__forms .public-avatar-settings__name-form { grid-column: 1 / -1; }
 .public-avatar-settings__forms label { display: grid; min-width: 0; gap: 6px; }
 .public-avatar-settings__forms label > span { color: var(--muted); font: 8px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
 .public-avatar-settings__forms input { width: 100%; min-width: 0; min-height: 42px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 7px; background: #0b0c09; color: var(--paper); }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { AccountAvatar } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
-import { importAvatarUrl, uploadAvatar } from "../auth/client";
+import { importAvatarUrl, updateDisplayName, uploadAvatar } from "../auth/client";
 
 export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
   const { account, loading, error, openAuth, signOut, csrfToken, refresh } = useAuth();
@@ -32,7 +32,7 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
               <AccountAvatar account={account} large />
               <div><h2>{account.displayName}</h2><p>{account.email || (account.username ? `@${account.username}` : "No email supplied by provider")}</p></div>
             </div>
-            <AvatarSettings csrfToken={csrfToken} onUpdated={refresh} />
+            <AvatarSettings displayName={account.displayName} csrfToken={csrfToken} onUpdated={refresh} />
             <dl className="account-profile__facts">
               <div><dt>Status</dt><dd>{account.status === "active" ? "Active" : account.status}</dd></div>
               <div><dt>Connected providers</dt><dd>{account.providers.length ? account.providers.map(providerLabel).join(", ") : "Email and password"}</dd></div>
@@ -47,13 +47,28 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
   );
 }
 
-function AvatarSettings({ csrfToken, onUpdated }: { csrfToken: string; onUpdated: () => Promise<void> }) {
+function AvatarSettings({ displayName: currentDisplayName, csrfToken, onUpdated }: { displayName: string; csrfToken: string; onUpdated: () => Promise<void> }) {
+  const [displayName, setDisplayName] = useState(currentDisplayName);
   const [file, setFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState("");
-  const [busy, setBusy] = useState<"file" | "url" | "">("");
+  const [busy, setBusy] = useState<"name" | "file" | "url" | "">("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setDisplayName(currentDisplayName), [currentDisplayName]);
+
+  const saveDisplayName = async (event: FormEvent) => {
+    event.preventDefault();
+    const nextName = displayName.replace(/\s+/g, " ").trim();
+    if (!csrfToken || nextName.length < 2 || nextName.length > 80) {
+      setError("Enter a display name between 2 and 80 characters."); return;
+    }
+    setBusy("name"); setError(""); setMessage("");
+    try { await updateDisplayName(csrfToken, nextName); await onUpdated(); setDisplayName(nextName); setMessage("Display name updated."); }
+    catch (reason) { setError(reason instanceof Error ? reason.message : "The display name could not be updated."); }
+    finally { setBusy(""); }
+  };
 
   const saveFile = async (event: FormEvent) => {
     event.preventDefault();
@@ -78,8 +93,9 @@ function AvatarSettings({ csrfToken, onUpdated }: { csrfToken: string; onUpdated
   };
 
   return <section className="public-avatar-settings" aria-labelledby="public-avatar-settings-title">
-    <div><p className="eyebrow">Profile image</p><h3 id="public-avatar-settings-title">Change your avatar</h3><p>Upload a JPG, PNG, or WebP up to 5 MB, or import a public HTTPS image URL. Your image is validated and stored as a clean immutable media path.</p></div>
+    <div><p className="eyebrow">Account settings</p><h3 id="public-avatar-settings-title">Change your profile</h3><p>Update your display name or avatar. Changes are verified and stored by the shared Admin account authority.</p></div>
     <div className="public-avatar-settings__forms">
+      <form className="public-avatar-settings__name-form" onSubmit={saveDisplayName}><label><span>Display name</span><input type="text" autoComplete="name" minLength={2} maxLength={80} value={displayName} onChange={(event) => { setDisplayName(event.target.value); setError(""); setMessage(""); }} /></label><button type="submit" disabled={displayName.replace(/\s+/g, " ").trim() === currentDisplayName || Boolean(busy)}>{busy === "name" ? "Saving..." : "Save display name"}</button></form>
       <form onSubmit={saveFile}><label><span>Upload image</span><input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => { setFile(event.target.files?.[0] || null); setError(""); setMessage(""); }} /></label><button type="submit" disabled={!file || Boolean(busy)}>{busy === "file" ? "Uploading..." : "Upload avatar"}</button></form>
       <form onSubmit={saveUrl}><label><span>Direct image URL</span><input type="url" inputMode="url" value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setError(""); setMessage(""); }} placeholder="https://example.com/avatar.webp" /></label><button type="submit" disabled={!imageUrl.trim() || Boolean(busy)}>{busy === "url" ? "Importing..." : "Use image URL"}</button></form>
     </div>

@@ -10,7 +10,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Substantial `/shop` with a bounded, dated eight-product Wix snapshot, search, verified broad facets, sorting, loading/error/empty states, details, and a local cart.
 - Product routes at `/products/:slug`; legacy `/product-page/:slug` paths are preserved client-side.
-- Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative avatar changes.
+- Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
@@ -105,7 +105,7 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 ## Data and provider boundaries
 
-Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Avatar submissions use a narrow same-origin proxy that forwards the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority.
+Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
 
 `src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` currently returns `src/data/wixSnapshot.ts` asynchronously so loading/error UI exists without coupling components to Wix. A future server/API adapter can replace that provider. Provider credentials and write operations must remain server-side; no provider environment names or APIs are invented here.
 

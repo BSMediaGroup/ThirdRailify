@@ -10,6 +10,7 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Corrected Public email sign-in so existing credentials are not blocked by the 12-character new-password policy while signup/reset keep that minimum. Added a bounded same-origin display-name proxy and `/account` editor that require the current Public session and CSRF proof, then delegate the D1 mutation to Admin authority.
 - Reordered the shared header actions so the authenticated identity widget occupies the former far-right cart position, compacted the cart to its accessible bag/count control, and removed both desktop and mobile supplemental Watch links whenever the normalized broadcast snapshot has no confirmed `liveNow` candidate.
 - Upgraded the authenticated Public account widget from a basic link list to a responsive StreamSuites-reference identity menu with avatar header, four-field details matrix, icon-prefixed destinations, keyboard navigation, and a separated sign-out action in the existing Third Railify visual system.
 - Added self-service avatar upload and HTTPS URL import to `/account`. Public forwards the current session and CSRF proof through its same-origin Function to the Admin-owned avatar endpoint; it holds no R2 binding, does not update D1, and never persists `blob:` or `data:` URLs. Admin returns the immutable profile-media URL for normal session hydration.
@@ -86,6 +87,8 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 - Reframed the homepage host cards and `/shawn` and `/gina` route cards with near-square `6:5` image areas using the supplied `shawn1x.webp` and `gina1x.webp` portraits, with a gentle bottom falloff into the adjoining content. Removed the homepage corner numbers so Shawn and Gina are presented by name rather than as numbered entries.
 
 ### Human-readable
+
+Existing account passwords now work at sign-in even when they predate the current new-password length rule. The account page also lets signed-in visitors update their display name alongside their avatar.
 
 The account control now sits at the far-right edge of the main header actions, the cart takes less space, and the extra live-watch signal appears only while a broadcast is actually confirmed live.
 
