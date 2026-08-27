@@ -9,6 +9,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Real `/watch` destination with validated live/latest playback, provider switching, freshness-safe metadata, schedule/direct-link fallbacks, and no browser provider scraping.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Premium `/shop` drop experience with a D1-merchandised featured rotation, graphical category discovery, URL-backed search/filter/sort state, responsive product cards, truthful loading/error/empty/image states, and the existing browser-local cart.
+- Complete local V2 `/goats` community experience with MapLibre clusters, approved-only gallery/detail projections, product-linked submission wizard, authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Production data remains empty until the owner-supplied Wix export is imported later.
 - Product detail routes at `/products/:category/:slug`; legacy `/product-page/:slug` paths and category routes remain preserved client-side.
 - Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
@@ -33,6 +34,7 @@ npm run lint
 npm run typecheck
 npm run test:functions
 npm run test:storefront
+npm run test:goats
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -44,9 +46,9 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/account`, `/account/login`.
+- Implemented: `/`, `/watch`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`.
 - Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
-- Preserved aliases: `/goats`, `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug`.
+- Preserved aliases: `/goatgate` redirects to `/goats/submit` with query/hash intact; `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
 
@@ -70,6 +72,7 @@ ThirdRailify/
 │   ├── _shared/public-auth.js        Public session/handoff/logout and narrow proxy primitives
 │   ├── api/auth/                     Same-origin Public auth plus Admin avatar-authority proxy
 │   ├── api/catalogue/                Fail-soft Admin merchandising projection proxy
+│   ├── api/goats/                    Fixed approved reads plus signed submission/interaction bridge
 │   ├── api/currency-rates.js         Validated, cached same-origin CAD reference-rate projection
 │   ├── api/_snapshot-persistence.js  Shared checkpoint and DO persistence adapter
 │   ├── api/_state-backend.js         Stable singleton Durable Object request boundary
@@ -82,13 +85,14 @@ ThirdRailify/
 ├── public/
 │   ├── _headers            Cloudflare static response policy
 │   ├── _redirects          Aliases and SPA fallback
-│   └── _routes.json        Invoke Functions only for auth, community, watch, and storage diagnostics APIs
+│   └── _routes.json        Invoke Functions only for auth, GOATS, community, watch, and storage diagnostics APIs
 ├── src/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
 │   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
 │   ├── data/               Dated bounded Wix snapshot
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
+│   ├── goats/              Typed API client and lazy MapLibre map component
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
 │   ├── pages/              Public routes, including Account, Watch, and Community pages
 │   ├── store/              Local-only cart state
@@ -101,6 +105,7 @@ ThirdRailify/
 ├── CLOUDFLARE_SETUP.md
 ├── CLOUDFLARE_AUTH_SETUP.md
 ├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
+├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
 ├── LIVE_SITE_AUDIT.md
 ├── BUMP_NOTES.md
 └── package.json
@@ -109,6 +114,8 @@ ThirdRailify/
 The display system uses the seeded American Captain asset at its real weight with lightly relaxed tracking for the primary header voice, with seeded Blinker and Geist Mono for readable body and technical roles.
 
 ## Data and provider boundaries
+
+GOATS persistence belongs only to `ThirdRailify-Admin`. Public exposes fixed same-origin `/api/goats/*` routes, signs server-to-server mutations with an encrypted shared secret, and has no commerce D1 or media R2 binding. Public responses contain approved/published fields only; private email, account IDs, moderator data, object keys, exact location input, email state, and audit metadata remain Admin-only. See `GOATS_V2.md` for route, environment, local fixture, and provider-fallback details.
 
 Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
 

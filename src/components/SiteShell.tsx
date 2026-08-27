@@ -90,7 +90,7 @@ function SiteFooter() {
           <a href="mailto:info@thirdrailify.com">info@thirdrailify.com</a>
         </div>
         <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
-        <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/community">Wild Goats</Link><Link to="/vip">VIP</Link><Link to="/support">Support</Link></div>
+        <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/vip">VIP</Link><Link to="/support">Support</Link></div>
         <div><h2>Policies</h2><Link to="/policies">Policy index</Link><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/accessibility">Accessibility</Link></div>
       </div>
       <div className="container footer-bottom"><span>Third Railify V2 staging scaffold · 2026</span><span>Current Wix site remains production</span></div>
