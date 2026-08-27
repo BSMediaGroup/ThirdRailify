@@ -13,7 +13,7 @@ const base = {
 };
 
 export function BoltIcon(props: IconProps) {
-  return <svg {...base} {...props}><path d="m13.2 2-8 11.1h6.3L10.8 22l8-11.1h-6.3L13.2 2Z" /></svg>;
+  return <svg {...base} {...props}><path d="M9.1 11.12H5.61L16.16 2l-2.27 6.81h3.54l-2.53 4.07h3.49L7.84 22l2.28-6.81H6.58l2.52-4.07Z" /></svg>;
 }
 
 export function ArrowIcon(props: IconProps) {

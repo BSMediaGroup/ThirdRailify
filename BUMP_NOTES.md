@@ -10,6 +10,8 @@ No prior version metadata or release scheme existed in this repository. `0.0.0-s
 
 ### Technical
 
+- Redrew the shared inline `BoltIcon` path as the correct three-part Third Railify zap, preserving its existing outlined current-color stroke, weight, sizing, and every placement across Public hero, signal, status, newsletter, staging, and not-found surfaces; no supplied or existing SVG/raster asset was substituted or modified.
+- Replaced only the Public `/community` hero's Join Discord button icon with the supplied pure-black `discord-0.svg` asset so it reads correctly against the gold primary action; all other Discord icon usages remain unchanged.
 - Corrected the Firefox-only sign-in scrollbar regression caused by an unreliable WebKit-selector support probe: Firefox now explicitly retains its original narrow gold-on-dark `thin` scrollbar, while Chromium/Brave keeps the separate five-pixel treatment.
 - Made the shared sign-in dialog reliably viewport-bounded in Chromium/Brave as well as Firefox by removing grid-item shrink ambiguity, using dynamic-viewport height with a compatible fallback, and containing vertical scrolling inside the modal so verification and submit actions remain reachable through a minimal five-pixel Chromium scrollbar or Firefox's narrowest supported `thin` treatment.
 - Upgraded the Shop, Community, Watch, and About hero surfaces with the homepage's motion-gated signal field, animated gold feature typography, and route-specific product-orbit, community-radar, broadcast-scope, and show-format-map treatments. Existing catalogue, Discord, broadcast, migration-state, responsive, and reduced-motion behavior remains authoritative.

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
-import discordIcon from "../../assets/icons/discord.svg";
+import discordIcon from "../../assets/icons/discord-0.svg";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { ArrowIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
