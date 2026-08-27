@@ -4,7 +4,7 @@ import {
   normalizeWatchSnapshot,
   watchCheckpointSeconds,
 } from "./_watch.js";
-import { ingestSuccessResponse, persistSemanticSnapshot } from "../_snapshot-persistence.js";
+import { ingestSuccessResponse, persistWatchSnapshot } from "../_snapshot-persistence.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -35,14 +35,13 @@ export async function onRequest(context) {
   const snapshot = normalizeWatchSnapshot(parsed);
   if (!snapshot) return jsonResponse({ error: "invalid_snapshot" }, 400);
   if (Date.parse(snapshot.generatedAt) > Date.now() + 5 * 60 * 1000) return jsonResponse({ error: "invalid_snapshot_time" }, 400);
-  const result = await persistSemanticSnapshot({
+  const result = await persistWatchSnapshot({
     env,
-    kind: "broadcast",
     snapshot,
     checkpointSeconds: watchCheckpointSeconds(snapshot, env),
   });
   if (result.persisted) {
-    console.info(`watch ingest accepted persisted=true reason=${result.reason} sqliteWrites=${result.storageWrites}`);
+    console.info(`watch ingest accepted persisted=true reason=${result.reason} archive=${result.archiveReason} sqliteWrites=${result.storageWrites}`);
   }
   return ingestSuccessResponse(result);
 }

@@ -1,8 +1,8 @@
 import { PublicStateService } from "../cloudflare/state-worker/state-core.js";
 import { COMMUNITY_KV_KEY } from "../functions/api/community/_community.js";
-import { WATCH_KV_KEY } from "../functions/api/watch/_watch.js";
+import { WATCH_ARCHIVE_KIND, WATCH_KV_KEY } from "../functions/api/watch/_watch.js";
 
-const KEY_FOR_KIND = { community: COMMUNITY_KV_KEY, broadcast: WATCH_KV_KEY };
+const KEY_FOR_KIND = { community: COMMUNITY_KV_KEY, broadcast: WATCH_KV_KEY, [WATCH_ARCHIVE_KIND]: WATCH_ARCHIVE_KIND };
 
 export class MemoryStateNamespace {
   constructor({ legacyValues = new Map(), now = () => Date.now() } = {}) {
@@ -22,6 +22,7 @@ export class MemoryStateNamespace {
       setMetadata: (key, value) => this.metadata.set(key, value),
       getSnapshot: (kind) => this.#row(kind),
       putSnapshot: (row) => this.#putRow(row),
+      transaction: (callback) => callback(),
     };
     this.service = new PublicStateService(database, this.legacyKv, { now });
     this.ready = this.service.initialize();
@@ -40,6 +41,18 @@ export class MemoryStateNamespace {
     await this.ready;
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/diagnostics") return response(this.service.diagnostics());
+    if (request.method === "POST" && url.pathname === "/watch/ingest") return response(await this.service.ingestBroadcast(await request.json()));
+    if (request.method === "GET" && url.pathname === "/watch/archive") return response(this.service.readArchive());
+    const episode = url.pathname.match(/^\/watch\/archive\/(ep_[a-f0-9]{64})$/);
+    if (request.method === "GET" && episode) {
+      const row = this.service.readEpisode(episode[1]);
+      return row ? response(row) : response({ error: "not_found" }, 404);
+    }
+    if (request.method === "POST" && url.pathname === "/watch/archive/visibility") {
+      const body = await request.json();
+      const result = await this.service.changeArchiveVisibility(body.action, body.episodeId);
+      return response(result);
+    }
     const match = url.pathname.match(/^\/snapshot\/(community|broadcast)$/);
     if (!match) return response({ error: "not_found" }, 404);
     if (request.method === "GET") {
@@ -61,8 +74,8 @@ export class MemoryStateNamespace {
         schemaVersion: 1,
         semanticHash: record.semanticFingerprint ?? "",
         payloadJson: JSON.stringify(snapshot),
-        producerObservedAt: record.producerObservedAt ?? snapshot.generatedAt,
-        persistedAt: record.persistedAt ?? record.receivedAt ?? snapshot.generatedAt,
+        producerObservedAt: record.producerObservedAt ?? snapshot.generatedAt ?? snapshot.episodes?.[0]?.updatedAt,
+        persistedAt: record.persistedAt ?? record.receivedAt ?? snapshot.generatedAt ?? snapshot.episodes?.[0]?.updatedAt,
       };
     } catch {
       return null;
@@ -73,8 +86,9 @@ export class MemoryStateNamespace {
     const current = this.#row(row.key);
     const reason = current?.semanticHash === row.semanticHash ? "freshness_checkpoint" : "semantic_change";
     this.putCalls += 1;
+    const payload = JSON.parse(row.payloadJson);
     this.values.set(KEY_FOR_KIND[row.key], JSON.stringify({
-      snapshot: JSON.parse(row.payloadJson),
+      snapshot: payload,
       semanticFingerprint: row.semanticHash,
       producerObservedAt: row.producerObservedAt,
       persistedAt: row.persistedAt,

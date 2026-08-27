@@ -4,19 +4,22 @@ const quietDay = {
   communityProducerRequests: 144,
   broadcastProducerRequests: 144,
   publicReadRequests: 5_000,
-  sqliteRowWrites: 288,
+  archiveEpisodeWrites: 1,
+  sqliteRowWrites: 289,
 };
 const busyLiveDay = {
   communityProducerRequests: 858,
   broadcastProducerRequests: 351,
   publicReadRequests: 10_000,
-  sqliteRowWrites: 1_113,
+  archiveEpisodeWrites: 24,
+  sqliteRowWrites: 1_137,
 };
 const continuousStormDay = {
   communityProducerRequests: 8_640,
   broadcastProducerRequests: 1_152,
   publicReadRequests: 10_000,
-  sqliteRowWrites: 9_216,
+  archiveEpisodeWrites: 1_152,
+  sqliteRowWrites: 10_368,
 };
 const freeDailyLimits = {
   durableObjectRequests: 100_000,
@@ -40,7 +43,7 @@ const thirtyDayBusy = {
   durableObjectRequests: busyLiveDay.durableObjectRequests * 30,
   sqliteRowReads: busyLiveDay.sqliteRowReads * 30,
   sqliteRowWrites: busyLiveDay.sqliteRowWrites * 30,
-  maximumStateBytes: 200 * 1024,
+  maximumStateBytes: 350 * 1024,
   kv: { reads: 0, puts: 0, deletes: 0, lists: 0 },
 };
 

@@ -84,14 +84,14 @@ function safeEmbedUrl(value: unknown, platform: BroadcastPlatform): string | nul
 function safeImageUrl(value: unknown): string | null {
   if (value === null) return null;
   if (typeof value !== "string") return null;
-  if (value.startsWith("/api/watch/thumbnail?key=")) return value;
+  if (value.startsWith("/api/watch/thumbnail?key=") || value.startsWith("/api/watch/thumbnail?episode=")) return value;
   try {
     const url = new URL(value);
     return url.protocol === "https:" && ["i.ytimg.com", "img.youtube.com"].includes(url.hostname) ? url.href : null;
   } catch { return null; }
 }
 
-function normalizeCandidate(value: unknown): BroadcastCandidate | null {
+export function normalizeCandidate(value: unknown): BroadcastCandidate | null {
   if (!record(value) || !["youtube", "rumble"].includes(String(value.platform))) return null;
   const platform = value.platform as BroadcastPlatform;
   const key = text(value.key, 160);

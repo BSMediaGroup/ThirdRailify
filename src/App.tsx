@@ -7,6 +7,9 @@ import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { RouteShellPage } from "./pages/RouteShellPage";
 import { ShopPage } from "./pages/ShopPage";
 import { WatchPage } from "./pages/WatchPage";
+import { LiveAliasPage, WatchLivePage } from "./pages/WatchLivePage";
+import { EpisodesPage } from "./pages/EpisodesPage";
+import { EpisodeDetailPage } from "./pages/EpisodeDetailPage";
 import { AccountPage } from "./pages/AccountPage";
 import { GoatDetailPage } from "./pages/GoatDetailPage";
 import { GoatsPage } from "./pages/GoatsPage";
@@ -23,6 +26,10 @@ export function App() {
         <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
         <Route path="/product-page/:slug" element={<ProductDetailPage />} />
         <Route path="/watch" element={<WatchPage />} />
+        <Route path="/watch/live" element={<WatchLivePage />} />
+        <Route path="/watch/episodes" element={<EpisodesPage />} />
+        <Route path="/watch/v/:episodeId" element={<EpisodeDetailPage />} />
+        <Route path="/live" element={<LiveAliasPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/account/login" element={<AccountPage openLogin />} />
         <Route path="/shawn" element={<RouteShellPage routeKey="shawn" />} />

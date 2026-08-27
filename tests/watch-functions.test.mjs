@@ -125,7 +125,7 @@ test("repeated offline watch state does not rewrite SQLite before the 10-minute 
   } finally {
     Date.now = original;
   }
-  assert.equal(kv.putCalls, 2);
+  assert.equal(kv.putCalls, 3, "one archive insert plus current snapshot and its freshness checkpoint");
 });
 
 test("watch live start, metadata change, and live end persist while volatile live polls deduplicate", async () => {
@@ -162,7 +162,7 @@ test("watch live start, metadata change, and live end persist while volatile liv
   } finally {
     Date.now = original;
   }
-  assert.equal(kv.putCalls, 4);
+  assert.equal(kv.putCalls, 5, "the first completed primary adds one distinct archive row write");
 });
 
 test("identical live watch state checkpoints at the bounded 150-second lease cadence", async () => {

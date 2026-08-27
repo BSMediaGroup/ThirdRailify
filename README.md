@@ -6,7 +6,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 
 - Vite 5, React 18, TypeScript, and React Router.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and staged support surfaces.
-- Real `/watch` destination with validated live/latest playback, provider switching, freshness-safe metadata, schedule/direct-link fallbacks, and no browser provider scraping.
+- Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Premium `/shop` drop experience with a D1-merchandised featured rotation, graphical category discovery, URL-backed search/filter/sort state, responsive product cards, truthful loading/error/empty/image states, and the existing browser-local cart.
 - Complete local V2 `/goats` community experience with MapLibre clusters, approved-only gallery/detail projections, product-linked submission wizard, authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Production data remains empty until the owner-supplied Wix export is imported later.
@@ -46,9 +46,9 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`.
+- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`.
 - Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
-- Preserved aliases: `/goatgate` redirects to `/goats/submit` with query/hash intact; `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug` remain preserved.
+- Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
 
@@ -111,6 +111,8 @@ ThirdRailify/
 └── package.json
 ```
 
+`WATCH_V2.md` is the Watch authority, retention, public-route, placeholder, and Admin-management architecture document.
+
 The display system uses the seeded American Captain asset at its real weight with lightly relaxed tracking for the primary header voice, with seeded Blinker and Geist Mono for readable body and technical roles.
 
 ## Data and provider boundaries
@@ -131,7 +133,7 @@ The Pages bridge consists of `POST /api/community/discord/ingest` and `GET /api/
 
 `BroadcastProvider` is the single public-site poller for same-origin `GET /api/watch`: one active request, omitted credentials, an eight-second bound, visibility pause/resume, live/upcoming/offline cadence of 25/50/100 seconds, and capped error backoff. The strict client accepts only the versioned validated projection. The shared header and mobile menu show current verified live count, while the homepage CTA/platform rail and lazy broadcast card consume the same context; there is no second page-level polling loop.
 
-The watch bridge reuses the existing HMAC secret and the same singleton Durable Object, but owns only the independent `broadcast` SQLite row. `POST /api/watch/ingest` rejects unsigned, replayed/future, oversized, unknown-field, and unsafe-URL payloads, then applies its own semantic fingerprint. Broadcast transitions, selected-stream changes, provider state, and public title/metadata changes persist immediately without rewriting community state. Poll-only `generatedAt`, provider `checkedAt`, candidate `observedAt`, live lease renewal, and viewer-count churn do not trigger row writes; the full latest viewer count is sampled into each checkpoint. Identical live and upcoming state checkpoints every 150 seconds, and inactive/offline state every 600 seconds, so a healthy producer is not presented as stale merely to conserve a retired KV budget. `GET /api/watch` and `/api/watch/thumbnail` preserve their existing contracts, stale-live demotion, viewer-count removal, and bounded Rumble proxy behavior.
+The watch bridge reuses the existing ingest HMAC secret and singleton Durable Object. `POST /api/watch/ingest` rejects unsigned, replayed/future, oversized, unknown-field, and unsafe-URL payloads, then atomically maintains the independent current `broadcast` row and distinct versioned `broadcast_archive` row. Only the canonical completed/published archive candidate is eligible; stable IDs hash immutable platform/content identity, visibility survives metadata refresh, hidden records count toward the deterministic 24-record cap, and a 25th unique episode prunes the oldest. There is no provider scrape or backfill. Poll-only timestamps and viewer churn do not trigger semantic archive writes. `GET /api/watch` preserves current-state behavior; visible-only `/api/watch/episodes` reads, detail 404s, and historical thumbnail proxying are additive. See `WATCH_V2.md` for the complete contract.
 
 Workers KV is now a read-only legacy migration source. On first object initialization, missing rows are seeded from `discord:community:snapshot:v1` and `broadcast:current:snapshot:v1` through the current normalizers, then a SQLite migration marker prevents every later KV read. Existing Durable Object rows always win, so legacy state cannot overwrite newer state. Normal ThirdRailify KV PUT, DELETE, LIST, and post-migration GET counts are exactly zero; static and behavioral tests enforce that contract. This replacement was necessary because the earlier community-only optimization could not cover the later Watch publisher sharing the same namespace.
 

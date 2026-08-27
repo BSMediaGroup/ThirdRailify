@@ -1,4 +1,4 @@
-import { writeStateSnapshot } from "./_state-backend.js";
+import { ingestWatchState, writeStateSnapshot } from "./_state-backend.js";
 
 export function checkpointSeconds(value, fallback, minimum) {
   const parsed = Number(value);
@@ -23,6 +23,19 @@ export async function persistSemanticSnapshot({
     persisted: result.persisted === true,
     reason: result.reason,
     storageWrites: Number(result.storageWrites ?? 0),
+    kvWrites: 0,
+  };
+}
+
+export async function persistWatchSnapshot({ env, snapshot, checkpointSeconds: checkpoint }) {
+  const result = await ingestWatchState(env, snapshot, checkpoint);
+  return {
+    persisted: result.persisted === true,
+    reason: result.reason,
+    storageWrites: Number(result.storageWrites ?? 0),
+    archivePersisted: result.archivePersisted === true,
+    archiveReason: result.archiveReason,
+    archiveCount: Number(result.archiveCount ?? 0),
     kvWrites: 0,
   };
 }

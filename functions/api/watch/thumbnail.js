@@ -1,20 +1,29 @@
 import { jsonResponse } from "../community/_community.js";
-import { readStateSnapshot } from "../_state-backend.js";
-import { candidatesInSnapshot, normalizeWatchSnapshot } from "./_watch.js";
+import { readStateSnapshot, readWatchEpisode } from "../_state-backend.js";
+import { WATCH_EPISODE_ID_PATTERN, candidatesInSnapshot, normalizeWatchSnapshot } from "./_watch.js";
 
 export async function onRequest(context) {
   const { request, env } = context;
   if (request.method !== "GET") return jsonResponse({ error: "method_not_allowed" }, 405);
-  const key = new URL(request.url).searchParams.get("key");
-  if (!key || key.length > 160) return jsonResponse({ error: "invalid_key" }, 400);
-  let snapshot;
+  const search = new URL(request.url).searchParams;
+  const key = search.get("key");
+  const episodeId = search.get("episode");
+  if ([...search].length !== 1 || Boolean(key) === Boolean(episodeId)) return jsonResponse({ error: "invalid_key" }, 400);
+  if (key && key.length > 160) return jsonResponse({ error: "invalid_key" }, 400);
+  if (episodeId && !WATCH_EPISODE_ID_PATTERN.test(episodeId)) return jsonResponse({ error: "not_found" }, 404);
+  let candidate;
   try {
-    const record = await readStateSnapshot(env, "broadcast");
-    snapshot = normalizeWatchSnapshot(record?.snapshot);
+    if (episodeId) {
+      const episode = await readWatchEpisode(env, episodeId);
+      candidate = episode?.visible && episode.platform === "rumble" ? episode : null;
+    } else {
+      const record = await readStateSnapshot(env, "broadcast");
+      const snapshot = normalizeWatchSnapshot(record?.snapshot);
+      candidate = snapshot && candidatesInSnapshot(snapshot).find((item) => item.key === key && item.platform === "rumble");
+    }
   } catch {
     return jsonResponse({ error: "unavailable" }, 503);
   }
-  const candidate = snapshot && candidatesInSnapshot(snapshot).find((item) => item.key === key && item.platform === "rumble");
   if (!candidate?.thumbnailUrl) return jsonResponse({ error: "not_found" }, 404);
   const hostname = new URL(candidate.thumbnailUrl).hostname.toLowerCase();
   if (hostname === "localhost" || hostname.endsWith(".local") || /^[\d.]+$/.test(hostname) || hostname.includes(":")) {

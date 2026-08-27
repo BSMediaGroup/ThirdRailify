@@ -18,6 +18,40 @@ export async function writeStateSnapshot(env, kind, snapshot, checkpointSeconds)
   return response.json();
 }
 
+export async function ingestWatchState(env, snapshot, checkpointSeconds) {
+  const response = await stateRequest(env, "/watch/ingest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ snapshot, checkpointSeconds }),
+  });
+  if (!response.ok) throw new Error(`state_backend_watch_ingest_${response.status}`);
+  return response.json();
+}
+
+export async function readWatchArchive(env) {
+  const response = await stateRequest(env, "/watch/archive", { method: "GET" });
+  if (!response.ok) throw new Error(`state_backend_archive_read_${response.status}`);
+  return response.json();
+}
+
+export async function readWatchEpisode(env, episodeId) {
+  const response = await stateRequest(env, `/watch/archive/${encodeURIComponent(episodeId)}`, { method: "GET" });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`state_backend_episode_read_${response.status}`);
+  return response.json();
+}
+
+export async function changeWatchVisibility(env, action, episodeId = null) {
+  const response = await stateRequest(env, "/watch/archive/visibility", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, episodeId }),
+  });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`state_backend_visibility_${response.status}`);
+  return response.json();
+}
+
 export async function readStateDiagnostics(env) {
   const response = await stateRequest(env, "/diagnostics", { method: "GET" });
   if (!response.ok) throw new Error(`state_backend_diagnostics_${response.status}`);

@@ -11,6 +11,10 @@ export const WATCH_INACTIVE_CHECKPOINT_SECONDS = 600;
 export const WATCH_INACTIVE_MIN_CHECKPOINT_SECONDS = 600;
 export const WATCH_FRESH_SECONDS = 180;
 export const WATCH_DELAYED_SECONDS = 900;
+export const WATCH_ARCHIVE_SCHEMA = "thirdrailify-broadcast-archive-v1";
+export const WATCH_ARCHIVE_KIND = "broadcast_archive";
+export const WATCH_ARCHIVE_LIMIT = 24;
+export const WATCH_EPISODE_ID_PATTERN = /^ep_[a-f0-9]{64}$/;
 
 const ROOT_FIELDS = new Set([
   "schema", "generatedAt", "source", "providerStatus", "liveNow", "primary", "latest", "latestByPlatform", "upcoming",
@@ -156,6 +160,163 @@ export function projectThumbnailUrls(response) {
     },
     upcoming: project(response.upcoming),
   };
+}
+
+export function historicalCandidate(snapshot) {
+  const candidate = snapshot?.primary;
+  if (!candidate || !["episode", "archive"].includes(candidate.presentationState)) return null;
+  if (["upcoming", "live", "blocked", "unknown"].includes(candidate.providerState)) return null;
+  return candidate;
+}
+
+export async function episodeIdForCandidate(candidate) {
+  const bytes = new TextEncoder().encode(`${candidate.platform}\0${candidate.contentId}`);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return `ep_${[...digest].map((byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+}
+
+export async function archiveEpisodeFromSnapshot(snapshot, existing = null) {
+  const candidate = historicalCandidate(snapshot);
+  if (!candidate) return null;
+  const id = await episodeIdForCandidate(candidate);
+  if (existing && existing.id !== id) throw new Error("archive_identity_mismatch");
+  const strongest = candidate.actualEnd ? ["actualEnd", candidate.actualEnd]
+    : candidate.publishedAt ? ["publishedAt", candidate.publishedAt]
+      : candidate.actualStart ? ["actualStart", candidate.actualStart]
+        : ["observedAt", existing?.sortSource === "observedAt" ? existing.sortAt : candidate.observedAt];
+  const retainedAt = existing?.retainedAt ?? snapshot.generatedAt;
+  const episode = normalizeWatchEpisode({
+    id,
+    identityKey: candidate.key,
+    platform: candidate.platform,
+    contentId: candidate.contentId,
+    watchUrl: candidate.watchUrl,
+    embedUrl: candidate.embedUrl,
+    title: candidate.title,
+    description: candidate.description,
+    creatorName: candidate.creatorName,
+    thumbnailUrl: candidate.thumbnailUrl,
+    providerState: candidate.providerState,
+    presentationState: candidate.presentationState,
+    publishedAt: candidate.publishedAt,
+    actualStart: candidate.actualStart,
+    actualEnd: candidate.actualEnd,
+    sortAt: strongest[1],
+    sortSource: strongest[0],
+    visible: existing?.visible ?? true,
+    retainedAt,
+    updatedAt: snapshot.generatedAt,
+  });
+  if (existing && episode && archiveEpisodeMetadata(existing) === archiveEpisodeMetadata(episode)) return existing;
+  return episode;
+}
+
+export function normalizeWatchArchive(value) {
+  if (!record(value) || value.schema !== WATCH_ARCHIVE_SCHEMA || !Array.isArray(value.episodes) || value.episodes.length > WATCH_ARCHIVE_LIMIT) return null;
+  const episodes = value.episodes.map(normalizeWatchEpisode);
+  if (episodes.some((episode) => !episode)) return null;
+  const identities = new Set();
+  const ids = new Set();
+  for (const episode of episodes) {
+    if (ids.has(episode.id) || identities.has(episode.identityKey)) return null;
+    ids.add(episode.id);
+    identities.add(episode.identityKey);
+  }
+  return { schema: WATCH_ARCHIVE_SCHEMA, episodes: sortArchiveEpisodes(episodes) };
+}
+
+export function normalizeWatchEpisode(value) {
+  if (!record(value)) return null;
+  const fields = new Set([
+    "id", "identityKey", "platform", "contentId", "watchUrl", "embedUrl", "title", "description", "creatorName",
+    "thumbnailUrl", "providerState", "presentationState", "publishedAt", "actualStart", "actualEnd", "sortAt",
+    "sortSource", "visible", "retainedAt", "updatedAt",
+  ]);
+  if (!exactFields(value, fields) || !WATCH_EPISODE_ID_PATTERN.test(value.id) || typeof value.visible !== "boolean") return null;
+  const candidate = normalizeCandidate({
+    platform: value.platform,
+    key: value.identityKey,
+    contentId: value.contentId,
+    watchUrl: value.watchUrl,
+    embedUrl: value.embedUrl,
+    title: value.title,
+    description: value.description,
+    creatorName: value.creatorName,
+    thumbnailUrl: value.thumbnailUrl,
+    providerState: value.providerState,
+    presentationState: value.presentationState,
+    publishedAt: value.publishedAt,
+    scheduledStart: null,
+    actualStart: value.actualStart,
+    actualEnd: value.actualEnd,
+    liveVerifiedAt: null,
+    liveExpiresAt: null,
+    viewerCount: null,
+    observedAt: value.sortAt,
+  }, true);
+  const retainedAt = isoDate(value.retainedAt);
+  const updatedAt = isoDate(value.updatedAt);
+  const sortAt = isoDate(value.sortAt);
+  if (!candidate || !retainedAt || !updatedAt || !sortAt || !["actualEnd", "publishedAt", "actualStart", "observedAt"].includes(value.sortSource)) return null;
+  if (!["episode", "archive"].includes(candidate.presentationState) || ["upcoming", "live", "blocked", "unknown"].includes(candidate.providerState)) return null;
+  return {
+    id: value.id,
+    identityKey: candidate.key,
+    platform: candidate.platform,
+    contentId: candidate.contentId,
+    watchUrl: candidate.watchUrl,
+    embedUrl: candidate.embedUrl,
+    title: candidate.title,
+    description: candidate.description,
+    creatorName: candidate.creatorName,
+    thumbnailUrl: candidate.thumbnailUrl,
+    providerState: candidate.providerState,
+    presentationState: candidate.presentationState,
+    publishedAt: candidate.publishedAt,
+    actualStart: candidate.actualStart,
+    actualEnd: candidate.actualEnd,
+    sortAt,
+    sortSource: value.sortSource,
+    visible: value.visible,
+    retainedAt,
+    updatedAt,
+  };
+}
+
+export function sortArchiveEpisodes(episodes) {
+  return [...episodes].sort((left, right) => right.sortAt.localeCompare(left.sortAt) || left.id.localeCompare(right.id));
+}
+
+export function publicEpisodeProjection(episode) {
+  return {
+    id: episode.id,
+    platform: episode.platform,
+    key: episode.identityKey,
+    contentId: episode.contentId,
+    watchUrl: episode.watchUrl,
+    embedUrl: episode.embedUrl,
+    title: episode.title,
+    description: episode.description,
+    creatorName: episode.creatorName,
+    thumbnailUrl: episode.platform === "rumble" && episode.thumbnailUrl
+      ? `/api/watch/thumbnail?episode=${encodeURIComponent(episode.id)}`
+      : episode.thumbnailUrl,
+    providerState: episode.providerState,
+    presentationState: episode.presentationState,
+    publishedAt: episode.publishedAt,
+    scheduledStart: null,
+    actualStart: episode.actualStart,
+    actualEnd: episode.actualEnd,
+    liveVerifiedAt: null,
+    liveExpiresAt: null,
+    viewerCount: null,
+    observedAt: episode.sortAt,
+    archiveDate: episode.sortAt,
+  };
+}
+
+function archiveEpisodeMetadata(episode) {
+  return JSON.stringify(Object.fromEntries(Object.entries(episode).filter(([key]) => key !== "updatedAt")));
 }
 
 export function candidatesInSnapshot(snapshot) {

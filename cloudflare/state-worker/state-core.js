@@ -12,8 +12,14 @@ import {
   normalizeSnapshot,
 } from "../../functions/api/community/_community.js";
 import {
+  WATCH_ARCHIVE_KIND,
+  WATCH_ARCHIVE_LIMIT,
+  WATCH_ARCHIVE_SCHEMA,
   WATCH_KV_KEY,
+  archiveEpisodeFromSnapshot,
   normalizeWatchSnapshot,
+  normalizeWatchArchive,
+  sortArchiveEpisodes,
   watchSemanticSnapshot,
 } from "../../functions/api/watch/_watch.js";
 
@@ -36,6 +42,7 @@ export class PublicStateService {
     this.database = database;
     this.legacyKv = legacyKv;
     this.now = now;
+    this.mutationQueue = Promise.resolve();
   }
 
   async initialize() {
@@ -76,6 +83,10 @@ export class PublicStateService {
   }
 
   async write(kind, value) {
+    return this.serializeMutation(() => this.writeUnlocked(kind, value));
+  }
+
+  async writeUnlocked(kind, value) {
     const config = KIND_CONFIG[kind];
     if (!config) throw new Error("invalid_snapshot_kind");
     const snapshot = config.normalize(value?.snapshot);
@@ -103,6 +114,131 @@ export class PublicStateService {
       persistedAt: new Date(nowMilliseconds).toISOString(),
     });
     return { persisted: true, reason, storageWrites: 1 };
+  }
+
+  async ingestBroadcast(value) {
+    return this.serializeMutation(async () => {
+      const snapshot = normalizeWatchSnapshot(value?.snapshot);
+      const checkpointSeconds = Number(value?.checkpointSeconds);
+      if (!snapshot || !Number.isFinite(checkpointSeconds) || checkpointSeconds < 60 || checkpointSeconds > 86400) {
+        throw new Error("invalid_snapshot_write");
+      }
+
+      const currentPlan = await this.planSnapshotWrite("broadcast", snapshot, checkpointSeconds);
+      const archive = this.readArchive();
+      const candidate = snapshot.primary;
+      let nextArchive = archive;
+      let archiveReason = "ineligible";
+      let archiveRow = null;
+      if (candidate) {
+        const identity = archive.episodes.find((episode) => episode.identityKey === candidate.key) ?? null;
+        const episode = await archiveEpisodeFromSnapshot(snapshot, identity);
+        if (episode) {
+          const episodes = sortArchiveEpisodes([
+            ...archive.episodes.filter((entry) => entry.id !== episode.id),
+            episode,
+          ]).slice(0, WATCH_ARCHIVE_LIMIT);
+          nextArchive = normalizeWatchArchive({ schema: WATCH_ARCHIVE_SCHEMA, episodes });
+          const nextHash = await semanticFingerprint(nextArchive);
+          const currentHash = this.database.getSnapshot(WATCH_ARCHIVE_KIND)?.semanticHash ?? null;
+          if (nextHash !== currentHash) {
+            archiveReason = identity ? "episode_updated" : "episode_inserted";
+            archiveRow = this.archiveRow(nextArchive, nextHash, snapshot.generatedAt);
+          } else {
+            archiveReason = "unchanged";
+          }
+        }
+      }
+
+      this.database.transaction(() => {
+        if (currentPlan.row) this.database.putSnapshot(currentPlan.row);
+        if (archiveRow) this.database.putSnapshot(archiveRow);
+      });
+      return {
+        persisted: Boolean(currentPlan.row || archiveRow),
+        reason: currentPlan.reason,
+        storageWrites: Number(Boolean(currentPlan.row)) + Number(Boolean(archiveRow)),
+        currentPersisted: Boolean(currentPlan.row),
+        archivePersisted: Boolean(archiveRow),
+        archiveReason,
+        archiveCount: nextArchive.episodes.length,
+      };
+    });
+  }
+
+  readArchive() {
+    const row = this.database.getSnapshot(WATCH_ARCHIVE_KIND);
+    if (!row) return { schema: WATCH_ARCHIVE_SCHEMA, episodes: [] };
+    try {
+      return normalizeWatchArchive(JSON.parse(row.payloadJson)) ?? { schema: WATCH_ARCHIVE_SCHEMA, episodes: [] };
+    } catch {
+      return { schema: WATCH_ARCHIVE_SCHEMA, episodes: [] };
+    }
+  }
+
+  readEpisode(episodeId) {
+    return this.readArchive().episodes.find((episode) => episode.id === episodeId) ?? null;
+  }
+
+  async changeArchiveVisibility(action, episodeId = null) {
+    return this.serializeMutation(async () => {
+      if (!["show", "hide", "show_all", "hide_all"].includes(action)) throw new Error("invalid_archive_action");
+      const archive = this.readArchive();
+      const visible = action === "show" || action === "show_all";
+      if ((action === "show" || action === "hide") && !archive.episodes.some((episode) => episode.id === episodeId)) {
+        throw new Error("episode_not_found");
+      }
+      const episodes = archive.episodes.map((episode) => {
+        if (action.endsWith("_all") || episode.id === episodeId) return episode.visible === visible ? episode : { ...episode, visible };
+        return episode;
+      });
+      const nextArchive = normalizeWatchArchive({ schema: WATCH_ARCHIVE_SCHEMA, episodes });
+      const nextHash = await semanticFingerprint(nextArchive);
+      const currentHash = this.database.getSnapshot(WATCH_ARCHIVE_KIND)?.semanticHash ?? null;
+      if (nextHash === currentHash) return { persisted: false, reason: "unchanged", storageWrites: 0, archive: nextArchive };
+      this.database.transaction(() => this.database.putSnapshot(this.archiveRow(nextArchive, nextHash, new Date(this.now()).toISOString())));
+      return { persisted: true, reason: "visibility_changed", storageWrites: 1, archive: nextArchive };
+    });
+  }
+
+  async planSnapshotWrite(kind, snapshot, checkpointSeconds) {
+    const config = KIND_CONFIG[kind];
+    const incomingHash = await semanticFingerprint(config.semantic(snapshot));
+    const current = this.database.getSnapshot(kind);
+    const nowMilliseconds = this.now();
+    const unchanged = current?.semanticHash === incomingHash;
+    const persistedMilliseconds = Date.parse(current?.persistedAt);
+    const checkpointDue = !Number.isFinite(persistedMilliseconds)
+      || Math.max(0, nowMilliseconds - persistedMilliseconds) >= checkpointSeconds * 1000;
+    if (unchanged && !checkpointDue) return { row: null, reason: "unchanged" };
+    return {
+      reason: unchanged ? "freshness_checkpoint" : "semantic_change",
+      row: {
+        key: kind,
+        schemaVersion: 1,
+        semanticHash: incomingHash,
+        payloadJson: JSON.stringify(snapshot),
+        producerObservedAt: snapshot.generatedAt,
+        persistedAt: new Date(nowMilliseconds).toISOString(),
+      },
+    };
+  }
+
+  archiveRow(archive, semanticHash, observedAt) {
+    return {
+      key: WATCH_ARCHIVE_KIND,
+      schemaVersion: 1,
+      semanticHash,
+      payloadJson: JSON.stringify(archive),
+      producerObservedAt: observedAt,
+      persistedAt: new Date(this.now()).toISOString(),
+    };
+  }
+
+  serializeMutation(operation) {
+    const run = this.mutationQueue.then(operation, operation);
+    this.mutationQueue = run.catch(() => {});
+    return run;
   }
 
   read(kind) {
@@ -134,6 +270,8 @@ export class PublicStateService {
       schema_version: STATE_BACKEND_SCHEMA_VERSION,
       community_snapshot_available: Boolean(this.read("community")),
       broadcast_snapshot_available: Boolean(this.read("broadcast")),
+      broadcast_archive_available: true,
+      broadcast_archive_count: this.readArchive().episodes.length,
       legacy_kv_migration: this.database.getMetadata(MIGRATION_COMPLETED_KEY) === "true" ? "complete" : "pending",
       legacy_kv_read_only: true,
       expected_steady_state_kv_puts_per_day: 0,
@@ -145,8 +283,9 @@ export class PublicStateService {
 }
 
 export class SqliteStateDatabase {
-  constructor(sql) {
-    this.sql = sql;
+  constructor(storage) {
+    this.storage = storage;
+    this.sql = storage.sql;
   }
 
   initialize() {
@@ -210,6 +349,10 @@ export class SqliteStateDatabase {
       row.producerObservedAt,
       row.persistedAt,
     );
+  }
+
+  transaction(callback) {
+    return this.storage.transactionSync(callback);
   }
 }
 

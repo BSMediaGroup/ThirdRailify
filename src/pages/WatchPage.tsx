@@ -1,30 +1,26 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import rumbleIcon from "../../assets/icons/rumble.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
-import {
-  BroadcastMetadata,
-  BroadcastPlayer,
-  BroadcastStatusBadge,
-  PlatformSelector,
-  broadcastCandidates,
-  formatDate,
-} from "../components/BroadcastComponents";
+import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelector, broadcastCandidates, formatDate } from "../components/BroadcastComponents";
+import { EpisodeCard } from "../components/EpisodeComponents";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 import { useBroadcast } from "../hooks/useBroadcast";
+import { useEpisodes } from "../hooks/useEpisodes";
 import { RUMBLE_URL, YOUTUBE_URL } from "../lib/broadcast";
 
 export function WatchPage() {
   const { data, loading, unavailable, error } = useBroadcast();
+  const archive = useEpisodes();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
-  const selectedIsLive = selected?.presentationState === "live";
-  const secondary = data ? options.find((candidate) => candidate.key !== selected?.key && candidate.presentationState !== "live") ?? null : null;
+  const featured = archive.data?.items.filter((episode) => episode.key !== selected?.key).slice(0, 6) ?? [];
 
   return (
-    <div className="watch-page">
+    <div className="watch-page watch-v2">
       <section className={`watch-hero${live ? " is-live" : ""}`}>
         <SignalField />
         <div className="watch-hero__signal" aria-hidden="true"><span /><span /><span /><BoltIcon /></div>
@@ -32,12 +28,12 @@ export function WatchPage() {
           <div>
             <p className="eyebrow"><i /> Third Railify broadcast control</p>
             <h1>{live ? <>The rail is <span className="hero-feature-text">live.</span></> : <>Stay on the <span className="hero-feature-text">signal.</span></>}</h1>
-            <p>{live ? "A current provider check confirmed the broadcast below." : "Watch the latest validated broadcast, with no provider scraping in your browser."}</p>
+            <p>{live ? "A current provider check confirmed the broadcast below." : "Current signal, completed transmissions, and direct provider routes — all from validated broadcast snapshots."}</p>
           </div>
           <div className="watch-signal-card">
             <div className="watch-signal-card__scope" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
             <span>{live ? "Signal acquired" : data?.freshness === "stale" ? "Stored transmission" : "Standing by"}</span>
-            <strong>{live ? "LIVE NOW" : data?.upcoming ? "UPCOMING" : "LATEST BROADCAST"}</strong>
+            <strong>{live ? "ON AIR" : data?.upcoming ? "UPCOMING" : "LATEST SIGNAL"}</strong>
             <small>Sunday—Friday · 10 PM Eastern</small>
             {data && <b>{data.upcoming ? `Next: ${data.upcoming.title}${data.upcoming.scheduledStart ? ` · ${formatDate(data.upcoming.scheduledStart)}` : ""}` : data.freshness === "fresh" ? "Current snapshot" : data.freshness === "delayed" ? "Signal delayed" : `Last updated ${formatDate(data.generatedAt)}`}</b>}
           </div>
@@ -49,32 +45,33 @@ export function WatchPage() {
           {loading && !data ? <WatchLoading /> : selected && data ? (
             <>
               <div className="watch-stage__heading">
-                <div><p className="eyebrow">Now on the rail</p><h2 id="current-broadcast-title">{live ? "Current transmission" : "Latest transmission"}</h2></div>
+                <div><p className="eyebrow">Current signal authority</p><h2 id="current-broadcast-title">{live ? "Current transmission" : selected.presentationState === "upcoming" ? "Next transmission" : "Latest transmission"}</h2></div>
                 <BroadcastStatusBadge candidate={selected} />
               </div>
               <PlatformSelector candidates={options} selectedKey={selected.key} onSelect={(candidate) => setSelectedKey(candidate.key)} />
-              <div className={`watch-stage${selectedIsLive ? " is-live" : ""}`}>
+              <div className={`watch-stage${selected.presentationState === "live" ? " is-live" : ""}`}>
                 <BroadcastPlayer candidate={selected} eager />
-                <BroadcastMetadata candidate={selected} freshness={data.freshness} />
+                <div className="watch-stage__copy">
+                  <BroadcastMetadata candidate={selected} freshness={data.freshness} />
+                  <Link className="button button--primary watch-dedicated-link" to={`/watch/live?platform=${selected.platform}`}>Open dedicated player <ArrowIcon /></Link>
+                </div>
               </div>
-              {error && <p className="watch-inline-alert">The latest refresh failed; this is the last validated snapshot.</p>}
+              {error && <p className="watch-inline-alert" role="status">The latest refresh failed; this is the last validated snapshot.</p>}
             </>
           ) : <WatchUnavailable />}
         </div>
       </section>
 
-      {secondary && data && (
-        <section className="section watch-latest" aria-labelledby="watch-latest-title">
-          <div className="container split-heading split-heading--compact">
-            <div><p className="eyebrow">Elsewhere on the rail</p><h2 id="watch-latest-title">Another validated broadcast.</h2></div>
-            <p>{live ? "Keep the latest archive close while the current transmission is live." : "Switch platforms without inventing an archive the snapshot does not provide."}</p>
-          </div>
-          <div className="container watch-latest__card">
-            <BroadcastPlayer candidate={secondary} />
-            <div><BroadcastStatusBadge candidate={secondary} /><h3>{secondary.title}</h3><a className="text-link" href={secondary.watchUrl} target="_blank" rel="noreferrer">Open on platform <ArrowIcon /></a></div>
-          </div>
-        </section>
-      )}
+      <section className="section watch-archive-drawer" aria-labelledby="featured-episodes-title">
+        <div className="container split-heading">
+          <div><p className="eyebrow">Retained transmissions</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
+          <p>{archive.error ? "The archive is temporarily unavailable; current playback remains independent." : `${archive.data?.summary.visibleCount ?? 0} visible episode${archive.data?.summary.visibleCount === 1 ? "" : "s"} retained. New completed broadcasts arrive through the signed signal path.`}</p>
+        </div>
+        <div className="container episode-featured-grid" aria-busy={archive.loading}>
+          {Array.from({ length: 6 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-slot-${index}`} episode={featured[index] ?? null} index={index} featured />)}
+        </div>
+        <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Open all 24 archive slots <ArrowIcon /></Link></div>
+      </section>
 
       <section className="section section--panel watch-schedule" aria-labelledby="watch-schedule-title">
         <div className="container watch-schedule__grid">
@@ -90,16 +87,8 @@ export function WatchPage() {
   );
 }
 
-function WatchLoading() {
-  return <div className="watch-loading" aria-label="Loading broadcast"><i /><i /><i /><span>Acquiring validated signal…</span></div>;
-}
+function WatchLoading() { return <div className="watch-loading" aria-label="Loading broadcast"><i /><i /><i /><span>Acquiring validated signal…</span></div>; }
 
 function WatchUnavailable() {
-  return (
-    <div className="watch-unavailable">
-      <RadioIcon /><p className="eyebrow">Signal unavailable</p><h2 id="current-broadcast-title">No validated snapshot is available.</h2>
-      <p>Nothing has been fabricated and no provider scraping is running in this browser.</p>
-      <div className="button-row"><a className="button button--primary" href={RUMBLE_URL} target="_blank" rel="noreferrer">Open Rumble <ArrowIcon /></a><a className="button button--outline" href={YOUTUBE_URL} target="_blank" rel="noreferrer">Open YouTube <ArrowIcon /></a></div>
-    </div>
-  );
+  return <div className="watch-unavailable"><RadioIcon /><p className="eyebrow">Signal unavailable</p><h2 id="current-broadcast-title">No validated snapshot is available.</h2><p>Nothing has been fabricated and no provider scraping is running in this browser.</p><div className="button-row"><a className="button button--primary" href={RUMBLE_URL} target="_blank" rel="noreferrer">Open Rumble <ArrowIcon /></a><a className="button button--outline" href={YOUTUBE_URL} target="_blank" rel="noreferrer">Open YouTube <ArrowIcon /></a></div></div>;
 }
