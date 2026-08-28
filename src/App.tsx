@@ -19,6 +19,8 @@ import { PolicyPage } from "./pages/PolicyPage";
 import { CheckoutSuccessPage } from "./pages/CheckoutSuccessPage";
 import { CartPage } from "./pages/CartPage";
 import { DonatePage } from "./pages/DonatePage";
+import { AboutPage } from "./pages/AboutPage";
+import { HostPage } from "./pages/HostPage";
 
 export function App() {
   return (
@@ -40,9 +42,9 @@ export function App() {
         <Route path="/live" element={<LiveAliasPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/account/login" element={<AccountPage openLogin />} />
-        <Route path="/shawn" element={<RouteShellPage routeKey="shawn" />} />
-        <Route path="/gina" element={<RouteShellPage routeKey="gina" />} />
-        <Route path="/about" element={<RouteShellPage routeKey="about" />} />
+        <Route path="/shawn" element={<HostPage hostKey="shawn" />} />
+        <Route path="/gina" element={<HostPage hostKey="gina" />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/friends" element={<RouteShellPage routeKey="friends" />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />

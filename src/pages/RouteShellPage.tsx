@@ -1,10 +1,8 @@
 import { Link } from "react-router-dom";
-import ginaPortrait from "../../assets/people/gina1x.webp";
-import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 
-type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "giftCards";
+type RouteKey = "friends" | "community" | "vip" | "giftCards";
 
 type RouteContent = {
   eyebrow: string;
@@ -14,41 +12,9 @@ type RouteContent = {
   sourceHref?: string;
   sourceLabel?: string;
   points: string[];
-  image?: string;
-  accent?: "gina" | "gold";
 };
 
 const content: Record<RouteKey, RouteContent> = {
-  shawn: {
-    eyebrow: "Host · @ThirdRailify",
-    title: "Shawn",
-    description: "Daily news, crime, pop culture, and very ADHD commentary from the stay-at-home dad at the centre of Third Railify.",
-    status: "The complete host archive and submission flows remain on the current site while this page is migrated.",
-    sourceHref: "https://www.thirdrailify.com/shawn",
-    sourceLabel: "Open current Shawn page",
-    points: ["Third Railify host", "Sunday—Friday at 10 PM Eastern", "Rumble · YouTube · Pilled · X · TikTok · Pickax"],
-    image: shawnPortrait,
-  },
-  gina: {
-    eyebrow: "Host · @JustGina",
-    title: "Gina",
-    description: "Sass, smarts, humor, conspiracies, and culture—plus a distinct Just Gina identity inside the Third Railify universe.",
-    status: "The dedicated live Gina route was intermittently unreadable during audit; only facts visible on the home surface are carried here.",
-    sourceHref: "https://www.thirdrailify.com/gina",
-    sourceLabel: "Open current Gina page",
-    points: ["Just Gina™ host", "Third Railify co-host", "Just Gina currently lists a Saturday 9 PM Eastern show"],
-    image: ginaPortrait,
-    accent: "gina",
-  },
-  about: {
-    eyebrow: "About the show",
-    title: "A proper story belongs here.",
-    description: "The current About page still contains generic Wix FAQ placeholders. V2 will replace them with verified show history, format, host context, and contact information.",
-    status: "Placeholder copy has deliberately not been reproduced or embellished.",
-    sourceHref: "https://www.thirdrailify.com/about",
-    sourceLabel: "Review current About page",
-    points: ["Show history pending", "Media and contact context pending", "No generic FAQ filler"],
-  },
   friends: {
     eyebrow: "Friends of the show",
     title: "Help the wider herd grow.",
@@ -90,13 +56,13 @@ const content: Record<RouteKey, RouteContent> = {
 export function RouteShellPage({ routeKey }: { routeKey: RouteKey }) {
   const route = content[routeKey];
   return (
-    <section className={`route-hero${route.accent === "gina" ? " route-hero--gina" : ""}${routeKey === "about" ? " route-hero--about" : ""}`}>
+    <section className="route-hero">
       <SignalField />
       <div className="route-hero__signal" aria-hidden="true"><span /><span /><span /></div>
       <div className="container route-hero__grid">
         <div className="route-hero__copy">
           <p className="eyebrow">{route.eyebrow}</p>
-          <h1>{routeKey === "about" ? <>A proper story<br /><span className="hero-feature-text">belongs here.</span></> : route.title}</h1>
+          <h1>{route.title}</h1>
           <p className="route-lede">{route.description}</p>
           <div className="route-status"><BoltIcon /><span><strong>Migration-stage route</strong>{route.status}</span></div>
           <div className="button-row">
@@ -105,24 +71,10 @@ export function RouteShellPage({ routeKey }: { routeKey: RouteKey }) {
           </div>
         </div>
         <div className="route-card">
-          {route.image ? <img src={route.image} alt="" /> : routeKey === "about" ? <AboutSignalMap /> : <div className="route-card__mark"><BoltIcon /><span>TR / V2</span></div>}
+          <div className="route-card__mark"><BoltIcon /><span>TR / V2</span></div>
           <div className="route-card__list">{route.points.map((point, index) => <div key={point}><span>0{index + 1}</span><strong>{point}</strong></div>)}</div>
         </div>
       </div>
     </section>
-  );
-}
-
-function AboutSignalMap() {
-  return (
-    <div className="about-signal-map" aria-hidden="true">
-      <div className="about-signal-map__meta"><span>TR / SHOW 01</span><strong>FORMAT MAP</strong></div>
-      <i className="about-signal-map__orbit about-signal-map__orbit--outer" />
-      <i className="about-signal-map__orbit about-signal-map__orbit--inner" />
-      <div className="about-signal-map__core"><BoltIcon /><span>THIRD RAILIFY</span></div>
-      <div className="about-signal-map__node about-signal-map__node--news"><i />NEWS</div>
-      <div className="about-signal-map__node about-signal-map__node--culture"><i />CULTURE</div>
-      <div className="about-signal-map__node about-signal-map__node--chaos"><i />CHAOS</div>
-    </div>
   );
 }

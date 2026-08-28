@@ -14,6 +14,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 
 - Vite 5, React 18, TypeScript, and React Router.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
+- Dedicated `/shawn` and `/gina` editorial host profiles with distinct first-party portrait systems, topic instruments, shared-show chemistry, internal viewing paths, and reduced-motion-safe presentation.
 - Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
 - A separate Admin-configured Public announcement banner with static/ticker/crossfade modes and an automatic real-Watch-state Live Now takeover; the staging/Wix environment rail remains independent.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
@@ -53,6 +54,8 @@ npm run test:browser:policies
 npm run test:browser:consent
 npm run test:browser:shop
 npm run test:browser:donate
+npm run test:browser:about
+npm run test:browser:hosts
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -64,13 +67,17 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
-- Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/gift-cards`.
+- Implemented: `/`, `/about`, `/shawn`, `/gina`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Migration shells: `/friends`, `/vip`, `/gift-cards`.
 - Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/support` and `/donate-1` redirect to `/donate` with query/hash intact; `/cart-page` redirects to `/cart` with query/hash intact; `/gift`, `/pricing-plans/list`, `/members-home`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
 
 See `LIVE_SITE_AUDIT.md` for the discovered Wix routes, current catalogue evidence, unresolved surfaces, and cutover strategy.
+
+`src/pages/AboutPage.tsx` owns the complete `/about` story: a visibility- and reduced-motion-gated high-voltage hero, editorial origin treatment, first-party Shawn/Gina host portraits, four format instruments, an abstract audience circuit, and an internal Watch/community manifesto close. It has no API dependency, external image dependency, contact directory, or direct platform CTA.
+
+`src/pages/HostPage.tsx` owns the companion `/shawn` and `/gina` stories through one typed content structure and two deliberately different visual frequencies. Both use first-party portraits, internal Watch/About/community paths, motion-gated topic instruments, and truthful repository-supported host facts without external assets, API dependencies, platform directories, surnames, or fabricated history.
 
 ## Structure
 
@@ -116,12 +123,12 @@ ThirdRailify/
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
 │   ├── goats/              Typed API client, SVG country flags, and lazy vector/raster map engines
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
-│   ├── pages/              Public routes, including Account, Watch, and Community pages
+│   ├── pages/              Public routes, including dedicated About, Account, Watch, and Community pages
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
 ├── scripts/                KV mutation ban, budget/fingerprint checks, and live backend verifier
-├── tests/                  Function, Durable Object, migration, isolation, and watch browser fixtures
+├── tests/                  Function, Durable Object, migration, isolation, Watch, and About browser fixtures
 ├── Verify-Cloudflare-State-Backend.cmd  Double-clickable read-only live verifier
 ├── wrangler.jsonc          Pages external Durable Object binding
 ├── CLOUDFLARE_SETUP.md
