@@ -3555,19 +3555,20 @@ h3 {
 }
 
 .cart-row h3 {
-  max-width: 240px;
-  margin: 2px 0 5px;
+  max-width: 275px;
+  margin: 1px 0 7px;
   font-family: var(--body);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.25;
   letter-spacing: 0;
   text-transform: none;
 }
 
-.cart-row > div > span {
-  color: var(--muted-deep);
-  font-size: 10px;
-}
+.cart-row__variant { margin: 0 0 8px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+.cart-row__price { display: flex; align-items: center; gap: 8px; }
+.cart-row__price > span { color: var(--muted); font: 8px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+.cart-row__price .cad-amount { font-size: 18px; }
 
 .quantity-control {
   display: flex;
@@ -3660,7 +3661,6 @@ h3 {
 .cad-amount { display: inline-flex; align-items: center; gap: 6px; color: var(--gold); font-family: var(--display); }
 .cad-amount > span { color: inherit; font: inherit; white-space: nowrap; }
 .cad-amount .currency-flag { width: 21px; height: 14px; }
-.cart-row__line-total { margin-top: 5px; font-size: 16px; }
 .cart-drawer__footer .cad-amount { color: var(--gold); font-size: 24px; }
 .cart-drawer__footer .cad-amount > span { color: inherit; font-size: inherit; }
 .cart-page { min-height: 70vh; padding: clamp(72px,9vw,120px) 0; background: radial-gradient(circle at 80% 5%,rgba(255,209,47,.08),transparent 35%),#090a07; }
@@ -3682,6 +3682,10 @@ h3 {
 .cart-summary { position: sticky; top: 92px; align-self: start; display: grid; gap: 13px; padding: 24px; border: 1px solid var(--line-strong); background: #11120d; }
 .cart-summary h2 { margin: 0; font-size: 36px; }
 .cart-summary__amount { padding-bottom: 16px; border-bottom: 1px solid var(--line); font-size: 32px; }
+.cart-summary .product-currency-comparison { width: 100%; margin-top: 0; }
+.cart-summary .product-currency-comparison__row { gap: 7px; padding-left: 8px; }
+.cart-summary .product-currency-comparison__row > strong { font-size: 13px; }
+.cart-summary .currency-disclaimer { font-size: 7px; }
 .cart-summary > p:not(.eyebrow) { margin: 0 0 5px; color: var(--muted); font-size: 11px; line-height: 1.55; }
 .cart-summary .button,.cart-drawer__footer .button { width: 100%; justify-content: center; }
 .empty-state--cart-page { min-height: 430px; margin-top: 28px; border: 1px solid var(--line); }

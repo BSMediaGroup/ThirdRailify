@@ -71,11 +71,18 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
   const { context, page, errors } = await fixturePage(browser, 1440, 900);
   await page.goto(`${ORIGIN}/cart`); await page.getByRole("heading", { level: 2, name: "Your cart is empty." }).waitFor();
   await page.goto(`${ORIGIN}/shop/bleh-tee`); await page.getByRole("button", { name: "Add selected variant" }).click();
-  await page.getByRole("dialog", { name: "Your cart" }).waitFor(); assert.equal(await page.locator('.cart-drawer .currency-flag[data-currency-flag="ca"]').count() >= 2, true);
+  await page.getByRole("dialog", { name: "Your cart" }).waitFor(); assert.equal(await page.locator('.cart-row .currency-flag[data-currency-flag="ca"]').count(), 1); assert.equal(await page.locator('.cart-drawer .currency-flag[data-currency-flag="ca"]').count(), 2);
+  const drawerText = await page.locator(".cart-row").evaluate((row) => { const title = getComputedStyle(row.querySelector("h3")); const variant = getComputedStyle(row.querySelector(".cart-row__variant")); return { title: parseFloat(title.fontSize), variant: parseFloat(variant.fontSize), color: variant.color }; });
+  assert.ok(drawerText.title >= 16); assert.ok(drawerText.variant >= 12); assert.notEqual(drawerText.color, "rgb(0, 0, 0)");
+  await page.screenshot({ path: `${RESULTS}/cart-drawer-1440x900.png`, fullPage: true });
   await page.getByRole("link", { name: "View full cart" }).click(); await page.waitForURL(`${ORIGIN}/cart`);
-  assert.equal(await page.locator('.cart-page .currency-flag[data-currency-flag="ca"]').count() >= 3, true);
+  const cartComparison = page.locator(".cart-summary .product-currency-comparison"); const cartComparisonToggle = cartComparison.locator(".product-currency-comparison__toggle");
+  assert.equal(await cartComparisonToggle.getAttribute("aria-expanded"), "true"); assert.equal(await cartComparison.locator(".currency-flag:visible").count(), 1);
+  await cartComparisonToggle.click(); assert.equal(await cartComparisonToggle.getAttribute("aria-expanded"), "false"); assert.equal(await cartComparison.locator(".product-currency-comparison__body").count(), 0);
+  await cartComparisonToggle.click(); await cartComparison.locator(".product-currency-comparison__body").waitFor();
   const quantity = page.getByLabel("Quantity for BLEH | Unisex classic tee"); await quantity.getByRole("button", { name: "Increase quantity" }).click(); assert.match(await page.getByText("Subtotal").locator("..").innerText(), /61\.00/);
-  await page.screenshot({ path: `${RESULTS}/cart-1440x900.png`, fullPage: true }); await page.getByRole("button", { name: "Clear cart" }).click(); await page.getByRole("heading", { level: 2, name: "Your cart is empty." }).waitFor();
+  assert.match(await cartComparison.locator(".product-currency-comparison__row > strong").innerText(), /44\.53 USD/);
+  await page.screenshot({ path: `${RESULTS}/cart-1440x900.png`, fullPage: true }); await page.setViewportSize({ width: 390, height: 844 }); await page.reload(); await page.locator(".cart-summary .product-currency-comparison__body").waitFor(); const mobileOverflow = await overflowReport(page); assert.equal(mobileOverflow.overflow, false, JSON.stringify(mobileOverflow)); await page.screenshot({ path: `${RESULTS}/cart-390x844.png`, fullPage: true }); await page.getByRole("button", { name: "Clear cart" }).click(); await page.getByRole("heading", { level: 2, name: "Your cart is empty." }).waitFor();
   await page.goto(`${ORIGIN}/cart-page?source=legacy#items`); await page.waitForURL(`${ORIGIN}/cart?source=legacy#items`); assert.equal(await noOverflow(page), true); assert.deepEqual(errors, []); await context.close();
 });
 
@@ -102,4 +109,5 @@ function catalogue() { const base = { description: "Fixture product.", images: [
   ]; return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-29T00:00:00.000Z", collections: [{ title: "Apparel", slug: "apparel", description: "Wear the signal.", displayOrder: 10, productCount: 2, productIds: ["product-1", "product-3"] }, { title: "Headwear", slug: "headwear", description: "Top the line.", displayOrder: 20, productCount: 1, productIds: ["product-2"] }], products }; }
 function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
 function noOverflow(page) { return page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth); }
+function overflowReport(page) { return page.evaluate(() => ({ overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth, offenders: [...document.querySelectorAll("body *")].map((element) => ({ selector: `${element.tagName.toLowerCase()}${element.className ? `.${String(element.className).trim().replace(/\s+/g, ".")}` : ""}`, left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right), width: Math.round(element.getBoundingClientRect().width) })).filter((entry) => entry.left < -1 || entry.right > document.documentElement.clientWidth + 1).slice(0, 12) })); }
 async function waitForServer() { for (let attempt = 0; attempt < 80; attempt += 1) { try { if ((await fetch(ORIGIN)).ok) return; } catch { /* Vite is starting. */ } await new Promise((resolve) => setTimeout(resolve, 100)); } throw new Error("Shop V2 test server did not start."); }

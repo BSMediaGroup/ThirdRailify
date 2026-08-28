@@ -81,5 +81,5 @@ test("dedicated cart reuses CartProvider identity, stays CAD-only, and preserves
   const [app, page, drawer] = await Promise.all([fs.readFile(new URL("../src/App.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/pages/CartPage.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/components/CartDrawer.tsx", import.meta.url), "utf8")]);
   assert.match(app, /path="\/cart" element=\{<CartPage/); assert.match(app, /path="\/cart-page" element=\{<LegacyCartRedirect/); assert.match(app, /`\/cart\$\{location\.search\}\$\{location\.hash\}`/);
   assert.match(page, /useCart\(\)/); for (const label of ["Line total", "Subtotal", "Continue shopping", "Clear cart", "Checkout coming online"]) assert.match(page, new RegExp(label, "i"));
-  assert.match(page, /CadAmount/); assert.doesNotMatch(page, /useCurrency|ProductCurrencyComparison/); assert.match(drawer, /to="\/cart"[^>]*onClick=\{cart\.close\}>View full cart/);
+  assert.match(page, /CadAmount/); assert.match(page, /ProductCurrencyComparison cadPrice=\{subtotal \/ 100\}/); assert.doesNotMatch(page, /useCurrency/); assert.match(drawer, /cart-row__price[^>]*><span>Item total<\/span><CadAmount/); assert.match(drawer, /to="\/cart"[^>]*onClick=\{cart\.close\}>View full cart/);
 });

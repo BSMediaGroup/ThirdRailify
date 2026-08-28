@@ -72,8 +72,8 @@ export function CartDrawer() {
               <img src={product.image} alt="" />
               <div>
                 <h3>{product.name}</h3>
-                <span>{variant.label}</span><CadAmount minorUnits={variant.unitAmount} />
-                <CadAmount minorUnits={variant.unitAmount * item.quantity} className="cart-row__line-total" />
+                <p className="cart-row__variant">{variant.label}</p>
+                <div className="cart-row__price"><span>Item total</span><CadAmount minorUnits={variant.unitAmount * item.quantity} /></div>
                 <div className="quantity-control" aria-label={`Quantity for ${product.name}`}>
                   <button type="button" onClick={() => cart.setQuantity(product.id, variant.id, item.quantity - 1)} aria-label="Decrease quantity"><MinusIcon /></button>
                   <output>{item.quantity}</output>
