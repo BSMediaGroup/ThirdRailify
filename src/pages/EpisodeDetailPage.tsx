@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { episodeSeo } from "../../seo/site-seo.js";
 import { BroadcastMetadata, BroadcastPlayer } from "../components/BroadcastComponents";
 import { ArrowIcon, RadioIcon } from "../components/Icons";
 import { fetchEpisode, type EpisodeDetail } from "../lib/episodes";
+import { usePageSeo } from "../seo/SeoProvider";
 import { NotFoundPage } from "./NotFoundPage";
 
 export function EpisodeDetailPage() {
@@ -20,12 +22,8 @@ export function EpisodeDetailPage() {
     }).catch(() => { if (active) setError(true); }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [episodeId]);
-  useEffect(() => {
-    if (!detail) return;
-    const original = document.title;
-    document.title = `${detail.item.title} · Third Railify Watch`;
-    return () => { document.title = original; };
-  }, [detail]);
+  const seo = useMemo(() => detail ? episodeSeo(detail, window.location.origin) : null, [detail]);
+  usePageSeo(seo);
   if (missing) return <NotFoundPage />;
   if (loading) return <EpisodeState title="Acquiring archived signal." />;
   if (error || !detail) return <EpisodeState title="The archived signal is unavailable." />;

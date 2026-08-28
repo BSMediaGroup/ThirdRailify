@@ -10,6 +10,7 @@ import { useBroadcast } from "../hooks/useBroadcast";
 import { useEpisodes } from "../hooks/useEpisodes";
 import { RUMBLE_URL, YOUTUBE_URL } from "../lib/broadcast";
 import { featuredEpisodes } from "../lib/episodes";
+import { effectiveLiveCandidates } from "../lib/liveBanner";
 
 export function WatchPage() {
   const { data, loading, unavailable, error } = useBroadcast();
@@ -17,7 +18,7 @@ export function WatchPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
-  const confirmedLive = data?.freshness === "stale" ? [] : data?.liveNow.filter((candidate) => candidate.presentationState === "live" && candidate.providerState === "live" && candidate.liveVerifiedAt && candidate.liveExpiresAt && Date.parse(candidate.liveExpiresAt) > Date.now()) ?? [];
+  const confirmedLive = effectiveLiveCandidates(data);
   const live = confirmedLive.length > 0;
   const selectedLive = Boolean(selected && confirmedLive.some((candidate) => candidate.key === selected.key));
   const featured = featuredEpisodes(archive.data?.items ?? [], selected?.key ?? null);

@@ -4,7 +4,7 @@ import { test } from "node:test";
 
 if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
-import { WATCH_KV_KEY, watchFreshness } from "../functions/api/watch/_watch.js";
+import { WATCH_KV_KEY, WATCH_LIVE_EXPIRY_GRACE_SECONDS, watchFreshness } from "../functions/api/watch/_watch.js";
 import { onRequest as getWatch } from "../functions/api/watch.js";
 import { onRequest as ingestWatch } from "../functions/api/watch/ingest.js";
 import { onRequest as getWatchThumbnail } from "../functions/api/watch/thumbnail.js";
@@ -253,12 +253,32 @@ test("watch GET derives fresh and delayed live state", async () => {
   });
 });
 
+test("watch GET tolerates bounded positive-live lease jitter without extending authoritative offline state", async () => {
+  await withNow(async () => {
+    for (const [secondsPastLease, expectedLive] of [[WATCH_LIVE_EXPIRY_GRACE_SECONDS - 1, 1], [WATCH_LIVE_EXPIRY_GRACE_SECONDS, 0]]) {
+      const kv = new MemoryKv();
+      const body = snapshot(new Date(NOW - 60_000).toISOString());
+      body.liveNow[0].liveExpiresAt = new Date(NOW - secondsPastLease * 1000).toISOString();
+      kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: body, receivedAt: new Date(NOW).toISOString() }));
+      const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_PUBLIC_STATE: kv } });
+      const result = await response.json();
+      assert.equal(result.liveNow.length, expectedLive, `${secondsPastLease}s past the lease has the bounded live result`);
+    }
+
+    const kv = new MemoryKv();
+    const body = offlineSnapshot(new Date(NOW).toISOString());
+    kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: body, receivedAt: new Date(NOW).toISOString() }));
+    const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_PUBLIC_STATE: kv } });
+    assert.equal((await response.json()).liveNow.length, 0, "an authoritative offline snapshot clears live immediately");
+  });
+});
+
 test("watch GET suppresses expired or stale live and retains latest archive", async () => {
   await withNow(async () => {
     for (const mode of ["expired", "stale"]) {
       const kv = new MemoryKv();
       const body = snapshot(mode === "stale" ? new Date(NOW - 900_000).toISOString() : new Date(NOW - 60_000).toISOString());
-      if (mode === "expired") body.liveNow[0].liveExpiresAt = "2026-08-22T05:59:59Z";
+      if (mode === "expired") body.liveNow[0].liveExpiresAt = new Date(NOW - (WATCH_LIVE_EXPIRY_GRACE_SECONDS + 1) * 1000).toISOString();
       kv.values.set(WATCH_KV_KEY, JSON.stringify({ snapshot: body, receivedAt: new Date(NOW).toISOString() }));
       const response = await getWatch({ request: new Request("https://staging.example/api/watch"), env: { THIRDRAILIFY_PUBLIC_STATE: kv } });
       const result = await response.json();

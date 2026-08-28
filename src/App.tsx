@@ -21,6 +21,7 @@ import { CartPage } from "./pages/CartPage";
 import { DonatePage } from "./pages/DonatePage";
 import { AboutPage } from "./pages/AboutPage";
 import { HostPage } from "./pages/HostPage";
+import { FriendsPage } from "./pages/FriendsPage";
 
 export function App() {
   return (
@@ -45,7 +46,7 @@ export function App() {
         <Route path="/shawn" element={<HostPage hostKey="shawn" />} />
         <Route path="/gina" element={<HostPage hostKey="gina" />} />
         <Route path="/about" element={<AboutPage />} />
-        <Route path="/friends" element={<RouteShellPage routeKey="friends" />} />
+        <Route path="/friends" element={<FriendsPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />
         <Route path="/donate" element={<DonatePage />} />

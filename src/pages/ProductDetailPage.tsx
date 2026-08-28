@@ -4,6 +4,8 @@ import { ArrowIcon, BagIcon } from "../components/Icons";
 import { ProductCurrencyComparison, ProductPrice } from "../components/CurrencyPrice";
 import { ProductCard } from "../components/ProductCard";
 import { catalogueProvider, categorySlug } from "../lib/catalogueProvider";
+import { productSeo } from "../../seo/site-seo.js";
+import { usePageSeo } from "../seo/SeoProvider";
 import { useCart } from "../store/cart";
 import type { CatalogueProduct } from "../types/catalogue";
 
@@ -15,6 +17,8 @@ export function ProductDetailPage() {
   useEffect(() => { setImageFailed(false); setQuantity(1); window.scrollTo({ top: 0, behavior: "auto" }); }, [slug]);
   const variant = product?.variants?.find((entry) => entry.id === variantId) || null;
   const related = useMemo(() => product ? [...products].filter((entry) => entry.id !== product.id).sort((left, right) => { const leftShared = left.categories.some((entry) => product.categories.includes(entry)) ? 1 : 0; const rightShared = right.categories.some((entry) => product.categories.includes(entry)) ? 1 : 0; return rightShared - leftShared || Number(Boolean(right.featured)) - Number(Boolean(left.featured)) || left.slug.localeCompare(right.slug); }).slice(0, 3) : [], [product, products]);
+  const seo = useMemo(() => product ? productSeo(product, window.location.origin) : null, [product]);
+  usePageSeo(seo);
   if (loading) return <section className="route-hero route-hero--center"><div className="container"><p className="eyebrow">Commerce catalogue</p><h1>Loading product…</h1></div></section>;
   if (!product || error) return <section className="route-hero route-hero--center"><div className="container"><p className="eyebrow">{error === "not_found" ? "Product unavailable" : "Shop unavailable"}</p><h1>{error === "not_found" ? "This product is not in the public catalogue." : "The shop catalogue could not be loaded."}</h1><p>Nothing has been substituted from the legacy store snapshot.</p><div className="button-row"><Link className="button button--primary" to={`/shop${location.search}${location.hash}`}>Back to the shop</Link><button className="button button--secondary" type="button" onClick={() => window.location.reload()}>Retry</button></div></div></section>;
   const selectedPrice = variant ? variant.unitAmount / 100 : product.price; const selectedPriceLabel = variant ? formatCad(variant.unitAmount) : product.formattedPrice;

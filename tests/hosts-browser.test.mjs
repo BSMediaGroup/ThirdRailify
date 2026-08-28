@@ -114,6 +114,8 @@ test("both host stories stay composed, animated, and overflow-free at every requ
       assert.ok(settledLayout.h1Left >= -1 && settledLayout.h1Right <= width + 1, `${host} headline fits at ${width}px`);
       assert.ok(settledLayout.h1Top >= settledLayout.headerBottom, `${host} headline clears the shared header at ${width}px`);
       assert.ok(settledLayout.stageWidth > Math.min(280, width * .6), `${host} hero visual stays legible at ${width}px`);
+      assert.ok(settledLayout.coreCenterX < settledLayout.stageLeft + settledLayout.stageWidth * .25, `${host} zap stays in the portrait's left corner at ${width}px`);
+      assert.ok(settledLayout.coreCenterY < settledLayout.stageTop + settledLayout.stageHeight * .25, `${host} zap stays above the face area at ${width}px`);
       assert.notEqual(await page.locator(".host-portrait-stage__scope i").first().evaluate((element) => getComputedStyle(element).animationName), "none");
 
       await page.locator(".host-topics").scrollIntoViewIfNeeded();
@@ -166,7 +168,7 @@ test("reduced motion keeps both host stories complete while disabling nonessenti
 });
 
 test("stable representative Public routes keep their headings, width, and page-origin console clean", { skip: !LIVE_ORIGIN }, async () => {
-  const routes = new Map([["/about", /We grabbed\s+the rail\s+anyway\./i], ["/watch", /(?:Stay on the signal|The rail is live)\./i], ["/shop", /Wear the lore\./i], ["/goats", /GOATS in the wild/i], ["/friends", /Help the wider herd grow\./i], ["/shawn", HOSTS.shawn.heading], ["/gina", HOSTS.gina.heading]]);
+  const routes = new Map([["/about", /We grabbed\s+the rail\s+anyway\./i], ["/watch", /(?:Stay on the signal|The rail is live)\./i], ["/shop", /Wear the lore\./i], ["/goats", /GOATS in the wild/i], ["/friends", /The regulars\.\s+Chaos has a guest list\./i], ["/shawn", HOSTS.shawn.heading], ["/gina", HOSTS.gina.heading]]);
   for (const [width, height] of [[1440, 900], [390, 844]]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" });
     await addConsent(context);
@@ -221,13 +223,18 @@ async function heroLayout(page) {
   return page.evaluate(() => {
     const copy = document.querySelector(".host-profile-hero__copy").getBoundingClientRect();
     const stage = document.querySelector(".host-portrait-stage").getBoundingClientRect();
+    const core = document.querySelector(".host-portrait-stage__core").getBoundingClientRect();
     const h1 = document.querySelector(".host-profile-hero h1").getBoundingClientRect();
     const header = document.querySelector(".site-header").getBoundingClientRect();
     const viewportWidth = document.documentElement.clientWidth;
     return {
       copyTop: copy.top,
       stageTop: stage.top,
+      stageLeft: stage.left,
       stageWidth: stage.width,
+      stageHeight: stage.height,
+      coreCenterX: core.left + core.width / 2,
+      coreCenterY: core.top + core.height / 2,
       h1Left: h1.left,
       h1Right: h1.right,
       h1Top: h1.top,

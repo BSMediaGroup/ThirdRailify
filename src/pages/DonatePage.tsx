@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
@@ -15,12 +15,6 @@ const suggestedAmounts = [5, 15, 25, 50];
 export function DonatePage() {
   const [frequency, setFrequency] = useState<DonationFrequency>("once");
   const [amount, setAmount] = useState("15");
-
-  useEffect(() => {
-    const previous = document.title;
-    document.title = "Donate | Third Railify Official";
-    return () => { document.title = previous; };
-  }, []);
 
   const amountNumber = Number(amount);
   const safeAmount = Number.isFinite(amountNumber) && amountNumber > 0 ? amountNumber : 0;

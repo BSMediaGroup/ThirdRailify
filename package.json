@@ -20,6 +20,8 @@
     "test:browser:shop": "node --test --test-concurrency=1 tests/shop-v2-browser.test.mjs",
     "test:browser:about": "node --test --test-concurrency=1 tests/about-browser.test.mjs",
     "test:browser:hosts": "node --test --test-concurrency=1 tests/hosts-browser.test.mjs",
+    "test:browser:friends": "node --test --test-concurrency=1 tests/friends-browser.test.mjs",
+    "test:browser:seo": "node --test --test-concurrency=1 tests/seo-browser.test.mjs",
     "test:storefront": "node --test tests/storefront-commerce.test.mjs",
     "test:checkout-success": "node --test tests/checkout-success.test.mjs",
     "test:goats": "node --test tests/goats-functions.test.mjs",

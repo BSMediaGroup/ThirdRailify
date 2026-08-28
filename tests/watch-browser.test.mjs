@@ -126,9 +126,19 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   assert.notEqual(await reducedLiveStage.evaluate((element) => getComputedStyle(element).boxShadow), "none");
   await reducedContext.close();
 
+  const jitterContext = await browser.newContext({ viewport: { width: 1024, height: 768 } }); const jitterPage = await jitterContext.newPage();
+  await mockApis(jitterPage, false, { watch: () => livePayloadPastLease(60_000) });
+  await jitterPage.goto(`${ORIGIN}/`);
+  await jitterPage.locator(".promo-banner--live").waitFor();
+  assert.equal(await jitterPage.locator(".header-watch").count(), 1, "header Live Now survives bounded positive-live lease jitter");
+  await jitterPage.goto(`${ORIGIN}/watch`);
+  await jitterPage.locator(".watch-stage.is-live").waitFor();
+  await jitterContext.close();
+
   for (const scenario of [
     { name: "upcoming only", watch: () => { const item = candidate("upcoming"); return { ...watchPayload(false), primary: item, upcoming: item, latest: null, latestByPlatform: { youtube: null, rumble: null } }; }, banner: bannerPayload(), expected: "normal" },
     { name: "stale live snapshot", watch: () => ({ ...watchPayload(true), freshness: "stale", ageSeconds: 9999 }), banner: bannerPayload(), expected: "normal" },
+    { name: "live lease beyond grace", watch: () => livePayloadPastLease(121_000), banner: bannerPayload(), expected: "normal" },
     { name: "live takeover disabled", watch: () => watchPayload(true), banner: { ...bannerPayload(), live: { ...bannerPayload().live, enabled: false } }, expected: "normal" },
     { name: "both disabled", watch: () => watchPayload(false), banner: { ...bannerPayload(), normal: { ...bannerPayload().normal, enabled: false }, live: { ...bannerPayload().live, enabled: false } }, expected: "none" },
   ]) {
@@ -171,6 +181,7 @@ function authConfig() { return { configured: true, emailSignupConfigured: true, 
 function candidate(state = "archive") { return { platform: "youtube", key: "youtube:abc123DEF45", contentId: "abc123DEF45", watchUrl: "https://www.youtube.com/watch?v=abc123DEF45", embedUrl: null, title: liveTitle(state), description: "Validated fixture description.", creatorName: "Third Railify", thumbnailUrl: null, providerState: state === "live" ? "live" : "completed", presentationState: state, publishedAt: "2026-08-27T03:00:00.000Z", scheduledStart: null, actualStart: state === "live" ? new Date(Date.now() - 60_000).toISOString() : null, actualEnd: state === "archive" ? "2026-08-27T04:00:00.000Z" : null, liveVerifiedAt: state === "live" ? new Date(Date.now() - 10_000).toISOString() : null, liveExpiresAt: state === "live" ? new Date(Date.now() + 180_000).toISOString() : null, viewerCount: state === "live" ? 12 : null, observedAt: new Date().toISOString() }; }
 function liveTitle(state) { return state === "live" ? "Fixture live transmission" : "Fixture latest transmission"; }
 function watchPayload(live) { const item = candidate(live ? "live" : "archive"); return { available: true, schema: "thirdrailify-broadcast-v1", generatedAt: new Date().toISOString(), retrievedAt: new Date().toISOString(), ageSeconds: 1, freshness: "fresh", liveNow: live ? [item] : [], primary: item, latest: item, latestByPlatform: { youtube: item, rumble: null }, upcoming: null, providerStatus: { youtube: { state: live ? "live" : "completed", checkedAt: new Date().toISOString() }, rumble: { state: "offline", checkedAt: new Date().toISOString() } } }; }
+function livePayloadPastLease(milliseconds) { const payload = watchPayload(true); payload.liveNow[0].liveExpiresAt = new Date(Date.now() - milliseconds).toISOString(); return payload; }
 function detailPayload() { const item = { ...candidate("archive"), id: ID, title: "Fixture retained transmission", archiveDate: "2026-08-27T04:00:00.000Z" }; return { schema: "thirdrailify-watch-episode-v1", item, archive: { position: 1, visibleCount: 1, previous: null, next: null } }; }
 function olderPayload() { const item = { ...candidate("archive"), id: `ep_${"b".repeat(64)}`, key: "youtube:XYZ987abc12", contentId: "XYZ987abc12", watchUrl: "https://www.youtube.com/watch?v=XYZ987abc12", title: "Older retained transmission", publishedAt: "2026-08-26T03:00:00.000Z", observedAt: "2026-08-26T04:00:00.000Z", archiveDate: "2026-08-26T04:00:00.000Z" }; return { schema: "thirdrailify-watch-episode-v1", item, archive: { position: 2, visibleCount: 2, previous: null, next: null } }; }
 function bannerPayload() { return { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: true, messages: [{ text: "Fixture announcement one", ctaLabel: null, href: null, newTab: false }, { text: "Fixture announcement two", ctaLabel: "Watch", href: "/watch", newTab: false }], mode: "ticker", speed: "normal" }, live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: "Confirmed by the Watch signal", ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" }, updatedAt: "2026-08-28T00:00:00.000Z" }; }

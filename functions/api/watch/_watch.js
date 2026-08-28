@@ -11,6 +11,7 @@ export const WATCH_INACTIVE_CHECKPOINT_SECONDS = 600;
 export const WATCH_INACTIVE_MIN_CHECKPOINT_SECONDS = 600;
 export const WATCH_FRESH_SECONDS = 180;
 export const WATCH_DELAYED_SECONDS = 900;
+export const WATCH_LIVE_EXPIRY_GRACE_SECONDS = 120;
 export const WATCH_ARCHIVE_SCHEMA = "thirdrailify-broadcast-archive-v1";
 export const WATCH_ARCHIVE_KIND = "broadcast_archive";
 export const WATCH_ARCHIVE_LIMIT = 24;
@@ -110,7 +111,10 @@ export function effectiveWatchResponse(snapshot, now = Date.now()) {
   const liveNow = freshness === "stale" ? [] : snapshot.liveNow.filter((candidate) => {
     const verified = Date.parse(candidate.liveVerifiedAt);
     const expires = Date.parse(candidate.liveExpiresAt);
-    return Number.isFinite(verified) && verified <= now + 60_000 && Number.isFinite(expires) && expires > now;
+    return Number.isFinite(verified)
+      && verified <= now + 60_000
+      && Number.isFinite(expires)
+      && expires + WATCH_LIVE_EXPIRY_GRACE_SECONDS * 1000 > now;
   });
   const liveKeys = new Set(liveNow.map((candidate) => candidate.key));
   const normalizeLatest = (candidate) => {

@@ -11,6 +11,7 @@ import { useAuth } from "../auth/AuthProvider";
 import { PromoBanner } from "./PromoBanner";
 import { useBannerConfig } from "../hooks/useBannerConfig";
 import type { BannerConfig } from "../lib/banner";
+import { effectiveLiveCandidates } from "../lib/liveBanner";
 import { usePrivacy } from "../privacy/PrivacyProvider";
 import { PrivacyControls } from "./PrivacyControls";
 
@@ -29,7 +30,7 @@ export function SiteShell() {
   const { data } = useBroadcast();
   const { account, openAuth } = useAuth();
   const bannerConfig = useBannerConfig();
-  const liveNow = data?.liveNow ?? [];
+  const liveNow = effectiveLiveCandidates(data);
 
   useEffect(() => {
     setMenuOpen(false);

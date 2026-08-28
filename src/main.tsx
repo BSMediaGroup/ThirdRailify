@@ -7,18 +7,21 @@ import { BroadcastProvider } from "./components/BroadcastProvider";
 import { AuthProvider } from "./auth/AuthProvider";
 import { CurrencyProvider } from "./currency/CurrencyProvider";
 import { PrivacyProvider } from "./privacy/PrivacyProvider";
+import { SeoProvider } from "./seo/SeoProvider";
 import "./styles/global.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <PrivacyProvider>
-        <AuthProvider>
-          <CartProvider>
-            <CurrencyProvider><BroadcastProvider><App /></BroadcastProvider></CurrencyProvider>
-          </CartProvider>
-        </AuthProvider>
-      </PrivacyProvider>
+      <SeoProvider>
+        <PrivacyProvider>
+          <AuthProvider>
+            <CartProvider>
+              <CurrencyProvider><BroadcastProvider><App /></BroadcastProvider></CurrencyProvider>
+            </CartProvider>
+          </AuthProvider>
+        </PrivacyProvider>
+      </SeoProvider>
     </BrowserRouter>
   </React.StrictMode>,
 );

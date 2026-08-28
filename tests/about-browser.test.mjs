@@ -30,7 +30,7 @@ after(async () => {
   server?.kill();
 });
 
-test("About uses a dedicated route while the remaining migration shells stay available", async () => {
+test("About uses a dedicated route while other major routes stay available", async () => {
   const appSource = await readFile("src/App.tsx", "utf8");
   const routeShellSource = await readFile("src/pages/RouteShellPage.tsx", "utf8");
   assert.match(appSource, /path="\/about" element={<AboutPage\s*\/>}/);
@@ -42,7 +42,7 @@ test("About uses a dedicated route while the remaining migration shells stay ava
   const page = await context.newPage();
   await mockApis(page);
   const routes = new Map([
-    ["/friends", "Help the wider herd grow."], ["/vip", "Discover the GOAT within."],
+    ["/friends", /The regulars\.\s+Chaos has a guest list\./i], ["/vip", "Discover the GOAT within."],
     ["/gift-cards", "Gift cards need a real handoff."],
   ]);
   for (const [route, heading] of routes) {

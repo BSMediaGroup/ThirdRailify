@@ -29,7 +29,7 @@ test("Donate is a complete responsive, accessible, and safely non-transactional 
     const privacyDock = page.locator(".privacy-dock");
     if (await privacyDock.isVisible()) await privacyDock.getByRole("button", { name: "Reject non-essential" }).click();
 
-    assert.equal(await page.title(), "Donate | Third Railify Official");
+    assert.equal(await page.title(), "Donate to Third Railify | Power the Signal");
     assert.equal(await page.locator("h1").count(), 1, `Donate has one H1 at ${width}x${height}`);
     assert.match(await page.locator("h1").innerText(), /DONATE\.\s*POWER THE\s+SIGNAL\./i);
     assert.equal(await page.locator(".donate-signal").isVisible(), true, "the graphical community-power signal is visible");

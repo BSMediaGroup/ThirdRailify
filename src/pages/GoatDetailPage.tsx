@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { goatSeo } from "../../seo/site-seo.js";
 import { ArrowIcon, CopyIcon, ThumbDownIcon, ThumbUpIcon } from "../components/Icons";
 import { useAuth } from "../auth/AuthProvider";
 import { CountryFlag } from "../goats/CountryFlag";
 import { GoatProfileAvatar } from "../goats/GoatProfileAvatar";
 import { deleteGoatComment, getGoatComments, getGoatListing, postGoatComment, reactToGoat } from "../goats/client";
 import type { GoatComment, GoatListing, GoatMedia } from "../goats/types";
+import { usePageSeo } from "../seo/SeoProvider";
 
 export function GoatDetailPage() {
   const { slug = "" } = useParams();
@@ -28,12 +30,14 @@ export function GoatDetailPage() {
   useEffect(() => {
     const controller = new AbortController(); setLoading(true); setError(""); setSelected(0);
     Promise.all([getGoatListing(slug, controller.signal), getGoatComments(slug, commentSort, 1, controller.signal)])
-      .then(([listing, commentPayload]) => { setItem(listing); setComments(commentPayload.items); setCommentsTotal(commentPayload.total); setCommentPage(1); document.title = `${listing.displayName} · GOATS in the Wild · Third Railify`; updateDescription(`${listing.displayName} in ${listing.location.label}, wearing ${listing.product.name}. ${listing.description}`); })
+      .then(([listing, commentPayload]) => { setItem(listing); setComments(commentPayload.items); setCommentsTotal(commentPayload.total); setCommentPage(1); })
       .catch((reason) => { if (!(reason instanceof DOMException && reason.name === "AbortError")) setError(reason instanceof Error ? reason.message : "This listing is unavailable."); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [slug, commentSort]);
 
+  const seo = useMemo(() => item ? goatSeo(item, window.location.origin) : null, [item]);
+  usePageSeo(seo);
   const gallery = item ? [item.media.main, ...item.media.gallery].filter(Boolean) as GoatMedia[] : [];
   const current = gallery[selected] || null;
   const react = async (value: -1 | 1) => {
@@ -91,4 +95,3 @@ function Lightbox({ media, label, onClose, onPrevious, onNext }: { media: GoatMe
 
 async function share(item: GoatListing) { try { await navigator.clipboard.writeText(window.location.href); } catch { window.prompt(`Copy the link to ${item.displayName}`, window.location.href); } }
 function formatDate(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "Date unavailable" : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(date); }
-function updateDescription(value: string) { let meta = document.querySelector<HTMLMetaElement>('meta[name="description"]'); if (!meta) { meta = document.createElement("meta"); meta.name = "description"; document.head.append(meta); } meta.content = value.slice(0, 155); }

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 
-type RouteKey = "friends" | "community" | "vip" | "giftCards";
+type RouteKey = "community" | "vip" | "giftCards";
 
 type RouteContent = {
   eyebrow: string;
@@ -15,15 +15,6 @@ type RouteContent = {
 };
 
 const content: Record<RouteKey, RouteContent> = {
-  friends: {
-    eyebrow: "Friends of the show",
-    title: "Help the wider herd grow.",
-    description: "The current directory highlights creators across entertainment, news, law, gaming, finance, outdoor content, and more.",
-    status: "The creator directory and its individual deep links remain on Wix until a verified content source is connected.",
-    sourceHref: "https://www.thirdrailify.com/friends",
-    sourceLabel: "Browse current Friends directory",
-    points: ["Creator profiles", "External channel destinations", "Community discovery without Admin links"],
-  },
   community: {
     eyebrow: "GOATs in the wild",
     title: "The merch has left the station.",

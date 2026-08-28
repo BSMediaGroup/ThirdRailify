@@ -15,6 +15,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Vite 5, React 18, TypeScript, and React Router.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
 - Dedicated `/shawn` and `/gina` editorial host profiles with distinct first-party portrait systems, topic instruments, shared-show chemistry, internal viewing paths, and reduced-motion-safe presentation.
+- Dedicated `/friends` ensemble story with an animated three-signal hero, first-party Daniel/Darnell/Davy profile cards, and keyboard-contained expanded dossiers whose supplied channel links remain hidden until a profile opens.
 - Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
 - A separate Admin-configured Public announcement banner with static/ticker/crossfade modes and an automatic real-Watch-state Live Now takeover; the staging/Wix environment rail remains independent.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
@@ -29,7 +30,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Complete presentation-only `/donate` destination with a cinematic signal hero, accessible one-time/monthly/yearly and CAD amount controls, explicit donation-purpose/disclaimer copy, and a visibly disabled PayPal handoff until real provider wiring is implemented.
 - Homepage direct-contact band with a keyboard-contained lightbox form, explicit privacy acknowledgement, Turnstile challenge, bounded same-origin relay to the Admin mail authority, and a separate `/donate` action. Public receives no Resend credential or delivery-recipient authority.
 - Polished migration shells for discovered major routes and a branded 404.
-- Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
+- Cloudflare Pages output with route-aware crawler metadata, canonical URLs, structured data, XML sitemap/robots endpoints, SPA fallback, immutable-preview noindex protection, and baseline security headers.
 
 Checkout, payments, tax, shipping, inventory, Printful/Printify APIs, memberships, donations, CMS writes, and newsletter submission are not connected. Accounts are implemented in code but are not live until the shared staging D1 binding, Admin secrets/providers, and deployment are configured. Cart contents exist only in browser memory and the cart explicitly disables checkout.
 
@@ -56,6 +57,8 @@ npm run test:browser:shop
 npm run test:browser:donate
 npm run test:browser:about
 npm run test:browser:hosts
+npm run test:browser:friends
+npm run test:browser:seo
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -67,17 +70,25 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/about`, `/shawn`, `/gina`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
-- Migration shells: `/friends`, `/vip`, `/gift-cards`.
+- Implemented: `/`, `/about`, `/shawn`, `/gina`, `/friends`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Migration shells: `/vip`, `/gift-cards`.
 - Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/support` and `/donate-1` redirect to `/donate` with query/hash intact; `/cart-page` redirects to `/cart` with query/hash intact; `/gift`, `/pricing-plans/list`, `/members-home`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
 
 See `LIVE_SITE_AUDIT.md` for the discovered Wix routes, current catalogue evidence, unresolved surfaces, and cutover strategy.
 
+## SEO and social previews
+
+`seo/site-seo.js` is the shared, provider-neutral authority for route titles, descriptions, social artwork, canonical paths, crawl policy, and JSON-LD. The root Pages middleware renders that data into the initial HTML response for search crawlers and link unfurlers; `src/seo/SeoProvider.tsx` applies the same contract after client-side navigation. Product, episode, and GOATS detail metadata is built from the existing sanitized Public read projections, never from provider calls or browser-only state.
+
+The contract has a narrow presentation-override seam for a later Admin-managed SEO phase. Future overrides may replace only title, description, image, and image alt text; canonical paths, robots policy, structured-data types, and underlying Public data authority remain code-controlled. Stable Public routes are indexable, while account, cart, checkout-result, submission, unknown, and immutable preview routes are noindex. `/robots.txt` and `/sitemap.xml` are generated at the edge; the sitemap contains canonical, indexable URLs only.
+
 `src/pages/AboutPage.tsx` owns the complete `/about` story: a visibility- and reduced-motion-gated high-voltage hero, editorial origin treatment, first-party Shawn/Gina host portraits, four format instruments, an abstract audience circuit, and an internal Watch/community manifesto close. It has no API dependency, external image dependency, contact directory, or direct platform CTA.
 
 `src/pages/HostPage.tsx` owns the companion `/shawn` and `/gina` stories through one typed content structure and two deliberately different visual frequencies. Both use first-party portraits, internal Watch/About/community paths, motion-gated topic instruments, and truthful repository-supported host facts without external assets, API dependencies, platform directories, surnames, or fabricated history.
+
+`src/pages/FriendsPage.tsx` owns the `/friends` ensemble page and its three local profiles. Summary cards intentionally expose no channel or social destinations; the supplied Rumble, YouTube, and X links are available only inside focus-contained, Escape-dismissable profile dialogs.
 
 ## Structure
 
@@ -95,6 +106,9 @@ ThirdRailify/
 │   └── video/              Seeded media (not used as a decorative hero loop)
 ├── pocv1/                  Reference-only approved inspiration POC
 ├── functions/
+│   ├── _middleware.js                Initial-HTML SEO, canonical redirects, and crawler policy
+│   ├── robots.txt.js                  Generated crawler directives
+│   ├── sitemap.xml.js                 Generated canonical static/dynamic sitemap
 │   ├── _shared/public-auth.js        Public session/handoff/logout and narrow proxy primitives
 │   ├── api/auth/                     Same-origin Public auth plus Admin avatar-authority proxy
 │   ├── api/contact.js                Bounded same-origin relay to protected Admin contact delivery
@@ -111,12 +125,14 @@ ThirdRailify/
 ├── cloudflare/state-worker/ SQLite-backed singleton Durable Object Worker and Wrangler config
 ├── public/
 │   ├── _headers            Cloudflare static response policy
-│   ├── _redirects          Aliases and SPA fallback
-│   └── _routes.json        Invoke Functions only for auth, GOATS, community, watch, and storage diagnostics APIs
+│   ├── _redirects          Static canonical aliases
+│   └── _routes.json        Invoke Functions for HTML SEO plus same-origin Public APIs
+├── seo/                   Shared edge/browser route metadata and structured-data authority
 ├── src/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
 │   ├── privacy/            Versioned consent model, cookie record, categories, and storage cleanup
+│   ├── seo/                Client navigation metadata provider and dynamic-page hook
 │   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
 │   ├── content/            Structured policy registry and long-form legal content
 │   ├── data/               Dated bounded Wix snapshot
@@ -128,7 +144,7 @@ ThirdRailify/
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
 ├── scripts/                KV mutation ban, budget/fingerprint checks, and live backend verifier
-├── tests/                  Function, Durable Object, migration, isolation, Watch, and About browser fixtures
+├── tests/                  Function, browser, SEO, Durable Object, migration, isolation, Watch, and About fixtures
 ├── Verify-Cloudflare-State-Backend.cmd  Double-clickable read-only live verifier
 ├── wrangler.jsonc          Pages external Durable Object binding
 ├── CLOUDFLARE_SETUP.md
