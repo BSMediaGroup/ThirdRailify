@@ -2,6 +2,7 @@
 
 ## 2026-08-28 — Commerce-authoritative replacement shop
 
+- Preserved historical paid status for the first genuine Stripe TEST acceptance after the separate Admin-controlled creation gate was closed. The success redirect remains read-only, normal Public checkout remains disabled, and no second Session/order can be created from Public.
 - Added the truthful `/checkout/success` TEST payment result: processing while the signed webhook is pending, confirmed only from local payment authority, and not-confirmed for invalid/unknown correlation. The browser never calls Stripe or trusts the redirect query as payment proof.
 - Added a no-store same-origin order-status proxy keyed only by an opaque `cs_test_…` Session ID. Its bounded output contains payment/order state, safe order reference, CAD amount, and disabled fulfillment—never provider secrets, PaymentIntent, account IDs, audit data, or Printful mappings.
 - Normal Public checkout remains disabled. The one pre-cutover Session can be generated only from the authenticated Master Admin acceptance card; fulfillment and the independently paused Printful migration remain untouched.

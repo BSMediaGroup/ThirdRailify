@@ -4,9 +4,9 @@
 
 The replacement `/shop` uses the same-origin `/api/commerce/*` Pages Functions, which proxy the Admin project's sanitized Commerce D1 projection. This Public project deliberately has no Commerce D1 binding and contains no Admin credential. The legacy Wix snapshot remains migration/reference evidence only and is not a runtime catalogue fallback.
 
-Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Normal customer checkout remains visibly disabled. A separate Master-only acceptance action lives in Admin and can generate one Stripe-hosted TEST Session for the configured candidate; Public exposes no bypass. The live Wix site remains the production store until explicit cutover.
+Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Normal customer checkout remains visibly disabled. The separate Master-only Stripe TEST acceptance action has completed once and is now closed in Admin; Public exposes no bypass. The live Wix site remains the production store until explicit cutover.
 
-`/checkout/success` is a truthful TEST result page. It starts in a checking state and reads only `/api/commerce/order-status?session_id=cs_test_…`, which proxies a bounded local D1 projection. The browser does not call Stripe, cannot enumerate orders, and never infers payment from the redirect query. Only a signed Stripe webhook can display **Payment confirmed**; fulfillment remains disabled.
+`/checkout/success` is a truthful TEST result page. It starts in a checking state and reads only `/api/commerce/order-status?session_id=cs_test_…`, which proxies a bounded local D1 projection. The browser does not call Stripe, cannot enumerate orders, and never infers payment from the redirect query. Only a signed Stripe webhook can display **Payment confirmed**; the accepted historical Session remains readable after gate closure and fulfillment remains disabled.
 
 Production-oriented public website and storefront foundation for Third Railify. This repository is the future Wix replacement, but the current milestone is a staging scaffold: Wix remains production and no custom domain is attached.
 
