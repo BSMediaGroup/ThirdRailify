@@ -231,3 +231,9 @@ When a listed provider is live, both homepage social rails now open that confirm
 
 - Owner decisions remain for contracting form/address, active customer-facing contact routes, privacy accountability, retention, minors, sales footprint, voluntary change-of-mind and remedies authority.
 - Qualified review remains for Ontario/PIPEDA scope, tax/business identifiers, request/incident procedures, provider/international processing, final checkout, and EU/UK scope/representatives.
+
+## 2026-08-29 — mobile Public hero typography
+
+- Normalized Public H1 leading at tablet and phone breakpoints so the American Captain display glyphs no longer overlap or clip between stacked lines.
+- Applied the fix through the shared Public content boundary so every current hero, detail, loading, empty, account, cart, policy, commerce, Watch, GOATS, Community, and Donate page inherits the same mobile rhythm without changing desktop presentation.
+- Added a focused browser audit covering every distinct Public page route at 768px, 390px, and the 360px edge breakpoint, including line-box separation, eyebrow clearance, horizontal overflow, and the loaded display font.
