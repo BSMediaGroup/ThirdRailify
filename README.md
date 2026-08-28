@@ -9,7 +9,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Premium `/shop` drop experience with a D1-merchandised featured rotation, graphical category discovery, URL-backed search/filter/sort state, responsive product cards, truthful loading/error/empty/image states, and the existing browser-local cart.
-- Complete local V2 `/goats` community experience with MapLibre clusters, approved-only gallery/detail projections, product-linked submission wizard, authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Production data remains empty until the owner-supplied Wix export is imported later.
+- Complete local V2 `/goats` community experience with an integrated Leaflet/OpenFreeMap raster map and accessible branded markers, approved-only gallery/detail projections, product-linked submission wizard, authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Production data remains empty until the owner-supplied Wix export is imported later.
 - Product detail routes at `/products/:category/:slug`; legacy `/product-page/:slug` paths and category routes remain preserved client-side.
 - Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
@@ -92,7 +92,7 @@ ThirdRailify/
 │   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
 │   ├── data/               Dated bounded Wix snapshot
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
-│   ├── goats/              Typed API client and lazy MapLibre map component
+│   ├── goats/              Typed API client and lazy Leaflet map component
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
 │   ├── pages/              Public routes, including Account, Watch, and Community pages
 │   ├── store/              Local-only cart state

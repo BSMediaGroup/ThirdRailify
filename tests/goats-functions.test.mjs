@@ -98,11 +98,13 @@ test("Admin outage and oversized upload fail with bounded public errors", async 
   assert.equal(oversized.status, 413); assert.equal((await oversized.json()).error, "image_too_large");
 });
 
-test("MapLibre implementation clusters DOM markers, disables world copies, and has no iframe or demo tile endpoint", async () => {
+test("Leaflet implementation validates coordinates, renders branded DOM markers, and gates readiness on real raster tiles", async () => {
   const source = await readFile(new URL("../src/goats/GoatsMap.tsx", import.meta.url), "utf8");
   const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
-  assert.match(source, /clusterMapFeatures/); assert.match(source, /renderWorldCopies: false/); assert.match(source, /goatpin\.svg/); assert.match(source, /goats-map__point/); assert.match(source, /event\.originalEvent/); assert.match(source, /DEFAULT_MAP_STYLE/); assert.match(source, /natural_earth\/ne2sr\/\{z\}\/\{x\}\/\{y\}\.png/); assert.match(source, /webGlSupported/); assert.match(source, /<MapFallback/); assert.doesNotMatch(source, /maxBounds:\s*\[\[-180|addSource\("goats"|map\.loadImage\(goatPin\)|<iframe|demotiles|mapbox.*token/i);
-  assert.match(headers, /connect-src[^\n]+https:\/\/tiles\.openfreemap\.org/); assert.match(headers, /worker-src 'self' blob:/);
+  const packageJson = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  assert.match(source, /from "leaflet"/); assert.match(source, /leaflet\/dist\/leaflet\.css/); assert.match(source, /goatpin\.svg/); assert.match(source, /L\.marker/); assert.match(source, /marker\.on\("click"/); assert.match(source, /data-goats-map-state/); assert.match(source, /data-goats-map-engine="leaflet"/); assert.match(source, /data-goats-map-feature-count/); assert.match(source, /tileload/); assert.match(source, /successfulTiles < 1/); assert.match(source, /markers\.size !== features\.length/); assert.match(source, /getBoundingClientRect/); assert.match(source, /ResizeObserver/); assert.match(source, /invalidateSize/); assert.match(source, /map\.remove\(\)/); assert.match(source, /noWrap: true/); assert.match(source, /maxBounds: WORLD_BOUNDS/); assert.match(source, /Number\.isFinite/); assert.match(source, /longitude >= -180/); assert.match(source, /latitude >= -85\.05112878/); assert.match(source, /<MapFallback/); assert.doesNotMatch(source, /maplibre|map\.loadImage|<iframe|github|demotiles|mapbox.*token/i);
+  assert.equal(packageJson.dependencies.leaflet, "1.9.4"); assert.equal(packageJson.dependencies["maplibre-gl"], undefined);
+  assert.match(source, /tiles\.openfreemap\.org\/natural_earth\/ne2sr/); assert.match(headers, /img-src[^\n]+https:\/\/tiles\.openfreemap\.org/);
 });
 
 test("product CTA and submission query use canonical product IDs", async () => {

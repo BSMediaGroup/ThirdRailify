@@ -1,31 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import * as maplibregl from "maplibre-gl";
-import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import goatPin from "../../assets/icons/goatpin.svg";
 import type { GoatMapFeatureCollection } from "./types";
 
-const DEFAULT_MAP_STYLE: StyleSpecification = {
-  version: 8,
-  sources: {
-    "openfreemap-natural-earth": {
-      type: "raster",
-      tiles: ["https://tiles.openfreemap.org/natural_earth/ne2sr/{z}/{x}/{y}.png"],
-      tileSize: 256,
-      maxzoom: 6,
-      attribution: "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
-    },
-  },
-  layers: [
-    { id: "goats-map-background", type: "background", paint: { "background-color": "#080906" } },
-    {
-      id: "openfreemap-natural-earth",
-      type: "raster",
-      source: "openfreemap-natural-earth",
-      paint: { "raster-opacity": 0.82, "raster-saturation": -0.45, "raster-contrast": 0.18, "raster-brightness-max": 0.56 },
-    },
-  ],
-};
+type MapState = "loading" | "ready" | "failed";
+type GoatMapFeature = GoatMapFeatureCollection["features"][number];
+
+const WORLD_BOUNDS = L.latLngBounds([-85.05112878, -180], [85.05112878, 180]);
+const TILE_URL = "https://tiles.openfreemap.org/natural_earth/ne2sr/{z}/{x}/{y}.png";
 
 export default function GoatsMap({ data, selectedId, onSelect }: {
   data: GoatMapFeatureCollection;
@@ -33,121 +16,202 @@ export default function GoatsMap({ data, selectedId, onSelect }: {
   onSelect: (id: string) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapLibreMap | null>(null);
-  const interacted = useRef(false);
-  const [failed, setFailed] = useState(false);
+  const mapRef = useRef<L.Map | null>(null);
+  const markersRef = useRef(new Map<string, L.Marker>());
+  const lastSelectedRef = useRef(selectedId);
+  const selectedIdRef = useRef(selectedId);
+  selectedIdRef.current = selectedId;
+  const [mapState, setMapState] = useState<MapState>("loading");
+  const [loadedTileCount, setLoadedTileCount] = useState(0);
+  const features = useMemo(() => validMapFeatures(data), [data]);
 
   useEffect(() => {
-    if (!container.current || !webGlSupported()) { setFailed(true); return; }
+    const viewport = container.current;
+    if (!viewport) return;
+    setMapState("loading");
+    setLoadedTileCount(0);
+    lastSelectedRef.current = selectedIdRef.current;
+
     let active = true;
-    let locationMarkers: maplibregl.Marker[] = [];
-    let refreshLocationMarkers = () => {};
-    let loadTimeout = 0;
-    const configuredStyle = String(import.meta.env.VITE_GOATS_MAP_STYLE_URL || "").trim();
-    let map: MapLibreMap;
-    try {
-      map = new maplibregl.Map({
-        container: container.current,
-        style: configuredStyle || DEFAULT_MAP_STYLE,
-        center: [0, 20],
-        zoom: 1,
-        minZoom: 1,
-        maxZoom: 15,
-        renderWorldCopies: false,
-        attributionControl: false,
-        cooperativeGestures: true,
-        trackResize: true,
-      });
-    } catch (error) { logMapFailure("initialization", error); setFailed(true); return; }
-    mapRef.current = map;
-    map.scrollZoom.disable();
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: "GOATS locations are approximate" }));
-    const markInteraction = (event: { originalEvent?: unknown }) => { if (event.originalEvent) interacted.current = true; };
-    map.on("dragstart", markInteraction); map.on("zoomstart", markInteraction); map.on("rotatestart", markInteraction);
-    map.on("error", (event) => { if (event.error?.message) console.warn(`GOATS map resource warning: ${event.error.message}`); });
-    loadTimeout = window.setTimeout(() => { if (active) { logMapFailure("load", new Error("Map style load timed out")); setFailed(true); } }, 12_000);
-    map.on("load", async () => {
-      if (!active) return;
-      window.clearTimeout(loadTimeout);
-      try {
-        refreshLocationMarkers = () => {
-          locationMarkers.forEach((marker) => marker.remove());
-          locationMarkers = clusterMapFeatures(map, data).map((group) => {
-            const element = document.createElement("button");
-            element.type = "button";
-            if (group.features.length > 1) {
-              element.className = "goats-map__cluster-count";
-              element.textContent = String(group.features.length);
-              element.setAttribute("aria-label", `Zoom into ${group.features.length} nearby GOATS listings`);
-              element.addEventListener("click", () => map.easeTo({ center: group.coordinates, zoom: Math.min(map.getZoom() + 2, 14), duration: 500 }));
-            } else {
-              const feature = group.features[0];
-              element.className = "goats-map__point";
-              element.setAttribute("aria-label", `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`);
-              const image = document.createElement("img"); image.src = goatPin; image.alt = ""; image.width = 37; image.height = 50; element.append(image);
-              element.addEventListener("click", () => onSelect(String(feature.properties.id)));
-            }
-            return new maplibregl.Marker({ element, anchor: group.features.length > 1 ? "center" : "bottom" }).setLngLat(group.coordinates).addTo(map);
-          });
-        };
-        map.on("moveend", refreshLocationMarkers);
-        map.on("resize", refreshLocationMarkers);
-        map.once("idle", () => { if (!active) return; refreshLocationMarkers(); if (container.current) container.current.dataset.mapReady = "true"; });
-        fitFeatures(map, data);
-      } catch (error) { if (active) { logMapFailure("load", error); setFailed(true); } }
+    let successfulTiles = 0;
+    let resizeFrame = 0;
+    let observer: ResizeObserver | null = null;
+    const markers = new Map<string, L.Marker>();
+    const icon = L.icon({
+      iconUrl: goatPin,
+      iconSize: [24, 32],
+      iconAnchor: [12, 32],
+      tooltipAnchor: [0, -26],
+      className: "goats-map__point",
     });
-    return () => { active = false; window.clearTimeout(loadTimeout); locationMarkers.forEach((marker) => marker.remove()); map.off("moveend", refreshLocationMarkers); map.off("resize", refreshLocationMarkers); map.off("dragstart", markInteraction); map.off("zoomstart", markInteraction); map.off("rotatestart", markInteraction); map.remove(); mapRef.current = null; };
-  }, [data, onSelect]);
+
+    let map: L.Map;
+    try {
+      map = L.map(viewport, {
+        attributionControl: true,
+        center: [20, 0],
+        maxBounds: WORLD_BOUNDS,
+        maxBoundsViscosity: 1,
+        maxZoom: 8,
+        minZoom: 1,
+        scrollWheelZoom: false,
+        worldCopyJump: false,
+        zoom: 1,
+        zoomControl: true,
+      });
+    } catch (error) {
+      logMapFailure("initialization", error);
+      setMapState("failed");
+      return;
+    }
+    mapRef.current = map;
+
+    const markReadyWhenRendered = () => {
+      if (!active || successfulTiles < 1 || markers.size !== features.length) return;
+      const bounds = viewport.getBoundingClientRect();
+      if (bounds.width > 0 && bounds.height > 0) setMapState("ready");
+    };
+
+    const tiles = L.tileLayer(TILE_URL, {
+      attribution: '<a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://openmaptiles.org">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      bounds: WORLD_BOUNDS,
+      maxNativeZoom: 6,
+      maxZoom: 8,
+      minZoom: 1,
+      noWrap: true,
+    });
+    tiles.on("tileload", () => {
+      if (!active) return;
+      successfulTiles += 1;
+      setLoadedTileCount(successfulTiles);
+      markReadyWhenRendered();
+    });
+    tiles.on("load", () => {
+      if (!active) return;
+      if (successfulTiles === 0) {
+        logMapFailure("tiles", new Error("Every requested basemap tile failed"));
+        setMapState("failed");
+      } else {
+        markReadyWhenRendered();
+      }
+    });
+    tiles.addTo(map);
+
+    for (const feature of features) {
+      const id = String(feature.properties.id);
+      const [longitude, latitude] = feature.geometry.coordinates;
+      const marker = L.marker([latitude, longitude], {
+        alt: `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`,
+        icon,
+        keyboard: true,
+        riseOnHover: true,
+        title: feature.properties.displayName,
+      }).addTo(map);
+      marker.bindTooltip(`${feature.properties.displayName} · ${feature.properties.locationLabel}`, { direction: "top", offset: [0, -36] });
+      marker.on("click", () => onSelect(id));
+      const element = marker.getElement();
+      if (element) {
+        element.dataset.goatsMarkerId = id;
+        element.dataset.goatsMarkerName = feature.properties.displayName;
+        element.setAttribute("aria-label", `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`);
+        element.classList.toggle("is-selected", id === selectedIdRef.current);
+      }
+      markers.set(id, marker);
+    }
+    markersRef.current = markers;
+    fitFeatures(map, features);
+    markReadyWhenRendered();
+
+    observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(() => {
+        if (!active) return;
+        map.invalidateSize({ pan: false });
+        markReadyWhenRendered();
+      });
+    });
+    observer.observe(viewport);
+
+    return () => {
+      active = false;
+      observer?.disconnect();
+      window.cancelAnimationFrame(resizeFrame);
+      markers.forEach((marker) => marker.off());
+      tiles.off();
+      map.remove();
+      markersRef.current = new Map();
+      mapRef.current = null;
+    };
+  }, [features, onSelect]);
 
   useEffect(() => {
-    const map = mapRef.current; const feature = data.features.find((entry) => String(entry.properties.id) === selectedId);
-    if (!map || container.current?.dataset.mapReady !== "true" || !feature || interacted.current) return;
-    map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom: Math.max(map.getZoom(), 5), duration: 450 });
-  }, [data, selectedId]);
+    markersRef.current.forEach((marker, id) => marker.getElement()?.classList.toggle("is-selected", id === selectedId));
+    const map = mapRef.current;
+    const marker = markersRef.current.get(selectedId);
+    const changed = lastSelectedRef.current !== selectedId;
+    lastSelectedRef.current = selectedId;
+    if (!map || !marker || mapState !== "ready" || !changed) return;
+    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 5), { duration: 0.45 });
+    marker.getElement()?.focus({ preventScroll: true });
+  }, [mapState, selectedId]);
 
-  if (failed) return <MapFallback data={data} selectedId={selectedId} onSelect={onSelect} />;
-  return <div className="goats-map"><div ref={container} className="goats-map__canvas" aria-label="Approximate GOATS locations. Use the listing controls below as the accessible map alternative." /><button type="button" className="goats-map__reset" onClick={() => { const map = mapRef.current; if (!map) return; interacted.current = false; fitFeatures(map, data); }} disabled={!data.features.length}>Reset results</button><div className="goats-map__instructions">Use two fingers or Ctrl + scroll to zoom. Locations are deliberately approximate. Listings sharing a point remain available below.</div><CoincidentLocations data={data} onSelect={onSelect} /></div>;
+  return <div
+    className={`goats-map${mapState === "ready" ? " is-ready" : ""}`}
+    data-goats-map-engine="leaflet"
+    data-goats-map-feature-count={features.length}
+    data-goats-map-state={mapState}
+    data-goats-map-tile-count={loadedTileCount}
+  >
+    <div ref={container} className="goats-map__canvas" aria-label="Interactive map of approximate GOATS locations. Use the listing controls below as the accessible map alternative." />
+    {mapState === "loading" ? <div className="goats-map__status" role="status">Loading map geography…</div> : null}
+    {mapState === "failed" ? <MapFallback data={data} selectedId={selectedId} onSelect={onSelect} /> : null}
+    <button type="button" className="goats-map__reset" onClick={() => {
+      const map = mapRef.current;
+      if (!map) return;
+      fitFeatures(map, features);
+    }} disabled={!features.length || mapState === "failed"}>Reset results</button>
+    <div className="goats-map__instructions">Drag to pan. Use the +/− controls to zoom. Locations are deliberately approximate. Listings sharing a point remain available below.</div>
+    <CoincidentLocations data={data} onSelect={onSelect} />
+  </div>;
 }
 
 function MapFallback({ data, selectedId, onSelect }: { data: GoatMapFeatureCollection; selectedId: string; onSelect: (id: string) => void }) {
-  return <div className="goats-map-fallback" role="status"><strong>Map view is unavailable.</strong><p>Every approved mapped listing remains available in this location list.</p><ul>{data.features.map((feature) => <li key={feature.properties.id}><button type="button" className={selectedId === feature.properties.id ? "is-selected" : ""} onClick={() => onSelect(feature.properties.id)}>{feature.properties.displayName} · {feature.properties.locationLabel}</button></li>)}</ul></div>;
+  return <div className="goats-map-fallback" role="status"><strong>Interactive map could not load.</strong><p>Every approved mapped listing remains available in this location list.</p><ul>{data.features.map((feature) => <li key={feature.properties.id}><button type="button" className={selectedId === feature.properties.id ? "is-selected" : ""} onClick={() => onSelect(feature.properties.id)}>{feature.properties.displayName} · {feature.properties.locationLabel}</button></li>)}</ul></div>;
 }
 
 function CoincidentLocations({ data, onSelect }: { data: GoatMapFeatureCollection; onSelect: (id: string) => void }) {
-  const groups = new Map<string, typeof data.features>(); for (const feature of data.features) { const key = feature.geometry.coordinates.join(","); groups.set(key, [...(groups.get(key) || []), feature]); }
-  const shared = [...groups.values()].filter((items) => items.length > 1); if (!shared.length) return null;
+  const groups = new Map<string, typeof data.features>();
+  for (const feature of data.features) {
+    const key = feature.geometry.coordinates.join(",");
+    groups.set(key, [...(groups.get(key) || []), feature]);
+  }
+  const shared = [...groups.values()].filter((items) => items.length > 1);
+  if (!shared.length) return null;
   return <details className="goats-map__shared"><summary>Listings sharing an approximate map point</summary>{shared.map((items) => <div key={items[0].geometry.coordinates.join(",")}><strong>{items[0].properties.locationLabel}</strong><ul>{items.map((feature) => <li key={feature.properties.id}><button type="button" onClick={() => onSelect(feature.properties.id)}>{feature.properties.displayName}</button></li>)}</ul></div>)}</details>;
 }
 
-function fitFeatures(map: MapLibreMap, data: GoatMapFeatureCollection) {
-  if (!data.features.length) return;
-  const bounds = new maplibregl.LngLatBounds(); for (const feature of data.features) bounds.extend(feature.geometry.coordinates as [number, number]);
-  if (data.features.length === 1) map.jumpTo({ center: data.features[0].geometry.coordinates as [number, number], zoom: 5 });
-  else map.fitBounds(bounds, { padding: 64, maxZoom: 6, duration: 0 });
+function validMapFeatures(data: GoatMapFeatureCollection): GoatMapFeature[] {
+  return data.features.filter((feature) => {
+    const [longitude, latitude] = feature.geometry.coordinates;
+    return Number.isFinite(longitude) && Number.isFinite(latitude) && longitude >= -180 && longitude <= 180 && latitude >= -85.05112878 && latitude <= 85.05112878;
+  });
 }
 
-function webGlSupported() {
-  try { const canvas = document.createElement("canvas"); return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl")); } catch { return false; }
-}
-
-function clusterMapFeatures(map: MapLibreMap, data: GoatMapFeatureCollection) {
-  const buckets = new Map<string, typeof data.features>();
-  for (const feature of data.features) {
-    const point = map.project(feature.geometry.coordinates as [number, number]);
-    const key = `${Math.floor(point.x / 58)},${Math.floor(point.y / 58)}`;
-    buckets.set(key, [...(buckets.get(key) || []), feature]);
+function fitFeatures(map: L.Map, features: GoatMapFeature[]) {
+  if (!features.length) return;
+  if (features.length === 1) {
+    const [longitude, latitude] = features[0].geometry.coordinates;
+    map.setView([latitude, longitude], 5, { animate: false });
+    return;
   }
-  return [...buckets.values()].map((features) => ({
-    features,
-    coordinates: [
-      features.reduce((sum, feature) => sum + feature.geometry.coordinates[0], 0) / features.length,
-      features.reduce((sum, feature) => sum + feature.geometry.coordinates[1], 0) / features.length,
-    ] as [number, number],
+  const bounds = L.latLngBounds(features.map((feature) => {
+    const [longitude, latitude] = feature.geometry.coordinates;
+    return L.latLng(latitude, longitude);
   }));
+  map.fitBounds(bounds, { animate: false, maxZoom: 6, padding: [64, 64] });
 }
 
-function logMapFailure(stage: "initialization" | "load", error: unknown) {
+function logMapFailure(stage: "initialization" | "tiles", error: unknown) {
   const detail = error instanceof Error ? `${error.name}: ${error.message}` : "Unknown map error";
   console.error(`GOATS map ${stage} failed: ${detail}`);
 }
