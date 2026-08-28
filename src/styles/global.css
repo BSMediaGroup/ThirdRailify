@@ -1031,15 +1031,21 @@ h3 {
   will-change: transform;
 }
 
+.hero-ticker__measure {
+  position: absolute;
+  width: max-content;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .hero-ticker.is-ease-in-out .hero-ticker__track { animation-timing-function: ease-in-out; }
 
 .hero-ticker__segment {
   display: flex;
   width: max-content;
-  min-width: 100vw;
   flex: none;
   align-items: center;
-  justify-content: space-around;
+  justify-content: flex-start;
   gap: 30px;
   padding-block: 11px;
   padding-inline: 15px;

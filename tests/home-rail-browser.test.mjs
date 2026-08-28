@@ -17,8 +17,15 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   t.after(() => browser.close());
 
-  for (const [width, height] of [[1440, 900], [390, 844]]) {
+  for (const [width, height] of [[1440, 1100], [390, 844]]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "no-preference" });
+    const consentAt = Date.now();
+    await context.addCookies([{
+      name: "thirdrailify_consent",
+      value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date(consentAt).toISOString(), expiry: new Date(consentAt + 1000 * 60 * 60 * 24 * 183).toISOString(), categories: { preferences: false, externalMedia: false } })),
+      url: ORIGIN,
+      sameSite: "Lax",
+    }]);
     const page = await context.newPage();
     const errors = [];
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -27,16 +34,20 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
     await page.goto(ORIGIN, { waitUntil: "domcontentloaded" });
     const ticker = page.getByRole("complementary", { name: "Homepage topics" });
     await ticker.waitFor();
+    if (!LIVE) await page.waitForFunction(() => document.querySelector(".hero-ticker")?.classList.contains("is-fast"));
     assert.equal(await ticker.getAttribute("class"), `hero-ticker hero-ticker--marquee is-${LIVE ? "normal is-linear" : "fast is-ease-in-out"}`);
-    assert.equal(await ticker.locator(".hero-ticker__segment").count(), 2);
-    assert.equal(await ticker.locator(".hero-ticker__segment").first().locator(".hero-ticker__zap").count(), 4);
-    assert.equal(await ticker.locator(".hero-ticker__segment").first().locator(".hero-ticker__zap svg").count(), 0);
+    const visibleSegments = ticker.locator(".hero-ticker__track > .hero-ticker__segment");
+    assert.equal(await visibleSegments.count(), 2);
+    await page.waitForFunction(() => { const rail = document.querySelector(".hero-ticker"); const segment = document.querySelector(".hero-ticker__track > .hero-ticker__segment"); return rail && segment && segment.getBoundingClientRect().width > rail.getBoundingClientRect().width; });
+    const visibleZapCount = await visibleSegments.first().locator(".hero-ticker__zap").count();
+    assert.equal(visibleZapCount % 4, 0); assert.ok(visibleZapCount >= 8);
+    assert.equal(await visibleSegments.first().locator(".hero-ticker__zap svg").count(), 0);
     const zapStyle = await ticker.locator(".hero-ticker__zap").first().evaluate((element) => ({ background: getComputedStyle(element).backgroundColor, mask: getComputedStyle(element).maskImage || getComputedStyle(element).webkitMaskImage }));
     assert.equal(zapStyle.background, "rgb(255, 209, 47)"); assert.match(zapStyle.mask, /trzap-0|2454%202460/);
 
     const geometry = await ticker.evaluate(async (element) => {
       const track = element.querySelector(".hero-ticker__track");
-      const segments = [...element.querySelectorAll(".hero-ticker__segment")];
+      const segments = [...track.children];
       const animation = track.getAnimations()[0];
       animation.pause();
       const duration = Number(getComputedStyle(track).animationDuration.replace("s", "")) * 1000;
@@ -56,9 +67,12 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
         snapshots.push({ gap: gap || coveredThrough < viewport.right - 1, coveredThrough, right: viewport.right });
       }
       const widths = segments.map((segment) => segment.getBoundingClientRect().width);
-      return { duration, widths, trackWidth: track.getBoundingClientRect().width, snapshots };
+      const spans = [...segments[0].querySelectorAll(":scope > span")];
+      const first = spans[0].getBoundingClientRect(); const second = spans[1].getBoundingClientRect();
+      return { duration, repetitions: spans.length / 4, itemGap: second.left - first.right, justify: getComputedStyle(segments[0]).justifyContent, widths, trackWidth: track.getBoundingClientRect().width, snapshots };
     });
-    assert.equal(geometry.duration, LIVE ? 28_000 : 18_000);
+    assert.equal(geometry.duration / geometry.repetitions, LIVE ? 28_000 : 18_000);
+    assert.equal(geometry.justify, "flex-start"); assert.ok(geometry.itemGap >= 29 && geometry.itemGap <= 31, `editorial items keep the intended 30px spacing, received ${geometry.itemGap}px`);
     assert.ok(Math.abs(geometry.widths[0] - geometry.widths[1]) < 1, "duplicate segments must have identical widths");
     assert.ok(Math.abs(geometry.trackWidth - geometry.widths[0] * 2) < 1, "track must be exactly two identical segments");
     assert.equal(geometry.snapshots.some((snapshot) => snapshot.gap), false, `rail must cover the full ${width}px viewport throughout its loop`);

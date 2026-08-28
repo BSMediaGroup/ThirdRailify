@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
 import tripleZapMark from "../../assets/icons/trzap-0.svg";
@@ -198,6 +198,9 @@ export function HomePage() {
 function HomeContentRail({ config }: { config: BannerConfig["homeRail"] }) {
   const [active, setActive] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [repetitions, setRepetitions] = useState(2);
+  const railRef = useRef<HTMLElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const update = () => setReducedMotion(media.matches);
@@ -211,17 +214,35 @@ function HomeContentRail({ config }: { config: BannerConfig["homeRail"] }) {
     return () => window.clearInterval(timer);
   }, [config.items.length, config.mode, config.speed, reducedMotion]);
   useEffect(() => { setActive(0); }, [config.items]);
-  if (!config.enabled || !config.items.length) return null;
   const mode = reducedMotion ? "static" : config.mode;
-  return <aside className={`hero-ticker hero-ticker--${mode} is-${config.speed} is-${config.easing}`} aria-label="Homepage topics">
-    {mode === "marquee" ? <div className="hero-ticker__track"><RailSegment items={config.items} glyph={config.glyph} /><RailSegment items={config.items} glyph={config.glyph} duplicate /></div>
+  const itemsKey = config.items.join("\u0000");
+  useLayoutEffect(() => {
+    if (mode !== "marquee" || !railRef.current || !measureRef.current) return;
+    const update = () => {
+      const cycleWidth = measureRef.current?.scrollWidth || 1;
+      const viewportWidth = railRef.current?.clientWidth || 1;
+      setRepetitions((current) => {
+        const next = Math.max(2, Math.ceil(viewportWidth / cycleWidth) + 1);
+        return current === next ? current : next;
+      });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(railRef.current);
+    observer.observe(measureRef.current);
+    return () => observer.disconnect();
+  }, [config.glyph, itemsKey, mode]);
+  if (!config.enabled || !config.items.length) return null;
+  const cycleSeconds = config.speed === "slow" ? 42 : config.speed === "fast" ? 18 : 28;
+  return <aside ref={railRef} className={`hero-ticker hero-ticker--${mode} is-${config.speed} is-${config.easing}`} aria-label="Homepage topics">
+    {mode === "marquee" ? <><div ref={measureRef} className="hero-ticker__measure" aria-hidden="true"><RailSegment items={config.items} glyph={config.glyph} /></div><div className="hero-ticker__track" style={{ animationDuration: `${cycleSeconds * repetitions}s` }}><RailSegment items={config.items} glyph={config.glyph} repetitions={repetitions} /><RailSegment items={config.items} glyph={config.glyph} repetitions={repetitions} duplicate /></div></>
       : mode === "crossfade" ? <div className="hero-ticker__crossfade" key={`${active}-${config.items[active]}`}>{config.items[active]}</div>
       : <RailSegment items={config.items} glyph={config.glyph} />}
   </aside>;
 }
 
-function RailSegment({ items, glyph, duplicate = false }: { items: string[]; glyph: BannerConfig["homeRail"]["glyph"]; duplicate?: boolean }) {
-  return <div className="hero-ticker__segment" aria-hidden={duplicate || undefined}>{items.map((item, index) => <span key={`${item}-${index}`}>{item}<RailGlyph glyph={glyph} /></span>)}</div>;
+function RailSegment({ items, glyph, repetitions = 1, duplicate = false }: { items: string[]; glyph: BannerConfig["homeRail"]["glyph"]; repetitions?: number; duplicate?: boolean }) {
+  return <div className="hero-ticker__segment" aria-hidden={duplicate || undefined}>{Array.from({ length: repetitions }, (_, cycle) => items.map((item, index) => <span key={`${cycle}-${item}-${index}`}>{item}<RailGlyph glyph={glyph} /></span>))}</div>;
 }
 
 function RailGlyph({ glyph }: { glyph: BannerConfig["homeRail"]["glyph"] }) {
