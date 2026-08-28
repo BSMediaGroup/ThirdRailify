@@ -10,6 +10,7 @@ import { AccountWidget } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { PromoBanner } from "./PromoBanner";
 import { useBannerConfig } from "../hooks/useBannerConfig";
+import type { BannerConfig } from "../lib/banner";
 import { usePrivacy } from "../privacy/PrivacyProvider";
 import { PrivacyControls } from "./PrivacyControls";
 
@@ -81,7 +82,7 @@ export function SiteShell() {
           </div>
         </nav>
       </header>
-      <main id="main-content"><Outlet /></main>
+      <main id="main-content"><Outlet context={{ bannerConfig }} /></main>
       <SiteFooter />
       <CartDrawer />
       <PrivacyControls />
@@ -107,3 +108,5 @@ function SiteFooter() {
     </footer>
   );
 }
+
+export type SiteShellOutletContext = { bannerConfig: BannerConfig | null };

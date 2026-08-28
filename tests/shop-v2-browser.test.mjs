@@ -6,15 +6,18 @@ import { spawn } from "node:child_process";
 import test from "node:test";
 import { chromium } from "playwright-core";
 
-const ORIGIN = "http://127.0.0.1:4198";
+const ORIGIN = process.env.SHOP_BROWSER_ORIGIN || "http://127.0.0.1:4198";
+const LIVE = Boolean(process.env.SHOP_BROWSER_ORIGIN);
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const RESULTS = join(tmpdir(), "thirdrailify-shop-v2-browser");
 const IMAGE = "https://static.wixstatic.com/media/shop-v2-fixture.svg";
 
 test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, and cart UX correctly scoped", async (t) => {
   await mkdir(RESULTS, { recursive: true });
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
-  t.after(() => server.kill()); await waitForServer();
+  if (!LIVE) {
+    const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
+    t.after(() => server.kill()); await waitForServer();
+  }
   const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close());
 
   for (const [width, height] of [[1920,1080],[1440,900],[1024,768],[768,1024],[390,844]]) {
@@ -74,6 +77,8 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
   await page.getByRole("dialog", { name: "Your cart" }).waitFor(); assert.equal(await page.locator('.cart-row .currency-flag[data-currency-flag="ca"]').count(), 1); assert.equal(await page.locator('.cart-drawer .currency-flag[data-currency-flag="ca"]').count(), 2);
   const drawerText = await page.locator(".cart-row").evaluate((row) => { const title = getComputedStyle(row.querySelector("h3")); const variant = getComputedStyle(row.querySelector(".cart-row__variant")); return { title: parseFloat(title.fontSize), variant: parseFloat(variant.fontSize), color: variant.color }; });
   assert.ok(drawerText.title >= 16); assert.ok(drawerText.variant >= 12); assert.notEqual(drawerText.color, "rgb(0, 0, 0)");
+  const drawerRemove = page.getByRole("button", { name: "Remove BLEH | Unisex classic tee from cart" }); const drawerRemoveBox = await drawerRemove.boundingBox();
+  assert.ok(drawerRemoveBox && drawerRemoveBox.width >= 40 && drawerRemoveBox.height >= 40, "drawer remove action is an obvious pointer target"); assert.equal(await drawerRemove.locator("svg").count(), 1);
   await page.screenshot({ path: `${RESULTS}/cart-drawer-1440x900.png`, fullPage: true });
   await page.getByRole("link", { name: "View full cart" }).click(); await page.waitForURL(`${ORIGIN}/cart`);
   const cartComparison = page.locator(".cart-summary .product-currency-comparison"); const cartComparisonToggle = cartComparison.locator(".product-currency-comparison__toggle");
@@ -82,7 +87,8 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
   await cartComparisonToggle.click(); await cartComparison.locator(".product-currency-comparison__body").waitFor();
   const quantity = page.getByLabel("Quantity for BLEH | Unisex classic tee"); await quantity.getByRole("button", { name: "Increase quantity" }).click(); assert.match(await page.getByText("Subtotal").locator("..").innerText(), /61\.00/);
   assert.match(await cartComparison.locator(".product-currency-comparison__row > strong").innerText(), /44\.53 USD/);
-  await page.screenshot({ path: `${RESULTS}/cart-1440x900.png`, fullPage: true }); await page.setViewportSize({ width: 390, height: 844 }); await page.reload(); await page.locator(".cart-summary .product-currency-comparison__body").waitFor(); const mobileOverflow = await overflowReport(page); assert.equal(mobileOverflow.overflow, false, JSON.stringify(mobileOverflow)); await page.screenshot({ path: `${RESULTS}/cart-390x844.png`, fullPage: true }); await page.getByRole("button", { name: "Clear cart" }).click(); await page.getByRole("heading", { level: 2, name: "Your cart is empty." }).waitFor();
+  const pageRemove = page.getByRole("button", { name: "Remove BLEH | Unisex classic tee from cart" }); const pageRemoveBox = await pageRemove.boundingBox(); assert.ok(pageRemoveBox && pageRemoveBox.width >= 40 && pageRemoveBox.height >= 40, "full-cart remove action is an obvious pointer target"); assert.equal(await pageRemove.locator("svg").count(), 1);
+  await page.screenshot({ path: `${RESULTS}/cart-1440x900.png`, fullPage: true }); await page.setViewportSize({ width: 390, height: 844 }); await page.reload(); await page.locator(".cart-summary .product-currency-comparison__body").waitFor(); const mobileOverflow = await overflowReport(page); assert.equal(mobileOverflow.overflow, false, JSON.stringify(mobileOverflow)); await page.screenshot({ path: `${RESULTS}/cart-390x844.png`, fullPage: true }); await page.getByRole("button", { name: "Remove BLEH | Unisex classic tee from cart" }).click(); await page.getByRole("heading", { level: 2, name: "Your cart is empty." }).waitFor();
   await page.goto(`${ORIGIN}/cart-page?source=legacy#items`); await page.waitForURL(`${ORIGIN}/cart?source=legacy#items`); assert.equal(await noOverflow(page), true); assert.deepEqual(errors, []); await context.close();
 });
 

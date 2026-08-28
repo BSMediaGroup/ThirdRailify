@@ -48,6 +48,10 @@ export function MinusIcon(props: IconProps) {
   return <svg {...base} {...props}><path d="M5 12h14" /></svg>;
 }
 
+export function TrashIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6" /></svg>;
+}
+
 export function RadioIcon(props: IconProps) {
   return <svg {...base} {...props}><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.5 18.5a9 9 0 0 1 0-13M18.5 5.5a9 9 0 0 1 0 13" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /></svg>;
 }

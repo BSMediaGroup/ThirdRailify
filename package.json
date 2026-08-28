@@ -16,6 +16,7 @@
     "test:browser:consent": "node --test --test-concurrency=1 tests/consent-browser.test.mjs",
     "test:browser:donate": "node --test --test-concurrency=1 tests/donate-browser.test.mjs",
     "test:browser:contact": "node --test --test-concurrency=1 tests/contact-browser.test.mjs",
+    "test:browser:home-rail": "node --test --test-concurrency=1 tests/home-rail-browser.test.mjs",
     "test:browser:shop": "node --test --test-concurrency=1 tests/shop-v2-browser.test.mjs",
     "test:storefront": "node --test tests/storefront-commerce.test.mjs",
     "test:checkout-success": "node --test tests/checkout-success.test.mjs",

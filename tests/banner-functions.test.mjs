@@ -8,6 +8,7 @@ const payload = {
   schema: "thirdrailify-banner-v1",
   normal: { enabled: true, messages: [{ text: "Site announcement", ctaLabel: "Watch", href: "/watch", newTab: false }], mode: "static", speed: "normal" },
   live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: null, ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" },
+  homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT"], mode: "marquee", speed: "fast", easing: "ease-in-out", glyph: "zap" },
   updatedAt: "2026-08-28T00:00:00.000Z",
 };
 
@@ -32,4 +33,17 @@ test("Public banner projection fails soft on invalid or unavailable Admin config
     assert.equal(response.status, 503);
     assert.deepEqual(await response.json(), { ok: false, error: "banner_unavailable" });
   }
+});
+
+test("Public banner projection supplies the managed rail default during a staggered Admin deploy", () => {
+  const legacyPayload = { ...payload };
+  delete legacyPayload.homeRail;
+  assert.deepEqual(normalizePublicBanner(legacyPayload).homeRail, {
+    enabled: true,
+    items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"],
+    mode: "marquee",
+    speed: "normal",
+    easing: "linear",
+    glyph: "zap",
+  });
 });

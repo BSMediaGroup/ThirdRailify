@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { Link, useOutletContext } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
+import tripleZapMark from "../../assets/icons/trzap-0.svg";
 import discordIcon from "../../assets/icons/discord.svg";
 import pilledIcon from "../../assets/icons/pilled.svg";
 import rumbleIcon from "../../assets/icons/rumble.svg";
@@ -23,6 +24,8 @@ import { useAuth } from "../auth/AuthProvider";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import type { CatalogueProduct } from "../types/catalogue";
+import { DEFAULT_HOME_RAIL, type BannerConfig } from "../lib/banner";
+import type { SiteShellOutletContext } from "../components/SiteShell";
 
 const platforms = [
   { label: "Rumble", note: "Primary channel", href: "https://rumble.com/ThirdRailify", icon: rumbleIcon },
@@ -33,7 +36,10 @@ const platforms = [
   { label: "Discord", note: "Join the herd", href: "https://discord.com/invite/Bd8hU5aFxA", icon: discordIcon },
 ];
 
+const tripleZapMask = { "--triple-zap-mask": `url("${tripleZapMark}")` } as CSSProperties;
+
 export function HomePage() {
+  const { bannerConfig } = useOutletContext<SiteShellOutletContext>();
   const { config } = useAuth();
   const { data, loading } = useBroadcast();
   const primary = data?.primary ?? null;
@@ -80,7 +86,7 @@ export function HomePage() {
             <div className="hero-portrait__bottom"><span><i /> Signal ready</span><span>Two hosts. One live wire.</span></div>
           </div>
         </div>
-        <div className="hero-ticker" aria-hidden="true"><div>THIRD RAILIFY <i>↯</i> NEWS HANGOUT <i>↯</i> ABOOT NOTHING <i>↯</i> POP CULTURE BEAT DOWN <i>↯</i> THIRD RAILIFY <i>↯</i> NEWS HANGOUT <i>↯</i> ABOOT NOTHING <i>↯</i> POP CULTURE BEAT DOWN <i>↯</i></div></div>
+        <HomeContentRail config={bannerConfig?.homeRail ?? DEFAULT_HOME_RAIL} />
       </section>
 
       <section className="platform-strip" aria-labelledby="platform-title">
@@ -187,4 +193,38 @@ export function HomePage() {
       {contactOpen && <ContactDialog siteKey={config?.turnstileSiteKey ?? null} onClose={closeContact} />}
     </>
   );
+}
+
+function HomeContentRail({ config }: { config: BannerConfig["homeRail"] }) {
+  const [active, setActive] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update(); media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    if (config.mode !== "crossfade" || reducedMotion || config.items.length < 2) return;
+    const delay = config.speed === "slow" ? 6500 : config.speed === "fast" ? 2600 : 4200;
+    const timer = window.setInterval(() => setActive((value) => (value + 1) % config.items.length), delay);
+    return () => window.clearInterval(timer);
+  }, [config.items.length, config.mode, config.speed, reducedMotion]);
+  useEffect(() => { setActive(0); }, [config.items]);
+  if (!config.enabled || !config.items.length) return null;
+  const mode = reducedMotion ? "static" : config.mode;
+  return <aside className={`hero-ticker hero-ticker--${mode} is-${config.speed} is-${config.easing}`} aria-label="Homepage topics">
+    {mode === "marquee" ? <div className="hero-ticker__track"><RailSegment items={config.items} glyph={config.glyph} /><RailSegment items={config.items} glyph={config.glyph} duplicate /></div>
+      : mode === "crossfade" ? <div className="hero-ticker__crossfade" key={`${active}-${config.items[active]}`}>{config.items[active]}</div>
+      : <RailSegment items={config.items} glyph={config.glyph} />}
+  </aside>;
+}
+
+function RailSegment({ items, glyph, duplicate = false }: { items: string[]; glyph: BannerConfig["homeRail"]["glyph"]; duplicate?: boolean }) {
+  return <div className="hero-ticker__segment" aria-hidden={duplicate || undefined}>{items.map((item, index) => <span key={`${item}-${index}`}>{item}<RailGlyph glyph={glyph} /></span>)}</div>;
+}
+
+function RailGlyph({ glyph }: { glyph: BannerConfig["homeRail"]["glyph"] }) {
+  if (glyph === "zap") return <i className="hero-ticker__zap" style={tripleZapMask} aria-hidden="true" />;
+  return <i aria-hidden="true">{glyph === "arrow" ? "↯" : glyph === "diamond" ? "◆" : "•"}</i>;
 }

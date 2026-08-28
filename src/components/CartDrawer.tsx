@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
 import type { CatalogueProduct } from "../types/catalogue";
-import { BagIcon, CloseIcon, MinusIcon, PlusIcon } from "./Icons";
+import { BagIcon, CloseIcon, MinusIcon, PlusIcon, TrashIcon } from "./Icons";
 import { CadAmount } from "./CurrencyPrice";
 
 export function CartDrawer() {
@@ -80,7 +80,7 @@ export function CartDrawer() {
                   <button type="button" onClick={() => cart.setQuantity(product.id, variant.id, item.quantity + 1)} aria-label="Increase quantity"><PlusIcon /></button>
                 </div>
               </div>
-              <button className="cart-row__remove" type="button" onClick={() => cart.remove(product.id, variant.id)}>Remove</button>
+              <button className="cart-remove-button cart-row__remove" type="button" onClick={() => cart.remove(product.id, variant.id)} aria-label={`Remove ${product.name} from cart`} title="Remove item"><TrashIcon /></button>
             </article>
           )) : (
             <div className="empty-state empty-state--cart"><BagIcon /><h3>Nothing on the rail yet.</h3><p>Choose a product variant from the shop to add it here.</p></div>

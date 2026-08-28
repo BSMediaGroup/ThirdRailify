@@ -25,18 +25,39 @@ export type BannerConfig = {
     animation: "pulse" | "sweep" | "pulse-sweep" | "static";
     intensity: "subtle" | "normal" | "strong";
   };
+  homeRail: {
+    enabled: boolean;
+    items: string[];
+    mode: "marquee" | "crossfade" | "static";
+    speed: "slow" | "normal" | "fast";
+    easing: "linear" | "ease-in-out";
+    glyph: "zap" | "arrow" | "diamond" | "dot";
+  };
   updatedAt: string | null;
+};
+
+export const DEFAULT_HOME_RAIL: BannerConfig["homeRail"] = {
+  enabled: true,
+  items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"],
+  mode: "marquee",
+  speed: "normal",
+  easing: "linear",
+  glyph: "zap",
 };
 
 const MODES = new Set(["static", "ticker", "crossfade"]);
 const SPEEDS = new Set(["slow", "normal", "fast"]);
 const LIVE_ANIMATIONS = new Set(["pulse", "sweep", "pulse-sweep", "static"]);
 const INTENSITIES = new Set(["subtle", "normal", "strong"]);
+const HOME_RAIL_MODES = new Set(["marquee", "crossfade", "static"]);
+const HOME_RAIL_EASINGS = new Set(["linear", "ease-in-out"]);
+const HOME_RAIL_GLYPHS = new Set(["zap", "arrow", "diamond", "dot"]);
 
 export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   if (!record(value) || value.ok !== true || value.schema !== "thirdrailify-banner-v1" || !record(value.normal) || !record(value.live)) return null;
   const normal = value.normal;
   const live = value.live;
+  const homeRail = record(value.homeRail) ? value.homeRail : DEFAULT_HOME_RAIL;
   if (typeof normal.enabled !== "boolean" || !Array.isArray(normal.messages) || normal.messages.length > 5 || !MODES.has(String(normal.mode)) || !SPEEDS.has(String(normal.speed))) return null;
   const messages = normal.messages.map(normalizeMessage);
   if (messages.some((message) => message === null)) return null;
@@ -50,10 +71,14 @@ export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   ) return null;
   const updatedAt = liveDate(value.updatedAt);
   if (value.updatedAt !== null && !updatedAt) return null;
+  if (typeof homeRail.enabled !== "boolean" || !Array.isArray(homeRail.items) || homeRail.items.length < 1 || homeRail.items.length > 8 || !HOME_RAIL_MODES.has(String(homeRail.mode)) || !SPEEDS.has(String(homeRail.speed)) || !HOME_RAIL_EASINGS.has(String(homeRail.easing)) || !HOME_RAIL_GLYPHS.has(String(homeRail.glyph))) return null;
+  const railItems = homeRail.items.map((item) => boundedText(item, 80));
+  if (railItems.some((item) => !item)) return null;
   return {
     schema: "thirdrailify-banner-v1",
     normal: { enabled: normal.enabled, messages: messages as BannerMessage[], mode: normal.mode as BannerConfig["normal"]["mode"], speed: normal.speed as BannerConfig["normal"]["speed"] },
     live: { enabled: live.enabled, label, showTitle: live.showTitle, supportingText, ctaLabel, ctaPath: "/watch/live", animation: live.animation as BannerConfig["live"]["animation"], intensity: live.intensity as BannerConfig["live"]["intensity"] },
+    homeRail: { enabled: homeRail.enabled, items: railItems as string[], mode: homeRail.mode as BannerConfig["homeRail"]["mode"], speed: homeRail.speed as BannerConfig["homeRail"]["speed"], easing: homeRail.easing as BannerConfig["homeRail"]["easing"], glyph: homeRail.glyph as BannerConfig["homeRail"]["glyph"] },
     updatedAt,
   };
 }
