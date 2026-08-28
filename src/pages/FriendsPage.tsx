@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import danielPortrait from "../../assets/people/daniel-tradition.webp";
 import darnellPortrait from "../../assets/people/darnell1.webp";
 import davyPortrait from "../../assets/people/davy1.webp";
+import rumbleIcon from "../../assets/icons/rumble.svg";
+import twitterIcon from "../../assets/icons/twitter.svg";
+import youtubeIcon from "../../assets/icons/youtube.svg";
 import { ArrowIcon, BoltIcon, CloseIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { useMotionGate } from "../hooks/useMotionGate";
 
@@ -20,7 +23,7 @@ type FriendProfile = {
   shortBio: string;
   fullBio: string;
   signal: string[];
-  links: { label: string; handle: string; href: string }[];
+  links: { label: string; handle: string; href: string; icon: string }[];
 };
 
 const friends: FriendProfile[] = [
@@ -37,9 +40,9 @@ const friends: FriendProfile[] = [
     fullBio: "Daniel appears on most News Hangouts, where cheeky, strident, loud commentary competes with the annoying noises and whatever stupid nickname he has invented for somebody that week. Off mic, he builds and runs the website and designs the shit that makes the Third Railify universe look like itself. Very capable. Very silly. Often both at once.",
     signal: ["News Hangout", "Web + design", "Unlicensed noises"],
     links: [
-      { label: "Rumble", handle: "/danielclancy", href: "https://rumble.com/danielclancy" },
-      { label: "YouTube", handle: "@danielclancy", href: "https://youtube.com/@danielclancy" },
-      { label: "X", handle: "@danielclancy", href: "https://x.com/danielclancy" },
+      { label: "Rumble", handle: "/danielclancy", href: "https://rumble.com/danielclancy", icon: rumbleIcon },
+      { label: "YouTube", handle: "@danielclancy", href: "https://youtube.com/@danielclancy", icon: youtubeIcon },
+      { label: "X", handle: "@danielclancy", href: "https://x.com/danielclancy", icon: twitterIcon },
     ],
   },
   {
@@ -55,8 +58,8 @@ const friends: FriendProfile[] = [
     fullBio: "Darnell is a regular on Pop Culture Beat Downs and an occasional News Hangout arrival. An ex-cop turned actor, he brings the deeply inconvenient combination of being genuinely hilarious, aggressively straight edge, and far too willing to believe authority probably knows what it is doing. It rarely does.",
     signal: ["Pop Culture Beat Down", "News Hangout", "Trusts the process"],
     links: [
-      { label: "Rumble", handle: "/lightscameracitation", href: "https://rumble.com/lightscameracitation" },
-      { label: "X", handle: "@darnellquiggly", href: "https://x.com/darnellquiggly" },
+      { label: "Rumble", handle: "/lightscameracitation", href: "https://rumble.com/lightscameracitation", icon: rumbleIcon },
+      { label: "X", handle: "@darnellquiggly", href: "https://x.com/darnellquiggly", icon: twitterIcon },
     ],
   },
   {
@@ -72,8 +75,8 @@ const friends: FriendProfile[] = [
     fullBio: "Simple Davy appears on most News Hangouts with a diabolical sense of humour and the sort of tweets that feel less like messages and more like evidence. He should probably be in prison for the shit he sends Shawn. Until the paperwork clears, he remains one of the regulars.",
     signal: ["News Hangout", "Diabolical humour", "Tweets as evidence"],
     links: [
-      { label: "Rumble", handle: "/user/SimpleDavy", href: "https://rumble.com/user/SimpleDavy" },
-      { label: "YouTube", handle: "@OffLabelPod", href: "https://youtube.com/@OffLabelPod" },
+      { label: "Rumble", handle: "/user/SimpleDavy", href: "https://rumble.com/user/SimpleDavy", icon: rumbleIcon },
+      { label: "YouTube", handle: "@OffLabelPod", href: "https://youtube.com/@OffLabelPod", icon: youtubeIcon },
     ],
   },
 ];
@@ -225,7 +228,7 @@ function FriendDialog({ profile, onClose }: { profile: FriendProfile; onClose: (
           <ul className="friend-dialog__signal" aria-label={`${profile.name} show signals`}>{profile.signal.map((item, index) => <li key={item}><span>0{index + 1}</span>{item}</li>)}</ul>
           <div className="friend-dialog__links" aria-label={`${profile.name} channel and social links`}>
             <span>FOLLOW THE OUTGOING SIGNAL</span>
-            {profile.links.map((link) => <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer"><span><b>{link.label}</b><small>{link.handle}</small></span><ArrowIcon /></a>)}
+            {profile.links.map((link) => <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer"><img src={link.icon} alt="" aria-hidden="true" /><span><b>{link.label}</b><small>{link.handle}</small></span><ArrowIcon /></a>)}
           </div>
         </div>
       </div>

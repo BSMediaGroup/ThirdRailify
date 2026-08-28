@@ -47,6 +47,9 @@ test("Friends is a dedicated first-party route with no Wix shell", async () => {
   assert.match(page, /daniel-tradition\.webp/);
   assert.match(page, /darnell1\.webp/);
   assert.match(page, /davy1\.webp/);
+  assert.match(page, /rumble\.svg/);
+  assert.match(page, /youtube\.svg/);
+  assert.match(page, /twitter\.svg/);
   assert.doesNotMatch(page, /thirdrailify\.com\/friends|Migration-stage route|sourceHref/);
 });
 
@@ -77,6 +80,16 @@ test("profile cards expose no social links until their accessible dialogs open",
     const links = await dialog.locator('a[href^="http"]').evaluateAll((nodes) => nodes.map((node) => ({ href: node.href, target: node.target, rel: node.rel })));
     assert.deepEqual(links.map((link) => link.href), profile.links);
     assert.ok(links.every((link) => link.target === "_blank" && link.rel.includes("noopener") && link.rel.includes("noreferrer")));
+    const platformIcons = await dialog.locator('.friend-dialog__links a > img').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src") || ""));
+    assert.equal(platformIcons.length, profile.links.length, `${profile.name} shows one platform icon per external link`);
+    assert.ok(platformIcons.every((src) => src.startsWith("data:image/svg+xml") || /\/(?:rumble|youtube|twitter)(?:-[^/]+)?\.svg$/i.test(new URL(src, ORIGIN).pathname)), `${profile.name} uses the first-party platform SVG set`);
+    const portraitFill = await dialog.evaluate((node) => {
+      const panel = node.querySelector(".friend-dialog__portrait").getBoundingClientRect();
+      const image = node.querySelector(".friend-dialog__portrait img").getBoundingClientRect();
+      return { widthRatio: image.width / panel.width, heightRatio: image.height / panel.height, left: image.left, panelLeft: panel.left };
+    });
+    assert.ok(portraitFill.widthRatio >= 1.1 && portraitFill.heightRatio >= 1.05, `${profile.name} portrait fills its dialog canvas`);
+    assert.ok(portraitFill.left <= portraitFill.panelLeft, `${profile.name} portrait reaches the left edge of its dialog canvas`);
     assert.match(await page.evaluate(() => document.activeElement?.getAttribute("aria-label") || ""), new RegExp(`Close ${escapeRegExp(profile.name)} profile`, "i"));
     await page.keyboard.press("Shift+Tab");
     assert.equal(await dialog.locator("a").last().evaluate((node) => node === document.activeElement), true, "reverse tab wraps to the final link");
@@ -101,6 +114,21 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
     await page.locator(".friends-signal").scrollIntoViewIfNeeded();
     await page.locator(".friends-signal.is-active").waitFor({ timeout: 8_000 });
     assert.notEqual(await page.locator(".friends-signal__scope i").first().evaluate((node) => getComputedStyle(node).animationName), "none");
+    const heroPortraitFill = await page.locator(".friends-signal").evaluate((stage) => {
+      const stageRect = stage.getBoundingClientRect();
+      return [...stage.querySelectorAll(".friends-signal__portrait img")].map((image) => {
+        const rect = image.getBoundingClientRect();
+        return { widthRatio: rect.width / stageRect.width, heightRatio: rect.height / stageRect.height };
+      });
+    });
+    assert.ok(heroPortraitFill.every((fill) => fill.widthRatio >= .43 && fill.heightRatio >= .9), `hero portraits fill the signal canvas at ${width}px`);
+    const danielPlacement = await page.locator(".friends-signal").evaluate((stage) => {
+      const stageRect = stage.getBoundingClientRect();
+      const portrait = stage.querySelector(".friends-signal__portrait--daniel").getBoundingClientRect();
+      return { widthRatio: portrait.width / stageRect.width, centerRatio: (portrait.left + portrait.width / 2 - stageRect.left) / stageRect.width };
+    });
+    assert.ok(danielPlacement.widthRatio >= .62, `Daniel stays large in the hero foreground at ${width}px`);
+    assert.ok(danielPlacement.centerRatio >= .45 && danielPlacement.centerRatio <= .51, `Daniel stays left-of-centre in the hero foreground at ${width}px`);
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, 0); });
     await page.waitForFunction(() => window.scrollY === 0);
     const initial = await layout(page);
@@ -124,10 +152,14 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
       await page.waitForTimeout(100);
       await page.screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-hero.png`) });
       await page.screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}x${height}.png`), fullPage: true });
-      await page.getByRole("button", { name: /Open Daniel Clancy profile/i }).click();
-      await page.getByRole("dialog").screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-daniel-dialog.png`) });
-      await page.keyboard.press("Escape");
+      for (const profile of PROFILES) {
+        await page.getByRole("button", { name: profile.trigger }).click();
+        await page.waitForTimeout(250);
+        await page.getByRole("dialog").screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-${profile.name.split(" ")[0].toLowerCase()}-dialog.png`) });
+        await page.keyboard.press("Escape");
+      }
       if (width === 390) {
+        await page.locator(".friends-signal").screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-signal.png`) });
         await page.locator(".friends-roster").screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-roster.png`) });
         await page.locator(".friends-close").screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-close.png`) });
       }
