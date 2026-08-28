@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { CatalogueProduct } from "../types/catalogue";
+import type { CatalogueProduct, CatalogueVariant } from "../types/catalogue";
 
 export type CartItem = {
   productId: string;
+  variantId: string;
   quantity: number;
 };
 
@@ -10,15 +11,15 @@ type CartContextValue = {
   items: CartItem[];
   count: number;
   isOpen: boolean;
-  add: (product: CatalogueProduct) => void;
-  remove: (productId: string) => void;
-  setQuantity: (productId: string, quantity: number) => void;
+  add: (product: CatalogueProduct, variant: CatalogueVariant, quantity?: number) => void;
+  remove: (productId: string, variantId: string) => void;
+  setQuantity: (productId: string, variantId: string, quantity: number) => void;
   clear: () => void;
   open: () => void;
   close: () => void;
 };
 
-const STORAGE_KEY = "thirdrailify-v2-scaffold-cart-v1";
+export const STORAGE_KEY = "thirdrailify-commerce-cart-v2";
 const CartContext = createContext<CartContextValue | null>(null);
 
 function readCart(): CartItem[] {
@@ -30,7 +31,7 @@ function readCart(): CartItem[] {
         if (!entry || typeof entry !== "object") return null;
         const candidate = entry as Partial<CartItem>;
         const quantity = Math.min(20, Math.max(1, Number(candidate.quantity) || 1));
-        return typeof candidate.productId === "string" && candidate.productId ? { productId: candidate.productId, quantity } : null;
+        return typeof candidate.productId === "string" && candidate.productId && typeof candidate.variantId === "string" && candidate.variantId ? { productId: candidate.productId, variantId: candidate.variantId, quantity } : null;
       })
       .filter((entry): entry is CartItem => Boolean(entry));
   } catch {
@@ -51,29 +52,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items,
       count: items.reduce((total, item) => total + item.quantity, 0),
       isOpen,
-      add(product) {
+      add(product, variant, quantity = 1) {
         setItems((current) => {
-          const existing = current.find((item) => item.productId === product.id);
+          const existing = current.find((item) => item.productId === product.id && item.variantId === variant.id);
           if (existing) {
             return current.map((item) =>
-              item.productId === product.id ? { ...item, quantity: Math.min(20, item.quantity + 1) } : item,
+              item.productId === product.id && item.variantId === variant.id ? { ...item, quantity: Math.min(product.maxQuantity || 20, item.quantity + quantity) } : item,
             );
           }
-          return [...current, { productId: product.id, quantity: 1 }];
+          return [...current, { productId: product.id, variantId: variant.id, quantity: Math.min(product.maxQuantity || 20, Math.max(1, quantity)) }];
         });
         setIsOpen(true);
       },
-      remove(productId) {
-        setItems((current) => current.filter((item) => item.productId !== productId));
+      remove(productId, variantId) {
+        setItems((current) => current.filter((item) => item.productId !== productId || item.variantId !== variantId));
       },
-      setQuantity(productId, quantity) {
+      setQuantity(productId, variantId, quantity) {
         if (quantity <= 0) {
-          setItems((current) => current.filter((item) => item.productId !== productId));
+          setItems((current) => current.filter((item) => item.productId !== productId || item.variantId !== variantId));
           return;
         }
         setItems((current) =>
           current.map((item) =>
-            item.productId === productId ? { ...item, quantity: Math.min(20, Math.max(1, quantity)) } : item,
+            item.productId === productId && item.variantId === variantId ? { ...item, quantity: Math.min(20, Math.max(1, quantity)) } : item,
           ),
         );
       },

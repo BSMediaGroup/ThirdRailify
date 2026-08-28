@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
 import discordIcon from "../../assets/icons/discord.svg";
@@ -18,7 +19,8 @@ import { SignalField } from "../components/SignalField";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { BroadcastMetadata, BroadcastPlayer } from "../components/BroadcastComponents";
 import { useBroadcast } from "../hooks/useBroadcast";
-import { wixSnapshot } from "../data/wixSnapshot";
+import { catalogueProvider } from "../lib/catalogueProvider";
+import type { CatalogueProduct } from "../types/catalogue";
 
 const platforms = [
   { label: "Rumble", note: "Primary channel", href: "https://rumble.com/ThirdRailify", icon: rumbleIcon },
@@ -36,6 +38,8 @@ export function HomePage() {
   const primaryIsLive = primary?.presentationState === "live";
   const livePlatforms: ReadonlySet<string> = new Set(data?.liveNow.map((candidate) => candidate.platform) ?? []);
   const liveDestinations: ReadonlyMap<string, string> = new Map(data?.liveNow.map((candidate) => [candidate.platform, candidate.watchUrl]) ?? []);
+  const [merchProducts, setMerchProducts] = useState<CatalogueProduct[]>([]);
+  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => setMerchProducts([...snapshot.products].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (a.featuredOrder ?? Infinity) - (b.featuredOrder ?? Infinity)).slice(0, 3))).catch(() => setMerchProducts([])); return () => controller.abort(); }, []);
   return (
     <>
       <section className="home-hero">
@@ -136,11 +140,11 @@ export function HomePage() {
 
       <section className="section section--panel merch-preview">
         <div className="container split-heading">
-          <div><p className="eyebrow">From the current store</p><h2>Merch with lore attached.</h2></div>
-          <div><p>These products and CAD prices were captured from the live Wix catalogue on 11 August 2026. They are a migration snapshot, not live inventory.</p><Link className="text-link" to="/shop">Explore all captured products <ArrowIcon /></Link></div>
+          <div><p className="eyebrow">From the replacement store</p><h2>Merch with lore attached.</h2></div>
+          <div><p>Products, variants, images, and CAD prices come from the replacement commerce catalogue. Checkout remains disabled before cutover.</p><Link className="text-link" to="/shop">Explore the catalogue <ArrowIcon /></Link></div>
         </div>
         <div className="container product-grid product-grid--featured">
-          {wixSnapshot.products.slice(1, 4).map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}
+          {merchProducts.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}
         </div>
       </section>
 

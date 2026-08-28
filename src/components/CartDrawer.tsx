@@ -1,12 +1,17 @@
-import { useEffect, useRef } from "react";
-import { wixSnapshot } from "../data/wixSnapshot";
+import { useEffect, useRef, useState } from "react";
+import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
+import type { CatalogueProduct } from "../types/catalogue";
 import { BagIcon, CloseIcon, MinusIcon, PlusIcon } from "./Icons";
 
 export function CartDrawer() {
   const cart = useCart();
   const drawerRef = useRef<HTMLElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const [products, setProducts] = useState<CatalogueProduct[]>([]);
+  const [catalogueError, setCatalogueError] = useState(false);
+
+  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(false); }).catch(() => setCatalogueError(true)); return () => controller.abort(); }, []);
 
   useEffect(() => {
     if (!cart.isOpen) return;
@@ -43,42 +48,45 @@ export function CartDrawer() {
   if (!cart.isOpen) return null;
 
   const rows = cart.items.flatMap((item) => {
-    const product = wixSnapshot.products.find((candidate) => candidate.id === item.productId);
-    return product ? [{ item, product }] : [];
+    const product = products.find((candidate) => candidate.id === item.productId);
+    const variant = product?.variants?.find((candidate) => candidate.id === item.variantId);
+    return product && variant ? [{ item, product, variant }] : [];
   });
-  const subtotal = rows.reduce((sum, row) => sum + row.product.price * row.item.quantity, 0);
+  const subtotal = rows.reduce((sum, row) => sum + row.variant.unitAmount * row.item.quantity, 0);
 
   return (
     <div className="cart-layer">
       <button className="cart-backdrop" type="button" aria-label="Close cart" onClick={cart.close} />
       <aside ref={drawerRef} className="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cart-title">
         <div className="cart-drawer__header">
-          <div><span className="eyebrow">Local scaffold</span><h2 id="cart-title">Your cart</h2></div>
+          <div><span className="eyebrow">Commerce catalogue</span><h2 id="cart-title">Your cart</h2></div>
           <button ref={closeRef} className="icon-button" type="button" onClick={cart.close} aria-label="Close cart"><CloseIcon /></button>
         </div>
-        <p className="cart-boundary">Selections stay on this device. No inventory, shipping, tax, checkout, or payment service is connected.</p>
+        <p className="cart-boundary">Selections stay on this device. Checkout is coming online during the store migration.</p>
+        {catalogueError ? <p className="cart-boundary" role="alert">Current catalogue details are unavailable. Retry from the shop before continuing.</p> : null}
         <div className="cart-drawer__items">
-          {rows.length ? rows.map(({ item, product }) => (
-            <article className="cart-row" key={product.id}>
+          {rows.length ? rows.map(({ item, product, variant }) => (
+            <article className="cart-row" key={`${product.id}:${variant.id}`}>
               <img src={product.image} alt="" />
               <div>
                 <h3>{product.name}</h3>
-                <span>{product.formattedPrice} CAD · options chosen later</span>
+                <span>{variant.label} · {new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(variant.unitAmount / 100)} CAD</span>
+                <strong>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format((variant.unitAmount * item.quantity) / 100)}</strong>
                 <div className="quantity-control" aria-label={`Quantity for ${product.name}`}>
-                  <button type="button" onClick={() => cart.setQuantity(product.id, item.quantity - 1)} aria-label="Decrease quantity"><MinusIcon /></button>
+                  <button type="button" onClick={() => cart.setQuantity(product.id, variant.id, item.quantity - 1)} aria-label="Decrease quantity"><MinusIcon /></button>
                   <output>{item.quantity}</output>
-                  <button type="button" onClick={() => cart.setQuantity(product.id, item.quantity + 1)} aria-label="Increase quantity"><PlusIcon /></button>
+                  <button type="button" onClick={() => cart.setQuantity(product.id, variant.id, item.quantity + 1)} aria-label="Increase quantity"><PlusIcon /></button>
                 </div>
               </div>
-              <button className="cart-row__remove" type="button" onClick={() => cart.remove(product.id)}>Remove</button>
+              <button className="cart-row__remove" type="button" onClick={() => cart.remove(product.id, variant.id)}>Remove</button>
             </article>
           )) : (
-            <div className="empty-state empty-state--cart"><BagIcon /><h3>Nothing on the rail yet.</h3><p>Browse the verified snapshot and add an item to this local cart shell.</p></div>
+            <div className="empty-state empty-state--cart"><BagIcon /><h3>Nothing on the rail yet.</h3><p>Choose a product variant from the shop to add it here.</p></div>
           )}
         </div>
         <div className="cart-drawer__footer">
-          <div><span>Snapshot subtotal</span><strong>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(subtotal)}</strong></div>
-          <button className="button button--disabled" type="button" disabled>Checkout integration not enabled</button>
+          <div><span>Cart subtotal</span><strong>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(subtotal / 100)}</strong></div>
+          <button className="button button--disabled" type="button" disabled>Checkout coming online during store migration</button>
           {rows.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
         </div>
       </aside>

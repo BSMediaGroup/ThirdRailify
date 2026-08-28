@@ -1,5 +1,11 @@
 # Third Railify V2 public site
 
+## Replacement shop commerce source
+
+The replacement `/shop` uses the same-origin `/api/commerce/*` Pages Functions, which proxy the Admin project's sanitized Commerce D1 projection. This Public project deliberately has no Commerce D1 binding and contains no Admin credential. The legacy Wix snapshot remains migration/reference evidence only and is not a runtime catalogue fallback.
+
+Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Checkout is visibly disabled until the later Stripe sandbox acceptance milestone; the live Wix site remains the production store until explicit cutover.
+
 Production-oriented public website and storefront foundation for Third Railify. This repository is the future Wix replacement, but the current milestone is a staging scaffold: Wix remains production and no custom domain is attached.
 
 ## Current state
@@ -14,6 +20,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Product detail routes at `/products/:category/:slug`; legacy `/product-page/:slug` paths and category routes remain preserved client-side.
 - Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
+- First-class policy library at `/policies` plus deep-linked Terms, Privacy, Refund, and Accessibility documents grounded in the current V2 data and provider boundaries, with a truthful non-interactive future-membership register slot.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
@@ -36,6 +43,7 @@ npm run typecheck
 npm run test:functions
 npm run test:storefront
 npm run test:goats
+npm run test:browser:policies
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -47,8 +55,8 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`.
-- Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`.
 - Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
@@ -65,7 +73,7 @@ ThirdRailify/
 │   ├── flags/              Local GOATS country SVGs plus a safe unknown-country fallback
 │   ├── fonts/              Seeded font files and licences
 │   ├── icons/              Active Public favicon plus local Discord, TikTok, and platform SVG artwork
-│   ├── illustrations/      Joined hero art and homepage show-format feature illustrations
+│   ├── illustrations/      Joined hero art, CC0 GOATS vector/provenance, and homepage feature illustrations
 │   ├── logos/              Seeded marks and the active straight header/footer bolt silhouette
 │   ├── people/             Seeded host imagery
 │   └── video/              Seeded media (not used as a decorative hero loop)
@@ -92,6 +100,7 @@ ThirdRailify/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
 │   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
+│   ├── content/            Structured policy registry and long-form legal content
 │   ├── data/               Dated bounded Wix snapshot
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
 │   ├── goats/              Typed API client, SVG country flags, and lazy vector/raster map engines
@@ -109,11 +118,12 @@ ThirdRailify/
 ├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
 ├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
 ├── LIVE_SITE_AUDIT.md
+├── POLICIES.md            Policy route, content-source, maintenance, and review notes
 ├── BUMP_NOTES.md
 └── package.json
 ```
 
-Additive banner files in this structure are `functions/api/catalogue/banner.js` (fail-soft Admin projection proxy), `src/components/PromoBanner.tsx`, `src/hooks/useBannerConfig.ts`, and the validated `src/lib/banner.ts` / `src/lib/liveBanner.ts` boundaries. The Watch pages and episode components own the five-position rail and 24-position archive presentation.
+Additive banner files in this structure are `functions/api/catalogue/banner.js` (fail-soft Admin projection proxy), `src/components/PromoBanner.tsx`, `src/hooks/useBannerConfig.ts`, and the validated `src/lib/banner.ts` / `src/lib/liveBanner.ts` boundaries. The Watch pages and episode components own the six-position rail and 24-position archive presentation.
 
 `WATCH_V2.md` is the Watch authority, retention, public-route, placeholder, and Admin-management architecture document.
 

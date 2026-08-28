@@ -4,7 +4,6 @@ import { ArrowIcon, BagIcon, SearchIcon } from "../components/Icons";
 import { ProductCard } from "../components/ProductCard";
 import { CurrencyDisclaimer, CurrencySelect, ProductPrice } from "../components/CurrencyPrice";
 import { SignalField } from "../components/SignalField";
-import { LIVE_WIX_CATEGORIES } from "../data/wixSnapshot";
 import { catalogueProvider, categorySlug } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
 import type { CatalogueProduct, CatalogueSnapshot } from "../types/catalogue";
@@ -12,87 +11,25 @@ import type { CatalogueProduct, CatalogueSnapshot } from "../types/catalogue";
 type SortMode = "featured" | "price-asc" | "price-desc" | "name";
 
 export function ShopPage() {
-  const { category = "all-products" } = useParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const cart = useCart();
-  const galleryHeading = useRef<HTMLHeadingElement>(null);
-  const [snapshot, setSnapshot] = useState<CatalogueSnapshot | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const query = searchParams.get("q") || "";
-  const rawSort = searchParams.get("sort");
-  const sort: SortMode = rawSort === "price-asc" || rawSort === "price-desc" || rawSort === "name" ? rawSort : "featured";
-
-  const load = useCallback(() => {
-    const controller = new AbortController(); setLoading(true); setError("");
-    catalogueProvider.load(controller.signal).then(setSnapshot).catch((reason: unknown) => {
-      if (reason instanceof DOMException && reason.name === "AbortError") return;
-      setError("The preview catalogue could not be loaded.");
-    }).finally(() => setLoading(false));
-    return () => controller.abort();
-  }, []);
+  const { category = "all-products" } = useParams(); const navigate = useNavigate(); const location = useLocation(); const [searchParams, setSearchParams] = useSearchParams(); const cart = useCart();
+  const galleryHeading = useRef<HTMLHeadingElement>(null); const [snapshot, setSnapshot] = useState<CatalogueSnapshot | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  const query = searchParams.get("q") || ""; const rawSort = searchParams.get("sort"); const sort: SortMode = rawSort === "price-asc" || rawSort === "price-desc" || rawSort === "name" ? rawSort : "featured";
+  const load = useCallback(() => { const controller = new AbortController(); setLoading(true); setError(""); catalogueProvider.load(controller.signal).then(setSnapshot).catch((reason: unknown) => { if (reason instanceof DOMException && reason.name === "AbortError") return; setError("The commerce catalogue could not be loaded."); }).finally(() => setLoading(false)); return () => controller.abort(); }, []);
   useEffect(load, [load]);
-
   const activeCategory = category === "all" ? "all-products" : categorySlug(category);
-  const products = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const next = (snapshot?.products ?? []).filter((product) => {
-      const matchesCategory = activeCategory === "all-products" || product.categories.some((entry) => categorySlug(entry) === activeCategory);
-      const haystack = `${product.name} ${product.categories.join(" ")} ${product.optionTypes.join(" ")}`.toLowerCase();
-      return matchesCategory && (!normalizedQuery || haystack.includes(normalizedQuery));
-    });
-    if (sort === "featured") next.sort(featuredCompare);
-    if (sort === "price-asc") next.sort((left, right) => left.price - right.price || left.slug.localeCompare(right.slug));
-    if (sort === "price-desc") next.sort((left, right) => right.price - left.price || left.slug.localeCompare(right.slug));
-    if (sort === "name") next.sort((left, right) => left.name.localeCompare(right.name));
-    return next;
-  }, [activeCategory, query, snapshot, sort]);
-
-  const updateQuery = (key: string, value: string) => {
-    const next = new URLSearchParams(searchParams);
-    if (value) next.set(key, value); else next.delete(key);
-    setSearchParams(next, { replace: true });
-  };
-  const chooseCategory = (label: string) => {
-    const slug = categorySlug(label);
-    const nextPath = slug === "all-products" ? "/shop" : `/products/${slug}`;
-    navigate({ pathname: nextPath, search: location.search, hash: location.hash });
-    window.requestAnimationFrame(() => { galleryHeading.current?.focus({ preventScroll: true }); document.getElementById("catalogue")?.scrollIntoView({ behavior: "smooth", block: "start" }); });
-  };
-  const clearFilters = () => {
-    const currency = searchParams.get("currency");
-    setSearchParams(currency ? new URLSearchParams({ currency }) : new URLSearchParams());
-    navigate({ pathname: "/shop", search: currency ? `?currency=${encodeURIComponent(currency)}` : "", hash: location.hash });
-  };
-  const allProducts = snapshot?.products ?? [];
-  const categoryGroups = LIVE_WIX_CATEGORIES.filter((label) => label !== "All Products").map((label) => ({ label, products: allProducts.filter((product) => product.categories.includes(label)) }));
-  const populatedCategories = categoryGroups.filter((entry) => entry.products.length);
-  const emptyCategories = categoryGroups.filter((entry) => !entry.products.length);
+  const allProducts = useMemo(() => snapshot?.products ?? [], [snapshot]);
+  const catalogueCategories = useMemo(() => ["All Products", ...[...new Set(allProducts.flatMap((product) => product.categories))].sort()], [allProducts]);
+  const products = useMemo(() => { const needle = query.trim().toLowerCase(); const next = allProducts.filter((product) => { const matchesCategory = activeCategory === "all-products" || product.categories.some((entry) => categorySlug(entry) === activeCategory); return matchesCategory && (!needle || `${product.name} ${product.categories.join(" ")} ${product.optionTypes.join(" ")}`.toLowerCase().includes(needle)); }); if (sort === "featured") next.sort(featuredCompare); if (sort === "price-asc") next.sort((a, b) => a.price - b.price || a.slug.localeCompare(b.slug)); if (sort === "price-desc") next.sort((a, b) => b.price - a.price || a.slug.localeCompare(b.slug)); if (sort === "name") next.sort((a, b) => a.name.localeCompare(b.name)); return next; }, [activeCategory, allProducts, query, sort]);
+  const updateQuery = (key: string, value: string) => { const next = new URLSearchParams(searchParams); if (value) next.set(key, value); else next.delete(key); setSearchParams(next, { replace: true }); };
+  const chooseCategory = (label: string) => { const slug = categorySlug(label); navigate({ pathname: slug === "all-products" ? "/shop" : `/products/${slug}`, search: location.search, hash: location.hash }); window.requestAnimationFrame(() => { galleryHeading.current?.focus({ preventScroll: true }); document.getElementById("catalogue")?.scrollIntoView({ behavior: "smooth", block: "start" }); }); };
+  const clearFilters = () => { const currency = searchParams.get("currency"); setSearchParams(currency ? new URLSearchParams({ currency }) : new URLSearchParams()); navigate({ pathname: "/shop", search: currency ? `?currency=${encodeURIComponent(currency)}` : "", hash: location.hash }); };
   const filtersActive = activeCategory !== "all-products" || Boolean(query) || sort !== "featured";
-
-  return <>
-    <FeaturedHero products={allProducts} cartCount={cart.count} openCart={cart.open} />
-    <section className="collection-section collection-discovery" aria-labelledby="collections-title">
-      <div className="container split-heading split-heading--compact"><div><p className="eyebrow">Find your line</p><h2 id="collections-title">Shop by collection.</h2></div><p>Explore the categories represented in this preview catalogue, then jump directly to matching products.</p></div>
-      <div className="container collection-grid">{populatedCategories.map((entry, index) => <button className="collection-card" key={entry.label} type="button" onClick={() => chooseCategory(entry.label)}>
-        <span className="collection-card__index">{String(index + 1).padStart(2, "0")}</span><span className="collection-card__images" aria-hidden="true">{entry.products.slice(0, 2).map((product) => <img key={product.id} src={product.image} alt="" />)}</span>
-        <span className="collection-card__copy"><strong>{entry.label}</strong><small>{entry.products.length} {entry.products.length === 1 ? "product" : "products"} in preview</small></span><ArrowIcon />
-      </button>)}</div>
-      {emptyCategories.length ? <div className="container more-collections"><p>More collections</p><div>{emptyCategories.map((entry) => <button type="button" key={entry.label} onClick={() => chooseCategory(entry.label)}><span>{entry.label}</span><small>Catalogue category · no captured products</small></button>)}</div></div> : null}
-    </section>
-
-    <section id="catalogue" className="section section--panel catalogue-section">
-      <div className="container catalogue-heading"><div><p className="eyebrow">Preview catalogue</p><h2 ref={galleryHeading} tabIndex={-1}>The complete captured drop.</h2></div><div><p>Inventory and checkout remain connected to the current store during migration.</p><CurrencyDisclaimer /></div></div>
-      <div className="shop-utility-wrap"><div className="container shop-toolbar shop-toolbar--commerce">
-        <label className="search-field"><SearchIcon /><span className="sr-only">Search products</span><input value={query} onChange={(event) => updateQuery("q", event.target.value)} placeholder="Search products and collections…" /></label>
-        <label className="sort-field"><span>Sort</span><select value={sort} onChange={(event) => updateQuery("sort", event.target.value)}><option value="featured">Featured order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select></label>
-        <CurrencySelect compact /><div className="result-count" aria-live="polite"><strong>{loading ? "—" : products.length}</strong><span>results</span></div>
-      </div><div className="container filter-bar" aria-label="Catalogue filters">{LIVE_WIX_CATEGORIES.map((label) => { const slug = categorySlug(label); return <button key={label} className={slug === activeCategory ? "is-active" : ""} type="button" onClick={() => chooseCategory(label)} aria-pressed={slug === activeCategory}>{label}</button>; })}{filtersActive ? <button className="filter-clear" type="button" onClick={clearFilters}>Clear filters</button> : null}</div></div>
+  return <><FeaturedHero products={allProducts} cartCount={cart.count} openCart={cart.open} />
+    <section className="collection-section collection-discovery" aria-labelledby="collections-title"><div className="container split-heading split-heading--compact"><div><p className="eyebrow">Find your line</p><h2 id="collections-title">Shop by collection.</h2></div><p>Explore categories published from the replacement commerce catalogue.</p></div><div className="container collection-grid">{catalogueCategories.slice(1).map((label, index) => { const categoryProducts = allProducts.filter((product) => product.categories.includes(label)); return <button className="collection-card" key={label} type="button" onClick={() => chooseCategory(label)}><span className="collection-card__index">{String(index + 1).padStart(2, "0")}</span><span className="collection-card__images" aria-hidden="true">{categoryProducts.slice(0, 2).map((product) => product.image ? <img key={product.id} src={product.image} alt="" /> : null)}</span><span className="collection-card__copy"><strong>{label}</strong><small>{categoryProducts.length} {categoryProducts.length === 1 ? "product" : "products"}</small></span><ArrowIcon /></button>; })}</div></section>
+    <section id="catalogue" className="section section--panel catalogue-section"><div className="container catalogue-heading"><div><p className="eyebrow">Commerce D1 catalogue</p><h2 ref={galleryHeading} tabIndex={-1}>The complete replacement drop.</h2></div><div><p>Browse real products and variants. Checkout is coming online during store migration.</p><CurrencyDisclaimer /></div></div>
+      <div className="shop-utility-wrap"><div className="container shop-toolbar shop-toolbar--commerce"><label className="search-field"><SearchIcon /><span className="sr-only">Search products</span><input value={query} onChange={(event) => updateQuery("q", event.target.value)} placeholder="Search products and collections…" /></label><label className="sort-field"><span>Sort</span><select value={sort} onChange={(event) => updateQuery("sort", event.target.value)}><option value="featured">Featured order</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option><option value="name">Name</option></select></label><CurrencySelect compact /><div className="result-count" aria-live="polite"><strong>{loading ? "—" : products.length}</strong><span>results</span></div></div><div className="container filter-bar" aria-label="Catalogue filters">{catalogueCategories.map((label) => { const slug = categorySlug(label); return <button key={label} className={slug === activeCategory ? "is-active" : ""} type="button" onClick={() => chooseCategory(label)} aria-pressed={slug === activeCategory}>{label}</button>; })}{filtersActive ? <button className="filter-clear" type="button" onClick={clearFilters}>Clear filters</button> : null}</div></div>
       <div className="container">{loading ? <LoadingGrid /> : null}{error ? <ErrorState message={error} retry={load} /> : null}{!loading && !error && products.length ? <div className="product-grid product-grid--store">{products.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}</div> : null}{!loading && !error && !products.length ? <div className="empty-state empty-state--catalogue"><SearchIcon /><p className="eyebrow">No matches</p><h3>No products are on this section of rail.</h3><p>Try another category or clear the current search and sort controls.</p><button className="button button--secondary" type="button" onClick={clearFilters}>Clear filters</button></div> : null}</div>
-    </section>
-  </>;
+    </section></>;
 }
 
 function FeaturedHero({ products, cartCount, openCart }: { products: CatalogueProduct[]; cartCount: number; openCart: () => void }) {
@@ -101,17 +38,11 @@ function FeaturedHero({ products, cartCount, openCart }: { products: CataloguePr
   const [activeIndex, setActiveIndex] = useState(0); const [paused, setPaused] = useState(false); const [engaged, setEngaged] = useState(false); const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => { const media = window.matchMedia("(prefers-reduced-motion: reduce)"); const sync = () => setReducedMotion(media.matches); sync(); media.addEventListener("change", sync); return () => media.removeEventListener("change", sync); }, []);
   useEffect(() => { if (featured.length <= 1 || paused || engaged || reducedMotion || document.hidden) return; const timer = window.setInterval(() => { if (!document.hidden) setActiveIndex((current) => (current + 1) % featured.length); }, 7000); return () => window.clearInterval(timer); }, [engaged, featured.length, paused, reducedMotion]);
-  useEffect(() => { setActiveIndex((current) => Math.min(current, Math.max(0, featured.length - 1))); }, [featured.length]);
-  const active = featured[activeIndex]; const support = featured.filter((_, index) => index !== activeIndex).slice(0, 2);
-  const move = (offset: number) => setActiveIndex((current) => (current + offset + featured.length) % featured.length);
-  return <section className="shop-hero shop-hero--drop" onPointerEnter={() => setEngaged(true)} onPointerLeave={() => setEngaged(false)} onFocusCapture={() => setEngaged(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}>
-    <SignalField /><div className="shop-hero__type" aria-hidden="true"><span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span></div>
-    <div className="container shop-hero__grid"><div className="shop-hero__copy"><p className="eyebrow">The official store · Preview catalogue</p><h1>Wear the<br /><span className="hero-feature-text">lore.</span></h1><p>Podcast merch with a sharper signal—captured from the current collection and staged for the next chapter.</p><div className="button-row"><a className="button button--primary" href="#catalogue">Browse the store <ArrowIcon /></a>{active ? <Link className="button button--secondary" to={`/products/all/${active.slug}`}>Open featured product</Link> : <button className="button button--secondary" type="button" onClick={openCart}><BagIcon /> Local cart · {cartCount}</button>}</div><div className="shop-facts"><span><strong>{products.length || "—"}</strong><small>Preview products</small></span><span><strong>{featured.length || "—"}</strong><small>Featured rotation</small></span><span><strong>CAD</strong><small>Base prices</small></span></div></div>
-      <div className="featured-stage" aria-label="Featured products">{active ? <><div className="featured-stage__rails" aria-hidden="true" /><Link className="featured-stage__active" key={active.id} to={`/products/all/${active.slug}`}><img src={active.image} alt={active.name} width="720" height="900" /><span className="featured-stage__details"><small>Featured {String(activeIndex + 1).padStart(2, "0")} / {String(featured.length).padStart(2, "0")}</small><strong>{active.name}</strong><ProductPrice price={active.price} formattedPrice={active.formattedPrice} /></span></Link>{support.map((product, index) => <Link className={`featured-stage__support featured-stage__support--${index + 1}`} key={product.id} to={`/products/all/${product.slug}`} aria-label={`View ${product.name}`}><img src={product.image} alt="" /></Link>)}{featured.length > 1 && !reducedMotion ? <div className="featured-stage__controls"><button type="button" onClick={() => move(-1)} aria-label="Previous featured product">←</button><button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Resume featured product rotation" : "Pause featured product rotation"}>{paused ? "Play" : "Pause"}</button><button type="button" onClick={() => move(1)} aria-label="Next featured product">→</button></div> : null}</> : <div className="featured-stage__empty">Preview products are loading.</div>}</div>
-    </div>
-  </section>;
+  useEffect(() => setActiveIndex((current) => Math.min(current, Math.max(0, featured.length - 1))), [featured.length]);
+  const active = featured[activeIndex]; const support = featured.filter((_, index) => index !== activeIndex).slice(0, 2); const move = (offset: number) => setActiveIndex((current) => (current + offset + featured.length) % featured.length);
+  return <section className="shop-hero shop-hero--drop" onPointerEnter={() => setEngaged(true)} onPointerLeave={() => setEngaged(false)} onFocusCapture={() => setEngaged(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}><SignalField /><div className="shop-hero__type" aria-hidden="true"><span>WEAR THE LORE</span><span>WEAR THE LORE</span><span>WEAR THE LORE</span></div><div className="container shop-hero__grid"><div className="shop-hero__copy"><p className="eyebrow">The official store · Replacement preview</p><h1>Wear the<br /><span className="hero-feature-text">lore.</span></h1><p>Podcast merch with real catalogue variants and CAD pricing, staged safely ahead of checkout cutover.</p><div className="button-row"><a className="button button--primary" href="#catalogue">Browse the store <ArrowIcon /></a>{active ? <Link className="button button--secondary" to={`/shop/${active.slug}`}>Open featured product</Link> : <button className="button button--secondary" type="button" onClick={openCart}><BagIcon /> Cart · {cartCount}</button>}</div><div className="shop-facts"><span><strong>{products.length || "—"}</strong><small>Products</small></span><span><strong>{products.reduce((total, product) => total + (product.variants?.length || 0), 0) || "—"}</strong><small>Variants</small></span><span><strong>CAD</strong><small>D1 price authority</small></span></div></div><div className="featured-stage" aria-label="Featured products">{active ? <><div className="featured-stage__rails" aria-hidden="true" /><Link className="featured-stage__active" key={active.id} to={`/shop/${active.slug}`}><img src={active.image} alt={active.name} width="720" height="900" /><span className="featured-stage__details"><small>Featured {String(activeIndex + 1).padStart(2, "0")} / {String(featured.length).padStart(2, "0")}</small><strong>{active.name}</strong><ProductPrice price={active.price} formattedPrice={active.formattedPrice} /></span></Link>{support.map((product, index) => <Link className={`featured-stage__support featured-stage__support--${index + 1}`} key={product.id} to={`/shop/${product.slug}`} aria-label={`View ${product.name}`}><img src={product.image} alt="" /></Link>)}{featured.length > 1 && !reducedMotion ? <div className="featured-stage__controls"><button type="button" onClick={() => move(-1)} aria-label="Previous featured product">←</button><button type="button" onClick={() => setPaused((value) => !value)} aria-label={paused ? "Resume featured product rotation" : "Pause featured product rotation"}>{paused ? "Play" : "Pause"}</button><button type="button" onClick={() => move(1)} aria-label="Next featured product">→</button></div> : null}</> : <div className="featured-stage__empty">Commerce products are loading.</div>}</div></div></section>;
 }
 
-function featuredCompare(left: CatalogueProduct, right: CatalogueProduct) { if (left.featured !== right.featured) return left.featured ? -1 : 1; return (left.featuredOrder ?? Number.MAX_SAFE_INTEGER) - (right.featuredOrder ?? Number.MAX_SAFE_INTEGER) || left.slug.localeCompare(right.slug); }
+function featuredCompare(a: CatalogueProduct, b: CatalogueProduct) { if (a.featured !== b.featured) return a.featured ? -1 : 1; return (a.featuredOrder ?? Number.MAX_SAFE_INTEGER) - (b.featuredOrder ?? Number.MAX_SAFE_INTEGER) || (a.displayOrder ?? 1000) - (b.displayOrder ?? 1000) || a.slug.localeCompare(b.slug); }
 function LoadingGrid() { return <div className="product-grid product-grid--store" aria-label="Loading products" aria-busy="true">{Array.from({ length: 8 }, (_, index) => <div className="product-skeleton" key={index}><span /><i /><i /></div>)}</div>; }
-function ErrorState({ message, retry }: { message: string; retry: () => void }) { return <div className="empty-state empty-state--error"><p className="eyebrow">Catalogue unavailable</p><h3>{message}</h3><p>Authoritative CAD prices and the local cart remain unchanged.</p><button className="button button--secondary" type="button" onClick={retry}>Try again</button></div>; }
+function ErrorState({ message, retry }: { message: string; retry: () => void }) { return <div className="empty-state empty-state--error"><p className="eyebrow">Shop unavailable</p><h3>{message}</h3><p>The replacement shop does not fall back to legacy catalogue data.</p><button className="button button--secondary" type="button" onClick={retry}>Try again</button></div>; }

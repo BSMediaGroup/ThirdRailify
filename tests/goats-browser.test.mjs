@@ -86,7 +86,12 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   assert.notEqual(await page.locator(".goats-hero__sweep").evaluate((element) => globalThis.getComputedStyle(element).animationName), "none");
   assert.equal(await page.locator(".goats-hero h1").evaluate((element) => Number.parseFloat(globalThis.getComputedStyle(element).lineHeight) / Number.parseFloat(globalThis.getComputedStyle(element).fontSize) >= .8), true, "the GOATS hero heading must retain the readable public-hero line-height rhythm");
   assert.equal(await heroOrbital.locator("img[data-goats-country-flag]").count(), 0, "the hero diagram must use uncrowded airport-code chips without flags");
-  assert.match(await heroOrbital.textContent(), /SYD.*YYZ|YYZ.*SYD/s);
+  assert.equal(await heroOrbital.locator(".goats-hero__node").count(), 4, "the global radar must include Australian, Canadian, American, and European airport signals");
+  for (const code of ["SYD", "YYZ", "LAX", "LHR"]) assert.match(await heroOrbital.textContent(), new RegExp(code));
+  assert.equal(await page.locator(".goats-hero__montage").count(), 0, "unexplained listing thumbnails must not clutter the hero");
+  const goatMotif = page.locator(".goats-hero__goat-motif");
+  assert.equal(await goatMotif.isVisible(), true, "the hero must include the complementary illustrated goat motif");
+  assert.notEqual(await goatMotif.evaluate((node) => getComputedStyle(node).maskImage), "none", "the goat motif must remain scalable vector art rendered as a CSS mask");
 
   const beforePan = await sydney.boundingBox();
   await mapViewport.hover({ position: { x: bounds.width / 2, y: bounds.height / 2 } });
@@ -220,6 +225,52 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     await page.waitForTimeout(250);
     await page.locator(".goats-map.is-expanded").screenshot({ path: path.join(output, `thirdrailify-goats-map-expanded-${suffix}.png`) });
   }
+});
+
+test("GOATS live gallery keeps primary photos visible, native controls dark, and detail media viewport-filling", { skip: !STRICT_LIVE }, async (t) => {
+  const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
+  t.after(() => browser.close());
+  const viewport = { width: Number(process.env.GOATS_BROWSER_WIDTH || 1440), height: Number(process.env.GOATS_BROWSER_HEIGHT || 900) };
+  const page = await browser.newPage({ viewport });
+  await page.goto(`${TARGET_ORIGIN}/goats`, { waitUntil: "domcontentloaded" });
+  await page.locator('.goats-map[data-goats-map-state="ready"]').waitFor({ state: "visible", timeout: 20_000 });
+
+  const filter = page.locator(".goats-controls select").first();
+  assert.equal(await filter.evaluate((element) => globalThis.getComputedStyle(element).colorScheme.includes("dark")), true, "GOATS filters must request a dark native popup palette");
+  assert.equal(await filter.locator("option").first().evaluate((option) => {
+    const rgb = globalThis.getComputedStyle(option).backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
+    return rgb.length >= 3 && rgb[0] < 30 && rgb[1] < 30 && rgb[2] < 30;
+  }), true, "GOATS filter options must have a dark readable surface");
+
+  const card = page.locator(".goat-card").filter({ hasText: "FagGOAT" }).first();
+  await card.scrollIntoViewIfNeeded();
+  const primary = card.locator('.goat-card__media[data-goats-primary-media="ready"] img');
+  await primary.waitFor({ state: "visible" });
+  await primary.evaluate((image) => image instanceof HTMLImageElement && image.decode ? image.decode() : Promise.resolve());
+  assert.equal(await primary.evaluate((image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0), true, "the primary photo must finish loading before acceptance");
+  assert.equal(await primary.evaluate((image) => Number(globalThis.getComputedStyle(image).zIndex)), 1, "the primary photo must remain above its failure fallback without hover");
+  assert.equal(await card.locator(".goat-media-fallback").evaluate((fallback) => Number(globalThis.getComputedStyle(fallback).zIndex)), 0);
+
+  const output = process.env.TEMP || ".";
+  const proofViewport = viewport.width <= 500 ? "mobile" : "desktop";
+  if (process.env.GOATS_BROWSER_SCREENSHOTS === "1") await card.screenshot({ path: path.join(output, `thirdrailify-goats-gallery-${proofViewport}-PROOF.png`) });
+
+  await page.goto(`${TARGET_ORIGIN}/goats/faggoat`, { waitUntil: "domcontentloaded" });
+  const detailStage = page.locator(".goat-detail__stage");
+  await detailStage.waitFor({ state: "visible" });
+  const detailImage = detailStage.locator("img");
+  await detailImage.evaluate((image) => image instanceof HTMLImageElement && image.decode ? image.decode() : Promise.resolve());
+  const fill = await detailStage.evaluate((stage) => {
+    const image = stage.querySelector("img");
+    if (!(image instanceof HTMLImageElement)) return null;
+    const stageBounds = stage.getBoundingClientRect();
+    const imageBounds = image.getBoundingClientRect();
+    return { stageBounds, imageBounds, fit: globalThis.getComputedStyle(image).objectFit };
+  });
+  assert.ok(fill && fill.fit === "cover" && Math.abs(fill.stageBounds.width - fill.imageBounds.width) <= 2 && Math.abs(fill.stageBounds.height - fill.imageBounds.height) <= 2, "detail media must cover the full responsive canvas without letterbox gaps");
+  assert.ok(fill && fill.stageBounds.height >= (viewport.width <= 500 ? viewport.height * .48 : Math.min(620, viewport.height * .65)), "detail media must materially fill the viewport");
+  assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
+  if (process.env.GOATS_BROWSER_SCREENSHOTS === "1") await page.locator(".goat-detail__hero").screenshot({ path: path.join(output, `thirdrailify-goats-detail-${proofViewport}-PROOF.png`) });
 });
 
 test("GOATS automatically falls back to Leaflet only when OpenFreeMap vector tiles fail", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {

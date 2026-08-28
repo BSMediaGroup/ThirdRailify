@@ -35,8 +35,8 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       assert.deepEqual(errors, [], `${route} has no console errors at ${width}x${height}`);
       if (route === "watch") {
         await page.locator(".episode-featured-grid .episode-card").first().waitFor();
-        assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 5);
-        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 4);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 6);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 5);
         assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder)").count(), 1);
         assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder) h3").textContent(), "Older retained transmission");
         assert.equal(await page.getByRole("link", { name: /Open dedicated player/ }).getAttribute("href"), "/watch/live?platform=youtube");
@@ -105,6 +105,7 @@ async function mockApis(page, live, options = {}) {
     if (url.pathname === "/api/auth/config") return json(route, authConfig());
     if (url.pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (url.pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-28", rates: { CAD: 1, USD: .75 } });
+    if (url.pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], updatedAt: null });
     if (url.pathname === "/api/catalogue/banner") return json(route, options.banner ? options.banner() : bannerPayload());
     if (url.pathname === "/api/watch") return json(route, options.watch ? options.watch() : watchPayload(live));
     if (url.pathname === "/api/watch/episodes") return json(route, { schema: "thirdrailify-watch-episodes-v1", items: [detailPayload().item, olderPayload().item], summary: { slotCount: 24, visibleCount: 2, placeholderCount: 22 } });

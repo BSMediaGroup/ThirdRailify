@@ -4,7 +4,7 @@ import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 
-type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards" | "policies" | "terms" | "privacy" | "refunds" | "accessibility";
+type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards";
 
 type RouteContent = {
   eyebrow: string;
@@ -94,32 +94,7 @@ const content: Record<RouteKey, RouteContent> = {
     sourceLabel: "Open current gift cards",
     points: ["Current presets start at CA$15", "Scheduled or immediate delivery", "No V2 purchase flow"],
   },
-  policies: {
-    eyebrow: "Legal migration index",
-    title: "Policies stay visible during the move.",
-    description: "The current policy index links terms, privacy, refunds, accessibility, and VIP plan policies.",
-    status: "These V2 shells preserve route intent; the authoritative legal copy has not yet been migrated.",
-    sourceHref: "https://www.thirdrailify.com/policies",
-    sourceLabel: "Open current policy index",
-    points: ["Terms & Conditions", "Privacy + Refund policy", "Accessibility + VIP plan policies"],
-  },
-  terms: legal("Terms & Conditions", "https://www.thirdrailify.com/terms"),
-  privacy: legal("Privacy Policy", "https://www.thirdrailify.com/privacy"),
-  refunds: legal("Refund Policy", "https://www.thirdrailify.com/refunds"),
-  accessibility: legal("Accessibility Statement", "https://www.thirdrailify.com/accessibility"),
 };
-
-function legal(title: string, sourceHref: string): RouteContent {
-  return {
-    eyebrow: "Legal route preserved",
-    title,
-    description: `The current ${title} remains available on Wix while its reviewed V2 migration is pending.`,
-    status: "No legal text has been paraphrased, shortened, or invented in this scaffold.",
-    sourceHref,
-    sourceLabel: `Read current ${title}`,
-    points: ["Deep-link intent preserved", "Current Wix copy remains authoritative", "Reviewed migration required before cutover"],
-  };
-}
 
 export function RouteShellPage({ routeKey }: { routeKey: RouteKey }) {
   const route = content[routeKey];

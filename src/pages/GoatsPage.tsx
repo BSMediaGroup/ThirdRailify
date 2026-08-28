@@ -1,5 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import goatHeroArtwork from "../../assets/illustrations/mountain-goat-cc0.svg";
 import { ArrowIcon } from "../components/Icons";
 import { CountryFlag } from "../goats/CountryFlag";
 import { getGoatListings, getGoatMap, getGoatProducts } from "../goats/client";
@@ -58,7 +59,8 @@ export function GoatsPage() {
   return <div className="goats-page">
     <section className="goats-hero">
       <div className="goats-hero__grid" aria-hidden="true" />
-      <div className="container goats-hero__content"><div><p className="eyebrow">Community signal · Worldwide</p><h1>GOATS <span>in the Wild</span></h1><p className="goats-hero__lead">Real people. Real merch. Approximate pins, approved stories, and the community wearing the lore beyond the rail.</p><div className="button-row"><Link className="button button--primary" to="/goats/submit">Submit your GOATED drip <ArrowIcon /></Link><a className="button button--secondary" href="#goats-map">Explore the map</a></div>{payload.items.some((item) => item.media.main) ? <div className="goats-hero__montage" aria-label="Recently approved GOATS">{payload.items.filter((item) => item.media.main).slice(0, 3).map((item) => <Link key={item.id} to={`/goats/${item.slug}`} aria-label={`Open ${item.displayName}`}><img src={item.media.main?.url} alt="" width="180" height="220" /></Link>)}</div> : null}</div>
+      <div className="goats-hero__goat-motif" aria-hidden="true" style={{ "--goats-hero-art": `url("${goatHeroArtwork}")` } as CSSProperties} />
+      <div className="container goats-hero__content"><div><p className="eyebrow">Community signal · Worldwide</p><h1>GOATS <span>in the Wild</span></h1><p className="goats-hero__lead">Real people. Real merch. Approximate pins, approved stories, and the community wearing the lore beyond the rail.</p><div className="button-row"><Link className="button button--primary" to="/goats/submit">Submit your GOATED drip <ArrowIcon /></Link><a className="button button--secondary" href="#goats-map">Explore the map</a></div></div>
         <div className="goats-hero__telemetry">
           <div className="goats-hero__orbital" aria-hidden="true">
             <span className="goats-hero__sweep" />
@@ -66,6 +68,8 @@ export function GoatsPage() {
             <span className="goats-hero__orbit goats-hero__orbit--inner" />
             <span className="goats-hero__node goats-hero__node--sydney"><i />SYD</span>
             <span className="goats-hero__node goats-hero__node--toronto"><i />YYZ</span>
+            <span className="goats-hero__node goats-hero__node--los-angeles"><i />LAX</span>
+            <span className="goats-hero__node goats-hero__node--london"><i />LHR</span>
             <span className="goats-hero__axis goats-hero__axis--horizontal" />
             <span className="goats-hero__axis goats-hero__axis--vertical" />
             <div className="goats-hero__core"><small>Live map signal</small><strong>{String(payload.stats.listings).padStart(2, "0")}</strong><span>Approved coordinates</span></div>
@@ -101,7 +105,25 @@ export function GoatsPage() {
 }
 
 function GoatCard({ item, selected, onSelect }: { item: GoatListing; selected: boolean; onSelect: (id: string) => void }) {
-  return <article className={`goat-card${selected ? " is-selected" : ""}`} onFocus={() => onSelect(item.id)}><Link className="goat-card__media" to={`/goats/${item.slug}`} onClick={() => onSelect(item.id)}>{item.media.main ? <><span className="goat-media-fallback">TR / GOAT</span><img src={item.media.main.url} alt="" width="720" height="900" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} /></> : <span className="goat-media-fallback">TR / GOAT</span>}<span>{item.product.name}</span></Link><div className="goat-card__copy"><div className="goat-card__identity">{item.media.profile ? <img src={item.media.profile.url} alt="" width="48" height="48" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<div><h3><Link to={`/goats/${item.slug}`}>{item.displayName}</Link></h3><p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}</p></div></div>{item.rating ? <div className="goat-rating" aria-label={`${item.rating} out of 5 stars`}>{"★".repeat(item.rating)}<span>{"★".repeat(5 - item.rating)}</span></div> : null}<p>{item.description}</p><footer><span>↑ {item.counts.likes}</span><span>↓ {item.counts.dislikes}</span><span>{item.counts.comments} comments</span><Link to={`/goats/${item.slug}`} aria-label={`Open ${item.displayName}`}>Open <ArrowIcon /></Link></footer></div></article>;
+  return <article className={`goat-card${selected ? " is-selected" : ""}`} onFocus={() => onSelect(item.id)}>
+    <Link className="goat-card__media" data-goats-primary-media={item.media.main ? "ready" : "fallback"} to={`/goats/${item.slug}`} onClick={() => onSelect(item.id)}>
+      <span className="goat-media-fallback">TR / GOAT</span>
+      {item.media.main ? <img src={item.media.main.url} alt={`${item.displayName}'s approved GOAT submission`} width="720" height="540" loading="lazy" decoding="async" onError={(event) => { event.currentTarget.hidden = true; event.currentTarget.parentElement?.setAttribute("data-goats-primary-media", "fallback"); }} /> : null}
+      <span className="goat-card__media-shade" aria-hidden="true" />
+      <span className="goat-card__media-meta"><small>Approved signal</small><strong>{item.product.name}</strong></span>
+    </Link>
+    <div className="goat-card__copy">
+      <div className="goat-card__identity">{item.media.profile ? <img src={item.media.profile.url} alt="" width="48" height="48" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<div><h3><Link to={`/goats/${item.slug}`}>{item.displayName}</Link></h3><p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}</p></div></div>
+      <div className="goat-card__signal-row">{item.rating ? <div className="goat-rating" aria-label={`${item.rating} out of 5 stars`}>{"★".repeat(item.rating)}<span>{"★".repeat(5 - item.rating)}</span></div> : <span className="goat-card__unrated">Community dispatch</span>}<span>{formatCardDate(item.publishedAt)}</span></div>
+      <p>{item.description}</p>
+      <footer><span>↑ {item.counts.likes}</span><span>↓ {item.counts.dislikes}</span><span>{item.counts.comments} comments</span><Link to={`/goats/${item.slug}`} aria-label={`Open ${item.displayName}`}>Open story <ArrowIcon /></Link></footer>
+    </div>
+  </article>;
+}
+
+function formatCardDate(value: string) {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Approved" : new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(date);
 }
 
 function SelectedListing({ item }: { item: GoatListing | null }) {

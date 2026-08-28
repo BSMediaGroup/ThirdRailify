@@ -1,33 +1,33 @@
-import { wixSnapshot } from "../data/wixSnapshot";
 import type { CatalogueProvider } from "../types/catalogue";
 
 /**
- * Temporary read boundary. A later server-backed provider can replace this
- * object without changing storefront components or exposing provider secrets.
+ * Same-origin read boundary to the sanitized Admin-owned Commerce D1 projection.
  */
 export const catalogueProvider: CatalogueProvider = {
   async load(signal) {
-    await Promise.resolve();
-    if (signal?.aborted) {
-      throw new DOMException("Catalogue request aborted", "AbortError");
-    }
-    try {
-      const response = await fetch("/api/catalogue/merchandising", { signal, headers: { Accept: "application/json" } });
-      if (!response.ok) return wixSnapshot;
-      const payload = await response.json() as { ok?: boolean; products?: Array<{ id?: string; slug?: string; featured?: boolean; featuredOrder?: number | null }> };
-      if (payload.ok !== true || !Array.isArray(payload.products)) return wixSnapshot;
-      const overlay = new Map(payload.products.map((entry) => [entry.id, entry]));
-      return { ...wixSnapshot, products: wixSnapshot.products.map((product) => {
-        const entry = overlay.get(product.id);
-        if (!entry || entry.slug !== product.slug) return product;
-        return { ...product, featured: entry.featured === true, featuredOrder: Number.isInteger(entry.featuredOrder) ? entry.featuredOrder : null };
-      }) };
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") throw error;
-      return wixSnapshot;
-    }
+    const response = await fetch("/api/commerce/catalogue", { signal, headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error("catalogue_unavailable");
+    const payload = await response.json() as CommerceCataloguePayload;
+    if (payload.ok !== true || payload.source !== "commerce-d1" || !Array.isArray(payload.products)) throw new Error("catalogue_invalid");
+    return { source: "commerce-d1", capturedAt: payload.updatedAt || new Date(0).toISOString(), totalProductsReported: payload.products.length, products: payload.products.map(toCatalogueProduct) };
+  },
+  async loadProduct(slug, signal) {
+    const response = await fetch(`/api/commerce/products/${encodeURIComponent(slug)}`, { signal, headers: { Accept: "application/json" } });
+    if (response.status === 404) throw new Error("product_not_found");
+    if (!response.ok) throw new Error("catalogue_unavailable");
+    const payload = await response.json() as { ok?: boolean; source?: string; product?: CommerceProduct };
+    if (payload.ok !== true || payload.source !== "commerce-d1" || !payload.product) throw new Error("catalogue_invalid");
+    return toCatalogueProduct(payload.product);
   },
 };
+
+type CommerceVariant = { id: string; label: string; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
+type CommerceProduct = { id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
+type CommerceCataloguePayload = { ok?: boolean; source?: string; updatedAt?: string | null; products: CommerceProduct[] };
+function toCatalogueProduct(product: CommerceProduct) {
+  const optionTypes = [...new Set(product.variants.flatMap((variant) => Object.keys(variant.options)))];
+  return { id: product.id, slug: product.slug, name: product.title, price: product.price.minUnitAmount / 100, formattedPrice: product.price.label, currency: "CAD" as const, optionTypes, image: product.images[0] || "", images: product.images, categories: product.categories, description: product.description, featured: product.featured, featuredOrder: product.featuredOrder, displayOrder: product.displayOrder, tags: product.tags, priceMinUnitAmount: product.price.minUnitAmount, priceMaxUnitAmount: product.price.maxUnitAmount, maxQuantity: product.maxQuantity, available: product.available, variants: product.variants };
+}
 
 export function categorySlug(value: string) {
   return value

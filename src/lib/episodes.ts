@@ -18,7 +18,7 @@ export type EpisodeDetail = {
   };
 };
 
-export function featuredEpisodes(items: WatchEpisode[], currentKey: string | null, limit = 5): WatchEpisode[] {
+export function featuredEpisodes(items: WatchEpisode[], currentKey: string | null, limit = 6): WatchEpisode[] {
   return items.filter((episode) => !currentKey || episode.key !== currentKey).slice(0, limit);
 }
 

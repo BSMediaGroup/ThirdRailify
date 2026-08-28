@@ -14,6 +14,8 @@ import { AccountPage } from "./pages/AccountPage";
 import { GoatDetailPage } from "./pages/GoatDetailPage";
 import { GoatsPage } from "./pages/GoatsPage";
 import { GoatSubmitPage } from "./pages/GoatSubmitPage";
+import { PoliciesPage } from "./pages/PoliciesPage";
+import { PolicyPage } from "./pages/PolicyPage";
 
 export function App() {
   return (
@@ -21,6 +23,7 @@ export function App() {
       <Route element={<SiteShell />}>
         <Route index element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/shop/:slug" element={<ProductDetailPage />} />
         <Route path="/products/all" element={<ShopPage />} />
         <Route path="/products/:category" element={<ShopPage />} />
         <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
@@ -40,11 +43,11 @@ export function App() {
         <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />
         <Route path="/support" element={<RouteShellPage routeKey="support" />} />
         <Route path="/gift-cards" element={<RouteShellPage routeKey="giftCards" />} />
-        <Route path="/policies" element={<RouteShellPage routeKey="policies" />} />
-        <Route path="/terms" element={<RouteShellPage routeKey="terms" />} />
-        <Route path="/privacy" element={<RouteShellPage routeKey="privacy" />} />
-        <Route path="/refunds" element={<RouteShellPage routeKey="refunds" />} />
-        <Route path="/accessibility" element={<RouteShellPage routeKey="accessibility" />} />
+        <Route path="/policies" element={<PoliciesPage />} />
+        <Route path="/terms" element={<PolicyPage policyKey="terms" />} />
+        <Route path="/privacy" element={<PolicyPage policyKey="privacy" />} />
+        <Route path="/refunds" element={<PolicyPage policyKey="refunds" />} />
+        <Route path="/accessibility" element={<PolicyPage policyKey="accessibility" />} />
         <Route path="/goats" element={<GoatsPage />} />
         <Route path="/goats/submit" element={<GoatSubmitPage />} />
         <Route path="/goats/:slug" element={<GoatDetailPage />} />

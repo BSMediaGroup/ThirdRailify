@@ -67,11 +67,11 @@ export function WatchPage() {
 
       <section className="section watch-archive-drawer" aria-labelledby="featured-episodes-title">
         <div className="container split-heading">
-          <div><p className="eyebrow">Five-point broadcast rail</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
+          <div><p className="eyebrow">Six-point broadcast rail</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
           <p>{archive.error ? "The archive is temporarily unavailable; current playback remains independent." : `${archive.data?.summary.visibleCount ?? 0} visible episode${archive.data?.summary.visibleCount === 1 ? "" : "s"} retained. New completed broadcasts arrive through the signed signal path.`}</p>
         </div>
         <div className="container episode-featured-grid" aria-busy={archive.loading} aria-label="Latest archived episodes">
-          {Array.from({ length: 5 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-position-${index}`} episode={featured[index] ?? null} index={index} featured />)}
+          {Array.from({ length: 6 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-position-${index}`} episode={featured[index] ?? null} index={index} featured />)}
         </div>
         <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Explore the full archive <ArrowIcon /></Link></div>
       </section>
