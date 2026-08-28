@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 import { policyDocuments, policyList, type PolicyKey, type PolicyLink } from "../content/policies";
+import { usePrivacy } from "../privacy/PrivacyProvider";
 
 export function PolicyPage({ policyKey }: { policyKey: PolicyKey }) {
   const policy = policyDocuments[policyKey];
+  const privacy = usePrivacy();
   return (
     <div className={`policy-page policy-page--${policy.tone}`}>
       <section className="policy-hero" aria-labelledby="policy-title">
@@ -21,8 +23,8 @@ export function PolicyPage({ policyKey }: { policyKey: PolicyKey }) {
             <dl className="policy-meta">
               <div><dt>Document</dt><dd>POL / {policy.order}</dd></div>
               <div><dt>Last updated</dt><dd>{policy.updated}</dd></div>
+              <div><dt>Revision</dt><dd>{policy.revision}</dd></div>
               <div><dt>Length</dt><dd>{policy.readingTime}</dd></div>
-              <div><dt>Jurisdiction</dt><dd>Ontario · Canada</dd></div>
             </dl>
           </div>
           <nav className="policy-highlights" aria-label={`${policy.shortTitle} key sections`}>
@@ -51,7 +53,9 @@ export function PolicyPage({ policyKey }: { policyKey: PolicyKey }) {
               <div className="policy-section__body">
                 {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
                 {section.bullets ? <ul>{section.bullets.map((item) => <li key={item}>{item}</li>)}</ul> : null}
+                {section.table ? <PolicyTable table={section.table} /> : null}
                 {section.note ? <div className="policy-note"><BoltIcon /><p>{section.note}</p></div> : null}
+                {policy.key === "privacy" && section.id === "cookies-local-storage" ? <button className="button button--secondary policy-privacy-action" type="button" onClick={privacy.openManager}>Open Privacy choices</button> : null}
                 {section.links ? <PolicyLinks links={section.links} /> : null}
               </div>
             </section>
@@ -64,6 +68,16 @@ export function PolicyPage({ policyKey }: { policyKey: PolicyKey }) {
       </div>
     </div>
   );
+}
+
+function PolicyTable({ table }: { table: NonNullable<(typeof policyDocuments)[PolicyKey]["sections"][number]["table"]> }) {
+  return <div className="policy-table-wrap" tabIndex={0} role="region" aria-label={table.caption}>
+    <table className="policy-table">
+      <caption>{table.caption}</caption>
+      <thead><tr>{table.headers.map((header) => <th scope="col" key={header}>{header}</th>)}</tr></thead>
+      <tbody>{table.rows.map((row) => <tr key={row.join("|")}>{row.map((cell, index) => index === 0 ? <th scope="row" key={cell}>{cell}</th> : <td key={cell}>{cell}</td>)}</tr>)}</tbody>
+    </table>
+  </div>;
 }
 
 function PolicyLinks({ links }: { links: PolicyLink[] }) {

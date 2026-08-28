@@ -135,6 +135,10 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   }), true, "marker card surface must be dark themed");
   await page.getByRole("button", { name: "Reset results" }).click();
   await page.locator(".goat-card").filter({ hasText: "Midnight Rail" }).locator("a").first().focus();
+  if (!LIVE_ORIGIN) {
+    assert.equal(await page.locator(".goat-card .goat-profile-avatar.is-fallback").count(), 2, "listing cards without profile media must render the default goat motif");
+    assert.equal(await page.locator(".goat-card .goat-profile-avatar.is-fallback img, .goat-card .goat-profile-avatar.is-fallback svg").count(), 0, "card fallbacks must remain CSS-drawn");
+  }
   await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
   await page.waitForTimeout(650);
   await toronto.click();
@@ -282,10 +286,11 @@ test("GOAT detail identity and engagement controls remain compact and responsive
     await page.goto(`${TARGET_ORIGIN}/goats/faggoat`, { waitUntil: "domcontentloaded" });
     const identity = page.locator(".goat-detail__identity");
     await identity.waitFor({ state: "visible" });
-    const avatar = identity.locator(":scope > img");
+    const avatar = identity.locator(":scope > .goat-profile-avatar");
     const [avatarBox, identityTitleBox] = await Promise.all([avatar.boundingBox(), identity.locator("h1").boundingBox()]);
     assert.ok(avatarBox && identityTitleBox && Math.abs((avatarBox.y + avatarBox.height / 2) - (identityTitleBox.y + identityTitleBox.height / 2)) <= 2, "profile image must remain vertically centred beside the display name");
     assert.ok(avatarBox && avatarBox.width >= 64 && avatarBox.width <= 80, "profile image must use the refined compact size");
+    assert.match(await avatar.locator("img").getAttribute("src"), /^data:image\/gif;base64,/, "animated GIF profile media must render through a native image element");
 
     const reactions = page.locator(".goat-reactions button");
     assert.equal(await reactions.count(), 2);
@@ -306,11 +311,32 @@ test("GOAT detail identity and engagement controls remain compact and responsive
     await page.goto(`${TARGET_ORIGIN}/goats/long-goat`, { waitUntil: "domcontentloaded" });
     const longIdentity = page.locator(".goat-detail__identity.is-long");
     await longIdentity.waitFor({ state: "visible" });
-    const [longAvatarBox, longTitleBox] = await Promise.all([longIdentity.locator(":scope > img").boundingBox(), longIdentity.locator("h1").boundingBox()]);
+    const fallbackAvatar = longIdentity.locator(":scope > .goat-profile-avatar.is-fallback");
+    const [longAvatarBox, longTitleBox] = await Promise.all([fallbackAvatar.boundingBox(), longIdentity.locator("h1").boundingBox()]);
     assert.ok(longAvatarBox && longTitleBox && longTitleBox.height <= longAvatarBox.height * 1.65, "wrapped display names stay proportionate to the profile image");
+    assert.equal(await fallbackAvatar.locator("img, svg").count(), 0, "the absent-profile fallback must be drawn without an image or SVG asset");
+    assert.equal(await fallbackAvatar.locator(".goat-profile-avatar__motif").count(), 1, "the absent-profile fallback must expose the CSS goat motif");
     if (process.env.GOATS_BROWSER_SCREENSHOTS === "1") await page.locator(".goat-detail__hero").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-goats-detail-identity-${viewport.width}.png`) });
     await page.close();
   }
+});
+
+test("GOAT submission accepts animated GIF only for profile media without canvas flattening", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
+  const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 900, height: 760 } });
+  await routeGoatsApi(page);
+  await page.goto(`${TARGET_ORIGIN}/goats/submit`, { waitUntil: "domcontentloaded" });
+  const mainInput = page.locator("label.goat-upload").filter({ hasText: "Main image" }).locator('input[type="file"]');
+  const profileInput = page.locator("label.goat-upload").filter({ hasText: "Profile image" }).locator('input[type="file"]');
+  assert.doesNotMatch(await mainInput.getAttribute("accept"), /image\/gif/);
+  assert.match(await profileInput.getAttribute("accept"), /image\/gif/);
+  const bytes = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAIfkEAQAAAAAsAAAAAAEAAQAAAgJEAQA7", "base64");
+  await profileInput.setInputFiles({ name: "animated-profile.gif", mimeType: "image/gif", buffer: bytes });
+  const preview = page.locator("label.goat-upload").filter({ hasText: "Profile image" }).locator(".goat-upload__preview");
+  await preview.waitFor({ state: "visible" });
+  assert.match(await preview.textContent(), /goat-profile\.gif/);
+  assert.match(await preview.locator("img").getAttribute("src"), /^blob:/, "the original GIF must remain a browser-native preview rather than a canvas derivative");
 });
 
 test("GOATS automatically falls back to Leaflet only when OpenFreeMap vector tiles fail", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
@@ -354,10 +380,11 @@ async function routeGoatsApi(page) {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/goats/listings") return route.fulfill(json(listings()));
     if (pathname === "/api/goats/map") return route.fulfill(json(mapData()));
+    if (pathname === "/api/goats/config") return route.fulfill(json({ ok: true, submissionEnabled: true, captchaConfigured: false, geocoderConfigured: false, consentVersion: "goats-v2-2026-08", turnstileSiteKey: null, engagement: { comments: "auto", reactions: "auto" }, limits: { maxImageBytes: 10 * 1024 * 1024, maxGalleryImages: 5 } }));
     if (pathname === "/api/goats/products") return route.fulfill(json({ ok: true, products: [] }));
     if (/^\/api\/goats\/listings\/(faggoat|long-goat)\/comments$/.test(pathname)) return route.fulfill(json({ ok: true, items: [], page: 1, pageSize: 20, total: 0 }));
-    if (pathname === "/api/goats/listings/faggoat") return route.fulfill(json({ ok: true, item: detailListing("FagGOAT") }));
-    if (pathname === "/api/goats/listings/long-goat") return route.fulfill(json({ ok: true, item: detailListing("Extraordinary GOAT Signal") }));
+    if (pathname === "/api/goats/listings/faggoat") return route.fulfill(json({ ok: true, item: detailListing("FagGOAT", true) }));
+    if (pathname === "/api/goats/listings/long-goat") return route.fulfill(json({ ok: true, item: detailListing("Extraordinary GOAT Signal", false) }));
     return route.fulfill(json({ ok: false, error: "not_found" }, 404));
   });
 }
@@ -391,7 +418,8 @@ async function renderedPaletteSize(page, png) {
 function json(body, status = 200) { return { status, contentType: "application/json", body: JSON.stringify(body) }; }
 function product() { return { id: "product-1", slug: "demo", name: "Demo product", image: null }; }
 function listing(id, slug, name, label, latitude, longitude) { return { id, slug, displayName: name, description: "Approved community map fixture.", rating: 5, publishedAt: "2026-08-28T00:00:00.000Z", product: product(), location: { label, countryCode: id === "sydney" ? "AU" : "CA", latitude, longitude }, media: { main: null, profile: null, gallery: [] }, counts: { likes: 0, dislikes: 0, comments: 0 } }; }
-function detailListing(displayName) { return { ...listing("detail", "faggoat", displayName, "Toronto, ON, Canada", 43.6532, -79.3832), description: "A compact approved detail fixture.", media: { main: fixtureMedia("main", 900, 1100), profile: fixtureMedia("profile", 160, 160), gallery: [] }, counts: { likes: 5, dislikes: 1, comments: 0 }, currentReaction: 0, engagement: { comments: "auto", reactions: "auto" }, neighbours: { previous: null, next: null } }; }
+function detailListing(displayName, hasProfile) { return { ...listing("detail", "faggoat", displayName, "Toronto, ON, Canada", 43.6532, -79.3832), description: "A compact approved detail fixture.", media: { main: fixtureMedia("main", 900, 1100), profile: hasProfile ? animatedGifMedia() : null, gallery: [] }, counts: { likes: 5, dislikes: 1, comments: 0 }, currentReaction: 0, engagement: { comments: "auto", reactions: "auto" }, neighbours: { previous: null, next: null } }; }
+function animatedGifMedia() { return { id: "profile-gif-fixture", role: "profile", sortOrder: 0, url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAIfkEAQAAAAAsAAAAAAEAAQAAAgJEAQA7" }; }
 function fixtureMedia(role, width, height) { const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#171b10"/><circle cx="50%" cy="42%" r="28%" fill="#dfff38" opacity=".2"/><path d="M0 ${height * .72}  ${width} ${height * .36}V${height}H0Z" fill="#ffd12f" opacity=".22"/></svg>`; return { id: `${role}-fixture`, role, sortOrder: 0, url: `data:image/svg+xml,${encodeURIComponent(svg)}` }; }
 function listings() { const items = [listing("sydney", "southern-signal", "Southern Signal", "Sydney, AU", -33.8688, 151.2093), listing("toronto", "midnight-rail", "Midnight Rail", "Toronto, CA", 43.6532, -79.3832)]; return { ok: true, items, page: 1, pageSize: 12, total: 2, stats: { listings: 2, countries: 2, products: 1 }, facets: { countries: [{ code: "AU", count: 1 }, { code: "CA", count: 1 }] } }; }
 function mapData() { return { type: "FeatureCollection", features: [{ type: "Feature", id: "sydney", geometry: { type: "Point", coordinates: [151.2093, -33.8688] }, properties: { id: "sydney", slug: "southern-signal", displayName: "Southern Signal", locationLabel: "Sydney, AU", countryCode: "AU", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }, { type: "Feature", id: "toronto", geometry: { type: "Point", coordinates: [-79.3832, 43.6532] }, properties: { id: "toronto", slug: "midnight-rail", displayName: "Midnight Rail", locationLabel: "Toronto, CA", countryCode: "CA", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }] }; }

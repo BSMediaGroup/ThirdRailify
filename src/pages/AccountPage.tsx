@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { AccountAvatar } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { importAvatarUrl, updateDisplayName, uploadAvatar } from "../auth/client";
@@ -93,7 +94,7 @@ function AvatarSettings({ displayName: currentDisplayName, csrfToken, onUpdated 
   };
 
   return <section className="public-avatar-settings" aria-labelledby="public-avatar-settings-title">
-    <div><p className="eyebrow">Account settings</p><h3 id="public-avatar-settings-title">Change your profile</h3><p>Update your display name or avatar. Changes are verified and stored by the shared Admin account authority.</p></div>
+    <div><p className="eyebrow">Account settings</p><h3 id="public-avatar-settings-title">Change your profile</h3><p>Update your display name or avatar. Changes are verified and stored by the shared Admin account authority. See how profile information is handled in the <Link to="/privacy#accounts-authentication">Privacy Policy</Link>.</p></div>
     <div className="public-avatar-settings__forms">
       <form className="public-avatar-settings__name-form" onSubmit={saveDisplayName}><label><span>Display name</span><input type="text" autoComplete="name" minLength={2} maxLength={80} value={displayName} onChange={(event) => { setDisplayName(event.target.value); setError(""); setMessage(""); }} /></label><button type="submit" disabled={displayName.replace(/\s+/g, " ").trim() === currentDisplayName || Boolean(busy)}>{busy === "name" ? "Saving..." : "Save display name"}</button></form>
       <form onSubmit={saveFile}><label><span>Upload image</span><input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => { setFile(event.target.files?.[0] || null); setError(""); setMessage(""); }} /></label><button type="submit" disabled={!file || Boolean(busy)}>{busy === "file" ? "Uploading..." : "Upload avatar"}</button></form>

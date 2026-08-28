@@ -31,6 +31,12 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
       assert.equal(await page.locator("h1").count(), 1, `${route} has one H1 at ${width}x${height}`);
       assert.equal(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true, `${route} has no horizontal overflow at ${width}x${height}`);
       assert.deepEqual(errors, [], `${route} has no browser or page-origin HTTP errors at ${width}x${height}`);
+      if (["/terms", "/privacy", "/refunds"].includes(route)) {
+        const renderedCopy = await page.locator("main").innerText();
+        for (const phrase of ["Australian Consumer Law", "ACCC", "OAIC", "Australian Privacy Principles", "Privacy Act 1988", "ABN", "ACN"]) {
+          assert.equal(renderedCopy.includes(phrase), false, `${route} omits ${phrase} at ${width}x${height}`);
+        }
+      }
 
       const footerPolicyLinks = page.locator(".site-footer .footer-grid > div:last-child > a");
       assert.deepEqual(await footerPolicyLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href"))), ["/terms", "/privacy", "/refunds", "/accessibility"], `${route} footer keeps the four-item policy stack at ${width}x${height}`);
@@ -60,8 +66,11 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
         assert.equal(await tocLinks.count(), await sections.count(), `${route} table of contents covers every policy section`);
         assert.equal(await page.locator('.policy-switcher a[aria-current="page"]').count(), 1, `${route} marks the current document`);
         assert.ok(await page.locator(".policy-section__body > p").first().evaluate((element) => Number.parseFloat(globalThis.getComputedStyle(element).fontSize)) >= 15, `${route} body copy remains readable`);
+        for (const wrap of await page.locator(".policy-table-wrap").all()) {
+          assert.ok(await wrap.evaluate((element) => element.scrollWidth >= element.clientWidth), `${route} tables remain within a bounded responsive region`);
+        }
       }
-      if (process.env.POLICY_BROWSER_SCREENSHOTS === "1" && ["/policies", "/privacy"].includes(route) && [1440, 390].includes(width)) {
+      if (process.env.POLICY_BROWSER_SCREENSHOTS === "1" && ["/privacy", "/terms", "/refunds"].includes(route) && [1440, 390].includes(width)) {
         await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-${route.slice(1)}-${width}-PROOF.png`), fullPage: true });
       }
       await context.close();
@@ -79,8 +88,20 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
   assert.equal(await page.locator('.policy-toc a[href="#retention"]').count(), 1, "retention has a stable deep link");
   await page.locator('.policy-toc a[href="#your-rights"]').click();
   await page.waitForURL(/#your-rights$/);
-  assert.equal(await page.locator("#your-rights").getByRole("heading", { level: 2, name: "Your privacy rights" }).count(), 1);
+  assert.equal(await page.locator("#your-rights").getByRole("heading", { level: 2, name: "Access, correction, and privacy rights" }).count(), 1);
   await context.close();
+
+  const privacyContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const privacyPage = await privacyContext.newPage();
+  await mockShellApis(privacyPage);
+  await privacyPage.goto(`${ORIGIN}/privacy#cookies-local-storage`);
+  await privacyPage.getByRole("button", { name: "Open Privacy choices" }).click();
+  const privacyDialog = privacyPage.getByRole("dialog", { name: "Privacy choices" });
+  await privacyDialog.waitFor();
+  assert.equal(await privacyDialog.isVisible(), true, "Privacy page opens the working consent manager");
+  await privacyDialog.getByRole("button", { name: "Close privacy choices" }).click();
+  assert.equal(await privacyPage.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true, "Privacy tables and consent UI do not overflow mobile");
+  await privacyContext.close();
 
   const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const reducedPage = await reducedContext.newPage();

@@ -124,6 +124,7 @@ ThirdRailify/
 ├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
 ├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
 ├── LIVE_SITE_AUDIT.md
+├── LEGAL_RELEASE_CHECKLIST.md  Internal unresolved operator, sales, privacy, and legal sign-off items
 ├── POLICIES.md            Policy route, content-source, maintenance, and review notes
 ├── PRIVACY_STORAGE_INVENTORY.md  Audited browser storage, provider access, categories, and gating
 ├── BUMP_NOTES.md

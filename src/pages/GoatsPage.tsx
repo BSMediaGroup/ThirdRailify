@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import goatHeroArtwork from "../../assets/illustrations/mountain-goat-cc0.svg";
 import { ArrowIcon } from "../components/Icons";
 import { CountryFlag } from "../goats/CountryFlag";
+import { GoatProfileAvatar } from "../goats/GoatProfileAvatar";
 import { getGoatListings, getGoatMap, getGoatProducts } from "../goats/client";
 import type { GoatListing, GoatListingsPayload, GoatMapFeatureCollection, GoatProduct } from "../goats/types";
 
@@ -113,7 +114,7 @@ function GoatCard({ item, selected, onSelect }: { item: GoatListing; selected: b
       <span className="goat-card__media-meta"><small>Approved signal</small><strong>{item.product.name}</strong></span>
     </Link>
     <div className="goat-card__copy">
-      <div className="goat-card__identity">{item.media.profile ? <img src={item.media.profile.url} alt="" width="48" height="48" loading="lazy" onError={(event) => { event.currentTarget.hidden = true; }} /> : null}<div><h3><Link to={`/goats/${item.slug}`}>{item.displayName}</Link></h3><p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}</p></div></div>
+      <div className="goat-card__identity"><GoatProfileAvatar media={item.media.profile} /><div><h3><Link to={`/goats/${item.slug}`}>{item.displayName}</Link></h3><p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}</p></div></div>
       <div className="goat-card__signal-row">{item.rating ? <div className="goat-rating" aria-label={`${item.rating} out of 5 stars`}>{"★".repeat(item.rating)}<span>{"★".repeat(5 - item.rating)}</span></div> : <span className="goat-card__unrated">Community dispatch</span>}<span>{formatCardDate(item.publishedAt)}</span></div>
       <p>{item.description}</p>
       <footer><span>↑ {item.counts.likes}</span><span>↓ {item.counts.dislikes}</span><span>{item.counts.comments} comments</span><Link to={`/goats/${item.slug}`} aria-label={`Open ${item.displayName}`}>Open story <ArrowIcon /></Link></footer>

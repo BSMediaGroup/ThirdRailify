@@ -18,7 +18,7 @@ export function PoliciesPage() {
           <div className="policies-register" aria-label="Current policy register">
             <span><strong>{String(policyList.length).padStart(2, "0")}</strong><small>Current documents</small></span>
             <span><strong>2026</strong><small>V2 policy edition</small></span>
-            <span><strong>ON</strong><small>Ontario · Canada</small></span>
+            <span><strong>CAD</strong><small>Store authority</small></span>
           </div>
         </div>
       </section>
@@ -67,4 +67,3 @@ function PolicyCardSignal({ order }: { order: string }) {
     </div>
   );
 }
-

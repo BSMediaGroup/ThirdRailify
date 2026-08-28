@@ -22,8 +22,22 @@ Audited 28 August 2026 against the Public source and a clean Chromium context on
 - No application use of `sessionStorage`, IndexedDB, Cache Storage, or service workers.
 - No Google Analytics/`gtag`, Meta/Facebook pixel, social advertising pixel, tag manager, first-party advertising identifier, fingerprinting, or marketing tracker.
 - No Stripe or checkout JavaScript is loaded in the browser; checkout remains disabled. Server environment examples are not runtime browser integrations.
+- No connected newsletter or promotional-email sender was found. Implemented Resend paths are limited to account verification/reset and GOATS submission/moderation messages; prepared commerce templates are not an operational marketing channel. CASL marketing controls must be reviewed before any promotional commercial electronic messages are activated.
 - Cloudflare Web Analytics is not enabled on the current Third Railify top-level staging page: there is no application snippet, the stable and immutable HTML contain no injected beacon, the CSP does not permit it, and a clean pre-consent network audit made no beacon request. An earlier pre-change capture saw `static.cloudflareinsights.com`, but frame attribution proved it came from the eager Rumble iframe. That provider-owned request is now behind External media consent. Cloudflare currently documents its RUM beacon as cookie-free and browser-storage-free, so an intentional future activation would require an inventory review but not an automatic cookie classification.
 - YouTube and Rumble embeds are the only consent-requiring third-party media access. The clean pre-change audit proved that an eager Rumble iframe set provider cookies and contacted advertising hosts before a choice; the consent layer prevents creation of that iframe until External media is allowed.
+
+## Server-side personal-information flows
+
+The browser table above is not the complete personal-information inventory. The read-only Admin audit on 28 August 2026 also confirmed:
+
+- Account authority stores email, display name, avatar, role/status, identity-provider identifiers and usernames, salted password verifiers where used, eight-hour session records, short-lived OAuth/handoff/email/reset records, rate-limit values, and audit events.
+- GOATS authority stores private submitter email, account association where present, public display name, uploaded images, city/region/country, deliberately coarse public coordinates, story/review, product, optional rating, consent evidence, moderation history, comments, reactions, and transactional-email state. Unfinalised drafts expire after 24 hours and are eligible for cleanup.
+- Resend is the implemented transactional-email provider for account and GOATS messages when the required server configuration is present. It receives the recipient address and message/delivery data needed for that request.
+- Commerce authority stores catalogue/variant identity, CAD totals, Stripe Checkout Session and PaymentIntent identifiers, payment/refund status, Printful mappings/identifiers, webhook evidence, and audit dates. Normal Public checkout and fulfilment are disabled. The current controlled test Checkout request does not ask Stripe to collect a customer email, shipping address, or billing address, and Third Railify does not store full card numbers.
+- Stripe is the dedicated sandbox payment integration and Printful is the pre-cutover catalogue/planned fulfilment integration. Neither is a consent-category vendor: disclosure depends on a user-requested, expressly enabled transaction. Re-audit before normal checkout or fulfilment activation.
+- Cloudflare may process IP addresses, request metadata, routing information, and Turnstile/security signals at the network and server boundary. Rate limits use derived/hardened keys rather than a public identity field.
+
+Fixed implementation periods are limited to the eight-hour session, five-minute handoff, ten-minute OAuth transaction, thirty-minute password reset, twenty-four-hour email verification, twenty-four-hour GOATS draft, 183-day consent choice, and bounded 24-record Watch archive. Other records require the purpose-based criteria in the Privacy Policy and an owner/legal-approved operational retention schedule.
 
 ## Withdrawal behavior
 

@@ -118,3 +118,12 @@ test("product CTA and submission query use canonical product IDs", async () => {
   const submit = await readFile(new URL("../src/pages/GoatSubmitPage.tsx", import.meta.url), "utf8");
   assert.match(detail, /product=\$\{encodeURIComponent\(product\.id\)\}/); assert.match(submit, /params\.get\("product"\)/); assert.match(submit, /nextProducts\.some\(\(product\) => product\.id === requested\)/);
 });
+
+test("GOAT profile submissions preserve animated GIFs while static image roles stay restricted", async () => {
+  const submit = await readFile(new URL("../src/pages/GoatSubmitPage.tsx", import.meta.url), "utf8");
+  assert.match(submit, /label="Profile image" file=\{profileImage\} allowAnimatedGif/);
+  assert.match(submit, /image\/gif/);
+  assert.match(submit, /GIF87a/);
+  assert.match(submit, /return new File\(\[file\], "goat-profile\.gif"/);
+  assert.match(submit, /Additional gallery images<input type="file" multiple accept="image\/jpeg,image\/png,image\/webp"/);
+});

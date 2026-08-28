@@ -25,7 +25,7 @@ Listings whose privacy-safe coordinates land in the same two-decimal-degree disp
 
 The hero's ambient background sheen is a blurred translating linear field rather than a rotating conic beam, keeping the same restrained motion while ensuring no moving angular seam, kink, or converging wedge crosses the content area. Reduced-motion preferences disable this animation with the rest of the hero motion system.
 
-The form uses the existing Turnstile site key. Admin owns CAPTCHA verification and fails closed when its secret is absent. Browser image preparation applies EXIF orientation, constrains the display derivative to 2,400 px, and re-encodes it without metadata; Admin remains the security boundary and independently validates MIME, structure, size, and dimensions before private R2 storage.
+The form uses the existing Turnstile site key. Admin owns CAPTCHA verification and fails closed when its secret is absent. Browser image preparation applies EXIF orientation, constrains static display derivatives to 2,400 px, and re-encodes them without metadata. Profile media additionally accepts an animated GIF without canvas conversion so its frames survive; Admin remains the security boundary, parses and sanitizes the GIF structure, retains only animation controls/loop data, and permits GIF only for the profile role. Missing or failed profile media renders the reusable CSS-drawn goat motif on gallery and detail identities, without an image/SVG fallback asset. The desktop hero's existing vector motif is shifted left by seven percent while its independently tuned tablet/mobile placement remains unchanged.
 
 ## Data and migration posture
 
