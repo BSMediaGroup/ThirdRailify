@@ -19,7 +19,7 @@ before(async () => {
 
 after(() => server?.kill());
 
-test("GOATS Leaflet renders successful real raster tiles, both DOM markers, selection, pan, zoom, and responsive layout", async (t) => {
+test("GOATS MapLibre renders real vector geography, compact flagged cards, both DOM markers, selection, pan, zoom, and responsive layout", async (t) => {
   const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
   t.after(() => browser.close());
   const viewport = { width: Number(process.env.GOATS_BROWSER_WIDTH || 1440), height: Number(process.env.GOATS_BROWSER_HEIGHT || 900) };
@@ -34,13 +34,15 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   page.on("pageerror", (error) => applicationErrors.push(error.message));
   page.on("requestfailed", (request) => {
     const url = new URL(request.url());
+    const reason = request.failure()?.errorText || "failed";
+    if (url.hostname === "tiles.openfreemap.org" && reason === "net::ERR_ABORTED") return;
     if (url.hostname === "tiles.openfreemap.org" || (url.origin === TARGET_ORIGIN && /^\/assets\//.test(url.pathname))) {
-      requestFailures.push(`${request.url()}: ${request.failure()?.errorText || "failed"}`);
+      requestFailures.push(`${request.url()}: ${reason}`);
     }
   });
   page.on("response", (response) => {
     const url = new URL(response.url());
-    if (url.hostname === "tiles.openfreemap.org" && /\/natural_earth\/ne2sr\//.test(url.pathname)) tileResponses.push({ url: response.url(), status: response.status() });
+    if (url.hostname === "tiles.openfreemap.org" && /\/planet\/.*\.pbf$/.test(url.pathname)) tileResponses.push({ url: response.url(), status: response.status() });
     if (url.origin === TARGET_ORIGIN && /^\/api\/goats\/(listings|map|products)/.test(url.pathname)) goatsApiResponses.push({ url: response.url(), status: response.status() });
   });
   if (!LIVE_ORIGIN) await routeGoatsApi(page);
@@ -48,20 +50,20 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   await page.goto(`${TARGET_ORIGIN}/goats`, { waitUntil: "domcontentloaded" });
   const mapRoot = page.locator('.goats-map[data-goats-map-state="ready"]');
   await mapRoot.waitFor({ state: "visible", timeout: 20_000 });
-  assert.equal(await mapRoot.getAttribute("data-goats-map-engine"), "leaflet");
+  assert.equal(await mapRoot.getAttribute("data-goats-map-engine"), "maplibre");
   assert.equal(await mapRoot.getAttribute("data-goats-map-feature-count"), "2");
-  assert.ok(Number(await mapRoot.getAttribute("data-goats-map-tile-count")) > 0, "readiness requires at least one loaded tile");
+  assert.ok(Number(await mapRoot.getAttribute("data-goats-map-tile-count")) > 0, "readiness requires at least one loaded vector tile");
+  assert.ok(Number(await mapRoot.getAttribute("data-goats-map-source-feature-count")) > 0, "readiness requires rendered vector basemap features");
   assert.equal(await page.getByText("Map view is unavailable.").count(), 0);
   assert.equal(await page.getByText("Interactive map could not load.").count(), 0);
 
-  const mapViewport = page.locator(".goats-map__canvas.leaflet-container");
+  const mapViewport = page.locator(".goats-map__canvas.maplibregl-map");
   const bounds = await mapViewport.boundingBox();
   assert.ok(bounds && bounds.width > 250 && bounds.height >= 360, "the map viewport must have visible dimensions");
-  const visibleTiles = page.locator(".goats-map .leaflet-tile-loaded");
-  assert.ok(await visibleTiles.count() > 0, "Leaflet must expose loaded raster tile elements");
-  assert.equal(await visibleTiles.first().isVisible(), true);
-  assert.equal(await visibleTiles.first().evaluate((tile) => tile instanceof globalThis.HTMLImageElement && tile.complete && tile.naturalWidth > 1 && tile.naturalHeight > 1), true);
-  assert.ok(tileResponses.some((response) => response.status >= 200 && response.status < 300), "at least one real OpenFreeMap raster tile request must return success");
+  const mapCanvas = mapViewport.locator("canvas.maplibregl-canvas");
+  assert.equal(await mapCanvas.isVisible(), true, "MapLibre must expose a visible GL canvas");
+  assert.equal(await mapCanvas.evaluate((canvas) => canvas.width > 250 && canvas.height >= 360), true);
+  assert.ok(tileResponses.some((response) => response.status >= 200 && response.status < 300), "at least one real OpenFreeMap vector tile request must return success");
   assert.ok(goatsApiResponses.filter((response) => response.status === 200).length >= 3, "all authoritative GOATS read projections must return HTTP 200");
 
   const sydney = page.locator('[data-goats-marker-name="Southern Signal"]');
@@ -70,6 +72,11 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   assert.equal(await toronto.count(), 1);
   assert.equal(await sydney.isVisible(), true);
   assert.equal(await toronto.isVisible(), true);
+
+  const heroOrbital = page.locator(".goats-hero__orbital");
+  assert.equal(await heroOrbital.isVisible(), true, "the enhanced GOATS signal hero must be visible");
+  assert.ok((await heroOrbital.boundingBox())?.width >= 280, "the animated hero signal must be a substantial visual element");
+  assert.notEqual(await page.locator(".goats-hero__sweep").evaluate((element) => globalThis.getComputedStyle(element).animationName), "none");
 
   const beforePan = await sydney.boundingBox();
   await mapViewport.hover({ position: { x: bounds.width / 2, y: bounds.height / 2 } });
@@ -83,7 +90,7 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   await page.getByRole("button", { name: "Reset results" }).click();
   await page.waitForTimeout(200);
   const zoomDistanceBefore = await markerDistance(sydney, toronto);
-  await page.locator(".leaflet-control-zoom-in").click();
+  await page.locator(".maplibregl-ctrl-zoom-in").click();
   await page.waitForTimeout(350);
   const zoomDistanceAfter = await markerDistance(sydney, toronto);
   assert.ok(zoomDistanceAfter > zoomDistanceBefore * 1.5, "the visible zoom control must change map scale");
@@ -91,7 +98,30 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   await page.getByRole("button", { name: "Reset results" }).click();
   await sydney.click();
   await page.locator(".goats-selected h3").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
+  const sydneyCard = page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" });
+  await sydneyCard.waitFor({ state: "visible" });
+  await page.waitForTimeout(250);
+  assert.equal(await sydneyCard.evaluate((element) => {
+    const popup = element.closest(".maplibregl-popup");
+    return popup instanceof globalThis.HTMLElement && Number(globalThis.getComputedStyle(popup).opacity) > .9;
+  }), true);
+  assert.match(await sydneyCard.textContent(), /Approved signal.*Southern Signal.*Sydney.*View GOAT listing/s);
+  assert.ok((await sydneyCard.boundingBox())?.width >= 290, "the rich marker card must not collapse to its media column");
+  assert.equal(await sydneyCard.locator(".goats-map-marker-card__copy").isVisible(), true);
+  assert.match(await sydneyCard.locator("a").getAttribute("href"), /^\/goats\/[a-z0-9-]*southern-signal$/);
+  assert.equal(await sydneyCard.locator(".goats-map-marker-card__media").isVisible(), true);
+  assert.equal(await sydneyCard.locator('[data-goats-country-flag="AU"]').count(), 1, "the popup must carry one Australian SVG flag beside the location only");
+  const regularCardBounds = await sydneyCard.boundingBox();
+  const regularMapBounds = await mapViewport.boundingBox();
+  assert.ok(regularMapBounds && regularCardBounds && regularCardBounds.x >= regularMapBounds.x && regularCardBounds.x + regularCardBounds.width <= regularMapBounds.x + regularMapBounds.width && regularCardBounds.y >= regularMapBounds.y && regularCardBounds.y + regularCardBounds.height <= regularMapBounds.y + regularMapBounds.height, "the regular marker card must remain inside the map viewport");
+  assert.equal(await sydneyCard.locator("xpath=ancestor::*[contains(@class, 'maplibregl-popup-content')]").evaluate((element) => {
+    const match = globalThis.getComputedStyle(element).backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
+    return match.length >= 3 && match[0] < 30 && match[1] < 30 && match[2] < 30;
+  }), true, "marker card surface must be dark themed");
   await page.getByRole("button", { name: "Reset results" }).click();
+  await page.locator(".goat-card").filter({ hasText: "Midnight Rail" }).locator("a").first().focus();
+  await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
+  await page.waitForTimeout(650);
   await toronto.click();
   await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
 
@@ -110,7 +140,29 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   });
   const mapPng = await mapViewport.screenshot();
   const paletteSize = await renderedPaletteSize(page, mapPng);
-  assert.ok(paletteSize > 20, `the composed raster map must visibly contain geography (palette size: ${paletteSize})`);
+  assert.ok(paletteSize > 20, `the composed vector map must visibly contain geography (palette size: ${paletteSize})`);
+
+  const locationTags = page.locator(".goats-location-tag");
+  assert.ok(await locationTags.count() >= 3, "selected and gallery location tags must be present");
+  assert.equal(await locationTags.evaluateAll((tags) => tags.every((tag) => Boolean(tag.querySelector("img[data-goats-country-flag]")))), true, "every visible GOATS location tag must have an SVG country flag prefix");
+
+  await sydney.click();
+  await sydneyCard.waitFor({ state: "visible" });
+  const initialMapBounds = await mapViewport.boundingBox();
+  await page.getByRole("button", { name: "Expand map" }).click();
+  assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "true");
+  assert.equal(await mapRoot.getAttribute("role"), "dialog");
+  await page.waitForTimeout(250);
+  const expandedMapBounds = await mapViewport.boundingBox();
+  assert.ok(initialMapBounds && expandedMapBounds && expandedMapBounds.height > initialMapBounds.height + 100, "expanded mode must materially enlarge the interactive map");
+  await sydneyCard.waitFor({ state: "visible" });
+  await page.waitForTimeout(250);
+  const expandedCardBounds = await sydneyCard.boundingBox();
+  assert.ok(expandedMapBounds && expandedCardBounds && expandedCardBounds.x >= expandedMapBounds.x && expandedCardBounds.x + expandedCardBounds.width <= expandedMapBounds.x + expandedMapBounds.width, `the expanded marker card must remain inside the mobile or desktop map viewport (map ${JSON.stringify(expandedMapBounds)}, card ${JSON.stringify(expandedCardBounds)})`);
+  assert.equal(await page.locator("body").evaluate((body) => globalThis.getComputedStyle(body).overflow), "hidden");
+  await page.keyboard.press("Escape");
+  assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "false");
+  await page.waitForTimeout(250);
   assert.deepEqual(applicationErrors, []);
   assert.deepEqual(requestFailures, []);
   assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
@@ -119,7 +171,7 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
     origin: LIVE_ORIGIN,
     viewport,
     state: "ready",
-    engine: "leaflet",
+    engine: "maplibre",
     featureCount: 2,
     tileResponses: tileResponses.filter((response) => response.status >= 200 && response.status < 300).length,
     representativeTile: tileResponses.find((response) => response.status >= 200 && response.status < 300),
@@ -132,22 +184,52 @@ test("GOATS Leaflet renders successful real raster tiles, both DOM markers, sele
   }));
   if (process.env.GOATS_BROWSER_SCREENSHOTS === "1") {
     const suffix = `${viewport.width}x${viewport.height}`;
+    const output = process.env.TEMP || ".";
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.locator('.goats-map[data-goats-map-state="ready"]').waitFor({ state: "visible", timeout: 20_000 });
     await page.waitForTimeout(500);
-    await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-goats-map-${suffix}.png`) });
+    await page.locator(".goats-hero").screenshot({ path: path.join(output, `thirdrailify-goats-hero-${suffix}.png`) });
+    await page.locator('[data-goats-marker-name="Southern Signal"]').click();
+    await page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
+    await page.waitForTimeout(250);
+    await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-card-${suffix}.png`) });
+    await page.getByRole("button", { name: "Expand map" }).click();
+    await page.waitForTimeout(250);
+    await page.locator(".goats-map.is-expanded").screenshot({ path: path.join(output, `thirdrailify-goats-map-expanded-${suffix}.png`) });
   }
 });
 
-test("GOATS reports failure only after every initial raster tile fails", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
+test("GOATS automatically falls back to Leaflet only when OpenFreeMap vector tiles fail", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
   const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
   await routeGoatsApi(page);
-  await page.route("https://tiles.openfreemap.org/natural_earth/ne2sr/**", (route) => route.abort("failed"));
+  await page.route("https://tiles.openfreemap.org/**", (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\/planet\/.*\.pbf$/.test(pathname)) return route.abort("failed");
+    return route.continue();
+  });
+  await page.goto(`${TARGET_ORIGIN}/goats`, { waitUntil: "domcontentloaded" });
+  const fallback = page.locator('.goats-map[data-goats-map-state="ready"]');
+  await fallback.waitFor({ state: "visible", timeout: 20_000 });
+  assert.equal(await fallback.getAttribute("data-goats-map-engine"), "leaflet");
+  assert.ok(Number(await fallback.getAttribute("data-goats-map-tile-count")) > 0);
+  assert.equal(await page.getByText("Interactive map could not load.").count(), 0);
+});
+
+test("GOATS exposes the accessible final fallback only after vector and raster engines both fail", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
+  const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
+  await routeGoatsApi(page);
+  await page.route("https://tiles.openfreemap.org/**", (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\/planet\/.*\.pbf$/.test(pathname) || /\/natural_earth\/ne2sr\//.test(pathname)) return route.abort("failed");
+    return route.continue();
+  });
   await page.goto(`${TARGET_ORIGIN}/goats`, { waitUntil: "domcontentloaded" });
   const failed = page.locator('.goats-map[data-goats-map-state="failed"]');
-  await failed.waitFor({ state: "visible", timeout: 15_000 });
+  await failed.waitFor({ state: "visible", timeout: 25_000 });
   assert.equal(await failed.getAttribute("data-goats-map-engine"), "leaflet");
   assert.equal(await failed.getAttribute("data-goats-map-tile-count"), "0");
   assert.equal(await page.getByText("Interactive map could not load.").isVisible(), true);
