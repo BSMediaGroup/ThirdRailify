@@ -64,8 +64,8 @@ export function GoatsPage() {
             <span className="goats-hero__sweep" />
             <span className="goats-hero__orbit goats-hero__orbit--outer" />
             <span className="goats-hero__orbit goats-hero__orbit--inner" />
-            <span className="goats-hero__node goats-hero__node--sydney"><i /><CountryFlag countryCode="AU" /> SYD</span>
-            <span className="goats-hero__node goats-hero__node--toronto"><i /><CountryFlag countryCode="CA" /> YYZ</span>
+            <span className="goats-hero__node goats-hero__node--sydney"><i />SYD</span>
+            <span className="goats-hero__node goats-hero__node--toronto"><i />YYZ</span>
             <span className="goats-hero__axis goats-hero__axis--horizontal" />
             <span className="goats-hero__axis goats-hero__axis--vertical" />
             <div className="goats-hero__core"><small>Live map signal</small><strong>{String(payload.stats.listings).padStart(2, "0")}</strong><span>Approved coordinates</span></div>

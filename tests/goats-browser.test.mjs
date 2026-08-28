@@ -77,6 +77,8 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   assert.equal(await heroOrbital.isVisible(), true, "the enhanced GOATS signal hero must be visible");
   assert.ok((await heroOrbital.boundingBox())?.width >= 280, "the animated hero signal must be a substantial visual element");
   assert.notEqual(await page.locator(".goats-hero__sweep").evaluate((element) => globalThis.getComputedStyle(element).animationName), "none");
+  assert.equal(await heroOrbital.locator("img[data-goats-country-flag]").count(), 0, "the hero diagram must use uncrowded airport-code chips without flags");
+  assert.match(await heroOrbital.textContent(), /SYD.*YYZ|YYZ.*SYD/s);
 
   const beforePan = await sydney.boundingBox();
   await mapViewport.hover({ position: { x: bounds.width / 2, y: bounds.height / 2 } });
@@ -145,6 +147,11 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   const locationTags = page.locator(".goats-location-tag");
   assert.ok(await locationTags.count() >= 3, "selected and gallery location tags must be present");
   assert.equal(await locationTags.evaluateAll((tags) => tags.every((tag) => Boolean(tag.querySelector("img[data-goats-country-flag]")))), true, "every visible GOATS location tag must have an SVG country flag prefix");
+  assert.equal(await locationTags.locator("img[data-goats-country-flag]").evaluateAll((flags) => flags.every((flag) => {
+    const bounds = flag.getBoundingClientRect();
+    const radius = Number.parseFloat(globalThis.getComputedStyle(flag).borderTopLeftRadius) || 0;
+    return bounds.width >= 18 && bounds.width <= 22 && bounds.height >= 11 && bounds.height <= 15 && bounds.width / bounds.height > 1.35 && radius <= 1;
+  })), true, "all retained location flags must remain small rectangular marks rather than circular avatars");
 
   await sydney.click();
   await sydneyCard.waitFor({ state: "visible" });

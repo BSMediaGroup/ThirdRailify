@@ -4132,7 +4132,7 @@ h3 {
 /* GOATS in the Wild V2 */
 .goats-page { --goat-lime: #dfff38; --goat-lime-soft: rgba(223,255,56,.13); overflow: clip; }
 .goats-hero { position: relative; isolation: isolate; min-height: 760px; display: grid; align-items: center; padding: 132px 0 78px; overflow: hidden; border-bottom: 1px solid rgba(223,255,56,.18); background: radial-gradient(circle at 78% 43%, rgba(223,255,56,.14), transparent 23%), radial-gradient(circle at 8% 86%, rgba(255,209,47,.08), transparent 32%), linear-gradient(132deg, #050604 0 48%, #0e1009 100%); }
-.goats-hero::before { position: absolute; inset: -45%; z-index: -2; background: conic-gradient(from 75deg at 70% 48%, transparent 0 14%, rgba(223,255,56,.055) 17%, transparent 22% 48%, rgba(255,209,47,.04) 51%, transparent 56%); content: ""; animation: goats-hero-aurora 18s linear infinite; }
+.goats-hero::before { position: absolute; inset: -28% -18%; z-index: -2; background: linear-gradient(112deg, transparent 25%, rgba(255,209,47,.018) 39%, rgba(223,255,56,.065) 48%, rgba(223,255,56,.025) 57%, transparent 72%); content: ""; filter: blur(34px); transform: translate3d(-9%, -2%, 0) scale(1.08); animation: goats-hero-aurora 14s ease-in-out infinite alternate; will-change: transform, opacity; }
 .goats-hero::after { position: absolute; right: -9vw; bottom: -30vw; z-index: -1; width: min(70vw, 960px); height: min(70vw, 960px); border: 1px solid rgba(223,255,56,.11); border-radius: 50%; content: ""; box-shadow: 0 0 0 54px rgba(223,255,56,.018), 0 0 0 118px rgba(223,255,56,.012), inset 0 0 120px rgba(223,255,56,.025); }
 .goats-hero__grid { position: absolute; inset: 0; z-index: -1; overflow: hidden; opacity: .31; background-image: linear-gradient(rgba(255,255,255,.052) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.052) 1px, transparent 1px); background-position: 0 0; background-size: 62px 62px; mask-image: linear-gradient(115deg, transparent 0, #000 26%, #000 84%, transparent); animation: goats-hero-grid-drift 16s linear infinite; }
 .goats-hero__grid::before { position: absolute; top: 8%; right: -12%; width: 76%; height: 1px; background: linear-gradient(90deg, transparent, rgba(223,255,56,.55), transparent); content: ""; box-shadow: 0 102px rgba(223,255,56,.2), 0 204px rgba(223,255,56,.12); transform: rotate(-12deg); }
@@ -4165,7 +4165,6 @@ h3 {
 .goats-hero__core strong { color: var(--paper); font-family: var(--display); font-size: 4rem; font-weight: 400; line-height: .9; }
 .goats-hero__core span { color: var(--muted); }
 .goats-hero__node { position: absolute; z-index: 5; display: flex; align-items: center; gap: 5px; padding: 4px 6px; border: 1px solid rgba(223,255,56,.24); background: rgba(5,6,4,.88); color: var(--paper-soft); font-family: var(--mono); font-size: .48rem; letter-spacing: .08em; }
-.goats-hero__node .goats-country-flag { width: 16px; height: 11px; }
 .goats-hero__node i { width: 6px; height: 6px; border-radius: 50%; background: var(--goat-lime); box-shadow: 0 0 0 0 rgba(223,255,56,.65); animation: goats-node-pulse 2.1s ease-out infinite; }
 .goats-hero__node--sydney { right: 8%; bottom: 24%; }
 .goats-hero__node--toronto { top: 22%; left: 9%; }
@@ -4262,7 +4261,7 @@ h3 {
 .goats-map__point { width: 24px !important; height: 32px !important; border: 0; background: transparent; cursor: pointer; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .78)); transition: filter .18s ease; }
 .goats-map__point--gl { display: block; padding: 0; }
 .goats-map__point--gl img { display: block; width: 24px; height: 32px; }
-.goats-country-flag { display: inline-block; width: 20px; height: 13px; flex: 0 0 auto; border: 1px solid rgba(255,255,255,.2); object-fit: cover; box-shadow: 0 1px 4px rgba(0,0,0,.42); vertical-align: -.12em; }
+.goats-country-flag { display: inline-block; width: 20px; height: 13px; flex: 0 0 20px; border: 1px solid rgba(255,255,255,.2); border-radius: 0; object-fit: cover; box-shadow: 0 1px 4px rgba(0,0,0,.42); vertical-align: -.12em; }
 .goats-location-tag, .goats-map__shared strong { display: inline-flex; align-items: center; gap: 7px; }
 .goats-map__point:hover, .goats-map__point:focus-visible, .goats-map__point.is-selected { filter: drop-shadow(0 0 10px rgba(223,255,56,1)); }
 .goats-map__shared { margin: 12px 16px 16px; padding: 12px; border: 1px solid rgba(255, 209, 47, .2); color: var(--paper-soft); }
@@ -4279,7 +4278,7 @@ h3 {
 .goat-card__media > .goat-media-fallback { position: absolute; inset: 0; min-height: 0; }
 .goat-card__copy { padding: 22px; }
 .goat-card__identity { display: flex; gap: 12px; align-items: center; }
-.goat-card__identity img { width: 48px; height: 48px; flex: 0 0 48px; border: 1px solid rgba(223,255,56,.3); border-radius: 50%; object-fit: cover; }
+.goat-card__identity > img { width: 48px; height: 48px; flex: 0 0 48px; border: 1px solid rgba(223,255,56,.3); border-radius: 50%; object-fit: cover; }
 .goat-card__identity h3 { margin: 0; font-size: 2rem; }
 .goat-card__identity p { margin: 2px 0 0; color: var(--muted); font-size: .82rem; }
 .goat-card__copy > p { display: -webkit-box; margin: 16px 0; overflow: hidden; color: var(--paper-soft); line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
@@ -4307,7 +4306,7 @@ h3 {
 .goat-detail__thumbs img { width: 100%; height: 100%; object-fit: cover; }
 .goat-detail__copy { align-self: center; }
 .goat-detail__identity { display: flex; gap: 18px; align-items: center; }
-.goat-detail__identity img { width: 76px; height: 76px; border: 2px solid var(--goat-lime); border-radius: 50%; object-fit: cover; }
+.goat-detail__identity > img { width: 76px; height: 76px; border: 2px solid var(--goat-lime); border-radius: 50%; object-fit: cover; }
 .goat-detail h1 { margin: 0; font-size: clamp(4.6rem, 8vw, 8rem); line-height: .78; }
 .goat-detail__identity p, .goat-detail__date { color: var(--muted); }
 .goat-detail__date { margin: 22px 0 0; font-family: var(--mono); font-size: .7rem; text-transform: uppercase; }
@@ -4414,7 +4413,7 @@ h3 {
 .product-goats-cta strong { font-family: var(--display); font-size: 1.8rem; font-weight: 400; text-transform: uppercase; }
 .product-goats-cta p > span { color: var(--muted); }
 
-@keyframes goats-hero-aurora { to { transform: rotate(360deg); } }
+@keyframes goats-hero-aurora { from { opacity: .58; transform: translate3d(-9%, -2%, 0) scale(1.08); } to { opacity: .95; transform: translate3d(9%, 2%, 0) scale(1.08); } }
 @keyframes goats-hero-grid-drift { to { background-position: 62px 62px; } }
 @keyframes goats-hero-scan { 0%, 18% { transform: translateX(0) skewX(-14deg); } 82%, 100% { transform: translateX(680%) skewX(-14deg); } }
 @keyframes goats-radar-sweep { to { transform: rotate(360deg); } }
