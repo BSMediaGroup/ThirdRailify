@@ -80,6 +80,40 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   assert.equal(await page.locator(".promo-banner--live .promo-banner__cta").getAttribute("href"), "/watch/live");
   await context.close();
 
+  for (const [width, height] of [[1440, 900], [390, 844]]) {
+    const liveContext = await browser.newContext({ viewport: { width, height }, reducedMotion: "no-preference" }); await liveContext.addCookies([consentCookie()]); const livePage = await liveContext.newPage(); await mockApis(livePage, true);
+    await livePage.goto(`${ORIGIN}/watch`); const liveStage = livePage.locator('.watch-stage.is-live[data-state="live"]'); await liveStage.waitFor();
+    const liveEffect = await liveStage.evaluate((element) => ({
+      border: getComputedStyle(element).borderColor,
+      shadow: getComputedStyle(element).boxShadow,
+      stageAnimation: getComputedStyle(element).animationName,
+      edgeAnimation: getComputedStyle(element, "::before").animationName,
+      haloAnimation: getComputedStyle(element, "::after").animationName,
+      haloContent: getComputedStyle(element, "::after").content,
+    }));
+    assert.match(liveEffect.border, /255, (?:70|71|72|73|74|75)/, `live stage has a visible red perimeter at ${width}px`);
+    assert.notEqual(liveEffect.shadow, "none", `live stage has a visible multi-layer glow at ${width}px`);
+    assert.equal(liveEffect.stageAnimation, "watch-live-stage-breathe");
+    assert.equal(liveEffect.edgeAnimation, "watch-live-edge-pulse");
+    assert.equal(liveEffect.haloAnimation, "watch-live-halo-pulse");
+    assert.notEqual(liveEffect.haloContent, "none");
+    assert.equal(await livePage.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
+    if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await livePage.locator(".watch-stage-section").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-live-event-${width}.png`) });
+    await liveContext.close();
+  }
+
+  const offlineContext = await browser.newContext({ viewport: { width: 1440, height: 900 } }); const offlinePage = await offlineContext.newPage(); await mockApis(offlinePage, false);
+  await offlinePage.goto(`${ORIGIN}/watch`); const offlineStage = offlinePage.locator('.watch-stage[data-state="archive"]'); await offlineStage.waitFor();
+  assert.equal(await offlineStage.getAttribute("class"), "watch-stage", "non-live transmissions do not inherit the live-event perimeter");
+  assert.equal(await offlineStage.evaluate((element) => getComputedStyle(element, "::after").content), "none");
+  await offlineContext.close();
+
+  const staleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } }); const stalePage = await staleContext.newPage(); await mockApis(stalePage, false, { watch: () => ({ ...watchPayload(true), freshness: "stale", ageSeconds: 9999 }) });
+  await stalePage.goto(`${ORIGIN}/watch`); const staleStage = stalePage.locator('.watch-stage[data-state="live"]'); await staleStage.waitFor();
+  assert.equal(await staleStage.getAttribute("class"), "watch-stage", "stale provider snapshots never receive the live-event perimeter");
+  assert.equal(await stalePage.locator(".watch-hero.is-live").count(), 0, "stale provider snapshots never claim a live Watch hero");
+  await staleContext.close();
+
   const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" }); const reducedPage = await reducedContext.newPage(); await mockApis(reducedPage, false);
   await reducedPage.goto(`${ORIGIN}/`); await reducedPage.locator(".promo-banner--normal").waitFor();
   assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__message:visible").count(), 1, "reduced motion exposes one stable readable ticker message");
@@ -87,6 +121,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await reducedPage.goto(`${ORIGIN}/watch/episodes`); await reducedPage.locator(".archive-status").waitFor();
   assert.equal(await reducedPage.locator(".episodes-signal-field__glow").evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero light field respects reduced motion");
   assert.equal(await reducedPage.locator(".archive-status").evaluate((element) => getComputedStyle(element, "::after").animationName), "none", "archive register sweep respects reduced motion");
+  await reducedPage.unroute("**/api/**"); await mockApis(reducedPage, true); await reducedPage.goto(`${ORIGIN}/watch`); const reducedLiveStage = reducedPage.locator(".watch-stage.is-live"); await reducedLiveStage.waitFor();
+  assert.deepEqual(await reducedLiveStage.evaluate((element) => [getComputedStyle(element).animationName, getComputedStyle(element, "::before").animationName, getComputedStyle(element, "::after").animationName]), ["none", "none", "none"], "live glow remains strong but static when reduced motion is requested");
+  assert.notEqual(await reducedLiveStage.evaluate((element) => getComputedStyle(element).boxShadow), "none");
   await reducedContext.close();
 
   for (const scenario of [
@@ -129,6 +166,7 @@ async function mockApis(page, live, options = {}) {
 }
 
 function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
+function consentCookie() { const now = Date.now(); return { name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date(now).toISOString(), expiry: new Date(now + 86_400_000).toISOString(), categories: { preferences: false, externalMedia: false } })), url: ORIGIN, sameSite: "Lax" }; }
 function authConfig() { return { configured: true, emailSignupConfigured: true, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: "https://thirdrailify.pages.dev", adminOrigin: "https://thirdrailify-admin.pages.dev", environment: "test", cookieMode: "host-only" }; }
 function candidate(state = "archive") { return { platform: "youtube", key: "youtube:abc123DEF45", contentId: "abc123DEF45", watchUrl: "https://www.youtube.com/watch?v=abc123DEF45", embedUrl: null, title: liveTitle(state), description: "Validated fixture description.", creatorName: "Third Railify", thumbnailUrl: null, providerState: state === "live" ? "live" : "completed", presentationState: state, publishedAt: "2026-08-27T03:00:00.000Z", scheduledStart: null, actualStart: state === "live" ? new Date(Date.now() - 60_000).toISOString() : null, actualEnd: state === "archive" ? "2026-08-27T04:00:00.000Z" : null, liveVerifiedAt: state === "live" ? new Date(Date.now() - 10_000).toISOString() : null, liveExpiresAt: state === "live" ? new Date(Date.now() + 180_000).toISOString() : null, viewerCount: state === "live" ? 12 : null, observedAt: new Date().toISOString() }; }
 function liveTitle(state) { return state === "live" ? "Fixture live transmission" : "Fixture latest transmission"; }

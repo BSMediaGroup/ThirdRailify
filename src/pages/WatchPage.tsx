@@ -17,7 +17,9 @@ export function WatchPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
-  const live = Boolean(data?.liveNow.length);
+  const confirmedLive = data?.freshness === "stale" ? [] : data?.liveNow.filter((candidate) => candidate.presentationState === "live" && candidate.providerState === "live" && candidate.liveVerifiedAt && candidate.liveExpiresAt && Date.parse(candidate.liveExpiresAt) > Date.now()) ?? [];
+  const live = confirmedLive.length > 0;
+  const selectedLive = Boolean(selected && confirmedLive.some((candidate) => candidate.key === selected.key));
   const featured = featuredEpisodes(archive.data?.items ?? [], selected?.key ?? null);
   const stateLabel = selected && data ? broadcastStateLabel(selected, data.freshness) : "Signal unavailable";
 
@@ -51,7 +53,7 @@ export function WatchPage() {
                 <BroadcastStatusBadge candidate={selected} />
               </div>
               <PlatformSelector candidates={options} selectedKey={selected.key} onSelect={(candidate) => setSelectedKey(candidate.key)} />
-              <div className={`watch-stage${selected.presentationState === "live" ? " is-live" : ""}`} data-state={selected.presentationState}>
+              <div className={`watch-stage${selectedLive ? " is-live" : ""}`} data-state={selected.presentationState}>
                 <div className="watch-stage__player"><div className="watch-stage__scan" aria-hidden="true" /><BroadcastPlayer candidate={selected} eager /></div>
                 <div className="watch-stage__copy">
                   <p className="watch-stage__state">TRF / {stateLabel}</p>
