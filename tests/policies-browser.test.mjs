@@ -4,13 +4,13 @@ import path from "node:path";
 import test from "node:test";
 import { chromium } from "playwright-core";
 
-const ORIGIN = "http://127.0.0.1:4196";
+const ORIGIN = "http://127.0.0.1:44196";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const ROUTES = ["/policies", "/terms", "/privacy", "/refunds", "/accessibility"];
 const VIEWPORTS = [[1440, 900], [768, 1024], [390, 844]];
 
 test("policy library and documents are complete, deep-linked, semantic, and responsive", async (t) => {
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4196"], { stdio: "ignore" });
+  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "44196"], { stdio: "ignore" });
   t.after(() => server.kill());
   await waitForServer();
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });

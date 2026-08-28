@@ -14,8 +14,17 @@ export function CadAmount({ minorUnits, className = "cad-amount" }: { minorUnits
 
 export function ProductCurrencyComparison({ cadPrice }: { cadPrice: number }) {
   const { currency, currencies, rates, status, date, setCurrency } = useCurrency();
+  const panelId = useId();
+  const [expanded, setExpanded] = useState(true);
   const converted = convertCad(cadPrice, currency, rates);
-  return <div className="product-currency-comparison"><div className="product-currency-comparison__row"><span>Compare</span><strong><CurrencyFlag currency={currency} />{converted === null ? "Conversion unavailable" : `≈ ${formatMoney(converted, currency)} ${currency}`}</strong><CurrencyChooser currency={currency} currencies={currencies} onChange={setCurrency} /></div><small id="currency-rate-status">{status === "loading" ? "Loading reference rates" : status === "unavailable" ? "Reference conversion unavailable" : `${status === "stale" ? "Cached" : "Reference"} rates${date ? ` · ${date}` : ""}`}</small></div>;
+  return <div className={`product-currency-comparison${expanded ? " is-expanded" : ""}`}>
+    <button className="product-currency-comparison__toggle" type="button" aria-expanded={expanded} aria-controls={panelId} onClick={() => setExpanded((value) => !value)}><span>Price comparison</span><small>{expanded ? "Collapse" : "Expand"}</small><i aria-hidden="true">{expanded ? "−" : "+"}</i></button>
+    {expanded ? <div className="product-currency-comparison__body" id={panelId}>
+      <div className="product-currency-comparison__row"><span>Compare</span><strong>{converted === null ? "Conversion unavailable" : `≈ ${formatMoney(converted, currency)} ${currency}`}</strong><CurrencyChooser currency={currency} currencies={currencies} onChange={setCurrency} /></div>
+      <small id="currency-rate-status">{status === "loading" ? "Loading reference rates" : status === "unavailable" ? "Reference conversion unavailable" : `${status === "stale" ? "Cached" : "Reference"} rates${date ? ` · ${date}` : ""}`}</small>
+      <CurrencyDisclaimer />
+    </div> : null}
+  </div>;
 }
 
 function CurrencyChooser({ currency, currencies, onChange }: { currency: string; currencies: string[]; onChange: (currency: string) => void }) {

@@ -38,6 +38,10 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     const primary = page.locator(".product-detail__copy > .commerce-price--cad"); const primaryText = await primary.innerText();
     assert.equal(await primary.locator('.currency-flag[data-currency-flag="ca"]').count(), 1);
     assert.equal(await page.locator(".product-currency-comparison").count(), 1);
+    const comparison = page.locator(".product-currency-comparison"); const comparisonToggle = comparison.locator(".product-currency-comparison__toggle");
+    assert.equal(await comparisonToggle.getAttribute("aria-expanded"), "true"); assert.equal(await comparison.locator(".currency-flag:visible").count(), 1, "comparison shows its flag only in the currency selector");
+    await comparisonToggle.click(); assert.equal(await comparisonToggle.getAttribute("aria-expanded"), "false"); assert.equal(await comparison.locator(".product-currency-comparison__body").count(), 0);
+    await comparisonToggle.click(); assert.equal(await comparisonToggle.getAttribute("aria-expanded"), "true"); await comparison.locator(".product-currency-comparison__body").waitFor();
     const chooser = page.getByRole("combobox", { name: "Compare in currency" }); const beforeCode = await chooser.locator("span").innerText(); await chooser.focus(); await page.keyboard.press("ArrowDown");
     assert.equal(await page.getByRole("listbox", { name: "Comparison currency" }).count(), 1);
     await page.keyboard.press("End"); await page.keyboard.press("Home"); await page.keyboard.press("ArrowDown"); await page.keyboard.press("Enter");
@@ -45,9 +49,23 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     await chooser.click(); assert.equal(await page.getByRole("option", { name: "EUR" }).locator('img[data-currency-flag="eu"]').count(), 1); await page.keyboard.press("Escape");
     const variantBox = await page.getByLabel("Variant").boundingBox(); const quantityBox = await page.getByLabel("Quantity").boundingBox();
     assert.ok(variantBox && quantityBox && Math.abs(variantBox.y - quantityBox.y) < 3, `variant and quantity share a row at ${width}x${height}`);
+    const purchaseRowBox = await page.locator(".commerce-purchase-controls").boundingBox(); const addButtonBox = await page.getByRole("button", { name: "Add selected variant" }).boundingBox();
+    assert.ok(purchaseRowBox && addButtonBox && addButtonBox.y - (purchaseRowBox.y + purchaseRowBox.height) >= 12, `purchase controls have breathing room before the add button at ${width}x${height}`);
     assert.equal(await noOverflow(page), true); assert.deepEqual(errors, []);
     if (width === 1365 || width === 390) await page.screenshot({ path: `${RESULTS}/product-${width}x${height}.png`, fullPage: true });
     await context.close();
+  }
+
+  {
+    const { context, page, errors } = await fixturePage(browser, 1440, 900, "no-preference");
+    await page.goto(`${ORIGIN}/shop`); await page.locator(".featured-stage__active").waitFor();
+    const before = await page.locator(".featured-stage__frame:not(.featured-stage__frame--exiting) .featured-stage__details > strong").innerText();
+    await page.getByRole("button", { name: "Next featured product" }).click();
+    assert.equal(await page.locator(".featured-stage__frame--entering").count(), 1); assert.equal(await page.locator(".featured-stage__frame--exiting").count(), 1);
+    const animations = await page.locator(".featured-stage__frame--entering").evaluate((element) => ({ name: getComputedStyle(element).animationName, duration: getComputedStyle(element).animationDuration }));
+    assert.equal(animations.name, "featured-frame-in"); assert.notEqual(animations.duration, "0s");
+    assert.notEqual(await page.locator(".featured-stage__frame--entering .featured-stage__details > strong").innerText(), before);
+    await page.waitForTimeout(800); assert.equal(await page.locator(".featured-stage__frame--exiting").count(), 0); assert.deepEqual(errors, []); await context.close();
   }
 
   const { context, page, errors } = await fixturePage(browser, 1440, 900);
@@ -61,8 +79,8 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
   await page.goto(`${ORIGIN}/cart-page?source=legacy#items`); await page.waitForURL(`${ORIGIN}/cart?source=legacy#items`); assert.equal(await noOverflow(page), true); assert.deepEqual(errors, []); await context.close();
 });
 
-async function fixturePage(browser, width, height) {
-  const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" });
+async function fixturePage(browser, width, height, reducedMotion = "reduce") {
+  const context = await browser.newContext({ viewport: { width, height }, reducedMotion });
   await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: new Date(Date.now() + 86400000).toISOString(), categories: { preferences: true, externalMedia: false } })), url: ORIGIN, sameSite: "Lax" }]);
   const page = await context.newPage(); const errors = []; page.on("console", (message) => { if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) errors.push(message.text()); }); page.on("pageerror", (error) => errors.push(error.message)); page.on("response", (response) => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   await page.route(IMAGE, (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750"><rect width="100%" height="100%" fill="#171717"/><path d="M90 375h420" stroke="#f0c419" stroke-width="42"/><text x="300" y="340" fill="white" text-anchor="middle" font-size="62">THIRD RAIL</text></svg>` }));

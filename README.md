@@ -26,6 +26,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Compact non-modal privacy choices with equal first-layer Accept/Reject actions, granular Preferences and External media controls, a versioned 183-day first-party choice cookie, footer withdrawal, and consent-gated optional local storage and Watch iframes.
 - Truthful `/checkout/success` states backed by an exact opaque-Session local payment-status projection; no provider metadata, internal account identity, audit data, Printful mapping, or browser-side Stripe authority is exposed.
 - Complete presentation-only `/donate` destination with a cinematic signal hero, accessible one-time/monthly/yearly and CAD amount controls, explicit donation-purpose/disclaimer copy, and a visibly disabled PayPal handoff until real provider wiring is implemented.
+- Homepage direct-contact band with a keyboard-contained lightbox form, explicit privacy acknowledgement, Turnstile challenge, bounded same-origin relay to the Admin mail authority, and a separate `/donate` action. Public receives no Resend credential or delivery-recipient authority.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
@@ -89,6 +90,7 @@ ThirdRailify/
 ├── functions/
 │   ├── _shared/public-auth.js        Public session/handoff/logout and narrow proxy primitives
 │   ├── api/auth/                     Same-origin Public auth plus Admin avatar-authority proxy
+│   ├── api/contact.js                Bounded same-origin relay to protected Admin contact delivery
 │   ├── api/catalogue/                Fail-soft Admin merchandising projection proxy
 │   ├── api/goats/                    Fixed approved reads plus signed submission/interaction bridge
 │   ├── api/currency-rates.js         Validated, cached same-origin CAD reference-rate projection

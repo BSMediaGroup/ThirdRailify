@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
 import discordIcon from "../../assets/icons/discord.svg";
@@ -16,8 +16,10 @@ import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ProductCard } from "../components/ProductCard";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { SignalField } from "../components/SignalField";
-import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
+import { ArrowIcon, BoltIcon, MailIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { BroadcastMetadata, BroadcastPlayer } from "../components/BroadcastComponents";
+import { ContactDialog } from "../contact/ContactDialog";
+import { useAuth } from "../auth/AuthProvider";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import type { CatalogueProduct } from "../types/catalogue";
@@ -32,6 +34,7 @@ const platforms = [
 ];
 
 export function HomePage() {
+  const { config } = useAuth();
   const { data, loading } = useBroadcast();
   const primary = data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
@@ -39,6 +42,9 @@ export function HomePage() {
   const livePlatforms: ReadonlySet<string> = new Set(data?.liveNow.map((candidate) => candidate.platform) ?? []);
   const liveDestinations: ReadonlyMap<string, string> = new Map(data?.liveNow.map((candidate) => [candidate.platform, candidate.watchUrl]) ?? []);
   const [merchProducts, setMerchProducts] = useState<CatalogueProduct[]>([]);
+  const [contactOpen, setContactOpen] = useState(false);
+  const contactTrigger = useRef<HTMLButtonElement>(null);
+  const closeContact = useCallback(() => { setContactOpen(false); window.requestAnimationFrame(() => contactTrigger.current?.focus()); }, []);
   useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => setMerchProducts([...snapshot.products].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (a.featuredOrder ?? Infinity) - (b.featuredOrder ?? Infinity)).slice(0, 3))).catch(() => setMerchProducts([])); return () => controller.abort(); }, []);
   return (
     <>
@@ -171,13 +177,14 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="newsletter-section">
-        <div className="container newsletter-grid">
+      <section className="contact-band" aria-labelledby="contact-band-title">
+        <div className="container contact-band__grid">
           <BoltIcon />
-          <div><p className="eyebrow">Newsletter migration pending</p><h2>New drops. New episodes. One signal.</h2></div>
-          <div className="newsletter-pending"><span>Email signup will return when a production mail service is connected.</span><button type="button" disabled>Not connected</button></div>
+          <div><p className="eyebrow">Direct line / community powered</p><h2 id="contact-band-title">Reach the rail.<br />Power the signal.</h2></div>
+          <div className="contact-band__actions"><p>Send a secure message to Third Railify, or help sustain the independent production behind the show.</p><div><button ref={contactTrigger} className="button contact-band__contact" type="button" onClick={() => setContactOpen(true)}><MailIcon /> Contact</button><Link className="button contact-band__donate" to="/donate">Donate <ArrowIcon /></Link></div></div>
         </div>
       </section>
+      {contactOpen && <ContactDialog siteKey={config?.turnstileSiteKey ?? null} onClose={closeContact} />}
     </>
   );
 }

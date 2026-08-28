@@ -1,5 +1,5 @@
 {
   "version": 1,
-  "include": ["/live", "/api/auth/*", "/api/catalogue/*", "/api/commerce/*", "/api/currency-rates", "/api/community/*", "/api/goats/*", "/api/watch", "/api/watch/*", "/api/state-backend"],
+  "include": ["/live", "/api/auth/*", "/api/catalogue/*", "/api/commerce/*", "/api/contact", "/api/currency-rates", "/api/community/*", "/api/goats/*", "/api/watch", "/api/watch/*", "/api/state-backend"],
   "exclude": []
 }

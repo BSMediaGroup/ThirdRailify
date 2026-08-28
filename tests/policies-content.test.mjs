@@ -75,9 +75,11 @@ test("material collection points link to the canonical Privacy Policy", async ()
 });
 
 test("legal release gates stay tied to configured implementation facts", async () => {
-  const [policies, home, cart, currency, consent, checklist, contacts, retention, providers, checkout] = await Promise.all([
+  const [policies, home, contactDialog, contactClient, cart, currency, consent, checklist, contacts, retention, providers, checkout] = await Promise.all([
     read("src/content/policies.ts"),
     read("src/pages/HomePage.tsx"),
+    read("src/contact/ContactDialog.tsx"),
+    read("src/contact/client.ts"),
     read("src/store/cart.tsx"),
     read("src/components/CurrencyPrice.tsx"),
     read("src/privacy/consent.ts"),
@@ -88,8 +90,12 @@ test("legal release gates stay tied to configured implementation facts", async (
     read("CHECKOUT_RELEASE_GATES.md"),
   ]);
 
-  assert.match(home, /<button type="button" disabled>Not connected<\/button>/);
-  assert.doesNotMatch(home, /newsletter[^\n]{0,200}(fetch\(|<form|onSubmit)/i, "disabled newsletter has no submit/send path");
+  assert.match(home, /className="contact-band"/);
+  assert.match(home, /to="\/donate"/);
+  assert.doesNotMatch(home, /newsletter/i, "the retired newsletter scaffold is absent");
+  assert.match(contactDialog, /thirdrailify-contact/);
+  assert.match(contactClient, /fetch\("\/api\/contact"/);
+  assert.doesNotMatch(`${contactDialog}\n${contactClient}`, /thirdmailify|CONTACT_CC_EMAIL|RESEND_API_KEY/i, "contact recipients and provider credentials stay server-side");
   assert.match(cart, /thirdrailify-commerce-cart-v2/);
   assert.match(currency, /Approximate/);
   assert.match(consent, /CONSENT_VERSION = 1/);
