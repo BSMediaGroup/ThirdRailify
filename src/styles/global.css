@@ -8333,19 +8333,19 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friends-signal__portrait {
   position: absolute;
   z-index: 3;
-  bottom: 39px;
+  bottom: 0;
   width: 51%;
-  height: 82%;
+  height: 89%;
   transform-origin: bottom center;
 }
 
-.friends-signal__portrait img { position: absolute; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: saturate(.88) contrast(1.05); transform: scale(1.28); transform-origin: center bottom; }
+.friends-signal__portrait img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: bottom; filter: saturate(.88) contrast(1.05); transform: scale(1.28); transform-origin: center bottom; }
 .friends-signal__portrait span { position: absolute; z-index: 2; padding: 5px 8px; border: 1px solid currentColor; border-radius: 99px; background: rgba(5, 6, 4, .84); font-family: var(--mono); font-size: 5px; font-weight: 800; letter-spacing: .12em; }
-.friends-signal__portrait--daniel { z-index: 4; left: 16%; width: 66%; }
+.friends-signal__portrait--daniel { z-index: 4; left: 10%; width: 70%; }
 .friends-signal__portrait--daniel img { transform: scale(1.29); }
 .friends-signal__portrait--daniel span { top: 19%; left: 43%; color: var(--friends-cyan); }
 .friends-signal__portrait--darnell { z-index: 2; left: -9%; width: 56%; transform: rotate(-3deg) scale(.92); }
-.friends-signal__portrait--darnell img { transform: scale(1.32); }
+.friends-signal__portrait--darnell img { transform: scale(1.38); }
 .friends-signal__portrait--darnell span { top: 28%; left: 22%; color: var(--friends-yellow); }
 .friends-signal__portrait--davy { z-index: 3; right: -10%; width: 57%; transform: rotate(3deg) scale(.94); }
 .friends-signal__portrait--davy img { transform: scale(1.3); }
@@ -8528,10 +8528,9 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friend-card__grid { position: absolute; inset: 0; opacity: .5; background: linear-gradient(rgba(var(--friend-rgb), .06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--friend-rgb), .06) 1px, transparent 1px); background-size: 29px 29px; }
 .friend-card__visual::before { position: absolute; z-index: 1; top: 13%; left: 50%; width: 67%; aspect-ratio: 1; border: 1px dashed rgba(var(--friend-rgb), .24); border-radius: 50%; content: ""; transform: translateX(-50%); }
 .friend-card__visual::after { position: absolute; z-index: 3; right: 0; bottom: 0; left: 0; height: 32%; content: ""; background: linear-gradient(transparent, #0c0d0a); }
-.friend-card__visual img { position: absolute; z-index: 2; right: -5%; bottom: -1%; width: 110%; height: 103%; object-fit: contain; object-position: center bottom; filter: saturate(.88) contrast(1.06); transform: scale(1.06); transform-origin: center bottom; transition: transform .42s ease, filter .42s ease; }
-.friend-card--daniel .friend-card__visual img { right: -12%; width: 120%; }
-.friend-card--darnell .friend-card__visual img { right: -1%; width: 103%; }
-.friend-card:hover .friend-card__visual img { transform: scale(1.1); filter: saturate(1) contrast(1.04); }
+.friend-card__visual img { position: absolute; z-index: 2; top: 0; left: -6%; width: 112%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 0; filter: saturate(.88) contrast(1.06); transform: scale(1); transform-origin: 50% 0; transition: transform .42s ease, filter .42s ease; }
+.friend-card--daniel .friend-card__visual img { left: -13%; width: 116%; object-position: 50% 0; }
+.friend-card:hover .friend-card__visual img { transform: scale(1.03); filter: saturate(1) contrast(1.04); }
 .friend-card__scan { position: absolute; z-index: 4; right: 14px; bottom: 18px; display: flex; height: 31px; align-items: center; gap: 3px; }
 .friend-card__scan i { width: 2px; height: 20%; background: var(--friend-accent); }
 .friend-card__scan i:nth-child(2n) { height: 62%; }
@@ -8646,9 +8645,9 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 
 @keyframes friends-grid { to { background-position: 31px 31px, 31px 31px; } }
 @keyframes friends-rings { to { transform: rotate(360deg); } }
-@keyframes friends-left-idle { 0%, 100% { transform: rotate(-3deg) scale(.92) translateY(0); } 50% { transform: rotate(-2deg) scale(.93) translateY(-7px); } }
-@keyframes friends-center-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
-@keyframes friends-right-idle { 0%, 100% { transform: rotate(3deg) scale(.94) translateY(0); } 50% { transform: rotate(2deg) scale(.95) translateY(-6px); } }
+@keyframes friends-left-idle { 0%, 100% { transform: rotate(-3deg) scale(.92); } 50% { transform: rotate(-2deg) scale(.93); } }
+@keyframes friends-center-idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.01); } }
+@keyframes friends-right-idle { 0%, 100% { transform: rotate(3deg) scale(.94); } 50% { transform: rotate(2deg) scale(.95); } }
 @keyframes friends-rail { 0%, 100% { transform: translateX(-100%); opacity: 0; } 35%, 65% { opacity: 1; } 100% { transform: translateX(265%); opacity: 0; } }
 @keyframes friends-scope { to { transform: scaleY(1.45); opacity: .55; } }
 @keyframes friends-close-rail { 0%, 100% { transform: rotate(-7deg) translateX(-3%); } 50% { transform: rotate(-7deg) translateX(3%); } }
@@ -8699,7 +8698,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   .friends-signal__status { bottom: 11px; }
   .friends-signal__grid { inset: 40px 10px 32px; }
   .friends-signal__rings { inset: 53px 35px 42px; }
-  .friends-signal__portrait { bottom: 29px; height: 80%; }
+  .friends-signal__portrait { bottom: 0; height: 89%; }
   .friends-signal__portrait span { font-size: 3.7px; }
   .friends-signal__bolt { top: 43px; right: 11px; width: 45px; height: 45px; }
   .friends-signal__bolt svg { width: 17px; }

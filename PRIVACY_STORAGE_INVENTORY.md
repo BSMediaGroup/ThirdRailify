@@ -20,6 +20,7 @@ Audited 28 August 2026 against the Public source and a clean Chromium context on
 ## Negative findings
 
 - No application use of `sessionStorage`, IndexedDB, Cache Storage, or service workers.
+- Wheels V1 adds no browser storage key, cookie, uploaded media, analytics event, or consent category. Demo outcomes remain in page memory and are not persisted.
 - No Google Analytics/`gtag`, Meta/Facebook pixel, social advertising pixel, tag manager, first-party advertising identifier, fingerprinting, or marketing tracker.
 - No Stripe or checkout JavaScript is loaded in the browser; checkout remains disabled. Server environment examples are not runtime browser integrations.
 - No connected newsletter or promotional-email sender was found. Implemented Resend paths are limited to account verification/reset and GOATS submission/moderation messages; prepared commerce templates are not an operational marketing channel. CASL marketing controls must be reviewed before any promotional commercial electronic messages are activated.
@@ -27,6 +28,8 @@ Audited 28 August 2026 against the Public source and a clean Chromium context on
 - YouTube and Rumble embeds are the only consent-requiring third-party media access. The clean pre-change audit proved that an eager Rumble iframe set provider cookies and contacted advertising hosts before a choice; the consent layer prevents creation of that iframe until External media is allowed.
 
 ## Server-side personal-information flows
+
+Public wheel entry labels, integer weights, and segment colours are deliberately public content. The approved creator editor warns against entering email addresses, payment details, street addresses, donation values, or other sensitive information. Official results are Admin-authoritative operational records; Public projections omit account IDs, creator/access grants, audit metadata, Admin-only void reasons, HMAC data, and secret configuration.
 
 The browser table above is not the complete personal-information inventory. The read-only Admin audit on 28 August 2026 also confirmed:
 

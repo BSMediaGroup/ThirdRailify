@@ -122,13 +122,18 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
       });
     });
     assert.ok(heroPortraitFill.every((fill) => fill.widthRatio >= .43 && fill.heightRatio >= .9), `hero portraits fill the signal canvas at ${width}px`);
+    const portraitFloorGaps = await page.locator(".friends-signal").evaluate((stage) => {
+      const stageBottom = stage.getBoundingClientRect().bottom;
+      return [...stage.querySelectorAll(".friends-signal__portrait")].map((portrait) => stageBottom - portrait.getBoundingClientRect().bottom);
+    });
+    assert.ok(portraitFloorGaps.every((gap) => gap <= 2), `hero portraits stay pinned to the signal floor at ${width}px`);
     const danielPlacement = await page.locator(".friends-signal").evaluate((stage) => {
       const stageRect = stage.getBoundingClientRect();
       const portrait = stage.querySelector(".friends-signal__portrait--daniel").getBoundingClientRect();
       return { widthRatio: portrait.width / stageRect.width, centerRatio: (portrait.left + portrait.width / 2 - stageRect.left) / stageRect.width };
     });
     assert.ok(danielPlacement.widthRatio >= .62, `Daniel stays large in the hero foreground at ${width}px`);
-    assert.ok(danielPlacement.centerRatio >= .45 && danielPlacement.centerRatio <= .51, `Daniel stays left-of-centre in the hero foreground at ${width}px`);
+    assert.ok(danielPlacement.centerRatio >= .43 && danielPlacement.centerRatio <= .47, `Daniel stays distinctly left-of-centre in the hero foreground at ${width}px`);
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; window.scrollTo(0, 0); });
     await page.waitForFunction(() => window.scrollY === 0);
     const initial = await layout(page);
@@ -145,6 +150,29 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
     await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 15_000 });
     assert.equal(await page.locator(".friend-card").count(), 3);
     assert.ok(await page.locator(".friend-card").first().evaluate((node) => node.getBoundingClientRect().width > 280));
+    const cardPortraits = await page.locator(".friend-card").evaluateAll((cards) => cards.map((card) => {
+      const canvas = card.querySelector(".friend-card__visual").getBoundingClientRect();
+      const image = card.querySelector(".friend-card__visual img");
+      const imageRect = image.getBoundingClientRect();
+      const style = getComputedStyle(image);
+      return {
+        key: [...card.classList].find((name) => name.startsWith("friend-card--")) || "",
+        objectFit: style.objectFit,
+        objectPosition: style.objectPosition,
+        leftGap: imageRect.left - canvas.left,
+        rightGap: canvas.right - imageRect.right,
+        topGap: imageRect.top - canvas.top,
+        centerRatio: (imageRect.left + imageRect.width / 2 - canvas.left) / canvas.width,
+      };
+    }));
+    for (const portrait of cardPortraits) {
+      assert.equal(portrait.objectFit, "cover", `${portrait.key} uses fill geometry at ${width}px`);
+      assert.match(portrait.objectPosition, /(?:50%|center)\s+(?:0%|0px|top)/, `${portrait.key} preserves the portrait top at ${width}px`);
+      assert.ok(portrait.leftGap <= 0 && portrait.rightGap <= 0, `${portrait.key} reaches both canvas sides at ${width}px: ${JSON.stringify(portrait)}`);
+      assert.ok(Math.abs(portrait.topGap) <= 1, `${portrait.key} starts at the canvas top at ${width}px`);
+    }
+    const danielCardPortrait = cardPortraits.find((portrait) => portrait.key === "friend-card--daniel");
+    assert.ok(danielCardPortrait && danielCardPortrait.centerRatio <= .46, `Daniel stays left-shifted inside his card at ${width}px`);
 
     if (process.env.FRIENDS_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); window.scrollTo(0, 0); });

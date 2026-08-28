@@ -18,6 +18,7 @@ import { PrivacyControls } from "./PrivacyControls";
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/watch", label: "Watch" },
+  { to: "/wheels", label: "Wheels" },
   { to: "/about", label: "The show" },
   { to: "/shop", label: "Shop" },
   { to: "/community", label: "Community" },
@@ -76,10 +77,10 @@ export function SiteShell() {
         <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
           <div className="container">
             {navItems.map((item, index) => <NavLink key={item.to} to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>)}
-            {liveNow.length > 0 && <Link to="/watch"><span>06</span>Watch live now<ArrowIcon /></Link>}
+            {liveNow.length > 0 && <Link to="/watch"><span>07</span>Watch live now<ArrowIcon /></Link>}
             {account
-              ? <Link to="/account"><span>07</span>Your account<ArrowIcon /></Link>
-              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>07</span>Log in</button>}
+              ? <Link to="/account"><span>08</span>Your account<ArrowIcon /></Link>
+              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>08</span>Log in</button>}
           </div>
         </nav>
       </header>
@@ -101,8 +102,8 @@ function SiteFooter() {
           <p>A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.</p>
           <a href="mailto:info@thirdrailify.com">info@thirdrailify.com</a>
         </div>
-        <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
-        <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/vip">VIP</Link><Link to="/donate">Donate</Link></div>
+        <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/wheels">Wheels</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
+        <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/wheels">Competition wheels</Link><Link to="/vip">VIP</Link><Link to="/donate">Donate</Link></div>
         <div><h2>Policies</h2><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/refunds">Refunds</Link><Link to="/accessibility">Accessibility</Link></div>
       </div>
       <div className="container footer-bottom"><span>Third Railify V2 staging scaffold · 2026</span><div className="footer-bottom__utilities"><button className="footer-privacy-button" type="button" onClick={privacy.openManager}>Privacy choices</button><span>Current Wix site remains production</span></div></div>

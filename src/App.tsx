@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { SiteShell } from "./components/SiteShell";
 import { CommunityPage } from "./pages/CommunityPage";
@@ -23,9 +24,14 @@ import { AboutPage } from "./pages/AboutPage";
 import { HostPage } from "./pages/HostPage";
 import { FriendsPage } from "./pages/FriendsPage";
 
+const WheelsPage = lazy(() => import("./pages/WheelsPage").then((module) => ({ default: module.WheelsPage })));
+const WheelPage = lazy(() => import("./pages/WheelPage").then((module) => ({ default: module.WheelPage })));
+const WheelEditorPage = lazy(() => import("./pages/WheelEditorPage").then((module) => ({ default: module.WheelEditorPage })));
+
 export function App() {
   return (
-    <Routes>
+    <Suspense fallback={<div className="route-loading" role="status">Loading Third Railify control…</div>}><Routes>
+      <Route path="/wheels/:slug/present" element={<WheelPage presentation />} />
       <Route element={<SiteShell />}>
         <Route index element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
@@ -40,6 +46,11 @@ export function App() {
         <Route path="/watch/live" element={<WatchLivePage />} />
         <Route path="/watch/episodes" element={<EpisodesPage />} />
         <Route path="/watch/v/:episodeId" element={<EpisodeDetailPage />} />
+        <Route path="/wheels" element={<WheelsPage />} />
+        <Route path="/wheels/new" element={<WheelEditorPage create />} />
+        <Route path="/wheels/:slug/edit" element={<WheelEditorPage />} />
+        <Route path="/wheels/:slug" element={<WheelPage />} />
+        <Route path="/wheel" element={<Navigate to="/wheels" replace />} />
         <Route path="/live" element={<LiveAliasPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/account/login" element={<AccountPage openLogin />} />
@@ -68,7 +79,7 @@ export function App() {
         <Route path="/cart-page" element={<LegacyCartRedirect />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-    </Routes>
+    </Routes></Suspense>
   );
 }
 
