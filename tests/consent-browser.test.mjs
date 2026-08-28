@@ -81,7 +81,7 @@ test("consent model, first layer, preference centre, storage gating, media gatin
   const normalizedPage = await normalizedContext.newPage(); await mockApis(normalizedPage);
   await normalizedPage.goto(ORIGIN);
   assert.equal(await normalizedPage.locator(".privacy-dock").count(), 0, "valid known categories survive unknown extra input without granting it");
-  await normalizedPage.getByRole("button", { name: "Privacy choices" }).click();
+  await normalizedPage.getByRole("contentinfo").getByRole("button", { name: "Privacy choices" }).click();
   assert.equal(await normalizedPage.getByRole("dialog").getByLabel("Preferences").isChecked(), true);
   assert.equal(await normalizedPage.getByRole("dialog").getByLabel("External media").isChecked(), false);
   await normalizedContext.close();
@@ -120,7 +120,7 @@ test("consent model, first layer, preference centre, storage gating, media gatin
     localStorage.setItem("thirdrailify.storefront.currency-rates.v1", "fixture");
     localStorage.setItem("thirdrailify-goats-draft-v2", "fixture");
   });
-  await mediaPage.getByRole("button", { name: "Privacy choices" }).click();
+  await mediaPage.getByRole("contentinfo").getByRole("button", { name: "Privacy choices" }).click();
   const mediaDialog = mediaPage.getByRole("dialog");
   await mediaDialog.getByRole("heading", { level: 3, name: "External media" }).click();
   await mediaDialog.getByRole("button", { name: "Save choices" }).click();
