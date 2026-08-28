@@ -339,6 +339,21 @@ test("GOAT submission accepts animated GIF only for profile media without canvas
   assert.match(await preview.locator("img").getAttribute("src"), /^blob:/, "the original GIF must remain a browser-native preview rather than a canvas derivative");
 });
 
+test("GOAT submission resolves a coarse location, previews the chosen product, and fills rating stars cumulatively", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
+  const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true }); t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1100, height: 900 } }); await routeGoatsApi(page);
+  await page.goto(`${TARGET_ORIGIN}/goats/submit`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Public display name").fill("Location Test"); await page.getByLabel("Private email").fill("goat@example.test");
+  await page.getByLabel("Main image *").setInputFiles({ name: "goat.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64") });
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByLabel("Country").selectOption("AU"); await page.getByLabel("City or location").fill("10 Example Street Sydney");
+  const choice = page.getByRole("option").filter({ hasText: "Sydney" }); await choice.waitFor(); await choice.getByRole("button").click();
+  assert.equal(await page.getByLabel("City or location").inputValue(), "Sydney"); assert.equal(await page.getByLabel("State / region Optional").inputValue(), "New South Wales");
+  await page.getByLabel("Owned product").selectOption("product-1"); const preview = page.getByLabel("Selected product: Demo product"); await preview.waitFor(); assert.equal(await preview.locator("img").count(), 1);
+  await page.getByRole("button", { name: "Continue" }).click(); await page.getByLabel("Story / review").fill("This is a valid location and product preview acceptance story."); await page.getByLabel("4 stars").check();
+  assert.equal(await page.locator(".goat-stars label.is-filled").count(), 4); assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
+});
+
 test("GOATS automatically falls back to Leaflet only when OpenFreeMap vector tiles fail", { skip: Boolean(LIVE_ORIGIN) }, async (t) => {
   const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
   t.after(() => browser.close());
@@ -380,8 +395,9 @@ async function routeGoatsApi(page) {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/goats/listings") return route.fulfill(json(listings()));
     if (pathname === "/api/goats/map") return route.fulfill(json(mapData()));
-    if (pathname === "/api/goats/config") return route.fulfill(json({ ok: true, submissionEnabled: true, captchaConfigured: false, geocoderConfigured: false, consentVersion: "goats-v2-2026-08", turnstileSiteKey: null, engagement: { comments: "auto", reactions: "auto" }, limits: { maxImageBytes: 10 * 1024 * 1024, maxGalleryImages: 5 } }));
-    if (pathname === "/api/goats/products") return route.fulfill(json({ ok: true, products: [] }));
+    if (pathname === "/api/goats/config") return route.fulfill(json({ ok: true, submissionEnabled: true, captchaConfigured: false, geocoderConfigured: true, consentVersion: "goats-v2-2026-08", turnstileSiteKey: null, engagement: { comments: "auto", reactions: "auto" }, limits: { maxImageBytes: 10 * 1024 * 1024, maxGalleryImages: 5 } }));
+    if (pathname === "/api/goats/products") return route.fulfill(json({ ok: true, products: [{ ...product(), image: fixtureMedia("main", 180, 180).url }] }));
+    if (pathname === "/api/goats/locations") return route.fulfill(json({ ok: true, results: [{ id: "sydney-new-south-wales-AU", city: "Sydney", region: "New South Wales", countryCode: "AU", countryName: "Australia", label: "Sydney, New South Wales, Australia" }] }));
     if (/^\/api\/goats\/listings\/(faggoat|long-goat)\/comments$/.test(pathname)) return route.fulfill(json({ ok: true, items: [], page: 1, pageSize: 20, total: 0 }));
     if (pathname === "/api/goats/listings/faggoat") return route.fulfill(json({ ok: true, item: detailListing("FagGOAT", true) }));
     if (pathname === "/api/goats/listings/long-goat") return route.fulfill(json({ ok: true, item: detailListing("Extraordinary GOAT Signal", false) }));

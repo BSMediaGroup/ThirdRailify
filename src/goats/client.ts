@@ -1,4 +1,4 @@
-import type { GoatComment, GoatConfig, GoatListing, GoatListingsPayload, GoatMapFeatureCollection, GoatProduct } from "./types";
+import type { GoatComment, GoatConfig, GoatListing, GoatListingsPayload, GoatLocationSuggestion, GoatMapFeatureCollection, GoatProduct } from "./types";
 
 export class GoatsClientError extends Error {
   status: number;
@@ -14,6 +14,10 @@ export async function getGoatMap(search = "", signal?: AbortSignal) {
 }
 export async function getGoatConfig(signal?: AbortSignal) { return getJson<GoatConfig>("/api/goats/config", signal); }
 export async function getGoatProducts(signal?: AbortSignal) { return (await getJson<{ ok: true; products: GoatProduct[] }>("/api/goats/products", signal)).products; }
+export async function searchGoatLocations(query: string, countryCode = "", signal?: AbortSignal) {
+  const params = new URLSearchParams({ q: query }); if (countryCode) params.set("country", countryCode);
+  return (await getJson<{ ok: true; results: GoatLocationSuggestion[] }>(`/api/goats/locations?${params}`, signal)).results;
+}
 export async function getGoatListing(slug: string, signal?: AbortSignal) { return (await getJson<{ ok: true; item: GoatListing }>(`/api/goats/listings/${encodeURIComponent(slug)}`, signal)).item; }
 export async function getGoatComments(slug: string, sort = "newest", page = 1, signal?: AbortSignal) { return getJson<{ ok: true; items: GoatComment[]; page: number; pageSize: number; total: number }>(`/api/goats/listings/${encodeURIComponent(slug)}/comments?sort=${encodeURIComponent(sort)}&page=${page}&pageSize=20`, signal); }
 

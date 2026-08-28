@@ -1,5 +1,6 @@
 export type GoatMedia = { id: string; role: "main" | "profile" | "gallery"; sortOrder: number; url: string };
 export type GoatProduct = { id: string; slug: string; name: string; image?: string | null };
+export type GoatLocationSuggestion = { id: string; city: string; region: string; countryCode: string; countryName: string; label: string };
 export type GoatListing = {
   id: string;
   slug: string;
