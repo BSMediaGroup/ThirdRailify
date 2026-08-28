@@ -18,8 +18,10 @@ export async function proxyCommerceCatalogue(env, path, fetchImpl = fetch) {
 export function normalizeCatalogue(input) {
   if (!input || input.ok !== true || input.source !== "commerce-d1" || !Array.isArray(input.products)) throw new Error("catalogue_invalid");
   const products = input.products.map(normalizeProduct);
+  const collections = requiredArray(input.collections, 200).map(normalizeCollection);
   if (new Set(products.map((product) => product.id)).size !== products.length || new Set(products.map((product) => product.slug)).size !== products.length) throw new Error("catalogue_duplicate");
-  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products, updatedAt: boundedText(input.updatedAt, 80) || null };
+  if (new Set(collections.map((collection) => collection.slug)).size !== collections.length) throw new Error("catalogue_collection_duplicate");
+  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, collections, products, updatedAt: boundedText(input.updatedAt, 80) || null };
 }
 
 export function normalizeProductPayload(input) {
@@ -34,12 +36,18 @@ function normalizeProduct(input) {
   const price = normalizePrice(input.price);
   return {
     id, slug, title, description: boundedText(input.description, 12000), images: stringArray(input.images, 24, 4096, true),
-    categories: stringArray(input.categories, 20, 120), tags: stringArray(input.tags, 30, 80), featured: input.featured === true,
+    categories: stringArray(input.categories, 20, 160), collectionSlugs: stringArray(input.collectionSlugs, 20, 180), tags: stringArray(input.tags, 30, 80), featured: input.featured === true,
     featuredOrder: input.featured === true && Number.isSafeInteger(Number(input.featuredOrder)) ? Number(input.featuredOrder) : null,
     displayOrder: integer(input.displayOrder, 0, 999999, 1000), requiresShipping: input.requiresShipping === true,
     maxQuantity: integer(input.maxQuantity, 1, 20, 20), price, variants, available: input.available === true,
     updatedAt: boundedText(input.updatedAt, 80),
   };
+}
+
+function normalizeCollection(input) {
+  const slug = boundedText(input?.slug, 180); const title = boundedText(input?.title, 160);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !title) throw new Error("catalogue_collection_invalid");
+  return { title, slug, description: boundedText(input.description, 2000), displayOrder: integer(input.displayOrder, 0, 999999, 1000), productCount: integer(input.productCount, 0, 100000, 0), productIds: stringArray(input.productIds, 10000, 160), updatedAt: boundedText(input.updatedAt, 80) };
 }
 
 function normalizeVariant(input) {

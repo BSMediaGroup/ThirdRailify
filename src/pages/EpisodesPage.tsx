@@ -22,6 +22,7 @@ export function EpisodesPage() {
       <header ref={motion.ref} className={`episodes-hero episodes-signal-hero${motion.active ? " is-motion-active" : ""}`}>
         <div className="episodes-signal-field" aria-hidden="true">
           <i className="episodes-signal-field__grid" />
+          <i className="episodes-signal-field__glow" />
           <i className="episodes-signal-field__sweep" />
           <i className="episodes-signal-field__orbit episodes-signal-field__orbit--one" />
           <i className="episodes-signal-field__orbit episodes-signal-field__orbit--two" />
@@ -38,6 +39,7 @@ export function EpisodesPage() {
           </div>
           <ArchiveStatus visible={visible} remaining={remaining} newestDate={newest?.archiveDate ?? null} />
         </div>
+        <div className="episodes-signal-hero__telemetry" aria-hidden="true"><span>Signed snapshots only</span><i /><span>24-record archive</span><i /><span>Newest first</span></div>
       </header>
 
       <section className="episodes-gallery" aria-labelledby="episode-gallery-title">
@@ -66,13 +68,17 @@ function ArchiveStatus({ visible, remaining, newestDate }: { visible: number | u
   const count = visible ?? 0;
   return (
     <div className="archive-status" aria-label={visible === undefined ? "Archive capacity loading" : `${visible} of 24 archive records visible, ${remaining} positions awaiting broadcasts`}>
-      <div className="archive-status__head"><span><RadioIcon /> Retained signal map</span><b>{visible === undefined ? "SYNCING" : `${String(count).padStart(2, "0")} / 24`}</b></div>
-      <div className="archive-status__core">
-        <div className="archive-status__gauge" style={{ "--archive-progress": `${(count / ARCHIVE_SIZE) * 360}deg` } as CSSProperties}><span><BoltIcon /><strong>{visible ?? "—"}</strong><small>Retained</small></span></div>
-        <div className="archive-status__facts"><span><small>Capacity remaining</small><strong>{remaining ?? "—"}</strong></span><span><small>Newest trace</small><strong>{newestDate ? formatDate(newestDate) : "Awaiting signal"}</strong></span></div>
+      <div className="archive-status__head"><span><RadioIcon /> Archive register</span><b><i /> {visible === undefined ? "Synchronizing" : "Signal indexed"}</b></div>
+      <div className="archive-status__dashboard">
+        <div className="archive-status__gauge" style={{ "--archive-progress": `${(count / ARCHIVE_SIZE) * 360}deg` } as CSSProperties}><span><BoltIcon /><strong>{visible ?? "—"}</strong><small>of 24 retained</small></span></div>
+        <div className="archive-status__metrics">
+          <span><small>Visible episodes</small><strong>{visible === undefined ? "—" : String(visible).padStart(2, "0")}</strong><em>Public archive</em></span>
+          <span><small>Open positions</small><strong>{remaining === undefined ? "—" : String(remaining).padStart(2, "0")}</strong><em>Future capacity</em></span>
+        </div>
       </div>
+      <div className="archive-status__latest"><span><RadioIcon /></span><div><small>Latest retained episode</small><strong>{newestDate ? formatDate(newestDate) : "Awaiting the first signal"}</strong></div><b>Newest first</b></div>
       <div className="archive-status__nodes" aria-hidden="true">{Array.from({ length: ARCHIVE_SIZE }, (_, index) => <i key={index} className={index < count ? "is-retained" : ""} />)}</div>
-      <p><span /> Accepted signed snapshots populate this field automatically.</p>
+      <p><span /> Signed Watch ingest populates this register automatically.</p>
     </div>
   );
 }

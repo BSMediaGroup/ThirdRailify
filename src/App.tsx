@@ -17,6 +17,8 @@ import { GoatSubmitPage } from "./pages/GoatSubmitPage";
 import { PoliciesPage } from "./pages/PoliciesPage";
 import { PolicyPage } from "./pages/PolicyPage";
 import { CheckoutSuccessPage } from "./pages/CheckoutSuccessPage";
+import { CartPage } from "./pages/CartPage";
+import { DonatePage } from "./pages/DonatePage";
 
 export function App() {
   return (
@@ -26,6 +28,7 @@ export function App() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductDetailPage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route path="/products/all" element={<ShopPage />} />
         <Route path="/products/:category" element={<ShopPage />} />
         <Route path="/products/:category/:slug" element={<ProductDetailPage />} />
@@ -43,7 +46,7 @@ export function App() {
         <Route path="/friends" element={<RouteShellPage routeKey="friends" />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />
-        <Route path="/support" element={<RouteShellPage routeKey="support" />} />
+        <Route path="/donate" element={<DonatePage />} />
         <Route path="/gift-cards" element={<RouteShellPage routeKey="giftCards" />} />
         <Route path="/policies" element={<PoliciesPage />} />
         <Route path="/terms" element={<PolicyPage policyKey="terms" />} />
@@ -55,10 +58,11 @@ export function App() {
         <Route path="/goats/:slug" element={<GoatDetailPage />} />
         <Route path="/goatgate" element={<LegacyGoatgateRedirect />} />
         <Route path="/gift" element={<Navigate to="/gift-cards" replace />} />
-        <Route path="/donate-1" element={<Navigate to="/support" replace />} />
+        <Route path="/support" element={<LegacyDonateRedirect />} />
+        <Route path="/donate-1" element={<LegacyDonateRedirect />} />
         <Route path="/pricing-plans/list" element={<Navigate to="/vip" replace />} />
         <Route path="/members-home" element={<Navigate to="/vip" replace />} />
-        <Route path="/cart-page" element={<Navigate to="/shop" replace />} />
+        <Route path="/cart-page" element={<LegacyCartRedirect />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
@@ -68,4 +72,14 @@ export function App() {
 function LegacyGoatgateRedirect() {
   const location = useLocation();
   return <Navigate to={`/goats/submit${location.search}${location.hash}`} replace />;
+}
+
+function LegacyCartRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/cart${location.search}${location.hash}`} replace />;
+}
+
+function LegacyDonateRedirect() {
+  const location = useLocation();
+  return <Navigate to={`/donate${location.search}${location.hash}`} replace />;
 }

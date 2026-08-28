@@ -73,3 +73,51 @@ test("material collection points link to the canonical Privacy Policy", async ()
   assert.match(submit, /to="\/privacy#community-publication"/);
   assert.match(detail, /to="\/privacy#community-publication"/);
 });
+
+test("legal release gates stay tied to configured implementation facts", async () => {
+  const [policies, home, cart, currency, consent, checklist, contacts, retention, providers, checkout] = await Promise.all([
+    read("src/content/policies.ts"),
+    read("src/pages/HomePage.tsx"),
+    read("src/store/cart.tsx"),
+    read("src/components/CurrencyPrice.tsx"),
+    read("src/privacy/consent.ts"),
+    read("LEGAL_RELEASE_CHECKLIST.md"),
+    read("CONTACT_ROLE_MATRIX.md"),
+    read("DATA_RETENTION_MATRIX.md"),
+    read("THIRD_PARTY_DATA_PROCESSING.md"),
+    read("CHECKOUT_RELEASE_GATES.md"),
+  ]);
+
+  assert.match(home, /<button type="button" disabled>Not connected<\/button>/);
+  assert.doesNotMatch(home, /newsletter[^\n]{0,200}(fetch\(|<form|onSubmit)/i, "disabled newsletter has no submit/send path");
+  assert.match(cart, /thirdrailify-commerce-cart-v2/);
+  assert.match(currency, /Approximate/);
+  assert.match(consent, /CONSENT_VERSION = 1/);
+
+  assert.match(checklist, /ENGINEERING-OWNED OPEN BLOCKERS: 0/);
+  assert.match(checklist, /OWNER-DECISION OPEN BLOCKERS: 8/);
+  assert.match(checklist, /LEGAL-REVIEW OPEN BLOCKERS: 6/);
+  assert.match(checklist, /EXTERNAL\/PROVIDER REVIEW OPEN BLOCKERS: 1/);
+  assert.match(checklist, /Confirm the intended minimum age, if any/);
+  assert.match(checklist, /Choose whether Third Railify will offer any voluntary change-of-mind return policy/);
+  assert.match(retention, /NO FIXED APPLICATION RETENTION POLICY CONFIRMED/);
+  assert.match(providers, /No processing country, residency commitment, DPA/);
+  assert.match(checkout, /Normal Public checkout and fulfilment must remain disabled/);
+
+  const approvedContacts = new Set([
+    "privacy@thirdrailify.com", "support@thirdrailify.com", "access@thirdrailify.com",
+    "webmaster@thirdrailify.com", "info@thirdrailify.com",
+  ]);
+  for (const address of policies.match(/[a-z][a-z0-9.-]*@thirdrailify\.com/gi) || []) {
+    assert.equal(approvedContacts.has(address.toLowerCase()), true, `Public policy contact ${address} is in the audited matrix`);
+  }
+  for (const address of approvedContacts) assert.ok(contacts.includes(address));
+
+  for (const pattern of [
+    /Third Railify (?:is|operates as) (?:a )?(?:corporation|partnership|sole proprietorship)/i,
+    /Canadian (?:business |registration )?(?:number|no\.)\s*[:#]?\s*\d/i,
+    /must be (?:at least )?(?:13|16|18|19)\b/i,
+    /returns? (?:are )?(?:accepted|available) within \d+ days/i,
+    /our (?:EU|UK) representative/i,
+  ]) assert.doesNotMatch(policies, pattern);
+});

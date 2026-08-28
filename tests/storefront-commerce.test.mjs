@@ -43,10 +43,10 @@ test("merchandising projection is bounded, stable, and gracefully unavailable", 
   assert.equal(failure.status, 503); assert.deepEqual((await failure.json()).products, []);
 });
 
-const commerceProduct = { id: "product-local-1", slug: "real-product", title: "Real product", description: "Commerce description", images: ["https://images.example.test/product.png"], categories: ["Apparel"], tags: ["tee"], featured: true, featuredOrder: 10, displayOrder: 20, requiresShipping: true, maxQuantity: 5, price: { currency: "CAD", minUnitAmount: 3050, maxUnitAmount: 3450, label: "From CA$30.50" }, variants: [{ id: "variant-local-1", label: "M / Black", size: "M", color: "Black", options: { Size: "M", Color: "Black" }, unitAmount: 3050, currency: "CAD", availability: "active" }, { id: "variant-local-2", label: "2XL / Black", size: "2XL", color: "Black", options: { Size: "2XL", Color: "Black" }, unitAmount: 3450, currency: "CAD", availability: "active" }], available: true, updatedAt: "2026-08-28T00:00:00.000Z" };
+const commerceProduct = { id: "product-local-1", slug: "real-product", title: "Real product", description: "Commerce description", images: ["https://images.example.test/product.png"], categories: ["Apparel"], collectionSlugs: ["apparel"], tags: ["tee"], featured: true, featuredOrder: 10, displayOrder: 20, requiresShipping: true, maxQuantity: 5, price: { currency: "CAD", minUnitAmount: 3050, maxUnitAmount: 3450, label: "From CA$30.50" }, variants: [{ id: "variant-local-1", label: "M / Black", size: "M", color: "Black", options: { Size: "M", Color: "Black" }, unitAmount: 3050, currency: "CAD", availability: "active" }, { id: "variant-local-2", label: "2XL / Black", size: "2XL", color: "Black", options: { Size: "2XL", Color: "Black" }, unitAmount: 3450, currency: "CAD", availability: "active" }], available: true, updatedAt: "2026-08-28T00:00:00.000Z" };
 
 test("commerce catalogue proxy preserves safe local variant identity and integer CAD prices", async () => {
-  const upstream = { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-28T00:00:00.000Z", products: [commerceProduct] };
+  const upstream = { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-28T00:00:00.000Z", collections: [{ title: "Apparel", slug: "apparel", description: "Wear it.", displayOrder: 10, productCount: 1, productIds: ["product-local-1"], updatedAt: "2026-08-28T00:00:00.000Z" }], products: [commerceProduct] };
   const normalized = normalizeCatalogue(upstream); assert.equal(normalized.products[0].price.minUnitAmount, 3050); assert.equal(normalized.products[0].variants[1].unitAmount, 3450); assert.deepEqual(Object.keys(normalized.products[0].variants[0]).sort(), ["availability", "color", "currency", "id", "label", "options", "size", "unitAmount"]);
   assert.doesNotMatch(JSON.stringify(normalized), /printful|legacy|migration|sku|provider/i);
   const response = await proxyCommerceCatalogue({ THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" }, "/api/public/commerce/catalogue", async (url) => { assert.equal(url, "https://thirdrailify-admin.pages.dev/api/public/commerce/catalogue"); return Response.json(upstream); });
@@ -58,4 +58,28 @@ test("replacement storefront source uses product plus variant cart identity and 
   const [providerSource, cartSource] = await Promise.all([import("node:fs/promises").then((fs) => fs.readFile(new URL("../src/lib/catalogueProvider.ts", import.meta.url), "utf8")), import("node:fs/promises").then((fs) => fs.readFile(new URL("../src/store/cart.tsx", import.meta.url), "utf8"))]);
   assert.match(providerSource, /\/api\/commerce\/catalogue/); assert.doesNotMatch(providerSource, /wixSnapshot|legacy-wix-snapshot/);
   assert.match(cartSource, /variantId: string/); assert.match(cartSource, /productId: product\.id, variantId: variant\.id/); assert.doesNotMatch(cartSource, /unitPrice|formattedPrice/);
+});
+
+test("Shop gallery is CAD-only while product detail owns flagged comparison and same-row purchase controls", async () => {
+  const fs = await import("node:fs/promises");
+  const [shop, card, price, detail, flags, styles] = await Promise.all([
+    fs.readFile(new URL("../src/pages/ShopPage.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/components/ProductCard.tsx", import.meta.url), "utf8"),
+    fs.readFile(new URL("../src/components/CurrencyPrice.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/pages/ProductDetailPage.tsx", import.meta.url), "utf8"),
+    fs.readFile(new URL("../src/currency/CurrencyFlag.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
+  ]);
+  assert.doesNotMatch(shop, /CurrencySelect|Display currency|ProductCurrencyComparison|convertCad/);
+  assert.doesNotMatch(card, /useCurrency|convertCad|≈/);
+  assert.match(price, /CurrencyFlag currency="CAD"/); assert.match(price, /commerce-price--cad/); assert.match(styles, /\.commerce-price strong[^}]*color: var\(--gold\)/);
+  assert.match(detail, /ProductCurrencyComparison cadPrice=\{selectedPrice\}/); assert.match(detail, /commerce-purchase-controls/); assert.match(styles, /grid-template-columns: minmax\(0,1fr\) minmax\(86px,112px\)/);
+  for (const mapping of ["EUR: \"eu\"", "USD: \"us\"", "AUD: \"au\"", "JPY: \"jp\""]) assert.match(flags, new RegExp(mapping));
+  assert.match(flags, /unknown\.svg/); assert.doesNotMatch(flags + price + detail, /🇦🇺|🇨🇦|🇺🇸|🇪🇺/);
+  assert.match(price, /role="combobox"/); assert.match(price, /role="listbox"/); for (const key of ["ArrowDown", "ArrowUp", "Enter", "Escape"]) assert.match(price, new RegExp(key));
+});
+
+test("dedicated cart reuses CartProvider identity, stays CAD-only, and preserves the legacy redirect", async () => {
+  const fs = await import("node:fs/promises");
+  const [app, page, drawer] = await Promise.all([fs.readFile(new URL("../src/App.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/pages/CartPage.tsx", import.meta.url), "utf8"), fs.readFile(new URL("../src/components/CartDrawer.tsx", import.meta.url), "utf8")]);
+  assert.match(app, /path="\/cart" element=\{<CartPage/); assert.match(app, /path="\/cart-page" element=\{<LegacyCartRedirect/); assert.match(app, /`\/cart\$\{location\.search\}\$\{location\.hash\}`/);
+  assert.match(page, /useCart\(\)/); for (const label of ["Line total", "Subtotal", "Continue shopping", "Clear cart", "Checkout coming online"]) assert.match(page, new RegExp(label, "i"));
+  assert.match(page, /CadAmount/); assert.doesNotMatch(page, /useCurrency|ProductCurrencyComparison/); assert.match(drawer, /to="\/cart"[^>]*onClick=\{cart\.close\}>View full cart/);
 });

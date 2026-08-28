@@ -43,6 +43,16 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       }
       if (route === "live") { await page.locator(".broadcast-player").waitFor(); assert.equal(await page.locator(".broadcast-player").count(), 1, "dedicated route has one player stack"); }
       if (route === "episodes") {
+        const archiveRegister = page.locator(".archive-status");
+        await archiveRegister.waitFor();
+        assert.equal(await page.locator(".episodes-signal-field__glow").count(), 1, "archive hero has a dedicated animated light field");
+        assert.match(await page.locator(".archive-status__latest strong").innerText(), /Aug 27, 2026/i, "latest date remains compact, readable metadata");
+        assert.equal(await page.getByText("Newest trace", { exact: true }).count(), 0, "legacy stacked date treatment is removed");
+        assert.ok(Number.parseFloat(await page.locator(".archive-status__latest strong").evaluate((element) => getComputedStyle(element).fontSize)) <= 18, "latest date is not rendered as display text");
+        if (width >= 1024) {
+          const registerBox = await archiveRegister.boundingBox();
+          assert.ok(registerBox && registerBox.height <= registerBox.width * 1.12, "desktop archive register keeps a balanced landscape proportion");
+        }
         assert.equal(await page.locator(".episode-gallery-grid .episode-card").count(), 24);
         assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder").count(), 22);
         assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder a").count(), 0, "placeholders are not clickable");
@@ -74,6 +84,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await reducedPage.goto(`${ORIGIN}/`); await reducedPage.locator(".promo-banner--normal").waitFor();
   assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__message:visible").count(), 1, "reduced motion exposes one stable readable ticker message");
   assert.equal(await reducedPage.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true);
+  await reducedPage.goto(`${ORIGIN}/watch/episodes`); await reducedPage.locator(".archive-status").waitFor();
+  assert.equal(await reducedPage.locator(".episodes-signal-field__glow").evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero light field respects reduced motion");
+  assert.equal(await reducedPage.locator(".archive-status").evaluate((element) => getComputedStyle(element, "::after").animationName), "none", "archive register sweep respects reduced motion");
   await reducedContext.close();
 
   for (const scenario of [

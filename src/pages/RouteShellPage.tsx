@@ -4,7 +4,7 @@ import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 
-type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "support" | "giftCards";
+type RouteKey = "shawn" | "gina" | "about" | "friends" | "community" | "vip" | "giftCards";
 
 type RouteContent = {
   eyebrow: string;
@@ -75,15 +75,6 @@ const content: Record<RouteKey, RouteContent> = {
     sourceHref: "https://www.thirdrailify.com/pricing-plans/list",
     sourceLabel: "Review current VIP plans",
     points: ["Baby GOAT · CA$3/month", "Blossom GOAT · CA$9/month", "Mega GOAT · CA$18/month · Improbable GOAT · CA$99/month"],
-  },
-  support: {
-    eyebrow: "Support the production",
-    title: "Keep the mics hot.",
-    description: "The current Wix surface accepts one-time, monthly, and yearly CAD donations.",
-    status: "No donation or payment flow is implemented here. V2 will not accept or simulate a transaction.",
-    sourceHref: "https://www.thirdrailify.com/donate-1",
-    sourceLabel: "Open current support page",
-    points: ["One-time support", "Monthly support", "Yearly support"],
   },
   giftCards: {
     eyebrow: "Current Wix commerce",

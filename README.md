@@ -13,7 +13,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
-- Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and staged support surfaces.
+- Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
 - Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
 - A separate Admin-configured Public announcement banner with static/ticker/crossfade modes and an automatic real-Watch-state Live Now takeover; the staging/Wix environment rail remains independent.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
@@ -25,6 +25,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - First-class policy library at `/policies` plus deep-linked Terms, Privacy, Refund, and Accessibility documents grounded in the current V2 data and provider boundaries, with a truthful non-interactive future-membership register slot.
 - Compact non-modal privacy choices with equal first-layer Accept/Reject actions, granular Preferences and External media controls, a versioned 183-day first-party choice cookie, footer withdrawal, and consent-gated optional local storage and Watch iframes.
 - Truthful `/checkout/success` states backed by an exact opaque-Session local payment-status projection; no provider metadata, internal account identity, audit data, Printful mapping, or browser-side Stripe authority is exposed.
+- Complete presentation-only `/donate` destination with a cinematic signal hero, accessible one-time/monthly/yearly and CAD amount controls, explicit donation-purpose/disclaimer copy, and a visibly disabled PayPal handoff until real provider wiring is implemented.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
@@ -49,6 +50,8 @@ npm run test:storefront
 npm run test:goats
 npm run test:browser:policies
 npm run test:browser:consent
+npm run test:browser:shop
+npm run test:browser:donate
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -60,9 +63,9 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/product-page/:slug`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
-- Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/support`, `/gift-cards`.
-- Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/gift`, `/donate-1`, `/pricing-plans/list`, `/members-home`, `/cart-page`, and `/product-page/:slug` remain preserved.
+- Implemented: `/`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Migration shells: `/shawn`, `/gina`, `/about`, `/friends`, `/vip`, `/gift-cards`.
+- Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/support` and `/donate-1` redirect to `/donate` with query/hash intact; `/cart-page` redirects to `/cart` with query/hash intact; `/gift`, `/pricing-plans/list`, `/members-home`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.
 - Everything else receives the branded application 404 after the SPA fallback.
 
@@ -122,11 +125,16 @@ ThirdRailify/
 ├── CLOUDFLARE_SETUP.md
 ├── CLOUDFLARE_AUTH_SETUP.md
 ├── CLOUDFLARE_KV_WRITE_INVENTORY.md  Pre/post migration writer, reader, and cadence evidence
+├── CHECKOUT_RELEASE_GATES.md  Evidence-based Ontario/federal pre-activation implementation matrix
+├── CONTACT_ROLE_MATRIX.md    Published/sender/reply-to contact roles without monitoring assumptions
+├── DATA_RETENTION_MATRIX.md  Implemented TTLs, cleanup paths, capacity bounds, and undecided schedules
 ├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
 ├── LIVE_SITE_AUDIT.md
 ├── LEGAL_RELEASE_CHECKLIST.md  Internal unresolved operator, sales, privacy, and legal sign-off items
 ├── POLICIES.md            Policy route, content-source, maintenance, and review notes
+├── PRIVACY_OPERATIONS_RUNBOOK.md  Internal request, incident, identity, audit, and preservation workflows
 ├── PRIVACY_STORAGE_INVENTORY.md  Audited browser storage, provider access, categories, and gating
+├── THIRD_PARTY_DATA_PROCESSING.md  Actual provider/data-flow and external contract-review dossier
 ├── BUMP_NOTES.md
 └── package.json
 ```
@@ -143,9 +151,9 @@ GOATS persistence belongs only to `ThirdRailify-Admin`. Public exposes fixed sam
 
 Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
 
-`src/types/catalogue.ts` is provider-neutral. `src/lib/catalogueProvider.ts` keeps `src/data/wixSnapshot.ts` as the authoritative product/image/CAD-price source and overlays only the bounded featured flag/order from the Admin public projection. If that projection is unavailable, the storefront deterministically falls back to displayable snapshot products. A future server/API adapter can replace the product provider without redesigning the pages. Provider credentials and write operations remain server-side.
+`src/types/catalogue.ts` remains provider-neutral. `src/lib/catalogueProvider.ts` consumes only the sanitized same-origin Commerce D1 product and ordered visible-collection projection; it has no runtime Wix fallback. Gallery, related-product, and cart amounts stay authoritative CAD with local Canadian SVG flags. Reference conversion is isolated to product details and never changes the CAD catalogue/cart authority. Provider credentials and all write operations remain server-side.
 
-`GET /api/currency-rates` is the only storefront request path to the configured `CURRENCY_RATES_API_URL`. It requires HTTPS, validates CAD base, ISO date, three-letter codes, and finite positive rates, adds CAD=1, applies a bounded timeout, and publishes several-hour cache plus stale-while-revalidate headers. The browser shares one loader and namespaced preference/cache across hero, cards, details, and related products. Conversion is supplemental only; the snapshot's CAD prices and local cart identifiers never change.
+`GET /api/currency-rates` is the only storefront request path to the configured `CURRENCY_RATES_API_URL`. It requires HTTPS, validates CAD base, ISO date, three-letter codes, and finite positive rates, adds CAD=1, applies a bounded timeout, and publishes several-hour cache plus stale-while-revalidate headers. The product-detail-only chooser uses local SVG flags for the actual supported currency set and preserves its preference/cache only when Preferences consent permits it. Gallery rendering never depends on that preference.
 
 `src/lib/discordWidget.ts` first requests the same-origin `/api/community/discord` projection published by the local Third Railify bot. That projection contains only whitelisted/revalidated public channels and bounded public presentation fields; the browser never receives a Discord token, ingest secret, admin-role configuration, permissions, roles, messages, or private metadata. The shared widget labels fresh, delayed, and stale data, neutralizes stale presence, shows public text/community channels, and provides keyboard/click/tap-accessible profile cards for enriched members. The homepage bounds the channel directory more tightly; `/community` shows the full capped directory. Both retain 12 collapsed and 24 expanded member limits.
 

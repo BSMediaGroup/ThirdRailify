@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
 import type { CatalogueProduct } from "../types/catalogue";
 import { BagIcon, CloseIcon, MinusIcon, PlusIcon } from "./Icons";
+import { CadAmount } from "./CurrencyPrice";
 
 export function CartDrawer() {
   const cart = useCart();
@@ -70,8 +72,8 @@ export function CartDrawer() {
               <img src={product.image} alt="" />
               <div>
                 <h3>{product.name}</h3>
-                <span>{variant.label} · {new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(variant.unitAmount / 100)} CAD</span>
-                <strong>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format((variant.unitAmount * item.quantity) / 100)}</strong>
+                <span>{variant.label}</span><CadAmount minorUnits={variant.unitAmount} />
+                <CadAmount minorUnits={variant.unitAmount * item.quantity} className="cart-row__line-total" />
                 <div className="quantity-control" aria-label={`Quantity for ${product.name}`}>
                   <button type="button" onClick={() => cart.setQuantity(product.id, variant.id, item.quantity - 1)} aria-label="Decrease quantity"><MinusIcon /></button>
                   <output>{item.quantity}</output>
@@ -85,8 +87,9 @@ export function CartDrawer() {
           )}
         </div>
         <div className="cart-drawer__footer">
-          <div><span>Cart subtotal</span><strong>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD" }).format(subtotal / 100)}</strong></div>
+          <div><span>Cart subtotal</span><CadAmount minorUnits={subtotal} /></div>
           <button className="button button--disabled" type="button" disabled>Checkout coming online during store migration</button>
+          <Link className="button button--secondary" to="/cart" onClick={cart.close}>View full cart</Link>
           {rows.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
         </div>
       </aside>

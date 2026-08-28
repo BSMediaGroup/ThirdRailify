@@ -36,6 +36,17 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
         for (const phrase of ["Australian Consumer Law", "ACCC", "OAIC", "Australian Privacy Principles", "Privacy Act 1988", "ABN", "ACN"]) {
           assert.equal(renderedCopy.includes(phrase), false, `${route} omits ${phrase} at ${width}x${height}`);
         }
+        assert.doesNotMatch(renderedCopy, /owned and operated by Shawn [A-Z][a-z]+/, `${route} does not append a surname at ${width}x${height}`);
+        assert.doesNotMatch(renderedCopy, /Third Railify (?:is|operates as) (?:a )?(?:corporation|partnership|sole proprietorship)/i, `${route} invents no entity type at ${width}x${height}`);
+        assert.doesNotMatch(renderedCopy, /Canadian (?:business |registration )?(?:number|no\.)\s*[:#]?\s*\d/i, `${route} invents no registration number at ${width}x${height}`);
+        assert.doesNotMatch(renderedCopy, /must be (?:at least )?(?:13|16|18|19)\b/i, `${route} invents no age threshold at ${width}x${height}`);
+        assert.doesNotMatch(renderedCopy, /our (?:EU|UK) representative/i, `${route} invents no representative at ${width}x${height}`);
+        if (route === "/terms" || route === "/privacy") assert.match(renderedCopy, /owned and operated by Shawn from London, Ontario, Canada/, `${route} keeps the owner-safe operator location at ${width}x${height}`);
+        if (route === "/terms") {
+          assert.match(renderedCopy, /CAD is the authoritative storefront currency/);
+          assert.match(renderedCopy, /approximate conversion for convenience/);
+          assert.match(renderedCopy, /Normal public checkout is currently disabled/);
+        }
       }
 
       const footerPolicyLinks = page.locator(".site-footer .footer-grid > div:last-child > a");
