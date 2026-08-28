@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs",
+    "test:functions": "node --test tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs tests/banner-functions.test.mjs",
     "test:watch": "node --test tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs",
     "test:browser:watch": "node --test --test-concurrency=1 tests/watch-browser.test.mjs",
     "test:browser:goats": "node --test --test-concurrency=1 tests/goats-browser.test.mjs",

@@ -10,11 +10,12 @@ export type GoatListing = {
   product: GoatProduct;
   location: { label: string; countryCode: string; latitude: number | null; longitude: number | null };
   media: { main: GoatMedia | null; profile: GoatMedia | null; gallery: GoatMedia[] };
+  engagement?: { comments: "inherit" | "disabled" | "auto" | "moderated"; reactions: "inherit" | "disabled" | "auto" | "moderated" };
   counts: { likes: number; dislikes: number; comments: number };
   currentReaction?: number;
   neighbours?: { previous: { slug: string; displayName: string } | null; next: { slug: string; displayName: string } | null };
 };
 export type GoatListingsPayload = { ok: true; items: GoatListing[]; page: number; pageSize: number; total: number; stats: { listings: number; countries: number; products: number }; facets: { countries: Array<{ code: string; count: number }> } };
 export type GoatComment = { id: string; displayName: string; avatarUrl: string | null; body: string; createdAt: string; updatedAt: string; isOwn?: boolean };
-export type GoatConfig = { ok: true; submissionEnabled: boolean; captchaConfigured: boolean; geocoderConfigured: boolean; consentVersion: string; turnstileSiteKey: string | null; limits: { maxImageBytes: number; maxGalleryImages: number } };
+export type GoatConfig = { ok: true; submissionEnabled: boolean; captchaConfigured: boolean; geocoderConfigured: boolean; consentVersion: string; turnstileSiteKey: string | null; engagement: { comments: "disabled" | "auto" | "moderated"; reactions: "disabled" | "auto" | "moderated" }; limits: { maxImageBytes: number; maxGalleryImages: number } };
 export type GoatMapFeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Point, { id: string; slug: string; displayName: string; locationLabel: string; countryCode: string; imageUrl: string | null; product: GoatProduct; rating: number | null; excerpt: string; galleryPage: number }>;

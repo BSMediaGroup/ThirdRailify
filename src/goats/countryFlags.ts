@@ -1,10 +1,12 @@
 import australiaFlag from "../../assets/flags/au.svg";
 import canadaFlag from "../../assets/flags/ca.svg";
+import unitedStatesFlag from "../../assets/flags/us.svg";
 import unknownFlag from "../../assets/flags/unknown.svg";
 
 const flagSources: Record<string, string> = {
   AU: australiaFlag,
   CA: canadaFlag,
+  US: unitedStatesFlag,
 };
 
 export function createCountryFlagElement(countryCode: string) {

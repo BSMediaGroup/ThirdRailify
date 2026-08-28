@@ -55,9 +55,11 @@ export function BroadcastProvider({ children }: { children: ReactNode }) {
       }
     };
     document.addEventListener("visibilitychange", visibility);
+    window.addEventListener("online", refresh);
     return () => {
       mounted = false;
       document.removeEventListener("visibilitychange", visibility);
+      window.removeEventListener("online", refresh);
       if (timer !== null) window.clearTimeout(timer);
     };
   }, []);

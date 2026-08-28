@@ -8,6 +8,7 @@ import { chromium } from "playwright-core";
 const LIVE_ORIGIN = process.env.GOATS_BROWSER_ORIGIN || "";
 const TARGET_ORIGIN = LIVE_ORIGIN || "http://127.0.0.1:4184";
 const STRICT_LIVE = LIVE_ORIGIN === "https://thirdrailify.pages.dev";
+const EXPECTED_FEATURE_COUNT = STRICT_LIVE ? 11 : 2;
 const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 let server;
 
@@ -51,7 +52,7 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   const mapRoot = page.locator('.goats-map[data-goats-map-state="ready"]');
   await mapRoot.waitFor({ state: "visible", timeout: 20_000 });
   assert.equal(await mapRoot.getAttribute("data-goats-map-engine"), "maplibre");
-  assert.equal(await mapRoot.getAttribute("data-goats-map-feature-count"), "2");
+  assert.equal(await mapRoot.getAttribute("data-goats-map-feature-count"), String(EXPECTED_FEATURE_COUNT));
   assert.ok(Number(await mapRoot.getAttribute("data-goats-map-tile-count")) > 0, "readiness requires at least one loaded vector tile");
   assert.ok(Number(await mapRoot.getAttribute("data-goats-map-source-feature-count")) > 0, "readiness requires rendered vector basemap features");
   assert.equal(await page.getByText("Map view is unavailable.").count(), 0);
@@ -68,15 +69,22 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
 
   const sydney = page.locator('[data-goats-marker-name="Southern Signal"]');
   const toronto = page.locator('[data-goats-marker-name="Midnight Rail"]');
+  const daniel = page.locator('[data-goats-marker-name="Daniel Clancy"]');
   assert.equal(await sydney.count(), 1);
   assert.equal(await toronto.count(), 1);
   assert.equal(await sydney.isVisible(), true);
   assert.equal(await toronto.isVisible(), true);
+  if (STRICT_LIVE) {
+    assert.equal(await daniel.count(), 1);
+    assert.equal(await daniel.isVisible(), true);
+    assert.notEqual(await daniel.getAttribute("data-goats-marker-offset"), await sydney.getAttribute("data-goats-marker-offset"), "coincident privacy-safe coordinates must receive distinct visual pin offsets");
+  }
 
   const heroOrbital = page.locator(".goats-hero__orbital");
   assert.equal(await heroOrbital.isVisible(), true, "the enhanced GOATS signal hero must be visible");
   assert.ok((await heroOrbital.boundingBox())?.width >= 280, "the animated hero signal must be a substantial visual element");
   assert.notEqual(await page.locator(".goats-hero__sweep").evaluate((element) => globalThis.getComputedStyle(element).animationName), "none");
+  assert.equal(await page.locator(".goats-hero h1").evaluate((element) => Number.parseFloat(globalThis.getComputedStyle(element).lineHeight) / Number.parseFloat(globalThis.getComputedStyle(element).fontSize) >= .8), true, "the GOATS hero heading must retain the readable public-hero line-height rhythm");
   assert.equal(await heroOrbital.locator("img[data-goats-country-flag]").count(), 0, "the hero diagram must use uncrowded airport-code chips without flags");
   assert.match(await heroOrbital.textContent(), /SYD.*YYZ|YYZ.*SYD/s);
 
@@ -126,6 +134,12 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   await page.waitForTimeout(650);
   await toronto.click();
   await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
+
+  if (STRICT_LIVE) {
+    await page.getByRole("button", { name: "Reset results" }).click();
+    await daniel.click();
+    await page.locator(".goats-selected h3").filter({ hasText: "Daniel Clancy" }).waitFor({ state: "visible" });
+  }
 
   await page.getByRole("button", { name: "Reset results" }).click();
   await page.locator(".goat-card").filter({ hasText: "Southern Signal" }).locator("a").first().focus();
@@ -179,7 +193,7 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     viewport,
     state: "ready",
     engine: "maplibre",
-    featureCount: 2,
+    featureCount: EXPECTED_FEATURE_COUNT,
     tileResponses: tileResponses.filter((response) => response.status >= 200 && response.status < 300).length,
     representativeTile: tileResponses.find((response) => response.status >= 200 && response.status < 300),
     sydneySelectable: true,
@@ -199,6 +213,8 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     await page.locator('[data-goats-marker-name="Southern Signal"]').click();
     await page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
     await page.waitForTimeout(250);
+    const proofViewport = viewport.width <= 500 ? "mobile" : "desktop";
+    await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-${proofViewport}-PROOF.png`) });
     await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-card-${suffix}.png`) });
     await page.getByRole("button", { name: "Expand map" }).click();
     await page.waitForTimeout(250);

@@ -54,6 +54,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
   const [sourceFeatureCount, setSourceFeatureCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const features = useMemo(() => validMapFeatures(data), [data]);
+  const markerOffsets = useMemo(() => coincidentMarkerOffsets(features), [features]);
 
   useEffect(() => {
     const viewport = container.current;
@@ -162,6 +163,8 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       image.width = 24;
       image.height = 32;
       element.append(image);
+      const markerOffset = markerOffsets.get(id) ?? [0, 0];
+      element.dataset.goatsMarkerOffset = markerOffset.join(",");
 
       const popup = new maplibregl.Popup({
         anchor: "bottom",
@@ -172,7 +175,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
         maxWidth: "340px",
         offset: [0, -34],
       }).setLngLat(feature.geometry.coordinates as [number, number]).setDOMContent(createMarkerCard(feature));
-      const marker = new maplibregl.Marker({ element, anchor: "bottom" })
+      const marker = new maplibregl.Marker({ element, anchor: "bottom", offset: markerOffset })
         .setLngLat(feature.geometry.coordinates as [number, number])
         .addTo(map);
       const openCard = () => {
@@ -235,7 +238,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       markersRef.current = new Map();
       mapRef.current = null;
     };
-  }, [features, onFailure, onSelect]);
+  }, [features, markerOffsets, onFailure, onSelect]);
 
   useEffect(() => {
     markersRef.current.forEach(({ element }, id) => element.classList.toggle("is-selected", id === selectedId));
@@ -333,6 +336,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
   const [loadedTileCount, setLoadedTileCount] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const features = useMemo(() => validMapFeatures(data), [data]);
+  const markerOffsets = useMemo(() => coincidentMarkerOffsets(features), [features]);
 
   useEffect(() => {
     const viewport = container.current;
@@ -346,14 +350,6 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
     let resizeFrame = 0;
     let observer: ResizeObserver | null = null;
     const markers = new Map<string, L.Marker>();
-    const icon = L.icon({
-      iconUrl: goatPin,
-      iconSize: [24, 32],
-      iconAnchor: [12, 32],
-      tooltipAnchor: [0, -26],
-      className: "goats-map__point",
-    });
-
     let map: L.Map;
     try {
       map = L.map(viewport, {
@@ -408,6 +404,14 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
 
     for (const feature of features) {
       const id = String(feature.properties.id);
+      const [offsetX, offsetY] = markerOffsets.get(id) ?? [0, 0];
+      const icon = L.icon({
+        iconUrl: goatPin,
+        iconSize: [24, 32],
+        iconAnchor: [12 - offsetX, 32 - offsetY],
+        tooltipAnchor: [offsetX, -26 + offsetY],
+        className: "goats-map__point",
+      });
       const [longitude, latitude] = feature.geometry.coordinates;
       const marker = L.marker([latitude, longitude], {
         alt: `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`,
@@ -433,6 +437,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       if (element) {
         element.dataset.goatsMarkerId = id;
         element.dataset.goatsMarkerName = feature.properties.displayName;
+        element.dataset.goatsMarkerOffset = `${offsetX},${offsetY}`;
         element.setAttribute("aria-label", `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`);
         element.classList.toggle("is-selected", id === selectedIdRef.current);
         element.addEventListener("focus", () => marker.openPopup());
@@ -463,7 +468,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       markersRef.current = new Map();
       mapRef.current = null;
     };
-  }, [features, onSelect]);
+  }, [features, markerOffsets, onSelect]);
 
   useEffect(() => {
     markersRef.current.forEach((marker, id) => marker.getElement()?.classList.toggle("is-selected", id === selectedId));
@@ -611,6 +616,37 @@ function validMapFeatures(data: GoatMapFeatureCollection): GoatMapFeature[] {
     const [longitude, latitude] = feature.geometry.coordinates;
     return Number.isFinite(longitude) && Number.isFinite(latitude) && longitude >= -180 && longitude <= 180 && latitude >= -85.05112878 && latitude <= 85.05112878;
   });
+}
+
+function coincidentMarkerOffsets(features: GoatMapFeature[]) {
+  const groups = new Map<string, GoatMapFeature[]>();
+  for (const feature of features) {
+    const [longitude, latitude] = feature.geometry.coordinates;
+    const key = `${Number(longitude).toFixed(2)},${Number(latitude).toFixed(2)}`;
+    const group = groups.get(key) ?? [];
+    group.push(feature);
+    groups.set(key, group);
+  }
+
+  const offsets = new Map<string, [number, number]>();
+  groups.forEach((group) => {
+    const ordered = [...group].sort((left, right) => String(left.properties.id).localeCompare(String(right.properties.id)));
+    if (ordered.length === 1) {
+      offsets.set(String(ordered[0].properties.id), [0, 0]);
+      return;
+    }
+    if (ordered.length === 2) {
+      offsets.set(String(ordered[0].properties.id), [-16, 0]);
+      offsets.set(String(ordered[1].properties.id), [16, 0]);
+      return;
+    }
+    const radius = Math.max(22, ordered.length * 6);
+    ordered.forEach((feature, index) => {
+      const angle = (Math.PI * 2 * index) / ordered.length - Math.PI / 2;
+      offsets.set(String(feature.properties.id), [Math.round(Math.cos(angle) * radius), Math.round(Math.sin(angle) * radius)]);
+    });
+  });
+  return offsets;
 }
 
 function fitFeatures(map: L.Map, features: GoatMapFeature[]) {

@@ -18,6 +18,10 @@ export type EpisodeDetail = {
   };
 };
 
+export function featuredEpisodes(items: WatchEpisode[], currentKey: string | null, limit = 5): WatchEpisode[] {
+  return items.filter((episode) => !currentKey || episode.key !== currentKey).slice(0, limit);
+}
+
 export async function fetchEpisodes(fetcher: typeof fetch = fetch): Promise<EpisodeList> {
   return timedJson("/api/watch/episodes", normalizeList, fetcher);
 }

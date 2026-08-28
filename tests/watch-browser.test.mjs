@@ -35,17 +35,24 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       assert.deepEqual(errors, [], `${route} has no console errors at ${width}x${height}`);
       if (route === "watch") {
         await page.locator(".episode-featured-grid .episode-card").first().waitFor();
-        assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 6);
-        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 5);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 5);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 4);
         assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder)").count(), 1);
+        assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder) h3").textContent(), "Older retained transmission");
         assert.equal(await page.getByRole("link", { name: /Open dedicated player/ }).getAttribute("href"), "/watch/live?platform=youtube");
       }
       if (route === "live") { await page.locator(".broadcast-player").waitFor(); assert.equal(await page.locator(".broadcast-player").count(), 1, "dedicated route has one player stack"); }
       if (route === "episodes") {
         assert.equal(await page.locator(".episode-gallery-grid .episode-card").count(), 24);
-        assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder").count(), 23);
+        assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder").count(), 22);
         assert.equal(await page.locator(".episode-gallery-grid .episode-card--placeholder a").count(), 0, "placeholders are not clickable");
         assert.equal(await page.locator(".episode-gallery-grid .episode-card:not(.episode-card--placeholder) a").count() > 0, true, "retained episode remains actionable");
+        assert.equal(await page.getByRole("heading", { level: 2, name: "Past episodes" }).count(), 1);
+        assert.equal(await page.getByText(/Transmission slots/i).count(), 0);
+        const rumble = page.getByRole("link", { name: /See more Third Railify episodes on Rumble/ });
+        assert.equal(await rumble.getAttribute("href"), "https://rumble.com/thirdrailify");
+        assert.equal(await rumble.getAttribute("target"), "_blank");
+        assert.equal(await rumble.getAttribute("rel"), "noopener noreferrer");
       }
       if (route === "detail") assert.equal(await page.getByRole("heading", { level: 1, name: "Fixture retained transmission" }).count(), 1);
       if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-${route}-${width}.png`), fullPage: true });
@@ -58,17 +65,49 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await page.goto(`${ORIGIN}/live?from=short`); await page.waitForURL(`${ORIGIN}/watch?from=short`);
   await page.unroute("**/api/**"); await mockApis(page, true);
   await page.goto(`${ORIGIN}/live?from=live`); await page.waitForURL(`${ORIGIN}/watch/live?from=live`);
+  await page.locator(".promo-banner--live").waitFor();
+  assert.equal(await page.locator(".promo-banner--live").getByText("Fixture live transmission").count(), 1);
+  assert.equal(await page.locator(".promo-banner--live .promo-banner__cta").getAttribute("href"), "/watch/live");
   await context.close();
+
+  const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" }); const reducedPage = await reducedContext.newPage(); await mockApis(reducedPage, false);
+  await reducedPage.goto(`${ORIGIN}/`); await reducedPage.locator(".promo-banner--normal").waitFor();
+  assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__message:visible").count(), 1, "reduced motion exposes one stable readable ticker message");
+  assert.equal(await reducedPage.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true);
+  await reducedContext.close();
+
+  for (const scenario of [
+    { name: "upcoming only", watch: () => { const item = candidate("upcoming"); return { ...watchPayload(false), primary: item, upcoming: item, latest: null, latestByPlatform: { youtube: null, rumble: null } }; }, banner: bannerPayload(), expected: "normal" },
+    { name: "stale live snapshot", watch: () => ({ ...watchPayload(true), freshness: "stale", ageSeconds: 9999 }), banner: bannerPayload(), expected: "normal" },
+    { name: "live takeover disabled", watch: () => watchPayload(true), banner: { ...bannerPayload(), live: { ...bannerPayload().live, enabled: false } }, expected: "normal" },
+    { name: "both disabled", watch: () => watchPayload(false), banner: { ...bannerPayload(), normal: { ...bannerPayload().normal, enabled: false }, live: { ...bannerPayload().live, enabled: false } }, expected: "none" },
+  ]) {
+    const scenarioContext = await browser.newContext({ viewport: { width: 1024, height: 768 } }); const scenarioPage = await scenarioContext.newPage();
+    await mockApis(scenarioPage, false, { watch: scenario.watch, banner: () => scenario.banner });
+    await scenarioPage.goto(`${ORIGIN}/`); await scenarioPage.locator("h1").waitFor();
+    assert.equal(await scenarioPage.locator(".promo-banner--live").count(), 0, `${scenario.name} does not fabricate live takeover`);
+    assert.equal(await scenarioPage.locator(".promo-banner--normal").count(), scenario.expected === "normal" ? 1 : 0, `${scenario.name} uses expected fallback`);
+    await scenarioContext.close();
+  }
+
+  const restoreContext = await browser.newContext({ viewport: { width: 1024, height: 768 } }); const restorePage = await restoreContext.newPage(); let fixtureLive = true;
+  await mockApis(restorePage, false, { watch: () => watchPayload(fixtureLive) });
+  await restorePage.goto(`${ORIGIN}/`); await restorePage.locator(".promo-banner--live").waitFor(); fixtureLive = false;
+  await restorePage.evaluate(() => globalThis.window.dispatchEvent(new Event("online")));
+  await restorePage.locator(".promo-banner--normal").waitFor();
+  assert.equal(await restorePage.locator(".promo-banner--live").count(), 0, "normal promo restores when the live snapshot ends without a reload");
+  await restoreContext.close();
 });
 
-async function mockApis(page, live) {
+async function mockApis(page, live, options = {}) {
   await page.route("**/api/**", (route) => {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/auth/config") return json(route, authConfig());
     if (url.pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (url.pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-28", rates: { CAD: 1, USD: .75 } });
-    if (url.pathname === "/api/watch") return json(route, watchPayload(live));
-    if (url.pathname === "/api/watch/episodes") return json(route, { schema: "thirdrailify-watch-episodes-v1", items: [detailPayload().item], summary: { slotCount: 24, visibleCount: 1, placeholderCount: 23 } });
+    if (url.pathname === "/api/catalogue/banner") return json(route, options.banner ? options.banner() : bannerPayload());
+    if (url.pathname === "/api/watch") return json(route, options.watch ? options.watch() : watchPayload(live));
+    if (url.pathname === "/api/watch/episodes") return json(route, { schema: "thirdrailify-watch-episodes-v1", items: [detailPayload().item, olderPayload().item], summary: { slotCount: 24, visibleCount: 2, placeholderCount: 22 } });
     if (url.pathname === `/api/watch/episodes/${ID}`) return json(route, detailPayload());
     if (url.pathname.startsWith("/api/watch/episodes/")) return json(route, { error: "episode_not_found" }, 404);
     return json(route, { error: "not_found" }, 404);
@@ -81,4 +120,6 @@ function candidate(state = "archive") { return { platform: "youtube", key: "yout
 function liveTitle(state) { return state === "live" ? "Fixture live transmission" : "Fixture latest transmission"; }
 function watchPayload(live) { const item = candidate(live ? "live" : "archive"); return { available: true, schema: "thirdrailify-broadcast-v1", generatedAt: new Date().toISOString(), retrievedAt: new Date().toISOString(), ageSeconds: 1, freshness: "fresh", liveNow: live ? [item] : [], primary: item, latest: item, latestByPlatform: { youtube: item, rumble: null }, upcoming: null, providerStatus: { youtube: { state: live ? "live" : "completed", checkedAt: new Date().toISOString() }, rumble: { state: "offline", checkedAt: new Date().toISOString() } } }; }
 function detailPayload() { const item = { ...candidate("archive"), id: ID, title: "Fixture retained transmission", archiveDate: "2026-08-27T04:00:00.000Z" }; return { schema: "thirdrailify-watch-episode-v1", item, archive: { position: 1, visibleCount: 1, previous: null, next: null } }; }
+function olderPayload() { const item = { ...candidate("archive"), id: `ep_${"b".repeat(64)}`, key: "youtube:XYZ987abc12", contentId: "XYZ987abc12", watchUrl: "https://www.youtube.com/watch?v=XYZ987abc12", title: "Older retained transmission", publishedAt: "2026-08-26T03:00:00.000Z", observedAt: "2026-08-26T04:00:00.000Z", archiveDate: "2026-08-26T04:00:00.000Z" }; return { schema: "thirdrailify-watch-episode-v1", item, archive: { position: 2, visibleCount: 2, previous: null, next: null } }; }
+function bannerPayload() { return { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: true, messages: [{ text: "Fixture announcement one", ctaLabel: null, href: null, newTab: false }, { text: "Fixture announcement two", ctaLabel: "Watch", href: "/watch", newTab: false }], mode: "ticker", speed: "normal" }, live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: "Confirmed by the Watch signal", ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" }, updatedAt: "2026-08-28T00:00:00.000Z" }; }
 async function waitForPreview() { for (let attempt = 0; attempt < 80; attempt += 1) { try { if ((await fetch(ORIGIN)).ok) return; } catch { /* Preview is still starting. */ } await new Promise((resolve) => setTimeout(resolve, 100)); } throw new Error("Vite preview did not start."); }

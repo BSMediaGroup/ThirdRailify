@@ -8,6 +8,8 @@ import { LiveNowIndicator } from "./BroadcastComponents";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { AccountWidget } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
+import { PromoBanner } from "./PromoBanner";
+import { useBannerConfig } from "../hooks/useBannerConfig";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -23,6 +25,7 @@ export function SiteShell() {
   const cart = useCart();
   const { data } = useBroadcast();
   const { account, openAuth } = useAuth();
+  const bannerConfig = useBannerConfig();
   const liveNow = data?.liveNow ?? [];
 
   useEffect(() => {
@@ -43,6 +46,7 @@ export function SiteShell() {
     <div className="site-frame">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="staging-rail"><span><BoltIcon /> V2 staging scaffold</span><strong>Wix remains production</strong></div>
+      <PromoBanner config={bannerConfig} broadcast={data} />
       <header className="site-header">
         <div className="container site-header__inner">
           <Link className="brand" to="/" aria-label="Third Railify home">

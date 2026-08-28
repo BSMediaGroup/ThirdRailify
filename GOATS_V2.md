@@ -21,13 +21,17 @@ The map root exposes non-sensitive acceptance state: `data-goats-map-state`, `da
 
 Each direct SVG marker opens a dark, keyboard-reachable approved-listing card containing safe text-created DOM, optional approved imagery, one small rectangular SVG country flag beside its approximate location, excerpt, and a first-party detail link. The same rectangular flags also prefix the selected panel, gallery cards, detail identity, and shared-point/fallback selectors; avatar styles are scoped to profile images so flags cannot become circular. The animated hero diagram deliberately keeps only the `SYD`/`YYZ` airport codes and no flags. The same marker/list selection contract remains authoritative. The active engine can expand in place into a modal-scale viewport without constructing a second map: body scrolling is locked, Escape and the visible close control restore the embedded state, and the instance is resized/recentered so live geography, in-bounds cards, pan/zoom, attribution, and selection remain intact.
 
+Listings whose privacy-safe coordinates land in the same two-decimal-degree display cell retain their authoritative stored coordinates but receive deterministic screen-space pin offsets in both engines. This prevents one coarse-location marker from intercepting another while the shared-point selector remains an accessible alternate path.
+
 The hero's ambient background sheen is a blurred translating linear field rather than a rotating conic beam, keeping the same restrained motion while ensuring no moving angular seam, kink, or converging wedge crosses the content area. Reduced-motion preferences disable this animation with the rest of the hero motion system.
 
 The form uses the existing Turnstile site key. Admin owns CAPTCHA verification and fails closed when its secret is absent. Browser image preparation applies EXIF orientation, constrains the display derivative to 2,400 px, and re-encodes it without metadata; Admin remains the security boundary and independently validates MIME, structure, size, and dimensions before private R2 storage.
 
 ## Data and migration posture
 
-Production starts with zero V2 listings. The owner-supplied Wix export will be validated and imported later through the Admin contract; there is no Wix runtime dependency. Admin includes exactly two opt-in `DEMO-*` local/test fixtures plus an exact cleanup script. They are never part of a migration or automatic startup path.
+Staging contains eleven approved/published listings: the two retained `DEMO-*` fixtures plus nine owner-supplied records imported from the full Wix `WildGoats` collection. The import is an Admin-side, rerunnable build artifact rather than a runtime Wix dependency: it validates the nine rows and all eighteen local source files, emits nineteen role-aware metadata-stripped WebP records, uploads opaque private R2 objects, and uses `INSERT OR IGNORE` with the immutable Wix record ID so a retry cannot overwrite later Admin edits. Private uploader email and Wix owner/source metadata never enter the public projection.
+
+Authentic Wix aggregate likes/dislikes are stored as bounded legacy snapshots; no fake account reactions are created. New comments and reactions use an effective policy resolved by Admin: a listing may inherit the global default or select `disabled`, `auto`, or `moderated`. Auto-approved is the initial global default. Moderated writes remain excluded from public lists/totals until a Master Admin approves them, and disabled writes fail closed. Approved listing content, product mapping, rating, coarse location, policies, and media remain editable in Admin after publication.
 
 Local gates:
 
@@ -38,4 +42,4 @@ npm run lint
 npm run build
 ```
 
-No D1 migration, R2 write, provider configuration, email, Pages deployment, domain, DNS, or Wix operation is performed by these commands.
+These local commands do not mutate D1/R2. The applied staging import used the existing `thirdrailify-commerce` D1 and `thirdrailify-profile-media` R2 binding only; it did not write back to Wix or change DNS/domains.

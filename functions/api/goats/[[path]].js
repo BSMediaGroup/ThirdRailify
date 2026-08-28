@@ -139,7 +139,7 @@ async function boundedFetch(fetchImpl, input, init, timeoutMs) {
 async function sanitizeUpstreamJson(response) {
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload) {
-    const allowed = new Set(["submission_invalid", "email_invalid", "rating_invalid", "consent_required", "product_invalid", "main_image_required", "draft_expired", "draft_finalised", "image_too_large", "image_format_invalid", "gallery_limit", "authentication_required", "reaction_invalid", "comment_invalid", "too_many_requests", "submissions_unavailable", "community_media_not_configured"]);
+    const allowed = new Set(["submission_invalid", "email_invalid", "rating_invalid", "consent_required", "product_invalid", "main_image_required", "draft_expired", "draft_finalised", "image_too_large", "image_format_invalid", "gallery_limit", "authentication_required", "reaction_invalid", "comment_invalid", "comments_disabled", "reactions_disabled", "too_many_requests", "submissions_unavailable", "community_media_not_configured"]);
     const code = allowed.has(payload?.error) ? payload.error : "community_unavailable";
     const message = allowed.has(payload?.error) && typeof payload?.message === "string" ? payload.message.slice(0, 300) : "The GOATS service is temporarily unavailable.";
     return jsonResponse({ ok: false, error: code, message }, { status: response.status >= 400 && response.status < 600 ? response.status : 503, headers: { "Cache-Control": "no-store" } });

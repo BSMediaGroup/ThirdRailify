@@ -19,13 +19,19 @@ The stable public episode ID is `ep_` plus the SHA-256 digest of the immutable n
 - `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId` are the canonical pages.
 - `/live` is an edge redirect to `/watch/live` only for a fresh effective live candidate; otherwise it redirects to `/watch`. The query string is retained and the redirect is not cached.
 
-The main page always renders six featured positions and the gallery always renders 24 positions. Visible real episodes replace newest-first positions. Every other position is a branded, non-clickable placeholder with no fabricated identity, title, date, duration, or provider claim.
+The main page always renders five featured positions and the gallery always renders 24 positions. The featured rail selects the newest visible historical episodes after excluding the currently exposed main-player candidate when its immutable platform/content key matches. Visible real episodes replace newest-first positions. Every other position is a branded, non-clickable placeholder with no fabricated identity, title, date, duration, or provider claim.
 
 ## Presentation contract
 
-The Public experience is a media-first broadcast hub rather than a source of Watch authority. `/watch` combines the validated current candidate with a segmented native-button provider selector, explicit live/upcoming/latest/delayed/stale/unavailable state language, a dedicated-player route, and a six-position horizontal archive rail. `/watch/episodes` keeps all 24 positions in a dense newest-first gallery with retained/available counts adjacent to the grid. `/watch/live` removes archive clutter around the selected current player, while retained detail pages provide archive position and visible-only previous/next navigation.
+The Public experience is a media-first broadcast hub rather than a source of Watch authority. `/watch` combines the validated current candidate with a segmented native-button provider selector, explicit live/upcoming/latest/delayed/stale/unavailable state language, a dedicated-player route, and a five-position horizontal archive rail. `/watch/episodes` keeps all 24 positions in a dense newest-first gallery beneath a motion-gated signal-network hero and truthful retained-capacity diagram. The gallery is titled `PAST EPISODES`; placeholder numbering is described as archive positions rather than transmission slots. `/watch/live` removes archive clutter around the selected current player, while retained detail pages provide archive position and visible-only previous/next navigation. The page closes with an exact external Rumble archive route at `https://rumble.com/thirdrailify`.
 
 Real cards always expose title, provider, archive date, and route without hover. Empty/hidden slots use deterministic visual variants but remain non-interactive articles with truthful awaiting-transmission labels. Signal sweeps use transform/opacity only and are removed for reduced-motion users. The responsive contract covers desktop, tablet portrait/landscape, and 390-pixel phone layouts without changing player selection, archive order, or routing.
+
+## Global banner relationship
+
+The SiteShell retains its hard-coded staging/Wix truth rail as a separate environment notice. A distinct configurable banner reads a bounded safe projection from the Admin Pages application through Public’s fail-soft `/api/catalogue/banner` proxy. Normal promo configuration supports static, ticker, and crossfade presentation. The shared `BroadcastProvider` remains the single browser polling loop; no banner child fetches Watch state.
+
+Live takeover is presentation-only. It activates only when the normalized current Watch snapshot is not stale and contains a provider-state/presentation-state `live` candidate with a real verification timestamp and unexpired live lease. The banner displays that candidate’s real title and links to the fixed `/watch/live` route. Upcoming/latest/archive candidates, stale or expired live data, and disabled takeover configuration cannot produce live presentation. When effective live state ends, the same React tree restores the configured normal promo or disappears if normal promo is disabled.
 
 ## Admin management boundary
 

@@ -23,8 +23,8 @@ export async function uploadGoatMedia(draftToken: string, file: File, role: "mai
   return responseJson<{ ok: true; media: { id: string } }>(response);
 }
 export async function finaliseGoatDraft(input: Record<string, unknown>) { return writeJson<{ ok: true; reference: string; status: "pending"; emailQueued: boolean }>("/api/goats/drafts/finalise", "POST", input); }
-export async function reactToGoat(slug: string, value: -1 | 1, csrfToken: string) { return writeJson<{ ok: true; likes: number; dislikes: number; currentReaction: number }>(`/api/goats/listings/${encodeURIComponent(slug)}/reaction`, "POST", { value }, csrfToken); }
-export async function postGoatComment(slug: string, body: string, csrfToken: string) { return writeJson<{ ok: true; item: GoatComment }>(`/api/goats/listings/${encodeURIComponent(slug)}/comments`, "POST", { body }, csrfToken); }
+export async function reactToGoat(slug: string, value: -1 | 1, csrfToken: string) { return writeJson<{ ok: true; likes: number; dislikes: number; currentReaction: number; pendingApproval?: boolean }>(`/api/goats/listings/${encodeURIComponent(slug)}/reaction`, "POST", { value }, csrfToken); }
+export async function postGoatComment(slug: string, body: string, csrfToken: string) { return writeJson<{ ok: true; item: GoatComment | null; pendingApproval?: boolean }>(`/api/goats/listings/${encodeURIComponent(slug)}/comments`, "POST", { body }, csrfToken); }
 export async function deleteGoatComment(id: string, csrfToken: string) { return writeJson<{ ok: true }>(`/api/goats/comments/${encodeURIComponent(id)}`, "DELETE", {}, csrfToken); }
 
 async function getJson<T>(url: string, signal?: AbortSignal) {

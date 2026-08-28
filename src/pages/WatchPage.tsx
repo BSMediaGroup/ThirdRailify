@@ -9,6 +9,7 @@ import { SignalField } from "../components/SignalField";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useEpisodes } from "../hooks/useEpisodes";
 import { RUMBLE_URL, YOUTUBE_URL } from "../lib/broadcast";
+import { featuredEpisodes } from "../lib/episodes";
 
 export function WatchPage() {
   const { data, loading, unavailable, error } = useBroadcast();
@@ -17,7 +18,7 @@ export function WatchPage() {
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
   const live = Boolean(data?.liveNow.length);
-  const featured = archive.data?.items.slice(0, 6) ?? [];
+  const featured = featuredEpisodes(archive.data?.items ?? [], selected?.key ?? null);
   const stateLabel = selected && data ? broadcastStateLabel(selected, data.freshness) : "Signal unavailable";
 
   return (
@@ -66,11 +67,11 @@ export function WatchPage() {
 
       <section className="section watch-archive-drawer" aria-labelledby="featured-episodes-title">
         <div className="container split-heading">
-          <div><p className="eyebrow">Six-slot broadcast rail</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
+          <div><p className="eyebrow">Five-point broadcast rail</p><h2 id="featured-episodes-title">Latest from the archive.</h2></div>
           <p>{archive.error ? "The archive is temporarily unavailable; current playback remains independent." : `${archive.data?.summary.visibleCount ?? 0} visible episode${archive.data?.summary.visibleCount === 1 ? "" : "s"} retained. New completed broadcasts arrive through the signed signal path.`}</p>
         </div>
-        <div className="container episode-featured-grid" aria-busy={archive.loading} aria-label="Latest archive slots">
-          {Array.from({ length: 6 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-slot-${index}`} episode={featured[index] ?? null} index={index} featured />)}
+        <div className="container episode-featured-grid" aria-busy={archive.loading} aria-label="Latest archived episodes">
+          {Array.from({ length: 5 }, (_, index) => <EpisodeCard key={featured[index]?.id ?? `featured-position-${index}`} episode={featured[index] ?? null} index={index} featured />)}
         </div>
         <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Explore the full archive <ArrowIcon /></Link></div>
       </section>

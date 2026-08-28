@@ -9,9 +9,9 @@ export function EpisodeCard({ episode, index, featured = false }: { episode: Wat
   const slot = String(index + 1).padStart(2, "0");
   if (!episode) {
     return (
-      <article className={`episode-card episode-card--placeholder episode-card--pattern-${index % 4}${featured ? " episode-card--featured" : ""}`} aria-label={`Archive slot ${slot}, awaiting transmission`}>
+      <article className={`episode-card episode-card--placeholder episode-card--pattern-${index % 4}${featured ? " episode-card--featured" : ""}`} aria-label={`Archive position ${slot}, awaiting transmission`}>
         <EpisodeFallback placeholder variant={index % 4} />
-        <div className="episode-card__body"><span>Archive slot {slot}</span><h3>Awaiting transmission</h3><p>Reserved for the next validated broadcast.</p></div>
+        <div className="episode-card__body"><span>Archive position {slot}</span><h3>Awaiting transmission</h3><p>Reserved for the next validated broadcast.</p></div>
       </article>
     );
   }

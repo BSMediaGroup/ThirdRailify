@@ -7,9 +7,10 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Vite 5, React 18, TypeScript, and React Router.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and staged support surfaces.
 - Watch V2 routes at `/watch`, `/watch/live`, `/watch/episodes`, and `/watch/v/:episodeId`, with validated current playback, a naturally populated 24-record SQLite archive, truthful empty slots, and no browser/provider scraping.
+- A separate Admin-configured Public announcement banner with static/ticker/crossfade modes and an automatic real-Watch-state Live Now takeover; the staging/Wix environment rail remains independent.
 - First-class `/community` destination with the full public-channel/member-profile Discord view, existing goat artwork, verified community paths, and explicit public-data boundaries.
 - Premium `/shop` drop experience with a D1-merchandised featured rotation, graphical category discovery, URL-backed search/filter/sort state, responsive product cards, truthful loading/error/empty/image states, and the existing browser-local cart.
-- Complete local V2 `/goats` community experience with an animated signal hero, MapLibre/OpenFreeMap dark vector map plus automatic Leaflet raster recovery, compact accessible markers with dark SVG-flagged listing cards, modal-scale expansion, approved-only gallery/detail projections, product-linked submission wizard, authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Production data remains empty until the owner-supplied Wix export is imported later.
+- Complete V2 `/goats` community experience with an animated signal hero, MapLibre/OpenFreeMap dark vector map plus automatic Leaflet raster recovery, compact accessible markers with dark SVG-flagged listing cards, modal-scale expansion, approved-only gallery/detail projections, product-linked submission wizard, policy-aware authenticated reactions/comments, and a fixed same-origin bridge to Admin authority. Staging serves the nine imported Wix stories plus the two retained demos.
 - Product detail routes at `/products/:category/:slug`; legacy `/product-page/:slug` paths and category routes remain preserved client-side.
 - Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
@@ -111,6 +112,8 @@ ThirdRailify/
 ├── BUMP_NOTES.md
 └── package.json
 ```
+
+Additive banner files in this structure are `functions/api/catalogue/banner.js` (fail-soft Admin projection proxy), `src/components/PromoBanner.tsx`, `src/hooks/useBannerConfig.ts`, and the validated `src/lib/banner.ts` / `src/lib/liveBanner.ts` boundaries. The Watch pages and episode components own the five-position rail and 24-position archive presentation.
 
 `WATCH_V2.md` is the Watch authority, retention, public-route, placeholder, and Admin-management architecture document.
 
