@@ -32,6 +32,16 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
       assert.equal(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true, `${route} has no horizontal overflow at ${width}x${height}`);
       assert.deepEqual(errors, [], `${route} has no browser or page-origin HTTP errors at ${width}x${height}`);
 
+      const footerPolicyLinks = page.locator(".site-footer .footer-grid > div:last-child > a");
+      assert.deepEqual(await footerPolicyLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href"))), ["/terms", "/privacy", "/refunds", "/accessibility"], `${route} footer keeps the four-item policy stack at ${width}x${height}`);
+      assert.equal(await page.locator('.site-footer a[href="/policies"]').count(), 0, `${route} footer omits the policy-library link at ${width}x${height}`);
+      assert.equal(await page.locator(".footer-bottom .footer-privacy-button").count(), 1, `${route} keeps privacy choices outside the policy stack at ${width}x${height}`);
+      const footerBorder = await page.locator(".site-footer").evaluate((element) => {
+        const style = globalThis.getComputedStyle(element);
+        return { width: style.borderTopWidth, style: style.borderTopStyle, color: style.borderTopColor };
+      });
+      assert.deepEqual(footerBorder, { width: "1px", style: "solid", color: "rgba(245, 240, 229, 0.1)" }, `${route} footer owns the global top divider at ${width}x${height}`);
+
       const headerBottom = await page.locator(".site-header").evaluate((element) => element.getBoundingClientRect().bottom);
       const h1Top = await page.locator("h1").evaluate((element) => element.getBoundingClientRect().top);
       assert.ok(h1Top >= headerBottom, `${route} heading is not clipped behind the global header at ${width}x${height}`);
@@ -42,6 +52,8 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
         assert.equal(await page.locator(".policy-card--future a, .policy-card--future button").count(), 0, "future policy space has no fake route");
         assert.deepEqual(await page.locator(".policy-card[href]").evaluateAll((cards) => cards.map((card) => card.getAttribute("href"))), ["/terms", "/privacy", "/refunds", "/accessibility"]);
       } else {
+        assert.equal(await page.locator('.policy-breadcrumb a[href="/policies"]').count(), 1, `${route} keeps policy-library discovery on the document page`);
+        assert.equal(await page.locator('.policy-document__footer a[href="/policies"]').count(), 1, `${route} keeps the all-policies action at the end of the document`);
         const sections = page.locator(".policy-section");
         const tocLinks = page.locator(".policy-toc a");
         assert.ok(await sections.count() >= 6, `${route} contains substantive policy sections`);

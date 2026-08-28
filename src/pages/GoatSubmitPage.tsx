@@ -4,17 +4,19 @@ import { TurnstileWidget } from "../auth/TurnstileWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { createGoatDraft, finaliseGoatDraft, getGoatConfig, getGoatProducts, uploadGoatMedia } from "../goats/client";
 import type { GoatConfig, GoatProduct } from "../goats/types";
+import { usePrivacy } from "../privacy/PrivacyProvider";
 
 type DraftFields = { displayName: string; email: string; city: string; region: string; countryCode: string; productId: string; description: string; rating: string; consent: boolean; website: string };
 const initial: DraftFields = { displayName: "", email: "", city: "", region: "", countryCode: "", productId: "", description: "", rating: "", consent: false, website: "" };
 const steps = ["Identity & photos", "Location & product", "Story", "Review & consent"];
 
 export function GoatSubmitPage() {
+  const { categories } = usePrivacy();
   const [params] = useSearchParams();
   const { account } = useAuth();
   const [config, setConfig] = useState<GoatConfig | null>(null);
   const [products, setProducts] = useState<GoatProduct[]>([]);
-  const [fields, setFields] = useState<DraftFields>(() => loadLocalDraft());
+  const [fields, setFields] = useState<DraftFields>(() => loadLocalDraft(categories.preferences));
   const [step, setStep] = useState(0);
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
@@ -39,7 +41,11 @@ export function GoatSubmitPage() {
     }).catch((reason) => setError(reason instanceof Error ? reason.message : "Submission configuration is unavailable."));
     return () => controller.abort();
   }, [params]);
-  useEffect(() => { const safe = { displayName: fields.displayName, city: fields.city, region: fields.region, countryCode: fields.countryCode, productId: fields.productId, description: fields.description, rating: fields.rating }; localStorage.setItem("thirdrailify-goats-draft-v2", JSON.stringify(safe)); }, [fields]);
+  useEffect(() => {
+    if (!categories.preferences) return;
+    const safe = { displayName: fields.displayName, city: fields.city, region: fields.region, countryCode: fields.countryCode, productId: fields.productId, description: fields.description, rating: fields.rating };
+    try { localStorage.setItem("thirdrailify-goats-draft-v2", JSON.stringify(safe)); } catch { /* draft persistence is optional */ }
+  }, [categories.preferences, fields]);
   useEffect(() => { firstField.current?.focus(); }, [step]);
 
   const countries = useMemo(countryOptions, []);
@@ -106,7 +112,7 @@ function stepError(step: number, fields: DraftFields, mainImage: File | null) {
   if (step === 3 && !fields.consent) return "Consent is required before submission.";
   return "";
 }
-function loadLocalDraft() { try { const value = JSON.parse(localStorage.getItem("thirdrailify-goats-draft-v2") || "{}"); return { ...initial, ...value, email: "", consent: false, website: "" }; } catch { return initial; } }
+function loadLocalDraft(allowStoredPreference: boolean) { try { const value = JSON.parse(allowStoredPreference ? localStorage.getItem("thirdrailify-goats-draft-v2") || "{}" : "{}"); return { ...initial, ...value, email: "", consent: false, website: "" }; } catch { return initial; } }
 function countryOptions() { const display = typeof Intl.DisplayNames === "function" ? new Intl.DisplayNames(undefined, { type: "region" }) : null; const rows: Array<{ code: string; name: string }> = []; for (let first = 65; first <= 90; first += 1) for (let second = 65; second <= 90; second += 1) { const code = String.fromCharCode(first, second); const name = display?.of(code); if (name && name !== code && !name.startsWith("Unknown Region")) rows.push({ code, name }); } return rows.sort((left, right) => left.name.localeCompare(right.name)); }
 function move<T>(items: T[], from: number, to: number) { const next = [...items]; const [item] = next.splice(from, 1); next.splice(to, 0, item); return next; }
 function formatBytes(value: number) { return value < 1024 * 1024 ? `${Math.ceil(value / 1024)} KB` : `${(value / 1024 / 1024).toFixed(1)} MB`; }

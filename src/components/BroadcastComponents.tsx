@@ -4,6 +4,7 @@ import rumbleIcon from "../../assets/icons/rumble.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import type { BroadcastCandidate, BroadcastPlatform } from "../lib/broadcast";
 import { ArrowIcon, PlayIcon, RadioIcon } from "./Icons";
+import { usePrivacy } from "../privacy/PrivacyProvider";
 
 export function platformIcon(platform: BroadcastPlatform) {
   return platform === "rumble" ? rumbleIcon : youtubeIcon;
@@ -53,6 +54,7 @@ export function BroadcastPlayer({
   eager?: boolean;
   className?: string;
 }) {
+  const privacy = usePrivacy();
   const [active, setActive] = useState(eager);
   const stage = useRef<HTMLDivElement>(null);
 
@@ -77,7 +79,7 @@ export function BroadcastPlayer({
     );
   }
   const label = `${platformLabel(candidate.platform)} — ${candidate.title}`;
-  const showIframe = active && candidate.embedUrl;
+  const showIframe = active && candidate.embedUrl && privacy.categories.externalMedia;
   return (
     <div ref={stage} className={`broadcast-player broadcast-player--${candidate.platform} ${className}`} role="region" aria-label={`Broadcast player: ${label}`}>
       {showIframe ? (
@@ -88,6 +90,20 @@ export function BroadcastPlayer({
           allow="encrypted-media; picture-in-picture; fullscreen"
           referrerPolicy="strict-origin-when-cross-origin"
         />
+      ) : candidate.embedUrl && !privacy.categories.externalMedia ? (
+        <div className="broadcast-player__privacy" style={candidate.thumbnailUrl ? { backgroundImage: `url("${candidate.thumbnailUrl}")` } : undefined}>
+          <div className="broadcast-player__shade" />
+          <div className="broadcast-player__privacy-copy">
+            <span className="broadcast-player__platform"><img src={platformIcon(candidate.platform)} alt="" />{platformLabel(candidate.platform)}</span>
+            <strong>External media is disabled by your privacy settings.</strong>
+            <p>Allow only external media to load this {platformLabel(candidate.platform)} player, or watch directly on the provider.</p>
+            <div>
+              <button type="button" onClick={privacy.allowExternalMedia}><PlayIcon /><span>Allow media &amp; play</span></button>
+              <button type="button" onClick={privacy.openManager}>Privacy choices</button>
+              <a href={candidate.watchUrl} target="_blank" rel="noopener noreferrer">Open {platformLabel(candidate.platform)} <ArrowIcon /></a>
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="broadcast-player__poster" style={candidate.thumbnailUrl ? { backgroundImage: `url("${candidate.thumbnailUrl}")` } : undefined}>
           <div className="broadcast-player__shade" />

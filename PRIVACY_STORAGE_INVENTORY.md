@@ -1,0 +1,32 @@
+# Third Railify browser storage and consent inventory
+
+Audited 28 August 2026 against the Public source and a clean Chromium context on `https://thirdrailify.pages.dev`. This is an engineering inventory, not a guarantee of legal compliance. Bump `CONSENT_VERSION` in `src/privacy/consent.ts` before deploying a material purpose, category, or vendor change.
+
+| Name / technology | Mechanism | Purpose | Party / vendor | Duration | Required for service operation | Consent category | Gated | Route / component |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `thirdrailify_session` | HTTP-only cookie | Authenticated session and CSRF derivation | First party / Third Railify | 8 hours; revoked on logout | Yes, when signed in | Essential | Always available | Auth Functions and `AuthProvider` |
+| `thirdrailify_consent` | Cookie | Remember acceptance, rejection, consent version, timestamps, and two optional category choices | First party / Third Railify | 183 days (about six months) | Yes, to respect the privacy choice | Essential | Always available | `PrivacyProvider` |
+| `thirdrailify-commerce-cart-v2` | `localStorage` | Requested cart product ID, variant ID, and quantity | First party / Third Railify | Until cart/browser storage is cleared | Yes, for the persistent cart the user requests | Essential | Always available | `CartProvider`, Store and product routes |
+| `thirdrailify.storefront.currency.v1` | `localStorage` | Remember selected display currency | First party / Third Railify | Until withdrawal or browser storage is cleared | No | Preferences | Yes | `CurrencyProvider`, Store surfaces |
+| `thirdrailify.storefront.currency-rates.v1` | `localStorage` | Cache a validated public CAD exchange-rate snapshot for stale fallback | First party / Third Railify | Until withdrawal, replacement, or browser storage is cleared | No | Preferences | Yes | `CurrencyProvider` |
+| `thirdrailify-goats-draft-v2` | `localStorage` | Remember non-sensitive GOATS draft text; excludes email, consent, and images | First party / Third Railify | Until successful submission, withdrawal, or browser storage is cleared | No | Preferences | Yes | `/goats/submit` |
+| YouTube privacy-enhanced player | Third-party iframe and provider-controlled storage/access | Play a selected current or archived broadcast | Third party / Google YouTube | Provider-controlled; clean iframe audit observed partitioned `yt-icons-last-purged`, `ytidb::LAST_RESULT_ENTRY_KEY`, and `YtIdbMeta` IndexedDB state before playback | No; direct provider links remain | External media | Yes; iframe does not exist before consent | `BroadcastPlayer` on Watch routes |
+| Rumble player | Third-party iframe, provider cookies, and advertising requests | Play a selected current or archived broadcast | Third party / Rumble; observed requests also reached Rumble/Google advertising hosts | Provider-controlled; clean audit observed Rumble `cf_clearance` and `__cf_bm` cookies | No; direct provider links remain | External media | Yes; iframe does not exist before consent | `BroadcastPlayer` on Watch routes |
+| Cloudflare Turnstile | On-demand third-party script/iframe and security processing | Bot and abuse protection for account and GOATS mutations | Third party / Cloudflare | Provider-controlled challenge/security lifetime | Yes, for the protected request the user initiates | Essential security | Loads only when the protected form is opened/reached | `TurnstileWidget` |
+| Discord public community projection/fallback | Same-origin API first; bounded third-party fetch fallback, no client storage | Display public server/channel/member presence | First party projection; third party / Discord fallback | No persistent client state | No persistent browser access; feature content only | No consent category | Not storage-gated | `DiscordCommunityWidget` |
+| OpenFreeMap map resources | Third-party images/vector tiles and worker memory; no persistent cache/IDB found | Display deliberately approximate approved GOATS locations | Third party / OpenFreeMap and map-data ecosystem | Page/session memory | Feature delivery, with non-map fallback | No consent category | Not storage-gated | `/goats`, `GoatsMap` |
+| Identity-provider redirect | Top-level navigation chosen by the user | Sign in with Discord, Google (when enabled), GitHub, or X | Third-party chosen provider | Provider-controlled | Required only for the selected sign-in route | Essential requested authentication | Starts only on explicit provider choice | `AuthDialog`, Admin auth authority |
+
+## Negative findings
+
+- No application use of `sessionStorage`, IndexedDB, Cache Storage, or service workers.
+- No Google Analytics/`gtag`, Meta/Facebook pixel, social advertising pixel, tag manager, first-party advertising identifier, fingerprinting, or marketing tracker.
+- No Stripe or checkout JavaScript is loaded in the browser; checkout remains disabled. Server environment examples are not runtime browser integrations.
+- Cloudflare Web Analytics is not enabled on the current Third Railify top-level staging page: there is no application snippet, the stable and immutable HTML contain no injected beacon, the CSP does not permit it, and a clean pre-consent network audit made no beacon request. An earlier pre-change capture saw `static.cloudflareinsights.com`, but frame attribution proved it came from the eager Rumble iframe. That provider-owned request is now behind External media consent. Cloudflare currently documents its RUM beacon as cookie-free and browser-storage-free, so an intentional future activation would require an inventory review but not an automatic cookie classification.
+- YouTube and Rumble embeds are the only consent-requiring third-party media access. The clean pre-change audit proved that an eager Rumble iframe set provider cookies and contacted advertising hosts before a choice; the consent layer prevents creation of that iframe until External media is allowed.
+
+## Withdrawal behavior
+
+Withdrawing Preferences immediately removes the three optional first-party `localStorage` values listed above. Withdrawing External media prevents future iframe creation and unmounts any current player iframe. Third Railify cannot delete cookies or other storage owned by YouTube, Rumble, or another third-party domain; the implementation truthfully stops future embedded access instead.
+
+The Public auth session, cart, privacy-choice cookie, same-origin APIs, security controls, navigation, and direct provider links remain usable without optional consent.

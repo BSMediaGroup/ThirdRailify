@@ -16,6 +16,7 @@ import { GoatsPage } from "./pages/GoatsPage";
 import { GoatSubmitPage } from "./pages/GoatSubmitPage";
 import { PoliciesPage } from "./pages/PoliciesPage";
 import { PolicyPage } from "./pages/PolicyPage";
+import { CheckoutSuccessPage } from "./pages/CheckoutSuccessPage";
 
 export function App() {
   return (
@@ -24,6 +25,7 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductDetailPage />} />
+        <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
         <Route path="/products/all" element={<ShopPage />} />
         <Route path="/products/:category" element={<ShopPage />} />
         <Route path="/products/:category/:slug" element={<ProductDetailPage />} />

@@ -4,7 +4,9 @@
 
 The replacement `/shop` uses the same-origin `/api/commerce/*` Pages Functions, which proxy the Admin project's sanitized Commerce D1 projection. This Public project deliberately has no Commerce D1 binding and contains no Admin credential. The legacy Wix snapshot remains migration/reference evidence only and is not a runtime catalogue fallback.
 
-Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Checkout is visibly disabled until the later Stripe sandbox acceptance milestone; the live Wix site remains the production store until explicit cutover.
+Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Normal customer checkout remains visibly disabled. A separate Master-only acceptance action lives in Admin and can generate one Stripe-hosted TEST Session for the configured candidate; Public exposes no bypass. The live Wix site remains the production store until explicit cutover.
+
+`/checkout/success` is a truthful TEST result page. It starts in a checking state and reads only `/api/commerce/order-status?session_id=cs_test_…`, which proxies a bounded local D1 projection. The browser does not call Stripe, cannot enumerate orders, and never infers payment from the redirect query. Only a signed Stripe webhook can display **Payment confirmed**; fulfillment remains disabled.
 
 Production-oriented public website and storefront foundation for Third Railify. This repository is the future Wix replacement, but the current milestone is a staging scaffold: Wix remains production and no custom domain is attached.
 
@@ -21,6 +23,8 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Authoritative CAD prices with one shared USD-default approximate display-currency system, persisted/query-aware selection, same-origin server rate projection, cached stale fallback, and zero changes to cart or checkout values.
 - Shared account client with an OAuth-first email-capable login modal, explicit Turnstile, one-time Admin-to-Public handoff, same-origin sessions/logout, a detailed responsive far-right header identity menu, compact icon/count cart control, verified-live-only header signal, and real `/account` routes with Admin-authoritative display-name and avatar changes.
 - First-class policy library at `/policies` plus deep-linked Terms, Privacy, Refund, and Accessibility documents grounded in the current V2 data and provider boundaries, with a truthful non-interactive future-membership register slot.
+- Compact non-modal privacy choices with equal first-layer Accept/Reject actions, granular Preferences and External media controls, a versioned 183-day first-party choice cookie, footer withdrawal, and consent-gated optional local storage and Watch iframes.
+- Truthful `/checkout/success` states backed by an exact opaque-Session local payment-status projection; no provider metadata, internal account identity, audit data, Printful mapping, or browser-side Stripe authority is exposed.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages static output, SPA fallback, staging noindex, and baseline security headers.
 
@@ -44,6 +48,7 @@ npm run test:functions
 npm run test:storefront
 npm run test:goats
 npm run test:browser:policies
+npm run test:browser:consent
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
@@ -99,6 +104,7 @@ ThirdRailify/
 ├── src/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
 │   ├── components/         Shared shell plus reusable broadcast/player, Discord, rail, product, and cart UI
+│   ├── privacy/            Versioned consent model, cookie record, categories, and storage cleanup
 │   ├── currency/           Shared selected-currency state, cache, conversion, and formatting
 │   ├── content/            Structured policy registry and long-form legal content
 │   ├── data/               Dated bounded Wix snapshot
@@ -119,6 +125,7 @@ ThirdRailify/
 ├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
 ├── LIVE_SITE_AUDIT.md
 ├── POLICIES.md            Policy route, content-source, maintenance, and review notes
+├── PRIVACY_STORAGE_INVENTORY.md  Audited browser storage, provider access, categories, and gating
 ├── BUMP_NOTES.md
 └── package.json
 ```
@@ -154,6 +161,8 @@ Workers KV is now a read-only legacy migration source. On first object initializ
 The storage contract is available at `GET /api/state-backend`. It exposes only deployment identity, SQLite schema version, snapshot availability, read-only migration status, and expected zero KV operations. `Verify-Cloudflare-State-Backend.cmd` compares the checked-in release/fingerprint with the live Pages contract and reports `CURRENT`, `STALE`, `UNREACHABLE`, or `INCOMPATIBLE` without writing production state. Keep the legacy namespace for the migration/audit window. Roll forward on faults where possible: reverting to KV would reintroduce quota usage and lose any state updates accepted only by the Durable Object. Historical Cloudflare KV totals remain visible until analytics retention ages them out; success is zero new live namespace operations.
 
 `BroadcastPlayer`, `BroadcastMetadata`, `BroadcastStatusBadge`, `LiveNowIndicator`, and `PlatformSelector` are reusable. Iframes are created only for validated HTTPS YouTube privacy-enhanced or Rumble embed URLs; no guessed embed, `srcdoc`, provider script, autoplay, credentialed browser request, or unsafe HTML injection is used. A missing Rumble embed renders a poster/direct-watch fallback. CSP names only the required provider frame/image hosts and retains `object-src 'none'` and `frame-ancestors 'none'`.
+
+The consent manager stores only schema version 1, decision/expiry timestamps, and `preferences` / `externalMedia` booleans in the host-only `thirdrailify_consent` cookie for 183 days. Essential auth/security, cart, and consent-choice storage remain available. Currency/rate cache and non-sensitive GOATS draft persistence require Preferences; YouTube/Rumble iframes require External media. Withdrawing Preferences removes the three optional first-party values, while withdrawing media unmounts provider iframes. Cloudflare Web Analytics is not enabled on the current Third Railify top-level staging response; a Cloudflare beacon observed before this change was frame-attributed to Rumble and is now naturally behind the media gate. See `PRIVACY_STORAGE_INVENTORY.md` for the exact inventory and version-bump rule.
 
 ## Cloudflare and domain safety
 

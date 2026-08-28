@@ -19,6 +19,7 @@ Material corrections include:
 - the current V2 preview cart is disclosed as non-transactional;
 - Cloudflare Pages, Functions/Workers, D1, Durable Objects, R2-backed media authority, and Turnstile are described;
 - the eight-hour host session, browser-local cart/currency/GOATS draft data, approximate-location submissions, Discord public projections, OpenFreeMap resources, and conditional identity providers are described;
+- the versioned six-month privacy-choice cookie, optional Preferences storage, External media iframe gate, withdrawal cleanup, and audited absence of top-level Cloudflare Web Analytics are described from the implementation;
 - the Watch statement now reflects its real bounded 24-record naturally ingested archive instead of the obsolete claim that all broadcast metadata is ephemeral;
 - European lawful bases, rights, international processing, retention criteria, and regulator routes are included without claiming a jurisdiction or safeguard that has not been verified;
 - the accessibility statement uses WCAG 2.2 Level AA as a goal and does not make an unaudited conformance claim.
@@ -26,6 +27,8 @@ Material corrections include:
 ## Maintenance rules
 
 Policy wording must follow the deployed system. Before changing a data statement, inspect the public and Admin authority paths, browser storage, cookies, external resources, current providers, and actual retention behaviour. Do not add a payment processor, analytics vendor, advertising cookie, membership promise, exact deletion period, or compliance claim before the corresponding implementation and operational process exist.
+
+`PRIVACY_STORAGE_INVENTORY.md` is the engineering-level device-storage and provider-access register. A material category, purpose, or vendor change requires updating that inventory and incrementing the single `CONSENT_VERSION` constant before deployment so an older choice cannot silently approve a new use.
 
 The policy date is a content release date. Update it only when the published wording materially changes.
 
@@ -40,4 +43,3 @@ These are implementation-ready plain-language policies based on the supplied rec
 - the final checkout, fulfilment, tax, cancellation, membership, and consumer-law flow if paid services are enabled.
 
 No unverified name, address, registration, representative, certification, or conformance status is invented in the UI.
-

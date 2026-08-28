@@ -51,3 +51,15 @@ export function MinusIcon(props: IconProps) {
 export function RadioIcon(props: IconProps) {
   return <svg {...base} {...props}><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.5 18.5a9 9 0 0 1 0-13M18.5 5.5a9 9 0 0 1 0 13" /><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" /></svg>;
 }
+
+export function ThumbUpIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 4.2-7A1.5 1.5 0 0 1 14 3.76V8h5.1a2 2 0 0 1 1.95 2.43l-1.8 8A3.3 3.3 0 0 1 16.03 21H7V10Z" /></svg>;
+}
+
+export function ThumbDownIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M7 10v11H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3Zm0 0 4.2-7A1.5 1.5 0 0 1 14 3.76V8h5.1a2 2 0 0 1 1.95 2.43l-1.8 8A3.3 3.3 0 0 1 16.03 21H7V10Z" transform="rotate(180 12 12)" /></svg>;
+}
+
+export function CopyIcon(props: IconProps) {
+  return <svg {...base} {...props}><rect x="8" y="8" width="11" height="11" rx="1.5" /><path d="M16 8V6.5A1.5 1.5 0 0 0 14.5 5h-9A1.5 1.5 0 0 0 4 6.5v9A1.5 1.5 0 0 0 5.5 17H8" /></svg>;
+}

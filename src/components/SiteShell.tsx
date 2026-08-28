@@ -10,6 +10,8 @@ import { AccountWidget } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { PromoBanner } from "./PromoBanner";
 import { useBannerConfig } from "../hooks/useBannerConfig";
+import { usePrivacy } from "../privacy/PrivacyProvider";
+import { PrivacyControls } from "./PrivacyControls";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -82,11 +84,13 @@ export function SiteShell() {
       <main id="main-content"><Outlet /></main>
       <SiteFooter />
       <CartDrawer />
+      <PrivacyControls />
     </div>
   );
 }
 
 function SiteFooter() {
+  const privacy = usePrivacy();
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
@@ -97,9 +101,9 @@ function SiteFooter() {
         </div>
         <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
         <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/vip">VIP</Link><Link to="/support">Support</Link></div>
-        <div><h2>Policies</h2><Link to="/policies">Policy library</Link><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/refunds">Refunds</Link><Link to="/accessibility">Accessibility</Link></div>
+        <div><h2>Policies</h2><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/refunds">Refunds</Link><Link to="/accessibility">Accessibility</Link></div>
       </div>
-      <div className="container footer-bottom"><span>Third Railify V2 staging scaffold · 2026</span><span>Current Wix site remains production</span></div>
+      <div className="container footer-bottom"><span>Third Railify V2 staging scaffold · 2026</span><div className="footer-bottom__utilities"><button className="footer-privacy-button" type="button" onClick={privacy.openManager}>Privacy choices</button><span>Current Wix site remains production</span></div></div>
     </footer>
   );
 }

@@ -291,12 +291,13 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Your device",
         bullets: [
           "Essential session cookie: a secure, HTTP-only cookie keeps an authenticated session on the current host and expires after eight hours. It uses SameSite=Lax and is not available to page scripts.",
-          "Local cart: product IDs and quantities persist until you clear the cart or browser storage. It does not create an order or contain payment details.",
-          "Currency preference and rate cache: the selected display currency and a validated exchange-rate snapshot persist locally for convenience.",
-          "GOATS draft: non-sensitive text selections may persist locally while you prepare a submission. The local draft excludes your email, consent, and image files and is removed after successful submission.",
-          "Third-party resources: an embedded video, identity-provider redirect, map resource, Discord request, or Turnstile challenge may let that provider process technical information under its own policy.",
+          "Essential consent preference: the first-party thirdrailify_consent cookie records consent schema version 1, decision and expiry timestamps, and only the Preferences and External media category choices. It uses SameSite=Lax, Secure on HTTPS, a host-only path, and expires after approximately six months so acceptance and rejection are both remembered.",
+          "Essential local cart: thirdrailify-commerce-cart-v2 stores only product ID, variant ID, and quantity until you clear the cart or browser storage. It supports the cart you request, does not create an order, and contains no payment details.",
+          "Optional Preferences: with consent, thirdrailify.storefront.currency.v1 remembers display currency, thirdrailify.storefront.currency-rates.v1 caches a validated public exchange-rate snapshot, and thirdrailify-goats-draft-v2 remembers non-sensitive form text. The draft excludes email, consent, and images and is removed after successful submission. Withdrawing Preferences removes all three values owned by this site.",
+          "Optional External media: YouTube privacy-enhanced and Rumble player iframes are not created until this category is allowed. Loading a player sends a request to that provider and may let it use its own cookies or storage; Rumble's player may also request advertising services. A media-only choice does not enable Preferences.",
+          "Security and requested integrations: Turnstile loads only when an account or GOATS submission needs a bot check. Identity-provider redirects load only when you choose one. These protect or deliver the feature you request and are not treated as marketing consent.",
         ],
-        note: "There is no V2 marketing-cookie banner because the current implementation does not intentionally set non-essential advertising or marketing cookies. If that changes, the consent experience and this policy must change before those technologies are enabled.",
+        note: "Essential storage remains on. Preferences and External media start off until a positive choice, while Analytics and Marketing categories are absent because the current V2 site has no consent-requiring analytics storage or first-party marketing tracker. Use Privacy choices in the footer at any time; withdrawing media unloads current iframes, although Third Railify cannot erase storage already controlled by a third-party provider.",
       },
       {
         id: "community-publication",
@@ -314,11 +315,12 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Broadcast metadata",
         paragraphs: [
           "Third Railify receives signed broadcast snapshots and displays public YouTube and Rumble metadata. The current snapshot changes naturally, while a separate archive keeps at most 24 eligible episode records with stable IDs. Hidden records remain in that bounded retention set but are not public.",
-          "The site uses YouTube's privacy-enhanced embed domain and does not autoplay. Loading or playing an embedded provider may still disclose technical request information to that provider. Third Railify does not request your Google or Rumble credentials and does not store a viewer-specific watch history.",
+          "The site uses YouTube's privacy-enhanced embed domain and does not autoplay. YouTube and Rumble iframes remain absent until External media is allowed; a viewer can instead follow the direct provider link. Loading or playing an allowed provider may disclose technical request information and permit provider storage or advertising requests. Third Railify does not request your Google or Rumble credentials and does not store a viewer-specific watch history.",
         ],
         links: [
           { label: "Google Privacy Policy", href: "https://policies.google.com/privacy" },
           { label: "YouTube Terms of Service", href: "https://www.youtube.com/t/terms" },
+          { label: "Rumble Privacy Policy", href: "https://rumble.com/s/privacy" },
         ],
       },
       {
@@ -326,7 +328,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "Service providers and recipients",
         eyebrow: "Where data goes",
         bullets: [
-          "Cloudflare provides Pages hosting, Functions and Workers, network delivery and security, Turnstile bot checks, D1 database storage, Durable Object state, R2-backed media storage, and related infrastructure. Cloudflare may process IP addresses, routing data, request metadata, security signals, and data stored for us.",
+          "Cloudflare provides Pages hosting, Functions and Workers, network delivery and security, Turnstile bot checks, D1 database storage, Durable Object state, R2-backed media storage, and related infrastructure. Cloudflare may process IP addresses, routing data, request metadata, security signals, and data stored for us. Cloudflare Web Analytics is not enabled on the current Third Railify top-level staging page.",
           "Discord may provide sign-in and public community-widget information. The public widget can expose Discord display names, avatars, and presence selected by Discord or the authorised bot signal.",
           "Google/YouTube and Rumble provide linked or embedded media and public broadcast metadata. An identity provider you choose may also provide account identifiers, display information, and verified email status.",
           "OpenFreeMap and its underlying OpenMapTiles/OpenStreetMap ecosystem provide map resources for approved approximate community locations. Frankfurter provides public exchange-rate data; our request does not intentionally send your cart or account data.",
