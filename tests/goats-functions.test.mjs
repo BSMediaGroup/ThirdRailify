@@ -98,9 +98,11 @@ test("Admin outage and oversized upload fail with bounded public errors", async 
   assert.equal(oversized.status, 413); assert.equal((await oversized.json()).error, "image_too_large");
 });
 
-test("MapLibre implementation clusters GeoJSON, disables world copies, and has no iframe or demo tile endpoint", async () => {
+test("MapLibre implementation clusters DOM markers, disables world copies, and has no iframe or demo tile endpoint", async () => {
   const source = await readFile(new URL("../src/goats/GoatsMap.tsx", import.meta.url), "utf8");
-  assert.match(source, /cluster: true/); assert.match(source, /renderWorldCopies: false/); assert.match(source, /getClusterExpansionZoom/); assert.match(source, /goatpin\.svg/); assert.match(source, /webGlSupported/); assert.match(source, /<MapFallback/); assert.doesNotMatch(source, /<iframe|demotiles|mapbox.*token/i);
+  const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
+  assert.match(source, /clusterMapFeatures/); assert.match(source, /renderWorldCopies: false/); assert.match(source, /goatpin\.svg/); assert.match(source, /goats-map__point/); assert.match(source, /event\.originalEvent/); assert.match(source, /DEFAULT_MAP_STYLE/); assert.match(source, /natural_earth\/ne2sr\/\{z\}\/\{x\}\/\{y\}\.png/); assert.match(source, /webGlSupported/); assert.match(source, /<MapFallback/); assert.doesNotMatch(source, /maxBounds:\s*\[\[-180|addSource\("goats"|map\.loadImage\(goatPin\)|<iframe|demotiles|mapbox.*token/i);
+  assert.match(headers, /connect-src[^\n]+https:\/\/tiles\.openfreemap\.org/); assert.match(headers, /worker-src 'self' blob:/);
 });
 
 test("product CTA and submission query use canonical product IDs", async () => {

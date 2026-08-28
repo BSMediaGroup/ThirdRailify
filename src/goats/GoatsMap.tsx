@@ -1,15 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import * as maplibregl from "maplibre-gl";
-import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
+import type { Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import goatPin from "../../assets/icons/goatpin.svg";
 import type { GoatMapFeatureCollection } from "./types";
 
-const EMPTY_STYLE: maplibregl.StyleSpecification = {
+const DEFAULT_MAP_STYLE: StyleSpecification = {
   version: 8,
-  sources: {},
+  sources: {
+    "openfreemap-natural-earth": {
+      type: "raster",
+      tiles: ["https://tiles.openfreemap.org/natural_earth/ne2sr/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 6,
+      attribution: "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+    },
+  },
   layers: [
-    { id: "background", type: "background", paint: { "background-color": "#0b0c0e" } },
+    { id: "goats-map-background", type: "background", paint: { "background-color": "#080906" } },
+    {
+      id: "openfreemap-natural-earth",
+      type: "raster",
+      source: "openfreemap-natural-earth",
+      paint: { "raster-opacity": 0.82, "raster-saturation": -0.45, "raster-contrast": 0.18, "raster-brightness-max": 0.56 },
+    },
   ],
 };
 
@@ -26,84 +40,69 @@ export default function GoatsMap({ data, selectedId, onSelect }: {
   useEffect(() => {
     if (!container.current || !webGlSupported()) { setFailed(true); return; }
     let active = true;
-    let clusterMarkers: maplibregl.Marker[] = [];
-    let refreshClusterCounts = () => {};
-    let resizeObserver: ResizeObserver | null = null;
+    let locationMarkers: maplibregl.Marker[] = [];
+    let refreshLocationMarkers = () => {};
+    let loadTimeout = 0;
     const configuredStyle = String(import.meta.env.VITE_GOATS_MAP_STYLE_URL || "").trim();
     let map: MapLibreMap;
     try {
       map = new maplibregl.Map({
         container: container.current,
-        style: configuredStyle || EMPTY_STYLE,
+        style: configuredStyle || DEFAULT_MAP_STYLE,
         center: [0, 20],
         zoom: 1,
         minZoom: 1,
         maxZoom: 15,
-        maxBounds: [[-180, -85], [180, 85]],
         renderWorldCopies: false,
         attributionControl: false,
         cooperativeGestures: true,
-        trackResize: false,
+        trackResize: true,
       });
-    } catch { setFailed(true); return; }
+    } catch (error) { logMapFailure("initialization", error); setFailed(true); return; }
     mapRef.current = map;
     map.scrollZoom.disable();
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: "GOATS locations are approximate" }));
-    const markInteraction = () => { interacted.current = true; };
+    const markInteraction = (event: { originalEvent?: unknown }) => { if (event.originalEvent) interacted.current = true; };
     map.on("dragstart", markInteraction); map.on("zoomstart", markInteraction); map.on("rotatestart", markInteraction);
-    map.on("error", (event) => { if (!configuredStyle || !event.error?.message) return; setFailed(true); });
+    map.on("error", (event) => { if (event.error?.message) console.warn(`GOATS map resource warning: ${event.error.message}`); });
+    loadTimeout = window.setTimeout(() => { if (active) { logMapFailure("load", new Error("Map style load timed out")); setFailed(true); } }, 12_000);
     map.on("load", async () => {
       if (!active) return;
+      window.clearTimeout(loadTimeout);
       try {
-        const image = await map.loadImage(goatPin);
-        if (!active) return;
-        if (!map.hasImage("goat-pin")) map.addImage("goat-pin", image.data);
-        map.addSource("goats", { type: "geojson", data, cluster: true, clusterMaxZoom: 14, clusterRadius: 52 });
-        map.addLayer({ id: "goat-clusters", type: "circle", source: "goats", filter: ["has", "point_count"], paint: { "circle-color": "#e4ff3f", "circle-radius": ["step", ["get", "point_count"], 20, 10, 26, 30, 34], "circle-stroke-color": "#14160f", "circle-stroke-width": 4 } });
-        map.addLayer({ id: "goat-points", type: "symbol", source: "goats", filter: ["!", ["has", "point_count"]], layout: { "icon-image": "goat-pin", "icon-size": 0.16, "icon-allow-overlap": true, "icon-anchor": "bottom" } });
-        refreshClusterCounts = () => {
-          clusterMarkers.forEach((marker) => marker.remove()); clusterMarkers = [];
-          const seen = new Set<number>();
-          for (const feature of map.queryRenderedFeatures({ layers: ["goat-clusters"] })) {
-            const clusterId = Number(feature.properties?.cluster_id); if (!Number.isFinite(clusterId) || seen.has(clusterId) || feature.geometry.type !== "Point") continue; seen.add(clusterId);
-            const label = document.createElement("span"); label.className = "goats-map__cluster-count"; label.textContent = String(feature.properties?.point_count_abbreviated || feature.properties?.point_count || ""); label.setAttribute("aria-hidden", "true");
-            clusterMarkers.push(new maplibregl.Marker({ element: label, anchor: "center" }).setLngLat(feature.geometry.coordinates as [number, number]).addTo(map));
-          }
-        };
-        map.on("idle", refreshClusterCounts); refreshClusterCounts();
-        if (typeof ResizeObserver === "function" && container.current) {
-          let observedSize: { width: number; height: number } | null = null;
-          resizeObserver = new ResizeObserver(([entry]) => {
-            if (!active || !entry) return;
-            const next = { width: Math.round(entry.contentRect.width), height: Math.round(entry.contentRect.height) };
-            if (!observedSize) { observedSize = next; return; }
-            if (Math.abs(next.width - observedSize.width) > 1 || Math.abs(next.height - observedSize.height) > 1) setFailed(true);
+        refreshLocationMarkers = () => {
+          locationMarkers.forEach((marker) => marker.remove());
+          locationMarkers = clusterMapFeatures(map, data).map((group) => {
+            const element = document.createElement("button");
+            element.type = "button";
+            if (group.features.length > 1) {
+              element.className = "goats-map__cluster-count";
+              element.textContent = String(group.features.length);
+              element.setAttribute("aria-label", `Zoom into ${group.features.length} nearby GOATS listings`);
+              element.addEventListener("click", () => map.easeTo({ center: group.coordinates, zoom: Math.min(map.getZoom() + 2, 14), duration: 500 }));
+            } else {
+              const feature = group.features[0];
+              element.className = "goats-map__point";
+              element.setAttribute("aria-label", `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`);
+              const image = document.createElement("img"); image.src = goatPin; image.alt = ""; image.width = 37; image.height = 50; element.append(image);
+              element.addEventListener("click", () => onSelect(String(feature.properties.id)));
+            }
+            return new maplibregl.Marker({ element, anchor: group.features.length > 1 ? "center" : "bottom" }).setLngLat(group.coordinates).addTo(map);
           });
-          resizeObserver.observe(container.current);
-        }
-        map.on("click", "goat-clusters", async (event) => {
-          const feature = map.queryRenderedFeatures(event.point, { layers: ["goat-clusters"] })[0];
-          const clusterId = Number(feature?.properties?.cluster_id); const coordinates = feature?.geometry.type === "Point" ? feature.geometry.coordinates as [number, number] : null;
-          if (!coordinates || !Number.isFinite(clusterId)) return;
-          const source = map.getSource("goats") as GeoJSONSource;
-          const zoom = await source.getClusterExpansionZoom(clusterId).catch(() => map.getZoom() + 2);
-          map.easeTo({ center: coordinates, zoom: Math.min(zoom, 14), duration: 500 });
-        });
-        map.on("click", "goat-points", (event) => { const id = String(event.features?.[0]?.properties?.id || ""); if (id) onSelect(id); });
-        for (const layer of ["goat-clusters", "goat-points"]) {
-          map.on("mouseenter", layer, () => { map.getCanvas().style.cursor = "pointer"; });
-          map.on("mouseleave", layer, () => { map.getCanvas().style.cursor = ""; });
-        }
+        };
+        map.on("moveend", refreshLocationMarkers);
+        map.on("resize", refreshLocationMarkers);
+        map.once("idle", () => { if (!active) return; refreshLocationMarkers(); if (container.current) container.current.dataset.mapReady = "true"; });
         fitFeatures(map, data);
-      } catch { if (active) setFailed(true); }
+      } catch (error) { if (active) { logMapFailure("load", error); setFailed(true); } }
     });
-    return () => { active = false; resizeObserver?.disconnect(); clusterMarkers.forEach((marker) => marker.remove()); map.off("idle", refreshClusterCounts); map.off("dragstart", markInteraction); map.off("zoomstart", markInteraction); map.off("rotatestart", markInteraction); map.remove(); mapRef.current = null; };
+    return () => { active = false; window.clearTimeout(loadTimeout); locationMarkers.forEach((marker) => marker.remove()); map.off("moveend", refreshLocationMarkers); map.off("resize", refreshLocationMarkers); map.off("dragstart", markInteraction); map.off("zoomstart", markInteraction); map.off("rotatestart", markInteraction); map.remove(); mapRef.current = null; };
   }, [data, onSelect]);
 
   useEffect(() => {
     const map = mapRef.current; const feature = data.features.find((entry) => String(entry.properties.id) === selectedId);
-    if (!map || !feature || interacted.current) return;
+    if (!map || container.current?.dataset.mapReady !== "true" || !feature || interacted.current) return;
     map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom: Math.max(map.getZoom(), 5), duration: 450 });
   }, [data, selectedId]);
 
@@ -130,4 +129,25 @@ function fitFeatures(map: MapLibreMap, data: GoatMapFeatureCollection) {
 
 function webGlSupported() {
   try { const canvas = document.createElement("canvas"); return Boolean(canvas.getContext("webgl2") || canvas.getContext("webgl")); } catch { return false; }
+}
+
+function clusterMapFeatures(map: MapLibreMap, data: GoatMapFeatureCollection) {
+  const buckets = new Map<string, typeof data.features>();
+  for (const feature of data.features) {
+    const point = map.project(feature.geometry.coordinates as [number, number]);
+    const key = `${Math.floor(point.x / 58)},${Math.floor(point.y / 58)}`;
+    buckets.set(key, [...(buckets.get(key) || []), feature]);
+  }
+  return [...buckets.values()].map((features) => ({
+    features,
+    coordinates: [
+      features.reduce((sum, feature) => sum + feature.geometry.coordinates[0], 0) / features.length,
+      features.reduce((sum, feature) => sum + feature.geometry.coordinates[1], 0) / features.length,
+    ] as [number, number],
+  }));
+}
+
+function logMapFailure(stage: "initialization" | "load", error: unknown) {
+  const detail = error instanceof Error ? `${error.name}: ${error.message}` : "Unknown map error";
+  console.error(`GOATS map ${stage} failed: ${detail}`);
 }
