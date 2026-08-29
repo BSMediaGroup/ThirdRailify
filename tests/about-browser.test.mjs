@@ -42,7 +42,7 @@ test("About uses a dedicated route while other major routes stay available", asy
   const page = await context.newPage();
   await mockApis(page);
   const routes = new Map([
-    ["/friends", /The regulars\.\s+Chaos has a guest list\./i], ["/vip", "Discover the GOAT within."],
+    ["/friends", /The regulars\.\s+Chaos has a guest list\./i], ["/vip", /THE INNER RAIL\s+IS BEING BUILT\./i],
     ["/gift-cards", "Gift cards need a real handoff."],
   ]);
   for (const [route, heading] of routes) {
@@ -83,7 +83,7 @@ test("About presents the supplied story, formats, hosts, internal paths, and no 
   assert.ok(await countryLabel.evaluate((label) => Math.abs(label.querySelector("img").getBoundingClientRect().height - Number.parseFloat(getComputedStyle(label).fontSize)) <= 1), "the Canadian flag matches the CA label height");
 
   const hrefs = await main.locator("a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
-  for (const href of ["/watch", "/shawn", "/gina", "/community", "/goats"]) assert.ok(hrefs.includes(href), `${href} is linked from the About story`);
+  for (const href of ["/watch", "/shawn", "/gina", "/community", "/goats", "/friends"]) assert.ok(hrefs.includes(href), `${href} is linked from the About story`);
   assert.ok(hrefs.includes("#origin"));
   assert.equal(hrefs.some((href) => /^https?:/i.test(href || "")), false, "About contains no external platform directory");
   assert.equal(await main.locator('a[href^="mailto:"]').count(), 0, "About does not duplicate footer contact addresses");
@@ -134,7 +134,10 @@ test("About remains composed, animated, complete, and overflow-free at every req
     assert.deepEqual(brokenImages, []);
     assert.equal(await page.locator(".host-panel").count(), 2);
     assert.ok(await page.locator(".format-card__copy p").first().evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize) >= 14));
-    if (width === 390) assert.ok(await page.locator('.about-manifesto a[href="/watch"]').evaluate((element) => element.getBoundingClientRect().height >= 44));
+    if (width === 390) {
+      assert.ok(await page.locator('.about-manifesto a[href="/watch"]').evaluate((element) => element.getBoundingClientRect().height >= 44));
+      assert.ok(await page.locator('.about-manifesto a[href="/friends"]').evaluate((element) => element.getBoundingClientRect().height >= 44));
+    }
     if (process.env.ABOUT_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); window.scrollTo(0, 0); });
       await page.waitForFunction(() => window.scrollY === 0);

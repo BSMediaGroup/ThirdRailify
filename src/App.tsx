@@ -56,6 +56,11 @@ export function App() {
         <Route path="/wheel" element={<Navigate to="/wheels" replace />} />
         <Route path="/live" element={<LiveAliasPage />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/account/profile" element={<AccountPage />} />
+        <Route path="/account/delivery" element={<AccountPage />} />
+        <Route path="/account/orders" element={<AccountPage />} />
+        <Route path="/account/orders/:orderId" element={<AccountPage />} />
+        <Route path="/account/security" element={<AccountPage />} />
         <Route path="/account/login" element={<AccountPage openLogin />} />
         <Route path="/shawn" element={<HostPage hostKey="shawn" />} />
         <Route path="/gina" element={<HostPage hostKey="gina" />} />

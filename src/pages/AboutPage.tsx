@@ -166,6 +166,7 @@ export function AboutPage() {
           <div className="button-row">
             <Link className="button button--primary" to="/watch"><PlayIcon /> Watch Third Railify</Link>
             <Link className="button button--secondary" to="/community">Pull up a chair <ArrowIcon /></Link>
+            <Link className="button button--secondary" to="/friends">Meet our friends <ArrowIcon /></Link>
           </div>
         </div>
       </section>

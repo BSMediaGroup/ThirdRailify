@@ -44,7 +44,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     });
 
     await page.goto(`${ORIGIN}/cart`); await page.getByRole("heading", { name: "Your cart." }).waitFor();
-    await page.getByRole("link", { name: "Enter delivery details" }).click(); await page.waitForURL(`${ORIGIN}/checkout`);
+    await page.getByRole("link", { name: "Review delivery readiness" }).click(); await page.waitForURL(`${ORIGIN}/checkout`);
     await page.getByRole("heading", { level: 1, name: "Delivery & checkout." }).waitFor(); await page.getByText("BLEH Fixture", { exact: true }).waitFor();
     if (width === 1440) {
       await page.getByRole("button", { name: /Sign in to purchase/ }).click();
@@ -77,15 +77,15 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     await page.getByRole("radio", { name: /Standard delivery/ }).waitFor();
     assert.equal(await page.getByRole("radio", { name: /Standard delivery/ }).isChecked(), true);
     assert.match(await page.locator(".checkout-summary").innerText(), /\$8\.95 CAD/); assert.match(await page.locator(".checkout-summary").innerText(), /\$39\.45 CAD/);
-    assert.equal(await page.getByRole("button", { name: "Continue to payment" }).isDisabled(), true);
-    assert.match(await page.locator(".checkout-gate-message").innerText(), /Checkout remains closed/);
+    assert.equal(await page.getByRole("button", { name: "Continue to secure payment" }).isDisabled(), true);
+    assert.match(await page.locator(".checkout-gate-message").innerText(), /Checkout is currently unavailable/);
     assert.doesNotMatch(await page.locator("body").innerText(), /11576|target-variant|printful|sync_variant|store_id|providerRateId/i);
 
     await page.getByLabel("Address line 1").fill("101 Changed Street");
     assert.equal(await page.getByRole("radio").count(), 0); assert.match(await page.locator(".shipping-unavailable").innerText(), /Delivery details changed/);
     await page.getByRole("button", { name: "Request shipping methods" }).click(); await page.getByRole("radio", { name: /Standard delivery/ }).waitFor();
     await page.getByRole("link", { name: "Back to cart" }).click(); await page.getByLabel("Quantity for BLEH Fixture").getByRole("button", { name: "Increase quantity" }).click();
-    await page.getByRole("link", { name: "Enter delivery details" }).click(); await page.getByRole("heading", { level: 1, name: "Delivery & checkout." }).waitFor(); await page.getByText("BLEH Fixture", { exact: true }).waitFor();
+    await page.getByRole("link", { name: "Review delivery readiness" }).click(); await page.getByRole("heading", { level: 1, name: "Delivery & checkout." }).waitFor(); await page.getByText("BLEH Fixture", { exact: true }).waitFor();
     assert.match(await page.locator(".checkout-summary").innerText(), /Qty 2/); assert.equal(await page.getByRole("radio").count(), 0);
 
     const storage = await page.evaluate(() => ({ cart: localStorage.getItem("thirdrailify-commerce-cart-v2"), keys: Object.keys(localStorage), values: Object.values(localStorage) }));
@@ -108,6 +108,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/auth/config") return json(route, { configured: true, emailSignupConfigured: true, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
     if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, account: { id: "account-fixture", email: "verified@example.test", displayName: "Account Fixture", username: null, avatarUrl: null, providers: ["email"], role: "user", adminLevel: "none", status: "active", emailVerified: true, createdAt: "2026-08-29T00:00:00.000Z", lastLoginAt: null, source: "test" }, access: { isAdmin: false, isMasterAdmin: false } });
+    if (path === "/api/account/commerce") return json(route, { ok: true, authority: "Admin Commerce D1", linked: true, contact: { name: "Account Fixture", phone: "", email: "verified@example.test", emailVerified: true, revision: 1 }, addresses: [], orders: [], summary: { savedAddressCount: 0, orderCount: 0, liveOrderCount: 0, testOrderCount: 0 }, checkout: { enabled: false, livePaymentCaptureEnabled: false, fulfillmentSubmissionEnabled: false, shippingConfigured: false, message: "Checkout is currently unavailable. No order or payment can be created." } });
     if (path === "/api/commerce/catalogue") return json(route, catalogue());
     if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
@@ -117,8 +118,8 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
   await accountPage.getByText("Purchasing as Account Fixture", { exact: true }).waitFor();
   assert.equal(await accountPage.getByLabel("Customer email").inputValue(), "verified@example.test");
   assert.equal(await accountPage.getByLabel("Recipient name").inputValue(), "Account Fixture");
-  await accountPage.getByLabel("Customer email").fill("delivery-only@example.test");
-  await accountPage.getByText("Checkout edits do not change your Account profile.").first().waitFor();
+  assert.equal(await accountPage.getByLabel("Customer email").isEditable(), false);
+  await accountPage.getByText("Your verified primary account email is used for this purchase.").waitFor();
   assert.equal(await accountPage.evaluate(() => localStorage.getItem("thirdrailify-commerce-cart-v2") !== null), true);
   assert.equal(await accountPage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
   assert.deepEqual(accountErrors, []);

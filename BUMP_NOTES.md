@@ -1,5 +1,38 @@
 # Bump notes
 
+## 2026-08-30 - About-to-Friends navigation
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added a clear `Meet our friends` call to action in the closing section of the Public About page, linking directly to the existing `/friends` route.
+- Extended About browser coverage to require the route and verify its mobile target remains at least 44px high. No API, account, commerce, schema, D1/R2, provider, Wix, DNS, or domain behavior changed.
+- Deployed Public as `88062728-77d3-4674-bc8f-1d74d7d79f1e` (`https://88062728.thirdrailify.pages.dev`); stable and immutable `/about` serve the same release assets.
+
+## 2026-08-30 - Account V2 profile, delivery and orders
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Rebuilt the signed-in Account area as responsive Overview, Profile & Contact, Delivery Addresses, Orders & Payments, order detail, and Security & Privacy routes with real browser history, loading/empty/error states, keyboard-contained address editing, and reduced-motion-safe presentation.
+- Added a signed same-origin Public-to-Admin account-commerce boundary. Admin resolves the active Account, links exactly one Customer, encrypts current contact and reusable addresses with existing purpose-bound AES-GCM custody, enforces ownership/revisions/a ten-address cap, and keeps immutable order-time delivery snapshots independent of current address changes.
+- Integrated saved-address selection into Checkout and the default destination into Cart. Verified account email is read-only; saving a newly entered address is opt-in and unchecked; only product/variant/quantity remain in browser storage. Shipping and tax stay pending, the primary checkout action remains disabled from canonical authority, and no card form, live payment, order, fulfilment, or provider write was added.
+- Added focused function/migration/encryption/ownership/order-isolation tests plus responsive browser coverage at 1920/1440/1024/768/390. Wix, DNS, custom domains, production cutover, and the one-time Stripe TEST acceptance remain untouched.
+- Released Admin first as `114963e2-7e24-4394-864e-7231cdba5cf9` (`https://114963e2.thirdrailify-admin.pages.dev`) and the final Public build as `21da3b11-3fd1-4c22-9387-3553e6a11ada` (`https://21da3b11.thirdrailify.pages.dev`). Stable and immutable Account, Cart, Checkout, and signed API boundaries were verified; an initial nested-route 404 found during acceptance was corrected through deliberate noindex Account SEO routing before the final Public release.
+
+## 2026-08-30 - Wheels share notice overlay
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Moved Wheels share notices into a document-level info-level overlay so they paint above the sticky Public header, use a calm blue treatment instead of error red, and retain bounded responsive width and viewport gutters.
+- Share notices now dismiss automatically after four seconds, expose an accessible close button, and also close on Escape; repeated notices safely restart the timer.
+- Added browser coverage for portal placement, header paint order, viewport bounds, manual dismissal, and bounded four-second expiry. No Wheels API, result, account, commerce, schema, D1/R2, provider, Wix, DNS, domain, or production-cutover behavior changed.
+- Deployed the final info-level Public fix as `a6387a6e-1355-4e7e-82be-e9d9f5f35db6` (`https://a6387a6e.thirdrailify.pages.dev`); the stable alias serves the same release assets. An intermediate overlay-only deployment was superseded before final acceptance.
+
 ## 2026-08-30 — Wheels V1.7 custom appearance and celebration
 
 CURRENT VER=0.1.0-alpha.0

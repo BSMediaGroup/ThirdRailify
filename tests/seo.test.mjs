@@ -33,6 +33,7 @@ test("every Public route has deliberate SEO or a canonical edge redirect", async
     ["/wheels/:slug", "/wheels/demo-wheel"],
     ["/wheels/:slug/edit", "/wheels/demo-wheel/edit"],
     ["/wheels/:slug/present", "/wheels/demo-wheel/present"],
+    ["/account/orders/:orderId", "/account/orders/ord_test"],
   ]);
   for (const declared of paths) {
     const path = samples.get(declared) || declared;
@@ -60,7 +61,7 @@ test("static pages publish unique titles, descriptions, canonicals, social image
     for (const marker of ["og:title", "og:description", "og:image", "twitter:card", "twitter:image", 'rel="canonical"', "application/ld\\+json"]) assert.match(head, new RegExp(marker));
     assert.doesNotMatch(head, /noindex/);
   }
-  for (const path of ["/account", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/live", "/wheels/new", "/wheels/demo-wheel/edit", "/wheels/demo-wheel/present", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
+  for (const path of ["/account", "/account/profile", "/account/delivery", "/account/orders", "/account/orders/ord_test", "/account/security", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/live", "/wheels/new", "/wheels/demo-wheel/edit", "/wheels/demo-wheel/present", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
 });
 
 test("dynamic product, episode, and GOATS metadata uses sanitized page authority", () => {

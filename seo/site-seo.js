@@ -150,6 +150,26 @@ const STATIC_ROUTES = [
     label: "Account",
     index: false,
   }),
+  route("/account/profile", "account:profile", "Profile & Contact | Third Railify Account", "Manage your Third Railify display name, profile image, verified account email presentation, and private commerce contact details.", {
+    label: "Profile & contact",
+    canonicalPath: "/account",
+    index: false,
+  }),
+  route("/account/delivery", "account:delivery", "Delivery Addresses | Third Railify Account", "Manage encrypted reusable delivery addresses and choose a default destination through your authenticated Third Railify Account.", {
+    label: "Delivery addresses",
+    canonicalPath: "/account",
+    index: false,
+  }),
+  route("/account/orders", "account:orders", "Orders & Payments | Third Railify Account", "Review account-linked Third Railify order amounts, payment state, purchase environment, and fulfilment evidence without stored card details.", {
+    label: "Orders & payments",
+    canonicalPath: "/account",
+    index: false,
+  }),
+  route("/account/security", "account:security", "Security & Privacy | Third Railify Account", "Review connected sign-in methods, authenticated session state, account privacy controls, and current self-service security boundaries.", {
+    label: "Security & privacy",
+    canonicalPath: "/account",
+    index: false,
+  }),
   route("/account/login", "account:login", "Sign In | Third Railify", "Sign in to your Third Railify account through the protected shared account service.", {
     label: "Sign in",
     canonicalPath: "/account",
@@ -163,6 +183,12 @@ export function staticSeoForPath(pathname, origin) {
   const path = normalizePath(pathname);
   const exact = STATIC_BY_PATH.get(path);
   if (exact) return createSeoDocument(exact, origin);
+
+  if (/^\/account\/orders\/[^/]+$/.test(path)) return createSeoDocument(route(path, "account:order-detail", "Order Details | Third Railify Account", "Review the authenticated account-owned items, payment summary, delivery snapshot, fulfilment state, and order timeline for this purchase.", {
+    label: "Order details",
+    canonicalPath: "/account/orders",
+    index: false,
+  }), origin);
 
   const category = path.match(/^\/products\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
   if (category) {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { wheelSeo } from "../../seo/site-seo.js";
-import { BackIcon, EditIcon, FullscreenIcon, OfficialIcon, PaletteIcon, PracticeIcon, ShareIcon, SoundIcon } from "../components/Icons";
+import { BackIcon, CloseIcon, EditIcon, FullscreenIcon, OfficialIcon, PaletteIcon, PracticeIcon, ShareIcon, SoundIcon } from "../components/Icons";
 import { useAuth } from "../auth/AuthProvider";
 import { getWheel, listWheels, officialSpin, prefetchWheel, winnerAction } from "../wheels/client";
 import { formatProbability, participantOdds, selectWeightedEntry, spinPlan } from "../wheels/engine.mjs";
@@ -30,13 +30,24 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
   const [gallery, setGallery] = useState<WheelSummary[]>([]); const galleryRef = useRef<WheelSummary[]>([]);
   const [transition, setTransition] = useState<WheelSceneTransition | null>(null); const transitionTimer = useRef<number | null>(null); const scrollGuardTimer = useRef<number | null>(null); const navigationFocus = useRef<WheelDirection | null>(null); const loadSequence = useRef(0);
   const sceneScroll = useRef<number | null>(null);
-  const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [loading, setLoading] = useState(true); const [routePending, setRoutePending] = useState(false);
+  const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const noticeTimer = useRef<number | null>(null); const [loading, setLoading] = useState(true); const [routePending, setRoutePending] = useState(false);
   const [mode, setMode] = useState<"practice" | "official">("practice"); const [rotation, setRotation] = useState(0); const [spinning, setSpinning] = useState(false); const [spinRequestPending, setSpinRequestPending] = useState(false); const [soundMuted, setSoundMuted] = useState(false);
   const [result, setResult] = useState<{ entry: WheelEntry; official: boolean } | null>(null); const [busyAction, setBusyAction] = useState(false); const [appearanceOpen, setAppearanceOpen] = useState(false); const [appearanceDraft, setAppearanceDraft] = useState<WheelEditorDraft | undefined>();
   const [pointerTarget, setPointerTarget] = useState<WheelEntry | null>(null); const [participantDetail, setParticipantDetail] = useState<{ entry: WheelEntry; trigger: HTMLElement | null } | null>(null); const pending = useRef<{ entry: WheelEntry; official: boolean } | null>(null);
   const wheel = activePayload?.wheel || null; const access = activePayload?.access || null;
   const seo = useMemo(() => wheel ? wheelSeo(wheel, window.location.origin, presentation ? "present" : "view") : null, [presentation, wheel]);
   usePageSeo(seo);
+
+  const dismissNotice = useCallback(() => {
+    if (noticeTimer.current != null) window.clearTimeout(noticeTimer.current);
+    noticeTimer.current = null;
+    setNotice("");
+  }, []);
+  const showNotice = useCallback((message: string) => {
+    if (noticeTimer.current != null) window.clearTimeout(noticeTimer.current);
+    setNotice(message);
+    noticeTimer.current = window.setTimeout(() => { noticeTimer.current = null; setNotice(""); }, 4_000);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -70,14 +81,20 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
       setLoading(false); setRoutePending(false); setError(message(reason));
       const current = activeRef.current;
       if (current && current.wheel.slug !== slug) {
-        setNotice("That public wheel is no longer available. Gallery order has been refreshed.");
+        showNotice("That public wheel is no longer available. Gallery order has been refreshed.");
         void listWheels("", "recent").then((payload) => { galleryRef.current = payload.items; setGallery(payload.items); }).catch(() => undefined);
         navigate(`/wheels/${current.wheel.slug}${presentation ? "/present" : ""}`, { replace: true, state: { wheelSceneNavigation: true } });
       } else { activeRef.current = null; setActivePayload(null); }
     });
-  }, [location.state, navigate, presentation, slug, stopTicks]);
+  }, [location.state, navigate, presentation, showNotice, slug, stopTicks]);
 
-  useEffect(() => () => { if (transitionTimer.current != null) window.clearTimeout(transitionTimer.current); if (scrollGuardTimer.current != null) window.clearInterval(scrollGuardTimer.current); }, []);
+  useEffect(() => () => { if (transitionTimer.current != null) window.clearTimeout(transitionTimer.current); if (scrollGuardTimer.current != null) window.clearInterval(scrollGuardTimer.current); if (noticeTimer.current != null) window.clearTimeout(noticeTimer.current); }, []);
+  useEffect(() => {
+    if (!notice) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") dismissNotice(); };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [dismissNotice, notice]);
   useEffect(() => { const rememberScroll = () => { sceneScroll.current = window.scrollY; }; window.addEventListener("popstate", rememberScroll, true); return () => window.removeEventListener("popstate", rememberScroll, true); }, []);
   useEffect(() => {
     if (!wheel) return;
@@ -119,12 +136,12 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
     const url = new URL(`/wheels/${current.slug}`, window.location.origin).href;
     setError("");
     try {
-      if (navigator.share) { await navigator.share({ title: current.title, text: current.description || `Spin ${current.title} on Third Railify.`, url }); setNotice("Share options opened for this wheel."); }
-      else { await copyText(url); setNotice("Wheel link copied to your clipboard."); }
+      if (navigator.share) { await navigator.share({ title: current.title, text: current.description || `Spin ${current.title} on Third Railify.`, url }); showNotice("Share options opened for this wheel."); }
+      else { await copyText(url); showNotice("Wheel link copied to your clipboard."); }
     } catch (reason) {
       if (reason instanceof DOMException && reason.name === "AbortError") return;
-      try { await copyText(url); setNotice("Share options were unavailable, so the wheel link was copied instead."); }
-      catch { setNotice(`Sharing is unavailable here. Copy this wheel link: ${url}`); }
+      try { await copyText(url); showNotice("Share options were unavailable, so the wheel link was copied instead."); }
+      catch { showNotice(`Sharing is unavailable here. Copy this wheel link: ${url}`); }
     }
   };
   const participantManagerOpen = !presentation && searchParams.get("dialog") === "participants";
@@ -135,7 +152,7 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
   if (!wheel || !activePayload || !access) return <WheelState presentation={presentation} title="Wheel unavailable" message={error || "This wheel was not found."} />;
   const messageTemplate = wheel.config.winnerMessageTemplate || "Signal locked: {winner}"; const neighbours = wheelGalleryNeighbours(gallery, wheel.slug);
   const navigationLocked = spinning || spinRequestPending || Boolean(result) || busyAction || routePending || Boolean(transition) || editorRequested || participantManagerOpen || appearanceOpen;
-  const navigateToWheel = (summary: WheelSummary | null, direction: WheelDirection) => { if (!summary || navigationLocked) return; sceneScroll.current = window.scrollY; navigationFocus.current = direction; setParticipantDetail(null); setNotice(""); navigate(`/wheels/${summary.slug}${presentation ? "/present" : ""}`, { state: { wheelSceneNavigation: true, wheelNavigationDirection: direction } }); };
+  const navigateToWheel = (summary: WheelSummary | null, direction: WheelDirection) => { if (!summary || navigationLocked) return; sceneScroll.current = window.scrollY; navigationFocus.current = direction; setParticipantDetail(null); dismissNotice(); navigate(`/wheels/${summary.slug}${presentation ? "/present" : ""}`, { state: { wheelSceneNavigation: true, wheelNavigationDirection: direction } }); };
   const sceneProps: ActiveSceneProps = { presentation, mode, rotation, spinning, spinRequestPending, soundMuted, result, error, neighbours, navigationLocked, account: Boolean(account), canOpenAppearance: Boolean(access.canEdit && csrfToken), onNavigate: navigateToWheel, onShare: shareWheel, onSpin: spin, onFinishSpin: finishSpin, onMode: setMode, onToggleSound: toggleSound, onToggleFullscreen: toggleFullscreen, onPointerTarget: setPointerTarget, onParticipant: (entry, trigger) => setParticipantDetail({ entry, trigger }), onOpenParticipants: openParticipantManager, onOpenAppearance: () => setAppearanceOpen(true), onLogin: () => openAuth("signin"), pointerTarget };
 
   return <div className={`wheel-control-page${presentation ? " wheel-control-page--presentation" : ""} intensity--${wheel.config.backgroundIntensity}${wheelBackground(wheel) ? " has-custom-background" : ""}${transition ? " is-scene-transitioning" : ""}`} style={wheelSurfaceStyle(wheel)} data-wheel-transition={transition ? transition.direction : "settled"}>
@@ -143,7 +160,7 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
     {presentation ? <header className="presentation-bar"><Link to={`/wheels/${wheel.slug}`} aria-label="Exit presentation mode"><BackIcon /><span>Exit</span></Link><span>{wheel.title}</span><button type="button" onClick={toggleFullscreen}><FullscreenIcon /><span>Fullscreen</span></button></header> : null}
     <div className="wheel-scene-viewport" data-wheel-scene-viewport>{transition ? <WheelScene payload={transition.outgoing} role="outgoing" direction={transition.direction} {...sceneProps} interactive={false} neighbours={wheelGalleryNeighbours(gallery, transition.outgoing.wheel.slug)} /> : null}<WheelScene payload={activePayload} role={transition ? "incoming" : "active"} direction={transition?.direction || null} {...sceneProps} interactive /></div>
     {routePending ? <div className="wheel-transition-loading" role="status"><WheelsBrandMark /><span>Tuning next wheel…</span></div> : null}
-    {notice ? <div className="wheel-transition-notice wheel-alert" role="alert">{notice}</div> : null}
+    {notice ? createPortal(<div className="wheel-transition-notice wheel-info" role="alert" aria-atomic="true"><span>{notice}</span><button className="wheel-transition-notice__close" type="button" onClick={dismissNotice} aria-label="Dismiss wheel notice"><CloseIcon /></button></div>, document.body) : null}
     <div className="wheel-navigation-live sr-only" role="status" aria-live="polite">{notice || (!transition && !routePending ? `Loaded wheel ${wheel.title}` : "")}</div>
     {result ? <WinnerCelebration entry={result.entry} official={result.official} message={messageTemplate} celebrationEnabled={wheel.config.celebrationEnabled !== false} confettiEnabled={wheel.config.confettiEnabled !== false} fireworksEnabled={wheel.config.fireworksEnabled !== false} lightingEnabled={wheel.config.winnerLightingEnabled !== false} intensity={new Set(["subtle", "normal", "strong"]).has(wheel.config.celebrationIntensity) ? wheel.config.celebrationIntensity : "normal"} palette={wheel.config.palette} accent={wheel.config.pointerAccent} canEdit={Boolean(access.canEdit)} busy={busyAction} onClose={() => setResult(null)} onAction={(action) => void mutateWinner(action)} /> : null}
     {participantDetail ? <ParticipantDetails entry={participantDetail.entry} entries={wheel.entries} config={wheel.config} trigger={participantDetail.trigger} onClose={() => setParticipantDetail(null)} /> : null}

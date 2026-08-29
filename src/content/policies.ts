@@ -36,7 +36,7 @@ export type PolicyDocument = {
   sections: PolicySection[];
 };
 
-const updated = "28 August 2026";
+const updated = "30 August 2026";
 const revision = "2026.08-L1";
 
 export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
@@ -304,7 +304,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
           "GOATS information: public display name; private email; city, optional region, and country; deliberately coarse public coordinates; uploaded main, profile, and gallery images; story or review; product association; optional rating; consent version and timestamp; account association where present; moderation history; comments; and reactions.",
           "Technical request information: IP address, browser or device type, requested URL, referrer, time, routing information, and security signals that may be processed by the application or Cloudflare.",
           "Communications: the name, reply email, selected topic, message, and consent acknowledgement submitted through the contact form; transactional account and GOATS email records; moderation messages; and information you include in privacy, support, accessibility, or security correspondence.",
-          "Commerce records: product and variant identity, quantity, CAD amount, Stripe Checkout Session or PaymentIntent identifiers, payment and refund status, Printful fulfilment identifiers, and order/audit dates when a controlled test or future enabled order exists. The present integration does not store full card numbers and does not yet collect customer shipping addresses in the Third Railify order schema.",
+          "Commerce records: current customer contact name and optional phone; saved delivery-address labels and structured address fields you choose to retain; product and variant identity; quantity and CAD amounts; encrypted order-time delivery snapshots; Stripe Checkout Session or PaymentIntent identifiers; payment and refund status; Printful fulfilment identifiers; and order/audit dates when a controlled test or future enabled order exists. Third Railify does not store full payment-card numbers.",
           "Public programme and community projections: bounded YouTube/Rumble broadcast metadata and public Discord server, channel, display-name, avatar, and presence fields. These are not a viewer-specific watch history or private Discord messages.",
         ],
       },
@@ -338,6 +338,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         paragraphs: [
           "Email accounts use a salted password verifier; readable passwords are not stored. An eight-hour host session uses a secure, HTTP-only cookie. Short-lived verification, reset, OAuth, and handoff records support account activation and safe movement between the Admin account authority and Public site.",
           "When a provider is displayed as available, you may choose Discord, Google, GitHub, or X authentication. The provider may return an account identifier, username, display name, avatar, and email or verified-email status where its scope supplies those fields. Google sign-in is currently held behind a migration flag.",
+          "A signed-in Account can be linked server-side to one commerce Customer. Current contact fields and saved delivery addresses are encrypted in the Admin commerce service and are available only to that Account through the authenticated same-origin relay. Updating or deleting a saved address does not rewrite an order's historical delivery snapshot.",
         ],
       },
       {
@@ -357,6 +358,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Commerce boundary",
         paragraphs: [
           "The normal Public checkout is disabled. Cart selections remain in localStorage and consist only of product ID, variant ID, and quantity. Display-currency choices do not alter the authoritative CAD value.",
+          "Signed-in customers may save delivery addresses for reuse. Checkout selects a default only when one is designated, and saving a newly entered address is an explicit optional action. Contact and address fields are not written to browser storage. Deleting a saved address removes that reusable current address but does not erase delivery evidence attached to an existing order where retention is still required.",
           "A controlled Stripe test workflow can create a sandbox Checkout Session and a local order-status record for operator acceptance. It cannot create a live charge or start fulfilment. Stripe handles card entry; Third Railify stores provider identifiers and status evidence, not full card numbers.",
           "Printful is connected for a pre-cutover catalogue and planned fulfilment workflow. It does not currently receive a Public customer order because fulfilment submission is disabled. Before normal checkout is activated, the information collected for contact, shipping, taxes, payment, and fulfilment must be disclosed at the collection point and reflected in this policy.",
         ],

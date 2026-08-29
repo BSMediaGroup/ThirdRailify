@@ -30,6 +30,7 @@ export type CatalogueCollection = { title: string; slug: string; description: st
 
 export type CatalogueSnapshot = {
   source: "legacy-wix-snapshot" | "commerce-d1";
+  checkoutEnabled?: boolean;
   capturedAt: string;
   totalProductsReported: number;
   collections?: CatalogueCollection[];

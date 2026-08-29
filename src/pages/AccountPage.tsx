@@ -1,109 +1,130 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { Link, NavLink, useLocation, useParams } from "react-router-dom";
+import {
+  createAccountAddress, deleteAccountAddress, fetchAccountOrder, fetchAccountOrders,
+  setDefaultAccountAddress, updateAccountAddress, updateAccountContact, useAccountCommerce,
+} from "../account/client";
+import type { AccountAddress, AccountOrderDetail, AccountOrderSummary, AddressInput } from "../account/types";
 import { AccountAvatar } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { importAvatarUrl, updateDisplayName, uploadAvatar } from "../auth/client";
+import { CadAmount } from "../components/CurrencyPrice";
+import { usePrivacy } from "../privacy/PrivacyProvider";
+import { useCart } from "../store/cart";
+
+const EMPTY_ADDRESS: AddressInput = { label: "Home", recipientName: "", company: "", address1: "", address2: "", city: "", region: "", postalCode: "", countryCode: "CA", phone: "", isDefault: false };
 
 export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
-  const { account, loading, error, openAuth, signOut, csrfToken, refresh } = useAuth();
+  const auth = useAuth();
+  const location = useLocation();
+  const params = useParams<{ orderId: string }>();
+  const commerce = useAccountCommerce(Boolean(auth.account));
   const opened = useRef(false);
+  const section = accountSection(location.pathname, params.orderId);
+  const title = section === "overview" ? "Your account" : section === "profile" ? "Profile & contact" : section === "delivery" ? "Delivery addresses" : section === "security" ? "Security & privacy" : params.orderId ? "Order details" : "Orders & payments";
 
   useEffect(() => {
-    if (openLogin && !loading && !account && !opened.current) {
-      opened.current = true;
-      openAuth("signin");
-    }
-  }, [account, loading, openAuth, openLogin]);
+    if (openLogin && !auth.loading && !auth.account && !opened.current) { opened.current = true; auth.openAuth("signin"); }
+  }, [auth, openLogin]);
 
-  return (
-    <section className="account-page">
-      <div className="container account-page__inner">
-        <p className="eyebrow">Third Railify account</p>
-        <h1>{loading ? "Checking your account" : account ? "Your account" : "Sign in"}</h1>
-        {loading && <p className="account-page__status" role="status">Loading your secure session...</p>}
-        {!loading && !account && (
-          <div className="account-page__signed-out">
-            <p>{error || "Sign in or create an account to use your Third Railify identity."}</p>
-            <button type="button" onClick={() => openAuth("signin")}>Open account login</button>
-          </div>
-        )}
-        {!loading && account && (
-          <div className="account-profile">
-            <div className="account-profile__identity">
-              <AccountAvatar account={account} large />
-              <div><h2>{account.displayName}</h2><p>{account.email || (account.username ? `@${account.username}` : "No email supplied by provider")}</p></div>
-            </div>
-            <AvatarSettings displayName={account.displayName} csrfToken={csrfToken} onUpdated={refresh} />
-            <dl className="account-profile__facts">
-              <div><dt>Status</dt><dd>{account.status === "active" ? "Active" : account.status}</dd></div>
-              <div><dt>Connected providers</dt><dd>{account.providers.length ? account.providers.map(providerLabel).join(", ") : "Email and password"}</dd></div>
-              <div><dt>Email verification</dt><dd>{account.emailVerified ? "Verified" : account.email ? "Not verified" : "Not supplied"}</dd></div>
-              {account.role === "admin" && <div><dt>Access</dt><dd>{account.adminLevel === "master" ? "Master Admin" : "Admin"}</dd></div>}
-            </dl>
-            <button className="account-profile__signout" type="button" onClick={() => void signOut()}>Sign out</button>
-          </div>
-        )}
-      </div>
-    </section>
-  );
+  if (auth.loading) return <AccountState title="Checking your account" message="Loading your secure session…" />;
+  if (!auth.account) return <section className="account-v2 account-v2--signed-out"><div className="container account-signed-out"><p className="eyebrow">Third Railify account</p><h1>One place for your rail.</h1><p>{auth.error || "Sign in to manage your profile, delivery addresses, cart readiness, and account-linked orders."}</p><button className="button button--primary" type="button" onClick={() => auth.openAuth("signin")}>Sign in or create account</button><Link className="button button--secondary" to="/shop">Browse the shop</Link></div></section>;
+
+  return <section className="account-v2"><div className="container account-v2__container">
+    <header className="account-identity-strip">
+      <div className="account-identity-strip__main"><AccountAvatar account={auth.account} large /><div><p className="eyebrow">Third Railify account</p><h1>{title}</h1><p>{auth.account.displayName}<span aria-hidden="true"> / </span>{auth.account.email || `@${auth.account.username || "member"}`}</p></div></div>
+      <div className="account-identity-strip__signals"><Signal label="Account" value={auth.account.status === "active" ? "Active" : readable(auth.account.status)} tone={auth.account.status === "active" ? "good" : "warn"} /><Signal label="Addresses" value={commerce.loading ? "…" : commerce.data ? String(commerce.data.summary.savedAddressCount) : "Unavailable"} /><Signal label="Orders" value={commerce.loading ? "…" : commerce.data ? String(commerce.data.summary.orderCount) : "Unavailable"} /></div>
+    </header>
+    <nav className="account-nav" aria-label="Account sections"><AccountNavLink to="/account" end>Overview</AccountNavLink><AccountNavLink to="/account/profile">Profile</AccountNavLink><AccountNavLink to="/account/delivery">Delivery</AccountNavLink><AccountNavLink to="/account/orders">Orders &amp; payments</AccountNavLink><AccountNavLink to="/account/security">Security &amp; privacy</AccountNavLink></nav>
+    {commerce.error && <div className="account-service-alert" role="alert"><strong>Commerce details unavailable</strong><span>{commerce.error}</span><button type="button" onClick={() => void commerce.refresh()}>Try again</button></div>}
+    {commerce.loading ? <div className="account-panel account-panel--loading" role="status">Loading your private commerce details…</div> : <AccountSection section={section} orderId={params.orderId} auth={auth} commerce={commerce} />}
+  </div></section>;
 }
 
-function AvatarSettings({ displayName: currentDisplayName, csrfToken, onUpdated }: { displayName: string; csrfToken: string; onUpdated: () => Promise<void> }) {
-  const [displayName, setDisplayName] = useState(currentDisplayName);
-  const [file, setFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState("");
-  const [busy, setBusy] = useState<"name" | "file" | "url" | "">("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const fileInput = useRef<HTMLInputElement>(null);
-
-  useEffect(() => setDisplayName(currentDisplayName), [currentDisplayName]);
-
-  const saveDisplayName = async (event: FormEvent) => {
-    event.preventDefault();
-    const nextName = displayName.replace(/\s+/g, " ").trim();
-    if (!csrfToken || nextName.length < 2 || nextName.length > 80) {
-      setError("Enter a display name between 2 and 80 characters."); return;
-    }
-    setBusy("name"); setError(""); setMessage("");
-    try { await updateDisplayName(csrfToken, nextName); await onUpdated(); setDisplayName(nextName); setMessage("Display name updated."); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "The display name could not be updated."); }
-    finally { setBusy(""); }
-  };
-
-  const saveFile = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!file || !csrfToken) return;
-    if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type) || file.size > 5 * 1024 * 1024) {
-      setError("Choose a JPG, PNG, or WebP image no larger than 5 MB."); return;
-    }
-    setBusy("file"); setError(""); setMessage("");
-    try {
-      await uploadAvatar(csrfToken, file); await onUpdated(); setFile(null); if (fileInput.current) fileInput.current.value = ""; setMessage("Avatar updated from your upload.");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar could not be updated."); }
-    finally { setBusy(""); }
-  };
-
-  const saveUrl = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!imageUrl.trim() || !csrfToken) return;
-    setBusy("url"); setError(""); setMessage("");
-    try { await importAvatarUrl(csrfToken, imageUrl.trim()); await onUpdated(); setImageUrl(""); setMessage("Avatar updated from the image URL."); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar could not be updated."); }
-    finally { setBusy(""); }
-  };
-
-  return <section className="public-avatar-settings" aria-labelledby="public-avatar-settings-title">
-    <div><p className="eyebrow">Account settings</p><h3 id="public-avatar-settings-title">Change your profile</h3><p>Update your display name or avatar. Changes are verified and stored by the shared Admin account authority. See how profile information is handled in the <Link to="/privacy#accounts-authentication">Privacy Policy</Link>.</p></div>
-    <div className="public-avatar-settings__forms">
-      <form className="public-avatar-settings__name-form" onSubmit={saveDisplayName}><label><span>Display name</span><input type="text" autoComplete="name" minLength={2} maxLength={80} value={displayName} onChange={(event) => { setDisplayName(event.target.value); setError(""); setMessage(""); }} /></label><button type="submit" disabled={displayName.replace(/\s+/g, " ").trim() === currentDisplayName || Boolean(busy)}>{busy === "name" ? "Saving..." : "Save display name"}</button></form>
-      <form onSubmit={saveFile}><label><span>Upload image</span><input ref={fileInput} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => { setFile(event.target.files?.[0] || null); setError(""); setMessage(""); }} /></label><button type="submit" disabled={!file || Boolean(busy)}>{busy === "file" ? "Uploading..." : "Upload avatar"}</button></form>
-      <form onSubmit={saveUrl}><label><span>Direct image URL</span><input type="url" inputMode="url" value={imageUrl} onChange={(event) => { setImageUrl(event.target.value); setError(""); setMessage(""); }} placeholder="https://example.com/avatar.webp" /></label><button type="submit" disabled={!imageUrl.trim() || Boolean(busy)}>{busy === "url" ? "Importing..." : "Use image URL"}</button></form>
-    </div>
-    {(error || message) && <p className={`public-avatar-settings__status${error ? " is-error" : ""}`} role={error ? "alert" : "status"}>{error || message}</p>}
-  </section>;
+function AccountSection({ section, orderId, auth, commerce }: { section: string; orderId?: string; auth: ReturnType<typeof useAuth>; commerce: ReturnType<typeof useAccountCommerce> }) {
+  if (!commerce.data) return <div className="account-panel account-panel--empty"><h2>Account commerce is unavailable.</h2><p>Your authentication profile remains available, but delivery and order authority could not be loaded.</p></div>;
+  if (section === "profile") return <ProfileSection auth={auth} data={commerce.data} refresh={commerce.refresh} />;
+  if (section === "delivery") return <DeliverySection csrfToken={auth.csrfToken} data={commerce.data} refresh={commerce.refresh} />;
+  if (section === "orders") return orderId ? <OrderDetailSection orderId={orderId} /> : <OrdersSection initial={commerce.data.orders} />;
+  if (section === "security") return <SecuritySection auth={auth} />;
+  return <OverviewSection auth={auth} data={commerce.data} />;
 }
 
-function providerLabel(provider: string) {
-  return provider === "twitter" ? "X" : provider.charAt(0).toUpperCase() + provider.slice(1);
+function OverviewSection({ auth, data }: { auth: ReturnType<typeof useAuth>; data: NonNullable<ReturnType<typeof useAccountCommerce>["data"]> }) {
+  const cart = useCart(); const defaultAddress = data.addresses.find((address) => address.isDefault) || null;
+  return <div className="account-overview-grid">
+    <AccountCard eyebrow="Identity" title="Profile" action="Edit profile" to="/account/profile"><div className="account-card__identity"><AccountAvatar account={auth.account!} /><div><strong>{auth.account!.displayName}</strong><span>{auth.account!.email || "No provider email supplied"}</span></div></div><StatusLine label="Primary email" value={auth.account!.emailVerified ? "Verified" : auth.account!.email ? "Not verified" : "Not supplied"} /></AccountCard>
+    <AccountCard eyebrow="Delivery" title={defaultAddress ? defaultAddress.label : "No saved address"} action={defaultAddress ? "Manage addresses" : "Add address"} to="/account/delivery">{defaultAddress ? <AddressSummary address={defaultAddress} /> : <p>Add a structured delivery address for quicker checkout. Addresses are encrypted by the Admin commerce authority.</p>}</AccountCard>
+    <AccountCard eyebrow="Orders & payments" title={data.summary.orderCount ? `${data.summary.orderCount} recorded ${data.summary.orderCount === 1 ? "order" : "orders"}` : "No linked orders"} action="View history" to="/account/orders">{data.orders.length ? <div className="account-mini-orders">{data.orders.slice(0, 2).map((order) => <OrderMini key={order.id} order={order} />)}</div> : <p>Orders appear only when they are linked to this authenticated account—not by matching email text.</p>}</AccountCard>
+    <AccountCard eyebrow="Cart" title={`${cart.count} ${cart.count === 1 ? "item" : "items"}`} action="Open cart" to="/cart"><p>Your cart is stored on this device. Product and price authority is re-resolved from Commerce D1.</p><StatusLine label="Checkout" value={data.checkout.enabled ? "Available when server confirms" : "Currently unavailable"} /></AccountCard>
+    <AccountCard eyebrow="Security" title={auth.account!.providers.length ? `${auth.account!.providers.length} connected ${auth.account!.providers.length === 1 ? "method" : "methods"}` : "Email sign-in"} action="Review security" to="/account/security"><p>{providerSummary(auth.account!.providers)}</p><StatusLine label="Session" value="Authenticated" /></AccountCard>
+  </div>;
 }
+
+function ProfileSection({ auth, data, refresh }: { auth: ReturnType<typeof useAuth>; data: NonNullable<ReturnType<typeof useAccountCommerce>["data"]>; refresh: () => Promise<void> }) {
+  const [displayName, setDisplayName] = useState(auth.account!.displayName); const [contactName, setContactName] = useState(data.contact.name); const [phone, setPhone] = useState(data.contact.phone || "");
+  const [busy, setBusy] = useState(false); const [message, setMessage] = useState(""); const [error, setError] = useState("");
+  useEffect(() => { setDisplayName(auth.account!.displayName); setContactName(data.contact.name); setPhone(data.contact.phone || ""); }, [auth.account, data.contact]);
+  const save = async (event: FormEvent) => { event.preventDefault(); setBusy(true); setError(""); setMessage(""); const nextDisplayName = displayName.replace(/\s+/g, " ").trim(); try { if (nextDisplayName !== auth.account!.displayName) await updateDisplayName(auth.csrfToken, nextDisplayName); await updateAccountContact(auth.csrfToken, { name: contactName.replace(/\s+/g, " ").trim(), phone: phone.trim(), revision: data.contact.revision || 1 }); await Promise.all([auth.refresh(), refresh()]); setMessage("Profile and commerce contact details updated."); } catch (reason) { setError(reason instanceof Error ? reason.message : "Your profile could not be updated."); } finally { setBusy(false); } };
+  return <div className="account-section-grid account-section-grid--profile"><section className="account-panel"><p className="eyebrow">Profile & contact</p><h2>Your customer identity.</h2><p className="account-panel__intro">Your verified account email stays read-only. Recipient contact details are private and encrypted in the separate Commerce authority.</p><form className="account-form" onSubmit={save}><label><span>Display name</span><input value={displayName} minLength={2} maxLength={80} autoComplete="name" onChange={(event) => setDisplayName(event.target.value)} /></label><label><span>Primary account email</span><input value={auth.account!.email || "No email supplied"} readOnly aria-readonly="true" /></label><label><span>Delivery contact name</span><input value={contactName} minLength={2} maxLength={120} autoComplete="name" onChange={(event) => setContactName(event.target.value)} /></label><label><span>Telephone (optional)</span><input value={phone} maxLength={32} autoComplete="tel" inputMode="tel" onChange={(event) => setPhone(event.target.value)} /></label><div className="account-form__actions"><button className="button button--primary" type="submit" disabled={busy || !auth.csrfToken}>{busy ? "Saving profile…" : "Save profile"}</button><span>{auth.account!.emailVerified ? "Email verified" : "Email changes require a verified identity flow and are not available here."}</span></div></form>{(message || error) && <p className={`account-form__status${error ? " is-error" : ""}`} role={error ? "alert" : "status"}>{error || message}</p>}</section><AvatarSettings account={auth.account!} csrfToken={auth.csrfToken} onUpdated={auth.refresh} /></div>;
+}
+
+function AvatarSettings({ account, csrfToken, onUpdated }: { account: NonNullable<ReturnType<typeof useAuth>["account"]>; csrfToken: string; onUpdated: () => Promise<void> }) {
+  const [file, setFile] = useState<File | null>(null); const [imageUrl, setImageUrl] = useState(""); const [preview, setPreview] = useState(account.avatarUrl || "");
+  const [busy, setBusy] = useState<"file" | "url" | "">(""); const [message, setMessage] = useState(""); const [error, setError] = useState(""); const input = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (!file) setPreview(account.avatarUrl || ""); }, [account.avatarUrl, file]);
+  useEffect(() => { if (!file) return; const url = URL.createObjectURL(file); setPreview(url); return () => URL.revokeObjectURL(url); }, [file]);
+  const upload = async (event: FormEvent) => { event.preventDefault(); if (!file) return; if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type) || file.size > 5 * 1024 * 1024) { setError("Choose a JPG, PNG, or WebP image no larger than 5 MB."); return; } setBusy("file"); setError(""); setMessage(""); try { await uploadAvatar(csrfToken, file); await onUpdated(); setFile(null); if (input.current) input.current.value = ""; setMessage("Avatar upload complete."); } catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar upload failed."); } finally { setBusy(""); } };
+  const importUrl = async (event: FormEvent) => { event.preventDefault(); if (!imageUrl.trim()) return; setBusy("url"); setError(""); setMessage(""); try { await importAvatarUrl(csrfToken, imageUrl.trim()); await onUpdated(); setImageUrl(""); setMessage("Avatar imported from the approved HTTPS image URL."); } catch (reason) { setError(reason instanceof Error ? reason.message : "The avatar URL could not be imported."); } finally { setBusy(""); } };
+  return <section className="account-panel account-avatar-panel"><p className="eyebrow">Profile image</p><h2>Avatar.</h2><div className="account-avatar-panel__preview">{preview ? <img src={preview} alt="Avatar preview" /> : <AccountAvatar account={account} large />}<span>JPG, PNG or WebP · 5 MB maximum</span></div><form className="account-avatar-panel__form" onSubmit={upload}><label><span>Upload a new image</span><input ref={input} type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange={(event) => { setFile(event.target.files?.[0] || null); setError(""); }} /></label><button className="button button--primary" type="submit" disabled={!file || Boolean(busy)}>{busy === "file" ? "Uploading…" : "Upload avatar"}</button></form><form className="account-avatar-panel__form" onSubmit={importUrl}><label><span>Or use a direct HTTPS image URL</span><input type="url" inputMode="url" value={imageUrl} placeholder="https://example.com/avatar.webp" onChange={(event) => { setImageUrl(event.target.value); setError(""); }} /></label><button className="button button--secondary" type="submit" disabled={!imageUrl.trim() || Boolean(busy)}>{busy === "url" ? "Importing…" : "Use image URL"}</button></form>{(message || error) && <p className={`account-form__status${error ? " is-error" : ""}`} role={error ? "alert" : "status"}>{error || message}</p>}</section>;
+}
+
+function DeliverySection({ csrfToken, data, refresh }: { csrfToken: string; data: NonNullable<ReturnType<typeof useAccountCommerce>["data"]>; refresh: () => Promise<void> }) {
+  const [editing, setEditing] = useState<AccountAddress | "new" | null>(null); const [busyId, setBusyId] = useState(""); const [error, setError] = useState("");
+  const mutate = async (id: string, action: () => Promise<unknown>) => { setBusyId(id); setError(""); try { await action(); await refresh(); } catch (reason) { setError(reason instanceof Error ? reason.message : "The address action could not be completed."); } finally { setBusyId(""); } };
+  return <div className="account-delivery"><header className="account-section-heading"><div><p className="eyebrow">Delivery address book</p><h2>Saved destinations.</h2><p>Up to 10 structured international addresses. Formatting is validated; physical existence is not externally verified.</p></div><button className="button button--primary" type="button" disabled={data.addresses.length >= 10} onClick={() => setEditing("new")}>Add address</button></header>{error && <p className="account-form__status is-error" role="alert">{error}</p>}{data.addresses.length ? <div className="address-grid">{data.addresses.map((address) => <article className={`address-card${address.isDefault ? " is-default" : ""}`} key={address.id}><div className="address-card__top"><span>{address.label}</span>{address.isDefault && <strong>Default</strong>}</div><AddressSummary address={address} /><div className="address-card__actions"><button type="button" onClick={() => setEditing(address)}>Edit</button>{!address.isDefault && <button type="button" disabled={busyId === address.id} onClick={() => void mutate(address.id, () => setDefaultAccountAddress(csrfToken, address.id))}>Set default</button>}<button className="is-danger" type="button" disabled={busyId === address.id} onClick={() => { if (window.confirm(`Delete ${address.label}? Historical order delivery snapshots will not change.`)) void mutate(address.id, () => deleteAccountAddress(csrfToken, address.id)); }}>Delete</button></div></article>)}</div> : <div className="account-panel account-panel--empty"><h3>No saved delivery addresses.</h3><p>Add one when you are ready. Nothing is inferred from your browser or IP address.</p><button className="button button--primary" type="button" onClick={() => setEditing("new")}>Add your first address</button></div>}{editing && <AddressEditor initial={editing === "new" ? null : editing} csrfToken={csrfToken} onCancel={() => setEditing(null)} onSaved={async () => { setEditing(null); await refresh(); }} />}</div>;
+}
+
+function AddressEditor({ initial, csrfToken, onCancel, onSaved }: { initial: AccountAddress | null; csrfToken: string; onCancel: () => void; onSaved: () => Promise<void> }) {
+  const [value, setValue] = useState<AddressInput>(() => initial ? addressInput(initial) : EMPTY_ADDRESS); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const change = (key: keyof AddressInput, next: string | boolean) => setValue((current) => ({ ...current, [key]: next }));
+  const save = async (event: FormEvent) => { event.preventDefault(); setBusy(true); setError(""); try { if (initial) await updateAccountAddress(csrfToken, initial.id, { ...value, revision: initial.revision }); else await createAccountAddress(csrfToken, value); await onSaved(); } catch (reason) { setError(reason instanceof Error ? reason.message : "The address could not be saved."); } finally { setBusy(false); } };
+  return <div className="address-editor-backdrop" role="presentation"><section className="address-editor" role="dialog" aria-modal="true" aria-labelledby="address-editor-title"><header><div><p className="eyebrow">{initial ? "Edit saved address" : "New saved address"}</p><h2 id="address-editor-title">{initial ? initial.label : "Add a destination"}</h2></div><button type="button" aria-label="Close address editor" onClick={onCancel}>×</button></header><form className="account-form address-editor__form" onSubmit={save}><AddressField label="Short label" value={value.label} change={(next) => change("label", next)} maxLength={40} autoComplete="off" /><AddressField label="Recipient name" value={value.recipientName} change={(next) => change("recipientName", next)} maxLength={120} autoComplete="name" /><AddressField label="Company (optional)" value={value.company} change={(next) => change("company", next)} maxLength={120} autoComplete="organization" /><AddressField label="Address line 1" value={value.address1} change={(next) => change("address1", next)} maxLength={180} autoComplete="address-line1" /><AddressField label="Address line 2 (optional)" value={value.address2} change={(next) => change("address2", next)} maxLength={180} autoComplete="address-line2" /><AddressField label="City / locality" value={value.city} change={(next) => change("city", next)} maxLength={120} autoComplete="address-level2" /><AddressField label="State / province / region" value={value.region} change={(next) => change("region", next)} maxLength={80} autoComplete="address-level1" /><AddressField label="Postal / ZIP code" value={value.postalCode} change={(next) => change("postalCode", next)} maxLength={24} autoComplete="postal-code" /><AddressField label="ISO country code" value={value.countryCode} change={(next) => change("countryCode", next.toUpperCase())} maxLength={2} autoComplete="country" /><AddressField label="Telephone (optional)" value={value.phone} change={(next) => change("phone", next)} maxLength={32} autoComplete="tel" /><label className="account-checkbox"><input type="checkbox" checked={value.isDefault} onChange={(event) => change("isDefault", event.target.checked)} /><span>Use as my default delivery address</span></label>{error && <p className="account-form__status is-error" role="alert">{error}</p>}<footer><button className="button button--secondary" type="button" onClick={onCancel}>Cancel</button><button className="button button--primary" type="submit" disabled={busy}>{busy ? "Saving address…" : "Save address"}</button></footer></form></section></div>;
+}
+
+function OrdersSection({ initial }: { initial: AccountOrderSummary[] }) {
+  const [orders, setOrders] = useState(initial); const [totals, setTotals] = useState({ total: initial.length, liveCount: initial.filter((order) => order.environment === "live").length, testCount: initial.filter((order) => order.environment === "test").length }); const [loading, setLoading] = useState(true); const [error, setError] = useState("");
+  useEffect(() => { const controller = new AbortController(); fetchAccountOrders(controller.signal).then((payload) => { setOrders(payload.orders); setTotals({ total: payload.total, liveCount: payload.liveCount, testCount: payload.testCount }); }).catch((reason) => { if (reason?.name !== "AbortError") setError(reason instanceof Error ? reason.message : "Order history is unavailable."); }).finally(() => { if (!controller.signal.aborted) setLoading(false); }); return () => controller.abort(); }, []);
+  return <div className="account-orders"><header className="account-section-heading"><div><p className="eyebrow">Orders & payments</p><h2>Purchase history.</h2><p>Order records, payment state, and fulfilment evidence linked to this account. Payment card details are not stored here.</p></div><div className="order-environment-summary"><span><b>{totals.liveCount}</b> LIVE</span><span><b>{totals.testCount}</b> TEST</span></div></header>{loading && <p role="status">Loading full history…</p>}{error && <p className="account-form__status is-error" role="alert">{error}</p>}{orders.length ? <div className="order-list">{orders.map((order) => <OrderRow key={order.id} order={order} />)}</div> : !loading && <div className="account-panel account-panel--empty"><h3>No account-linked orders.</h3><p>Guest orders are not exposed by email matching. A purchase appears here only after the server links it to this account customer.</p><Link className="button button--primary" to="/shop">Browse the shop</Link></div>}</div>;
+}
+
+function OrderDetailSection({ orderId }: { orderId: string }) {
+  const [order, setOrder] = useState<AccountOrderDetail | null>(null); const [error, setError] = useState("");
+  useEffect(() => { const controller = new AbortController(); fetchAccountOrder(orderId, controller.signal).then((payload) => setOrder(payload.order)).catch((reason) => { if (reason?.name !== "AbortError") setError(reason instanceof Error ? reason.message : "This order is unavailable."); }); return () => controller.abort(); }, [orderId]);
+  if (error) return <div className="account-panel account-panel--empty"><h2>Order unavailable.</h2><p>{error}</p><Link className="button button--secondary" to="/account/orders">Back to orders</Link></div>;
+  if (!order) return <div className="account-panel account-panel--loading" role="status">Loading order details…</div>;
+  return <div className="order-detail"><header className="account-section-heading"><div><p className="eyebrow">{order.environment === "test" ? "TEST / SANDBOX order" : "Live order"}</p><h2>{order.reference}</h2><p>Recorded {formatDate(order.createdAt)} · Updated {formatDate(order.updatedAt)}</p></div><Link className="button button--secondary" to="/account/orders">Back to history</Link></header><div className="order-detail__grid"><section className="account-panel"><h3>Items</h3><div className="order-detail__items">{order.items.map((item) => <article key={item.id}>{item.image ? <img src={item.image} alt="" /> : <span className="order-item-placeholder">TR</span>}<div><strong>{item.title}</strong><span>{item.variant || "Standard item"} · Qty {item.quantity}</span><small><CadAmount minorUnits={item.unitAmount} /> each</small></div><CadAmount minorUnits={item.lineTotalAmount} /></article>)}</div></section><aside className="account-panel order-detail__summary"><h3>Payment summary</h3><dl><StatusDefinition label="Payment" value={readable(order.paymentStatus)} /><StatusDefinition label="Fulfilment" value={readable(order.fulfillmentStatus)} /><StatusDefinition label="Product subtotal" value={<CadAmount minorUnits={order.financial.subtotalAmount} />} /><StatusDefinition label="Shipping" value={order.financial.shippingAmount === null ? "Not recorded" : <CadAmount minorUnits={order.financial.shippingAmount} />} /><StatusDefinition label="Tax" value="Not recorded" /><StatusDefinition label="Total" value={<CadAmount minorUnits={order.financial.totalAmount} />} /></dl>{order.environment === "test" && <p className="order-test-note">TEST payment evidence is kept separate from live purchase totals.</p>}</aside>{order.delivery && <section className="account-panel"><h3>Delivery snapshot</h3>{order.delivery.address ? <AddressSummary address={order.delivery.address} /> : <p>Delivery details are not available.</p>}<p className="account-panel__note">Historical snapshot captured with the order. Saved-address edits never change it.</p></section>}<section className="account-panel"><h3>Status timeline</h3><ol className="order-timeline">{order.timeline.map((event, index) => <li key={`${event.at}-${index}`}><span /><div><strong>{event.label}</strong><small>{formatDate(event.at)} · {readable(event.state)}</small></div></li>)}</ol></section></div></div>;
+}
+
+function SecuritySection({ auth }: { auth: ReturnType<typeof useAuth> }) {
+  const privacy = usePrivacy();
+  return <div className="account-section-grid"><section className="account-panel"><p className="eyebrow">Sign-in methods</p><h2>Connected identity.</h2><div className="provider-list">{(auth.account!.providers.length ? auth.account!.providers : ["email"]).map((provider) => <article key={provider}><span>{providerMark(provider)}</span><div><strong>{providerLabel(provider)}</strong><small>Connected · managed by the authentication authority</small></div></article>)}</div><p className="account-panel__note">Provider disconnection and session management are not exposed because the current authority has no safe self-service endpoint for them.</p></section><section className="account-panel"><p className="eyebrow">Account security</p><h2>Current state.</h2><dl className="security-facts"><StatusDefinition label="Account" value={readable(auth.account!.status)} /><StatusDefinition label="Primary email" value={auth.account!.emailVerified ? "Verified" : auth.account!.email ? "Not verified" : "Not supplied"} /><StatusDefinition label="Current session" value="Authenticated" /><StatusDefinition label="Last sign in" value={auth.account!.lastLoginAt ? formatDate(auth.account!.lastLoginAt) : "Not recorded"} /></dl><button className="button button--secondary" type="button" onClick={() => void auth.signOut()}>Sign out of this session</button></section><section className="account-panel account-panel--wide"><p className="eyebrow">Privacy controls</p><h2>Your data choices.</h2><p>Manage optional device storage, review the Privacy Policy, or contact Third Railify about account data. Saved delivery addresses are server-side account data, not a new browser-storage category.</p><div className="account-panel__actions"><button className="button button--primary" type="button" onClick={privacy.openManager}>Open privacy choices</button><Link className="button button--secondary" to="/privacy#accounts-authentication">Read Privacy Policy</Link></div><p className="account-panel__note">Self-service account deletion is not shown because no complete deletion workflow exists. No fake destructive control is provided.</p></section></div>;
+}
+
+function AccountCard({ eyebrow, title, action, to, children }: { eyebrow: string; title: string; action: string; to: string; children: ReactNode }) { return <article className="account-card"><p className="eyebrow">{eyebrow}</p><h2>{title}</h2><div className="account-card__body">{children}</div><Link to={to}>{action}<span aria-hidden="true">→</span></Link></article>; }
+function AccountNavLink({ to, end = false, children }: { to: string; end?: boolean; children: ReactNode }) { return <NavLink to={to} end={end} className={({ isActive }) => isActive ? "is-active" : ""}>{children}</NavLink>; }
+function Signal({ label, value, tone = "" }: { label: string; value: string; tone?: string }) { return <div className={`account-signal${tone ? ` is-${tone}` : ""}`}><span>{label}</span><strong>{value}</strong></div>; }
+function StatusLine({ label, value }: { label: string; value: string }) { return <div className="account-status-line"><span>{label}</span><strong>{value}</strong></div>; }
+function StatusDefinition({ label, value }: { label: string; value: ReactNode }) { return <div><dt>{label}</dt><dd>{value}</dd></div>; }
+function AddressSummary({ address }: { address: Pick<AccountAddress, "recipientName" | "company" | "address1" | "address2" | "city" | "region" | "postalCode" | "countryCode" | "phone"> }) { return <address className="address-summary"><strong>{address.recipientName}</strong>{address.company && <span>{address.company}</span>}<span>{address.address1}{address.address2 ? `, ${address.address2}` : ""}</span><span>{[address.city, address.region, address.postalCode].filter(Boolean).join(" ")}</span><span>{address.countryCode}</span>{address.phone && <span>{address.phone}</span>}</address>; }
+function OrderMini({ order }: { order: AccountOrderSummary }) { return <Link to={`/account/orders/${encodeURIComponent(order.id)}`}><span><b>{order.reference}</b><small>{formatDate(order.createdAt)}</small></span><span className={`status-chip is-${order.environment}`}>{order.environment.toUpperCase()}</span><CadAmount minorUnits={order.totalAmount} /></Link>; }
+function OrderRow({ order }: { order: AccountOrderSummary }) { return <article className="order-row"><div><span className={`status-chip is-${order.environment}`}>{order.environment.toUpperCase()}</span><h3><Link to={`/account/orders/${encodeURIComponent(order.id)}`}>{order.reference}</Link></h3><p>{formatDate(order.createdAt)} · {order.itemCount} {order.itemCount === 1 ? "item" : "items"}</p></div><dl><StatusDefinition label="Payment" value={readable(order.paymentStatus)} /><StatusDefinition label="Fulfilment" value={readable(order.fulfillmentStatus)} /><StatusDefinition label="Total" value={<CadAmount minorUnits={order.totalAmount} />} /></dl><Link className="order-row__action" to={`/account/orders/${encodeURIComponent(order.id)}`}>View order <span aria-hidden="true">→</span></Link></article>; }
+function AddressField({ label, value, change, maxLength, autoComplete }: { label: string; value: string; change: (value: string) => void; maxLength: number; autoComplete: string }) { return <label><span>{label}</span><input value={value} maxLength={maxLength} autoComplete={autoComplete} onChange={(event) => change(event.target.value)} /></label>; }
+function AccountState({ title, message }: { title: string; message: string }) { return <section className="account-v2"><div className="container account-panel account-panel--loading"><p className="eyebrow">Third Railify account</p><h1>{title}</h1><p role="status">{message}</p></div></section>; }
+function accountSection(pathname: string, orderId?: string) { if (orderId || pathname.startsWith("/account/orders")) return "orders"; if (pathname === "/account/profile") return "profile"; if (pathname === "/account/delivery") return "delivery"; if (pathname === "/account/security") return "security"; return "overview"; }
+function addressInput(address: AccountAddress): AddressInput { return { label: address.label, recipientName: address.recipientName, company: address.company || "", address1: address.address1, address2: address.address2 || "", city: address.city, region: address.region || "", postalCode: address.postalCode, countryCode: address.countryCode, phone: address.phone || "", isDefault: address.isDefault }; }
+function readable(value: string) { return value.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase()); }
+function formatDate(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "Not recorded" : new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short" }).format(date); }
+function providerLabel(provider: string) { return provider === "twitter" ? "X" : provider.charAt(0).toUpperCase() + provider.slice(1); }
+function providerMark(provider: string) { return provider === "email" ? "@" : providerLabel(provider).slice(0, 1); }
+function providerSummary(providers: string[]) { return providers.length ? providers.map(providerLabel).join(" · ") : "Email and password"; }
