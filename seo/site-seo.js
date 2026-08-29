@@ -62,6 +62,11 @@ const STATIC_ROUTES = [
     parent: ["Shop", "/shop"],
     index: false,
   }),
+  route("/checkout", "checkout", "Delivery & Checkout | Third Railify Shop", "Review delivery details, server-issued shipping, and the authoritative CAD order total before payment becomes available.", {
+    label: "Checkout",
+    parent: ["Shop", "/shop"],
+    index: false,
+  }),
   route("/checkout/success", "checkout:status", "Order Status | Third Railify", "Check the exact status of a Third Railify test checkout session without exposing payment or provider details.", {
     label: "Order status",
     parent: ["Shop", "/shop"],

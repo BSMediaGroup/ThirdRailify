@@ -1,5 +1,24 @@
 # Bump notes
 
+## 2026-08-29 — Wheels V1.1, Community navigation, and VIP preview
+
+CURRENT VER=0.0.0-seed
+
+PENDING VER=0.1.0-alpha.0
+
+- Upgraded wheel detail/presentation with the centred `SPIN WHEEL` console, compact mode/sound/Appearance controls, layered illuminated rim, custom-background stage treatment, local gold `trzap-0.svg` centre without `TR`, finite full-screen confetti/lighting, accessible result dialog, and gesture-unlocked generated winner stinger with cleanup and independent settings.
+- Added six bounded palettes, per-entry colour picker/hex/reset workflow, save/discard Appearance tabs, Admin-authoritative PNG/JPG/BMP/WebP/safe-SVG background and centre ingestion, opaque hash-safe delivery, hidden-wheel protection, R2 replacement/removal cleanup, additive `0016` D1 metadata, audit, and rate limits. Public still owns no Wheels D1 or R2 binding.
+- Added semantic Community hover/focus/mobile children, top-level VIP, one reusable VIP feature in the requested Community/Home positions, and a complete truthful `/vip` scaffold with billing, purchase, and entitlements explicitly inactive.
+- Added focused migration/media/security/browser/audio/responsive evidence. No official visual-test draw, payment/provider write, bot/Wix/DNS/domain change, secret change, or production cutover was performed.
+- Applied empty additive D1 migration `0016` after a 3,013,256-byte backup and invariant check; deployed Admin `afd9db50` then Public `511d5421`. Stable Pages browser/audio acceptance passes. Remote media rows remain zero because no authenticated owner/editor test session was available and the upload boundary was not bypassed.
+
+## 2026-08-29 — Customer checkout and shipping foundation
+
+- Added the real `/checkout` route and cart handoff with an accessible, responsive, non-persistent delivery form, explicit server quote request, safe rate selection, server-projected CAD subtotal/shipping/total, quote invalidation after cart/address changes, and a canonical-gate-disabled payment action.
+- Added bounded exact-origin same-origin quote/checkout relays. Public receives no Commerce D1 binding, provider credential, Printful mapping, raw rate response, or authoritative price input; recipient details never enter localStorage.
+- Added focused Node 22.16.0 proxy/source and Playwright coverage at 1440, 768, and 390 pixels for validation, autofill semantics, disabled/unavailable and mocked-rate states, totals, invalidation, closed checkout, privacy, keyboard focus, reduced motion, overflow, and clean console behavior.
+- No real Printful/Stripe/provider request, customer order, payment, email, remote D1 mutation, configuration change, deployment, or commerce activation occurred.
+
 ## 2026-08-28 — Commerce-authoritative replacement shop
 
 - Preserved historical paid status for the first genuine Stripe TEST acceptance after the separate Admin-controlled creation gate was closed. The success redirect remains read-only, normal Public checkout remains disabled, and no second Session/order can be created from Public.

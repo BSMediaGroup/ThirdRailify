@@ -4,14 +4,14 @@ import discordIcon from "../../assets/icons/discord-0.svg";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { ArrowIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
+import { VipFeatureCard } from "../components/VipFeatureCard";
 import { THIRD_RAILIFY_DISCORD_FALLBACK_INVITE } from "../lib/discordWidget";
 
 const communityPaths = [
   { index: "01", label: "Friends", copy: "Meet the people and projects already connected to the show.", href: "/friends", external: false },
   { index: "02", label: "GOATs in the wild", copy: "The current community gallery path for Third Railify out in the world.", href: "/goats", external: false },
-  { index: "03", label: "VIP", copy: "See the current membership path while the V2 account experience remains deferred.", href: "/vip", external: false },
-  { index: "04", label: "Competition wheels", copy: "Demo-spin public draws or open an approved creator-controlled wheel.", href: "/wheels", external: false },
-  { index: "05", label: "Discord", copy: "Join the official community server and step into the live conversation.", href: THIRD_RAILIFY_DISCORD_FALLBACK_INVITE, external: true },
+  { index: "03", label: "Competition wheels", copy: "Demo-spin public draws or open an approved creator-controlled wheel.", href: "/wheels", external: false },
+  { index: "04", label: "Discord", copy: "Join the official community server and step into the live conversation.", href: THIRD_RAILIFY_DISCORD_FALLBACK_INVITE, external: true },
 ];
 
 export function CommunityPage() {
@@ -58,6 +58,7 @@ export function CommunityPage() {
               : <Link key={path.label} to={path.href}>{content}</Link>;
           })}
         </div>
+        <div className="container community-vip-feature"><VipFeatureCard /></div>
       </section>
 
       <section className="section community-boundary-section">

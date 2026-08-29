@@ -4,7 +4,7 @@
 
 The replacement `/shop` uses the same-origin `/api/commerce/*` Pages Functions, which proxy the Admin project's sanitized Commerce D1 projection. This Public project deliberately has no Commerce D1 binding and contains no Admin credential. The legacy Wix snapshot remains migration/reference evidence only and is not a runtime catalogue fallback.
 
-Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. Normal customer checkout remains visibly disabled. The separate Master-only Stripe TEST acceptance action has completed once and is now closed in Admin; Public exposes no bypass. The live Wix site remains the production store until explicit cutover.
+Product detail uses local product and variant IDs, real variant-specific integer CAD prices, and a device-local `{ productId, variantId, quantity }` cart. Browser totals are non-authoritative. `/checkout` now captures ephemeral delivery details and intentionally requests server-authoritative shipping options through bounded same-origin relays, but the canonical shipping strategy and customer checkout remain disabled. The separate Master-only Stripe TEST acceptance action has completed once and is now closed in Admin; Public exposes no bypass. The live Wix site remains the production store until explicit cutover.
 
 `/checkout/success` is a truthful TEST result page. It starts in a checking state and reads only `/api/commerce/order-status?session_id=cs_test_…`, which proxies a bounded local D1 projection. The browser does not call Stripe, cannot enumerate orders, and never infers payment from the redirect query. Only a signed Stripe webhook can display **Payment confirmed**; the accepted historical Session remains readable after gate closure and fulfillment remains disabled.
 
@@ -32,7 +32,9 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages output with route-aware crawler metadata, canonical URLs, structured data, XML sitemap/robots endpoints, SPA fallback, immutable-preview noindex protection, and baseline security headers.
 
-Checkout, payments, tax, shipping, inventory, Printful/Printify APIs, memberships, donations, CMS writes, and newsletter submission are not connected. Accounts are implemented in code but are not live until the shared staging D1 binding, Admin secrets/providers, and deployment are configured. Cart contents exist only in browser memory and the cart explicitly disables checkout.
+The local delivery/quote/Stripe-ready checkout foundation is connected only to the Admin authority and remains fail-closed. External shipping execution, payments, tax, inventory, Printful orders, memberships, donations, CMS writes, and newsletter submission are not activated. Recipient data is never stored in browser storage; only the existing local product/variant/quantity cart persists.
+
+`POST /api/commerce/shipping-quotes` and `POST /api/commerce/checkout` are bounded exact-origin same-origin relays to Admin. Public owns no Commerce D1 or provider token. The browser sends no price, shipping amount, provider/store/variant identity, or Stripe authority and receives only opaque quote/rate IDs, safe method labels/estimates, integer CAD display totals, the canonical checkout gate, and—only after future activation—a validated Stripe-hosted TEST URL.
 
 ## Local development
 
@@ -110,11 +112,13 @@ ThirdRailify/
 │   ├── robots.txt.js                  Generated crawler directives
 │   ├── sitemap.xml.js                 Generated canonical static/dynamic sitemap
 │   ├── _shared/public-auth.js        Public session/handoff/logout and narrow proxy primitives
+│   ├── _shared/commerce-checkout-proxy.js  Bounded quote/checkout relay and safe response projection
 │   ├── api/auth/                     Same-origin Public auth plus Admin avatar-authority proxy
 │   ├── api/contact.js                Bounded same-origin relay to protected Admin contact delivery
 │   ├── api/catalogue/                Fail-soft Admin merchandising projection proxy
 │   ├── api/goats/                    Fixed approved reads plus signed submission/interaction bridge
 │   ├── api/currency-rates.js         Validated, cached same-origin CAD reference-rate projection
+│   ├── api/commerce/                  Same-origin catalogue, shipping quote, checkout, and status relays
 │   ├── api/_snapshot-persistence.js  Shared checkpoint and DO persistence adapter
 │   ├── api/_state-backend.js         Stable singleton Durable Object request boundary
 │   ├── api/_state-contract.js        Deployment identity and storage contract
@@ -139,7 +143,7 @@ ThirdRailify/
 │   ├── hooks/              Broadcast context plus visibility/reduced-motion gates
 │   ├── goats/              Typed API client, SVG country flags, and lazy vector/raster map engines
 │   ├── lib/                Validated broadcast/Discord boundaries and replaceable catalogue provider
-│   ├── pages/              Public routes, including dedicated About, Account, Watch, and Community pages
+│   ├── pages/              Public routes, including the real cart/checkout and result flow
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
 │   └── types/              Provider-neutral catalogue contracts
@@ -172,7 +176,9 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 ## Data and provider boundaries
 
-Competition-wheel persistence and authorization belong only to `ThirdRailify-Admin`. Public `/wheels` reads a sanitized Admin projection and uses a same-origin signed gateway for approved creation/editing and official draws; it has no wheel/Commerce D1 binding. Demo spins use browser Web Crypto and never persist. Official winners are selected and recorded server-side with revision/idempotency serialization and immutable winner/snapshot evidence. See `WHEELS_V1.md` for routes, roles, configuration, accessibility, staging fixture, and deferred integrations.
+Competition-wheel persistence, custom-media metadata, and the existing R2 binding belong only to `ThirdRailify-Admin`. Public `/wheels` reads a sanitized Admin projection and uses a same-origin signed gateway for approved creation/editing, media upload/removal, and official draws; it has no wheel/Commerce D1 or R2 binding. V1.1 adds the centred `SPIN WHEEL` console, industrial illuminated rim, finite confetti/full-stage lighting, gesture-unlocked winner stinger, compact Appearance dialog, six palettes, per-entrant colours, custom stage/centre artwork, and polished detail/presentation states. Demo spins use browser Web Crypto and never persist. Official winners are selected and recorded server-side with revision/idempotency serialization and immutable winner/snapshot evidence. See `WHEELS_V1.md` for routes, roles, media validation, accessibility, staging fixture, and deferred integrations.
+
+The Public header keeps Community as a direct route while exposing semantic Friends, GOATS in the Wild, and Wheels children on hover/focus and explicitly in mobile navigation. VIP is a first-class link. One reusable truthful VIP feature appears below the Community paths and between the Home Discord/community section and Follow the Rail; `/vip` is a dedicated gated preview with no price, billing, entitlement, or purchase action.
 
 GOATS persistence belongs only to `ThirdRailify-Admin`. Public exposes fixed same-origin `/api/goats/*` routes, signs server-to-server mutations with an encrypted shared secret, and has no commerce D1 or media R2 binding. Public responses contain approved/published fields only; private email, account IDs, moderator data, object keys, exact location input, email state, and audit metadata remain Admin-only. See `GOATS_V2.md` for route, environment, local fixture, and provider-fallback details.
 

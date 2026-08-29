@@ -47,3 +47,6 @@ Fixed implementation periods are limited to the eight-hour session, five-minute 
 Withdrawing Preferences immediately removes the three optional first-party `localStorage` values listed above. Withdrawing External media prevents future iframe creation and unmounts any current player iframe. Third Railify cannot delete cookies or other storage owned by YouTube, Rumble, or another third-party domain; the implementation truthfully stops future embedded access instead.
 
 The Public auth session, cart, privacy-choice cookie, same-origin APIs, security controls, navigation, and direct provider links remain usable without optional consent.
+# Wheels custom media
+
+Wheel background and centre uploads are user-initiated account content. The Public browser does not persist the file, a base64 copy, an R2 key, or media authority. It sends the selected/locally normalized bytes through the authenticated same-origin Wheels Function; Admin validates and stores the active object in the existing Admin-owned R2 bucket and stores bounded metadata in Commerce D1. Public delivery uses only an opaque asset ID. This does not add an optional browser-storage category.

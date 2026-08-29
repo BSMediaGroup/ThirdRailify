@@ -71,3 +71,13 @@ export function CopyIcon(props: IconProps) {
 export function MailIcon(props: IconProps) {
   return <svg {...base} {...props}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></svg>;
 }
+
+export function BackIcon(props: IconProps) { return <svg {...base} {...props}><path d="m15 18-6-6 6-6M9 12h11" /></svg>; }
+export function SoundIcon({ muted = false, ...props }: IconProps & { muted?: boolean }) { return <svg {...base} {...props}><path d="M4 10v4h4l5 4V6L8 10H4Z" />{muted ? <path d="m17 10 4 4m0-4-4 4" /> : <path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" />}</svg>; }
+export function PaletteIcon(props: IconProps) { return <svg {...base} {...props}><path d="M12 3a9 9 0 1 0 0 18h1.4a2 2 0 0 0 1.3-3.5 1.8 1.8 0 0 1 1.2-3.1H18A3 3 0 0 0 21 11a9 9 0 0 0-9-8Z" /><circle cx="7.5" cy="11" r=".8" fill="currentColor" /><circle cx="10" cy="7.5" r=".8" fill="currentColor" /><circle cx="14.5" cy="7.5" r=".8" fill="currentColor" /></svg>; }
+export function FullscreenIcon(props: IconProps) { return <svg {...base} {...props}><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" /></svg>; }
+export function ShareIcon(props: IconProps) { return <svg {...base} {...props}><circle cx="18" cy="5" r="2" /><circle cx="6" cy="12" r="2" /><circle cx="18" cy="19" r="2" /><path d="m8 11 8-5M8 13l8 5" /></svg>; }
+export function EditIcon(props: IconProps) { return <svg {...base} {...props}><path d="M4 20h4L19 9l-4-4L4 16v4ZM13.5 6.5l4 4" /></svg>; }
+export function CrownIcon(props: IconProps) { return <svg {...base} {...props}><path d="m3 7 4 4 5-7 5 7 4-4-2 11H5L3 7ZM6 21h12" /></svg>; }
+export function PracticeIcon(props: IconProps) { return <svg {...base} {...props}><path d="M5 6h14v12H5zM8 9h8M8 12h5" /></svg>; }
+export function OfficialIcon(props: IconProps) { return <svg {...base} {...props}><path d="m12 3 3 2 3.5.5.5 3.5 2 3-2 3-.5 3.5-3.5.5-3 2-3-2-3.5-.5-.5-3.5-2-3 2-3 .5-3.5L9 5l3-2Z" /><path d="m9 12 2 2 4-4" /></svg>; }

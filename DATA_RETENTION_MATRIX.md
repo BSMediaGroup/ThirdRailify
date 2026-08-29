@@ -45,3 +45,6 @@ Internal engineering inventory as at 28 August 2026. A technical expiry or capac
 | GOATS browser draft preference | Public device optional key | Until submission, withdrawal or clearing | Removed on successful submission or Preferences withdrawal | Event-driven/manual | None beyond accurate notice |
 
 Backups, provider-side records, support correspondence and legal holds are not represented by a fixed application policy. Their periods and exceptions require owner decision, provider confirmation and qualified legal review.
+# Wheels custom media
+
+Active wheel background/centre objects remain while selected by the authorized owner/editor. Replacement or explicit removal deletes the former R2 object immediately and changes its D1 metadata lifecycle to `deleted`; removal restores the built-in centre/stage treatment. The bounded metadata and wheel audit event remain with the wheel's operational record, and the media rows cascade only if an authorized hard deletion of the wheel is otherwise permitted. No raw R2 key is returned to Public.

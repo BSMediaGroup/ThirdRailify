@@ -16,6 +16,7 @@ import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ProductCard } from "../components/ProductCard";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
+import { VipFeatureCard } from "../components/VipFeatureCard";
 import { SignalField } from "../components/SignalField";
 import { ArrowIcon, BoltIcon, MailIcon, PlayIcon, RadioIcon } from "../components/Icons";
 import { BroadcastMetadata, BroadcastPlayer } from "../components/BroadcastComponents";
@@ -171,6 +172,8 @@ export function HomePage() {
           <DiscordCommunityWidget mode="compact" />
         </div>
       </section>
+
+      <section className="section home-vip-section" aria-label="Third Railify VIP preview"><div className="container"><VipFeatureCard compact /></div></section>
 
       <section className="section follow-section">
         <div className="container follow-grid">

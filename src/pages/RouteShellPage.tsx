@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
 
-type RouteKey = "community" | "vip" | "giftCards";
+type RouteKey = "community" | "giftCards";
 
 type RouteContent = {
   eyebrow: string;
@@ -23,15 +23,6 @@ const content: Record<RouteKey, RouteContent> = {
     sourceHref: "https://www.thirdrailify.com/goats",
     sourceLabel: "See the current gallery",
     points: ["Community gallery route preserved", "Submission flow deferred", "No member data copied into V2"],
-  },
-  vip: {
-    eyebrow: "Community + membership",
-    title: "Discover the GOAT within.",
-    description: "The current Wix plan surface lists four monthly tiers in CAD: Baby GOAT, Blossom GOAT, Mega GOAT, and Improbable GOAT.",
-    status: "Membership purchase, benefits, identity, entitlement, and billing are not connected in V2.",
-    sourceHref: "https://www.thirdrailify.com/pricing-plans/list",
-    sourceLabel: "Review current VIP plans",
-    points: ["Baby GOAT · CA$3/month", "Blossom GOAT · CA$9/month", "Mega GOAT · CA$18/month · Improbable GOAT · CA$99/month"],
   },
   giftCards: {
     eyebrow: "Current Wix commerce",

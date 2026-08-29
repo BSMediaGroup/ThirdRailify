@@ -18,11 +18,13 @@ import { GoatSubmitPage } from "./pages/GoatSubmitPage";
 import { PoliciesPage } from "./pages/PoliciesPage";
 import { PolicyPage } from "./pages/PolicyPage";
 import { CheckoutSuccessPage } from "./pages/CheckoutSuccessPage";
+import { CheckoutPage } from "./pages/CheckoutPage";
 import { CartPage } from "./pages/CartPage";
 import { DonatePage } from "./pages/DonatePage";
 import { AboutPage } from "./pages/AboutPage";
 import { HostPage } from "./pages/HostPage";
 import { FriendsPage } from "./pages/FriendsPage";
+import { VipPage } from "./pages/VipPage";
 
 const WheelsPage = lazy(() => import("./pages/WheelsPage").then((module) => ({ default: module.WheelsPage })));
 const WheelPage = lazy(() => import("./pages/WheelPage").then((module) => ({ default: module.WheelPage })));
@@ -37,6 +39,7 @@ export function App() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductDetailPage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/products/all" element={<ShopPage />} />
         <Route path="/products/:category" element={<ShopPage />} />
@@ -59,7 +62,7 @@ export function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/friends" element={<FriendsPage />} />
         <Route path="/community" element={<CommunityPage />} />
-        <Route path="/vip" element={<RouteShellPage routeKey="vip" />} />
+        <Route path="/vip" element={<VipPage />} />
         <Route path="/donate" element={<DonatePage />} />
         <Route path="/gift-cards" element={<RouteShellPage routeKey="giftCards" />} />
         <Route path="/policies" element={<PoliciesPage />} />
