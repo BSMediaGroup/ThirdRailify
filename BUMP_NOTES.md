@@ -1,5 +1,23 @@
 # Bump notes
 
+## 2026-08-29 — Guest and Account checkout identity
+
+- Added a deliberate `Continue as guest` / `Sign in to purchase` choice to `/checkout`. Existing Accounts default to account-backed checkout and prefill only authoritative display name and verified email; all checkout-specific fields remain editable without mutating the Account profile.
+- Extended the bounded Public checkout relay to forward only a legitimately resolved host-only session to Admin for server-side Customer binding. The cart survives the existing validated sign-in return flow; customer contact and delivery PII remain absent from local storage.
+- Added Node 22.16.0 source/proxy coverage and Playwright guest, sign-in-return, authenticated-prefill, privacy, accessibility, reduced-motion, and responsive checks at 1440, 768, and 390. Checkout activation, shipping strategy, payment, fulfillment, provider calls, remote writes, deployment, and the closed acceptance remain untouched.
+
+## 2026-08-29 — Wheels V1.5 spacing, palette, and pointer follow-up
+
+CURRENT VER=0.0.0-seed
+
+PENDING VER=0.1.0-alpha.0
+
+- Fixed wheel/text and wheel/control overlaps at their actual source: the intentional halo and drop-shadow paint beyond `.wheel-stage` without affecting its layout box. Appearance help copy, editor preview titles/statistics, normal detail controls, and presentation controls now reserve explicit visual-effect clearance; constrained presentation sizes reserve the full toolbar/padding/gap/console budget and fit without vertical scrolling at 1080p, 900p, 720p, and mobile heights.
+- Expanded Appearance from six signature palettes to sixteen total choices with clear two-tone, three-tone, tonal, and blended families, including red/gold, red/charcoal/gold, silver, crimson, blue/red, emerald, green/gold, gold, and navy/silver/red. The new choices reuse the existing six preset identifiers and validated palette/pointer fields, preserving the API and portable format contracts.
+- Extended automatic label contrast from near-white to extra-light slices, so white, silver, yellow, and comparable bright colours receive dark text while crimson, violet, charcoal, and other darker values keep light text. Refined the top pointer with a subtle theme-derived dark border and richer theme-aware fill while retaining its geometry, target calculation, non-interactive semantics, and motion behavior.
+- Added DOM-clearance assertions and desktop/mobile visual proof for editor, Appearance, detail, and 1920×1080/1280×720/390×844 presentation, alongside the existing V1.5 overflow, containment, and random-dot suite. No Admin, API, schema, migration, D1/R2, official-spin, Wix, DNS, domain, or cutover change was made.
+- Deployed only Public as `76a28f1b-b42d-425d-b23e-d75c1c2649d7` (`https://76a28f1b.thirdrailify.pages.dev`). Stable and immutable serve byte-identical Wheels assets; deployed V1.1-V1.5 browser acceptance passes without an official spin or non-read API request.
+
 ## 2026-08-29 — Wheels V1.4 visual polish
 
 CURRENT VER=0.0.0-seed

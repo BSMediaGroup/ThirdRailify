@@ -55,15 +55,15 @@ function drawWheel(canvas: HTMLCanvasElement, entries: WheelEntry[], config: Whe
     context.beginPath(); context.moveTo(0, 0); context.arc(0, 0, radius, start - Math.PI / 2, end - Math.PI / 2); context.closePath(); context.fillStyle = segmentColour; context.fill(); context.strokeStyle = "rgba(8,8,6,.72)"; context.lineWidth = Math.max(1, size * .0025); context.stroke();
     if (index % density || end - start < .025) return;
     const label = entry.label.length > (segments.length > 18 ? 14 : 24) ? `${entry.label.slice(0, segments.length > 18 ? 12 : 22)}…` : entry.label;
-    const useDarkLabel = config.labelContrast === "dark" || isNearWhite(segmentColour);
+    const useDarkLabel = config.labelContrast === "dark" || isExtraLight(segmentColour);
     context.save(); context.rotate(angle - Math.PI / 2); context.textAlign = "right"; context.textBaseline = "middle"; context.fillStyle = useDarkLabel ? "#171712" : "#fffdf3"; context.font = `700 ${Math.max(9, Math.min(18, size / (segments.length > 20 ? 42 : 31)))}px "Geist Mono", monospace`; context.shadowColor = useDarkLabel ? "rgba(255,255,255,.62)" : "rgba(0,0,0,.78)"; context.shadowBlur = useDarkLabel ? 2 : 4; context.fillText(label, radius - size * .055, 0, radius * .64); context.restore();
   });
   const gradient = context.createRadialGradient(0, 0, radius * .5, 0, 0, radius); gradient.addColorStop(0, "transparent"); gradient.addColorStop(1, "rgba(0,0,0,.34)"); context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fillStyle = gradient; context.fill(); context.strokeStyle = "#d6ad13"; context.lineWidth = Math.max(5, size * .018); context.stroke(); context.restore();
 }
 
-function isNearWhite(colour: string) {
+function isExtraLight(colour: string) {
   const match = colour.trim().match(/^#([\da-f]{3}|[\da-f]{6})$/i); if (!match) return false;
   const hex = match[1].length === 3 ? [...match[1]].map((value) => value + value).join("") : match[1];
   const red = Number.parseInt(hex.slice(0, 2), 16); const green = Number.parseInt(hex.slice(2, 4), 16); const blue = Number.parseInt(hex.slice(4, 6), 16);
-  return (red * .2126 + green * .7152 + blue * .0722) / 255 >= .84;
+  return (red * .2126 + green * .7152 + blue * .0722) / 255 >= .72;
 }

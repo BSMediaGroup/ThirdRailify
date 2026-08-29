@@ -46,6 +46,15 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     await page.goto(`${ORIGIN}/cart`); await page.getByRole("heading", { name: "Your cart." }).waitFor();
     await page.getByRole("link", { name: "Enter delivery details" }).click(); await page.waitForURL(`${ORIGIN}/checkout`);
     await page.getByRole("heading", { level: 1, name: "Delivery & checkout." }).waitFor(); await page.getByText("BLEH Fixture", { exact: true }).waitFor();
+    if (width === 1440) {
+      await page.getByRole("button", { name: /Sign in to purchase/ }).click();
+      await page.getByRole("dialog", { name: /Welcome back/ }).waitFor();
+      assert.equal(await page.evaluate(() => localStorage.getItem("thirdrailify-commerce-cart-v2") !== null), true);
+      assert.equal(new URL(page.url()).pathname, "/checkout");
+      await page.getByRole("button", { name: "Close account dialog" }).click();
+    }
+    await page.getByRole("button", { name: /Continue as guest/ }).click();
+    await page.getByLabel("Customer email").fill("checkout@example.test");
     assert.match(await page.locator(".checkout-summary").innerText(), /BLEH Fixture.*M \/ Black.*Qty 1/s);
     const name = page.getByLabel("Recipient name");
     assert.equal(await name.getAttribute("autocomplete"), "name");
@@ -81,13 +90,39 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
 
     const storage = await page.evaluate(() => ({ cart: localStorage.getItem("thirdrailify-commerce-cart-v2"), keys: Object.keys(localStorage), values: Object.values(localStorage) }));
     assert.deepEqual(storage.keys.filter((key) => key.includes("commerce")), ["thirdrailify-commerce-cart-v2"]);
-    assert.doesNotMatch(JSON.stringify(storage.values), /Checkout Fixture|100 Test Street|N6A 1A1|London/);
+    assert.doesNotMatch(JSON.stringify(storage.values), /checkout@example\.test|Checkout Fixture|100 Test Street|N6A 1A1|London/);
     assert.equal(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches), true);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
     assert.deepEqual(errors, []);
     await page.screenshot({ path: `${RESULTS}/checkout-${width}x${height}.png`, fullPage: true });
     await context.close();
   }
+
+  const accountContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  await accountContext.addInitScript(() => localStorage.setItem("thirdrailify-commerce-cart-v2", JSON.stringify([{ productId: "product-1", variantId: "variant-1", quantity: 1 }])));
+  const accountPage = await accountContext.newPage(); const accountErrors = [];
+  accountPage.on("console", (message) => { if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) accountErrors.push(message.text()); });
+  accountPage.on("pageerror", (error) => accountErrors.push(error.message));
+  await accountPage.route(IMAGE, (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: "<svg xmlns='http://www.w3.org/2000/svg' width='600' height='750'><rect width='100%' height='100%' fill='#171717'/></svg>" }));
+  await accountPage.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/auth/config") return json(route, { configured: true, emailSignupConfigured: true, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
+    if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, account: { id: "account-fixture", email: "verified@example.test", displayName: "Account Fixture", username: null, avatarUrl: null, providers: ["email"], role: "user", adminLevel: "none", status: "active", emailVerified: true, createdAt: "2026-08-29T00:00:00.000Z", lastLoginAt: null, source: "test" }, access: { isAdmin: false, isMasterAdmin: false } });
+    if (path === "/api/commerce/catalogue") return json(route, catalogue());
+    if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
+    if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
+    return json(route, { ok: false, error: "not_found" }, 404);
+  });
+  await accountPage.goto(`${ORIGIN}/checkout`);
+  await accountPage.getByText("Purchasing as Account Fixture", { exact: true }).waitFor();
+  assert.equal(await accountPage.getByLabel("Customer email").inputValue(), "verified@example.test");
+  assert.equal(await accountPage.getByLabel("Recipient name").inputValue(), "Account Fixture");
+  await accountPage.getByLabel("Customer email").fill("delivery-only@example.test");
+  await accountPage.getByText("Checkout edits do not change your Account profile.").first().waitFor();
+  assert.equal(await accountPage.evaluate(() => localStorage.getItem("thirdrailify-commerce-cart-v2") !== null), true);
+  assert.equal(await accountPage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
+  assert.deepEqual(accountErrors, []);
+  await accountContext.close();
 });
 
 async function fillDelivery(page) {

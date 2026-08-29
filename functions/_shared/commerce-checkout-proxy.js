@@ -1,3 +1,5 @@
+import { AUTH_COOKIE_NAME, resolveSession } from "./public-auth.js";
+
 const MAX_BODY_BYTES = 16 * 1024;
 const TIMEOUT_MS = 15_000;
 
@@ -15,9 +17,10 @@ export async function proxyCommercePost(env, request, path, fetchImpl = fetch) {
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const adminOrigin = configuredOrigin(env?.THIRDRAILIFY_ADMIN_ORIGIN, "admin_origin_invalid");
+    const session = await resolveSession(env, request);
     const response = await fetchImpl(`${adminOrigin}${path}`, {
       method: "POST", redirect: "manual", signal: controller.signal,
-      headers: { Accept: "application/json", "Content-Type": "application/json", Origin: publicOrigin }, body,
+      headers: { Accept: "application/json", "Content-Type": "application/json", Origin: publicOrigin, ...(session ? { Cookie: `${AUTH_COOKIE_NAME}=${encodeURIComponent(session.token)}` } : {}) }, body,
     });
     let payload;
     try { payload = await response.json(); } catch { throw new Error("upstream_json_invalid"); }
