@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { WheelEntry } from "./types";
 import { WheelsBrandMark } from "./WheelsBrandMark";
+import { CheckIcon, EyeOffIcon, TrashIcon } from "../components/Icons";
 
 type Props = {
   entry: WheelEntry; official: boolean; message: string; celebrationEnabled: boolean; confettiEnabled: boolean; lightingEnabled: boolean;
@@ -12,19 +13,33 @@ type Props = {
 export function WinnerCelebration({ entry, official, message, celebrationEnabled, confettiEnabled, lightingEnabled, intensity, palette, canEdit, busy, onClose, onAction }: Props) {
   const dialog = useRef<HTMLDivElement>(null); const close = useRef<HTMLButtonElement>(null); const [effectsActive, setEffectsActive] = useState(true);
   const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const particles = useMemo(() => Array.from({ length: reduced ? 36 : intensity === "strong" ? 84 : intensity === "normal" ? 58 : 34 }, (_, index) => ({ index, x: (index * 47) % 101, delay: (index % 12) * 55, drift: ((index * 31) % 181) - 90, colour: ["#F3C928", "#B8182F", "#FFFDF3", ...palette][index % (3 + palette.length)] })), [intensity, palette, reduced]);
+  const particles = useMemo(() => {
+    const count = reduced ? 0 : intensity === "strong" ? 148 : intensity === "normal" ? 96 : 44;
+    const colours = ["#F3C928", "#B8182F", "#FFFDF3", "#6D3A93", ...palette];
+    return Array.from({ length: count }, (_, index) => ({
+      index,
+      x: (index * 47 + (index % 5) * 7) % 101,
+      delay: 100 + (index % 18) * 38,
+      drift: ((index * 37) % 241) - 120,
+      size: 6 + ((index * 5) % 7),
+      duration: 2700 + ((index * 83) % 1500),
+      colour: colours[index % colours.length],
+      shape: index % 3 === 0 ? "diamond" : index % 3 === 1 ? "strip" : "rect",
+      cannon: index % 6 === 0 ? "left" : index % 6 === 1 ? "right" : "stage",
+    }));
+  }, [intensity, palette, reduced]);
   useEffect(() => { const timer = window.setTimeout(() => setEffectsActive(false), intensity === "strong" ? 6200 : 5000); return () => window.clearTimeout(timer); }, [intensity]);
   useEffect(() => { const previous = document.activeElement as HTMLElement | null; const priorOverflow = document.body.style.overflow; document.body.style.overflow = "hidden"; close.current?.focus(); const key = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); if (event.key === "Tab" && dialog.current) trapFocus(event, dialog.current); }; document.addEventListener("keydown", key); return () => { document.removeEventListener("keydown", key); document.body.style.overflow = priorOverflow; previous?.focus(); }; }, [onClose]);
   const active = celebrationEnabled && effectsActive;
   return createPortal(<div className={`winner-backdrop celebration--${intensity}${active ? " is-celebrating" : ""}${lightingEnabled && active ? " has-lighting" : ""}`} role="presentation" style={{ "--winner-accent": palette[0] || "#F3C928" } as React.CSSProperties} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    {active && lightingEnabled ? <div className="winner-lightshow" aria-hidden="true"><i /><i /><i /><i /><span /><span /></div> : null}
-    {active && confettiEnabled ? <div className={`winner-confetti${reduced ? " is-static" : ""}`} aria-hidden="true">{particles.map(({ index, x, delay, drift, colour }) => <i key={index} style={{ "--i": index, "--x": `${x}%`, "--delay": `${delay}ms`, "--drift": `${drift}px`, "--confetti": colour } as React.CSSProperties} />)}</div> : null}
+    {active && lightingEnabled ? <div className={`winner-lightshow${reduced ? " is-static" : ""}`} aria-hidden="true"><div className="winner-lightshow__bloom" /><i /><i /><i /><i /><span /><span /><b /><b /><em /></div> : null}
+    {active && confettiEnabled && !reduced ? <div className="winner-confetti" aria-hidden="true">{particles.map(({ index, x, delay, drift, size, duration, colour, shape, cannon }) => <i key={index} className={`is-${shape} from-${cannon}`} style={{ "--i": index, "--x": `${x}%`, "--delay": `${delay}ms`, "--drift": `${drift}px`, "--size": `${size}px`, "--duration": `${duration}ms`, "--confetti": colour } as React.CSSProperties} />)}</div> : null}
     <div ref={dialog} className="winner-dialog" role="dialog" aria-modal="true" aria-labelledby="winner-title" aria-describedby="winner-status winner-detail">
       <button ref={close} type="button" className="winner-dialog__close" onClick={onClose} aria-label="Close result">×</button>
       <div className="winner-dialog__mark" aria-hidden="true"><WheelsBrandMark /></div><p className={`draw-badge ${official ? "is-official" : ""}`}>{official ? "OFFICIAL DRAW · RECORDED" : "DEMO / NOT RECORDED"}</p>
       <p id="winner-status" className="eyebrow">{message.replace("{winner}", entry.label)}</p><h2 id="winner-title">{entry.label}</h2>
       <p id="winner-detail">{official ? "This result was selected and persisted by the Third Railify authority before the animation began." : "Demo result — not recorded as an official draw."}</p>
-      {canEdit ? <div className="winner-actions"><button type="button" onClick={() => onAction("keep")} disabled={busy}>Keep participant</button><button type="button" onClick={() => onAction("hide")} disabled={busy}>Hide winner</button><button type="button" onClick={() => onAction("remove")} disabled={busy}>Remove entry</button><button type="button" className="danger" onClick={() => { if (window.confirm(`Remove every entry labelled “${entry.label}”?`)) onAction("remove-matching"); }} disabled={busy}>Remove all matching</button></div> : null}
+      {canEdit ? <div className="winner-actions"><button className="button button--secondary button--compact" type="button" onClick={() => onAction("keep")} disabled={busy}><CheckIcon /> Keep participant</button><button className="button button--ghost button--compact" type="button" onClick={() => onAction("hide")} disabled={busy}><EyeOffIcon /> Hide winner</button><button className="button button--danger-outline button--compact" type="button" onClick={() => onAction("remove")} disabled={busy}><TrashIcon /> Remove entry</button><button className="button button--danger button--compact" type="button" onClick={() => { if (window.confirm(`Remove every entry labelled “${entry.label}”?`)) onAction("remove-matching"); }} disabled={busy}><TrashIcon /> Remove all matching</button></div> : null}
     </div>
   </div>, document.body);
 }

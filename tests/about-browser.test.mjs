@@ -67,11 +67,20 @@ test("About presents the supplied story, formats, hosts, internal paths, and no 
   assert.equal(await main.locator("h1").count(), 1);
   assert.match(text, /WE GRABBED\s+THE RAIL\s+ANYWAY\./i);
   assert.match(text, /Canadian/i);
+  assert.match(text, /Shawn · Canadian \/ Gina · American \(Massachusetts\)/i);
+  assert.doesNotMatch(text, /Shawn \+ Gina · Canada/i);
   assert.match(text, /most nights around 10 PM Eastern/i);
   for (const required of ["Shawn", "Gina", "Aboot Nothing", "Pop Culture Beat Down", "News Hangout", "Grab the rail", "Don’t let go"]) assert.match(text, new RegExp(required, "i"));
   for (const heading of [/A bad idea\s+that refused\s+to die/i, /Two people\.\s+One derailment/i, /What happens\s+on the rail/i, /Chat has\s+the wheel/i]) {
     assert.equal(await main.getByRole("heading", { level: 2, name: heading }).count(), 1);
   }
+
+  const countryLabel = main.locator(".about-hero__country");
+  const canadianFlag = countryLabel.locator("img");
+  assert.equal(await canadianFlag.count(), 1);
+  assert.equal(await canadianFlag.getAttribute("alt"), "", "the flag remains decorative beside the readable CA label");
+  assert.ok(await canadianFlag.evaluate((image) => image.complete && image.naturalWidth > 0), "the Canadian flag SVG loads");
+  assert.ok(await countryLabel.evaluate((label) => Math.abs(label.querySelector("img").getBoundingClientRect().height - Number.parseFloat(getComputedStyle(label).fontSize)) <= 1), "the Canadian flag matches the CA label height");
 
   const hrefs = await main.locator("a").evaluateAll((links) => links.map((link) => link.getAttribute("href")));
   for (const href of ["/watch", "/shawn", "/gina", "/community", "/goats"]) assert.ok(hrefs.includes(href), `${href} is linked from the About story`);

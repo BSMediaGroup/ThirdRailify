@@ -50,8 +50,8 @@ test("policy library and documents are complete, deep-linked, semantic, and resp
       }
 
       const footerPolicyLinks = page.locator(".site-footer .footer-grid > div:last-child > a");
-      assert.deepEqual(await footerPolicyLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href"))), ["/terms", "/privacy", "/refunds", "/accessibility"], `${route} footer keeps the four-item policy stack at ${width}x${height}`);
-      assert.equal(await page.locator('.site-footer a[href="/policies"]').count(), 0, `${route} footer omits the policy-library link at ${width}x${height}`);
+      assert.deepEqual(await footerPolicyLinks.evaluateAll((links) => links.map((link) => link.getAttribute("href"))), ["/terms", "/privacy", "/refunds", "/accessibility", "/policies"], `${route} footer keeps the complete policy stack at ${width}x${height}`);
+      assert.equal(await page.locator('.site-footer a[href="/policies"]').getByText("Policy Library", { exact: true }).count(), 1, `${route} footer links to the policy library at ${width}x${height}`);
       assert.equal(await page.locator(".footer-bottom .footer-privacy-button").count(), 1, `${route} keeps privacy choices outside the policy stack at ${width}x${height}`);
       const footerBorder = await page.locator(".site-footer").evaluate((element) => {
         const style = globalThis.getComputedStyle(element);

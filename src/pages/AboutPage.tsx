@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import canadianFlag from "../../assets/flags/ca.svg";
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon, PlayIcon } from "../components/Icons";
@@ -53,7 +54,7 @@ export function AboutPage() {
               <a className="button button--secondary" href="#origin">How it started <ArrowIcon /></a>
             </div>
             <div className="about-hero__facts" aria-label="Third Railify show context">
-              <span><b>CA</b><small>Canadian</small></span>
+              <span><b className="about-hero__country"><img src={canadianFlag} alt="" />CA</b><small>Canadian</small></span>
               <span><b>10 PM</b><small>Most nights · Eastern</small></span>
               <span><b>LIVE</b><small>Chat steers</small></span>
             </div>
@@ -88,7 +89,7 @@ export function AboutPage() {
 
       <section className="about-hosts" aria-labelledby="hosts-title">
         <div className="container about-section-heading about-section-heading--hosts">
-          <div><p className="eyebrow">Shawn + Gina · Canada</p><h2 id="hosts-title">Two people.<br /><span>One derailment.</span></h2></div>
+          <div><p className="eyebrow">Shawn · Canadian / Gina · American (Massachusetts)</p><h2 id="hosts-title">Two people.<br /><span>One derailment.</span></h2></div>
           <p>Between them: the hosting, co-hosting, producing, ADHD commentary, public roasting, and just enough control to send the whole thing off-track on purpose. They talk like actual people and leave room for chat to talk back.</p>
         </div>
         <div className="container host-dynamic">

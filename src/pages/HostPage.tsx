@@ -132,7 +132,7 @@ export function HostPage({ hostKey }: { hostKey: HostKey }) {
             </div>
             <div className="host-profile-hero__facts" aria-label={`${profile.name} show context`}>
               <span><b>{profile.key === "shawn" ? "HOST" : "CO-HOST"}</b><small>Third Railify</small></span>
-              <span><b>CA</b><small>Canadian · unfiltered</small></span>
+              <span><b>{profile.key === "shawn" ? "CA" : "US"}</b><small>{profile.key === "shawn" ? "Canadian · unfiltered" : "American · Massachusetts"}</small></span>
               <span><b>{profile.key === "shawn" ? "LIVE" : "JUST GINA"}</b><small>{profile.key === "shawn" ? "Most nights · 10 PM ET" : "Distinct lane"}</small></span>
             </div>
           </div>

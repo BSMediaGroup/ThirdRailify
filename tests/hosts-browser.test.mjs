@@ -17,13 +17,15 @@ const HOSTS = {
   shawn: {
     heading: /Shawn\.\s+Every tab is open\./i,
     required: ["Third Railify host", "@ThirdRailify", "Canadian", "News", "Crime", "Pop culture", "ADHD", "most nights around 10 PM Eastern", "The detour"],
+    identity: /CA\s+Canadian · unfiltered/i,
     topicAnimation: ".host-topic-scan path",
     partnerHref: "/gina",
     partnerName: /Meet Gina/i,
   },
   gina: {
     heading: /Gina\.\s+The rabbit hole has company\./i,
-    required: ["Third Railify co-host", "@JustGina", "Canadian", "Mysteries", "conspiracies", "Culture", "Sass + humour", "Just Gina", "most nights around 10 PM Eastern"],
+    required: ["Third Railify co-host", "@JustGina", "American", "Massachusetts", "Mysteries", "conspiracies", "Culture", "Sass + humour", "Just Gina", "most nights around 10 PM Eastern"],
+    identity: /US\s+American · Massachusetts/i,
     topicAnimation: ".host-topic-case > div",
     partnerHref: "/shawn",
     partnerName: /Meet Shawn/i,
@@ -77,6 +79,8 @@ test("both host stories preserve verified facts, internal paths, and editorial b
     assert.equal(await main.locator("h1").count(), 1, `${host} has one H1`);
     assert.equal(await main.getByRole("heading", { level: 1, name: profile.heading }).count(), 1);
     for (const required of profile.required) assert.match(text, new RegExp(escapeRegExp(required), "i"), `${host} contains ${required}`);
+    assert.match(await main.locator(".host-profile-hero__facts > span").nth(1).innerText(), profile.identity, `${host} has the correct national identity and location`);
+    if (host === "gina") assert.doesNotMatch(text, /\bCanadian\b/i, "Gina is not described as Canadian");
     for (const heading of [/What enters\s+the conversation\./i, host === "shawn" ? /No live wire runs solo\./i : /The other chair talks back\./i]) {
       assert.equal(await main.getByRole("heading", { level: 2, name: heading }).count(), 1, `${host} contains its story landmark`);
     }

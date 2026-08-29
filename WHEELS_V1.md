@@ -73,6 +73,18 @@ Admin migration `0016_wheels_media.sql` stores asset ID, wheel/purpose, opaque R
 
 Deferred: multi-wheel display/spin, Sheets/chat/raid/donation ingestion, Rumble/Twitch/YouTube integration, payments and prize fulfilment, public external API, profile/sound uploads, Wheel of Names export, remote OBS control/websockets, cloning/marketplace, and provider writes.
 
+## V1.4 staging release
+
+Wheels V1.4 is deployed Admin-first as `d079d3f0` (`https://d079d3f0.thirdrailify-admin.pages.dev`) and Public as `38f5077f` (`https://38f5077f.thirdrailify.pages.dev`). Stable and immutable aliases serve the new hashed assets. Stable V1.1-V1.4 browser acceptance covers the primary anonymous creator-access CTA, aligned Explore action, complete rail border, public detail and protected edit, local-only demo spin, bounded 96-particle normal celebration, layered lighting, close cleanup, reduced-motion zero-confetti state, no overflow, clean console, and zero mutation requests. Authorized editor actions remain locally fixture-tested because the remote account boundary was not bypassed.
+
+## V1.4 visual system
+
+Wheels creator, transfer, modal, hero, and winner actions consume the existing Public `.button` primitive with semantic primary, secondary, ghost, compact, text, danger, and danger-outline variants. The gold action is reserved for the next explicit create/save step; navigation and utility controls remain dark; destructive result actions distinguish reversible entry removal from the stronger remove-all action. The `/wheels/new` action group and modal footers retain equal control heights and deliberate responsive wrapping without changing access checks or persistence.
+
+The route-driven editor backdrop is a true `position: fixed; inset: 0` viewport layer with safe padding, bounded `dvh` height, internal scrolling, and centred placement. It no longer aligns the editor to the page grid's right edge. The landing hero has a primary gold Build action, aligned secondary exploration action, and a complete bottom border on the Public / Approved / Official information rail.
+
+Winner celebration remains finite and dependency-free. Subtle, normal, and strong modes cap their deterministic DOM population at 44, 96, and 148 particles with mixed strips, rectangles, diamonds, upper-stage fall, and side-cannon arcs. Warm bloom, gold/crimson/violet fans, voltage passes, and a decaying rim remain visual-only and are removed with the result portal. Reduced motion creates no confetti and no travelling beams; it retains only a static branded halo and the immediately interactive result dialog.
+
 ## Staging acceptance — 29 August 2026
 
 Admin deployment `afd9db50` and Public deployment `511d5421` are live on their existing Pages staging projects. The authoritative Commerce D1 was exported before change; additive media migration `0016` is applied, empty, and ledgered while unrelated checkout migration `0015` remains intentionally pending. Stable browser acceptance verifies the idle/spinning/winner/presentation stages, Community dropdown without a header chevron, VIP surfaces, generated audio unlock/notes/cleanup, and clean console. Synthetic background/centre previews and R2 lifecycle/security are locally tested; no remote media object was created because no authenticated owner/editor session was available, and bypassing that boundary is prohibited.

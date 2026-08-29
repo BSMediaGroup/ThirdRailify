@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-08-29 — Wheels V1.4 visual polish
+
+CURRENT VER=0.0.0-seed
+
+PENDING VER=0.1.0-alpha.0
+
+- Reconnected every prominent Wheels action to the Public semantic button system, with primary/secondary/ghost/compact/text/danger/danger-outline hierarchy across the landing hero, `/wheels/new`, editor, Appearance, Import / Export, participant manager, access, and winner result surfaces. Build/Create/Save are gold; navigation and discard stay dark; destructive winner actions are visibly graduated.
+- Re-centred the route-driven Wheel Editor on a viewport-fixed layer with bounded `dvh` height and mobile-safe padding, aligned the creator action bar, and completed the Public / Approved / Official information rail with an explicit lower border.
+- Expanded the finite celebration to bounded 44/96/148-particle tiers with varied shapes, fall and side-cannon paths, theme-derived colour, warm bloom, crimson/violet fans, voltage passes, and a decaying rim. Reduced motion now renders no falling confetti or travelling beams and retains a static winner halo.
+- Added Wheels V1.4 semantic-source and responsive browser coverage for CTA hierarchy, action variants, information-rail termination, viewport modal centring, winner action hierarchy, bounded particles, light layers, cleanup, reduced motion, and desktop/mobile screenshots. Wheel authority, official selection, persistence, portable formats, media, D1, R2, permissions, and routes are unchanged.
+- Deployed Admin first as `d079d3f0` (`https://d079d3f0.thirdrailify-admin.pages.dev`) and Public as `38f5077f` (`https://38f5077f.thirdrailify.pages.dev`). Stable V1.1-V1.4 browser acceptance passed, including the anonymous creator-access CTA, complete information rail, finite demo celebration, cleanup, reduced-motion treatment, clean console, no overflow, and zero non-read API requests.
+
 - Added Wheels V1.3 portable creator files: deterministic `thirdrailify-wheel` v1 `.twl` and equivalent JSON/copy exports, SHA-256 wheel-payload integrity, bounded optional same-origin embedded media, and explicit exclusion of owner/access/history/lock/revision/R2/session/security authority.
 - Added content-detected `.twl`, canonical/generic JSON and Wheel of Names `.wheel` import with strict UTF-8/size/depth/key/array/string/media limits, fresh local entry IDs, one-at-a-time multi-config selection, complete preview/conversion warnings, and local dirty editor state that persists only through existing Save/Create permission and revision contracts.
 - Added the served v1 JSON Schema, `WHEELS_FILE_FORMAT.md`, a sanitized eight-entry Wheel of Names fixture, deterministic round-trip/conversion/security/media tests, an Import / Export sibling dialog in the existing editor, and the `/wheels/new` import path. No Admin/API/schema/migration/D1/R2 authority was added or changed.

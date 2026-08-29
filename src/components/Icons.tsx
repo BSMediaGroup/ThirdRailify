@@ -81,3 +81,6 @@ export function EditIcon(props: IconProps) { return <svg {...base} {...props}><p
 export function CrownIcon(props: IconProps) { return <svg {...base} {...props}><path d="m3 7 4 4 5-7 5 7 4-4-2 11H5L3 7ZM6 21h12" /></svg>; }
 export function PracticeIcon(props: IconProps) { return <svg {...base} {...props}><path d="M5 6h14v12H5zM8 9h8M8 12h5" /></svg>; }
 export function OfficialIcon(props: IconProps) { return <svg {...base} {...props}><path d="m12 3 3 2 3.5.5.5 3.5 2 3-2 3-.5 3.5-3.5.5-3 2-3-2-3.5-.5-.5-3.5-2-3 2-3 .5-3.5L9 5l3-2Z" /><path d="m9 12 2 2 4-4" /></svg>; }
+export function ImportIcon(props: IconProps) { return <svg {...base} {...props}><path d="M12 3v12m-4-4 4 4 4-4" /><path d="M5 17v3h14v-3" /></svg>; }
+export function CheckIcon(props: IconProps) { return <svg {...base} {...props}><path d="m5 12 4 4L19 6" /></svg>; }
+export function EyeOffIcon(props: IconProps) { return <svg {...base} {...props}><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.8 5.2A10.7 10.7 0 0 1 12 5c5.5 0 9 7 9 7a16 16 0 0 1-2.2 3.2M6.2 6.2C4.2 7.5 3 9.4 3 12c0 0 3.5 7 9 7 1.1 0 2.1-.3 3-.7" /></svg>; }
