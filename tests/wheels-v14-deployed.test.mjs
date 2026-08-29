@@ -18,6 +18,10 @@ test("deployed Wheels V1.4 exposes the polished landing and finite demo celebrat
   page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); });
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("request", (request) => { const url = new URL(request.url()); if (url.pathname.startsWith("/api/") && !["GET", "HEAD"].includes(request.method())) writes.push(`${request.method()} ${url.pathname}`); });
+  const wheelResponse = await context.request.get(`${ORIGIN}/api/wheels/${SLUG}`);
+  assert.equal(wheelResponse.ok(), true);
+  const wheelPayload = await wheelResponse.json();
+  const expectedParticles = wheelPayload.wheel.config.celebrationIntensity === "strong" ? 148 : wheelPayload.wheel.config.celebrationIntensity === "normal" ? 96 : 44;
 
   await page.goto(`${ORIGIN}/wheels`, { waitUntil: "networkidle" });
   const build = page.locator(".wheels-hero__actions .button--primary");
@@ -34,7 +38,7 @@ test("deployed Wheels V1.4 exposes the polished landing and finite demo celebrat
   await page.getByRole("button", { name: "Start demo spin" }).click();
   const result = page.getByRole("dialog");
   await result.waitFor({ timeout: 15_000 });
-  assert.equal(await page.locator(".winner-confetti i").count(), 96);
+  assert.equal(await page.locator(".winner-confetti i").count(), expectedParticles, "deployed confetti uses the authoritative bounded intensity tier");
   assert.equal(await page.locator(".winner-lightshow").count(), 1);
   assert.equal(await result.getByRole("button", { name: "Close result" }).isEnabled(), true);
   await result.getByRole("button", { name: "Close result" }).click();

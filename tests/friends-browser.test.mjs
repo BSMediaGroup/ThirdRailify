@@ -15,9 +15,9 @@ const TEST_VIEWPORTS = LIVE_ORIGIN ? VIEWPORTS.filter(([width]) => width === 144
 const PREFIX = LIVE_ORIGIN ? "friends-stable" : "friends-local";
 
 const PROFILES = [
-  { name: "Daniel Clancy", nickname: "CUNT", trigger: /Open Daniel Clancy profile/i, required: ["Most News Hangouts", "builds and runs the website", "Very capable. Very silly."], links: ["https://rumble.com/danielclancy", "https://youtube.com/@danielclancy", "https://x.com/danielclancy"] },
-  { name: "Darnell Quiggley", nickname: "SQUIGGLE", trigger: /Open Darnell Quiggley profile/i, required: ["Pop Culture Beat Downs", "ex-cop turned actor", "straight edge"], links: ["https://rumble.com/lightscameracitation", "https://x.com/darnellquiggly"] },
-  { name: "Simple Davy", nickname: "BAWLZ", trigger: /Open Simple Davy profile/i, required: ["Most News Hangouts", "diabolical sense of humour", "tweets that feel less like messages and more like evidence"], links: ["https://rumble.com/user/SimpleDavy", "https://youtube.com/@OffLabelPod"] },
+  { name: "Daniel Clancy", nickname: "CUNT", location: "Sydney, Australia", flagPath: /\/assets\/flags\/au\.svg$/, trigger: /Open Daniel Clancy profile/i, required: ["Most News Hangouts", "builds and runs the website", "Very capable. Very silly."], links: ["https://rumble.com/danielclancy", "https://youtube.com/@danielclancy", "https://x.com/danielclancy"] },
+  { name: "Darnell Quiggley", nickname: "SQUIGGLE", location: "New Orleans, Louisiana", flagPath: /\/assets\/flags\/us\.svg$/, trigger: /Open Darnell Quiggley profile/i, required: ["Pop Culture Beat Downs", "ex-cop turned actor", "straight edge"], links: ["https://rumble.com/lightscameracitation", "https://x.com/darnellquiggly"] },
+  { name: "Simple Davy", nickname: "BAWLZ", location: "Kansas City, Missouri", flagPath: /\/assets\/flags\/us\.svg$/, trigger: /Open Simple Davy profile/i, required: ["Most News Hangouts", "diabolical sense of humour", "tweets that feel less like messages and more like evidence"], links: ["https://rumble.com/user/SimpleDavy", "https://youtube.com/@OffLabelPod"] },
 ];
 
 let browser;
@@ -50,6 +50,8 @@ test("Friends is a dedicated first-party route with no Wix shell", async () => {
   assert.match(page, /rumble\.svg/);
   assert.match(page, /youtube\.svg/);
   assert.match(page, /twitter\.svg/);
+  assert.match(page, /au\.svg/);
+  assert.match(page, /us\.svg/);
   assert.doesNotMatch(page, /thirdrailify\.com\/friends|Migration-stage route|sourceHref/);
 });
 
@@ -71,12 +73,14 @@ test("profile cards expose no social links until their accessible dialogs open",
 
   for (const profile of PROFILES) {
     const trigger = main.getByRole("button", { name: profile.trigger });
+    await assertLocation(trigger.locator(".friend-card__location"), profile, `${profile.name} card`);
     await trigger.focus();
     await trigger.click();
     const dialog = page.getByRole("dialog", { name: new RegExp(`${escapeRegExp(profile.name)}.*${escapeRegExp(profile.nickname)}`, "i") });
     await dialog.waitFor();
     const text = await dialog.innerText();
     for (const phrase of profile.required) assert.match(text, new RegExp(escapeRegExp(phrase), "i"), `${profile.name} dialog contains ${phrase}`);
+    await assertLocation(dialog.locator(".friend-dialog__location"), profile, `${profile.name} dialog`);
     const links = await dialog.locator('a[href^="http"]').evaluateAll((nodes) => nodes.map((node) => ({ href: node.href, target: node.target, rel: node.rel })));
     assert.deepEqual(links.map((link) => link.href), profile.links);
     assert.ok(links.every((link) => link.target === "_blank" && link.rel.includes("noopener") && link.rel.includes("noreferrer")));
@@ -113,6 +117,12 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
     if (LIVE_ORIGIN) await page.waitForTimeout(1_500);
     await page.locator(".friends-signal").scrollIntoViewIfNeeded();
     await page.locator(".friends-signal.is-active").waitFor({ timeout: 8_000 });
+    await page.locator(".friends-hero.is-active").waitFor({ timeout: 8_000 });
+    const stars = page.locator(".friends-hero__star");
+    assert.equal(await stars.count(), 42, `the refined hero starfield is complete at ${width}px`);
+    const starGeometry = await stars.evaluateAll((nodes) => nodes.map((node) => { const style = getComputedStyle(node); return { width: Number.parseFloat(style.width), height: Number.parseFloat(style.height), radius: style.borderRadius }; }));
+    assert.ok(starGeometry.every((star) => star.width >= 1 && star.width <= 2 && star.height >= 1 && star.height <= 2 && star.radius !== "0px"), `all hero stars remain one or two pixels at ${width}px`);
+    assert.notEqual(await stars.first().evaluate((node) => getComputedStyle(node).animationName), "none", `hero starlight twinkles at ${width}px`);
     assert.notEqual(await page.locator(".friends-signal__scope i").first().evaluate((node) => getComputedStyle(node).animationName), "none");
     const heroPortraitFill = await page.locator(".friends-signal").evaluate((stage) => {
       const stageRect = stage.getBoundingClientRect();
@@ -204,9 +214,10 @@ test("reduced motion keeps the full Friends experience static and operable", asy
   await mockApis(page);
   await page.goto(`${ORIGIN}/friends`, { waitUntil: "domcontentloaded" });
   assert.equal(await page.locator(".friends-signal").getAttribute("data-motion"), "static");
+  assert.equal(await page.locator(".friends-hero").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-roster").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-close").getAttribute("data-motion"), "static");
-  for (const selector of [".friends-signal__grid", ".friends-signal__scope i", ".friend-card__scan i"]) assert.equal(await page.locator(selector).first().evaluate((node) => getComputedStyle(node).animationName), "none");
+  for (const selector of [".friends-hero__starfield", ".friends-hero__star", ".friends-signal__grid", ".friends-signal__scope i", ".friend-card__scan i"]) assert.equal(await page.locator(selector).first().evaluate((node) => getComputedStyle(node).animationName), "none");
   assert.equal(await page.locator(".friend-card").count(), 3);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
   await page.getByRole("button", { name: /Open Simple Davy profile/i }).click();
@@ -243,6 +254,16 @@ async function mockApis(page) {
 
 function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
 function escapeRegExp(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+async function assertLocation(locator, profile, label) {
+  assert.equal(await locator.count(), 1, `${label} has one location tag`);
+  assert.equal((await locator.innerText()).trim(), profile.location.toUpperCase(), `${label} shows the supplied location`);
+  const flag = locator.locator("img");
+  assert.equal(await flag.getAttribute("alt"), "", `${label} flag remains decorative`);
+  assert.match(new URL(await flag.getAttribute("src"), ORIGIN).pathname, profile.flagPath, `${label} uses the correct flag SVG`);
+  assert.ok(await flag.evaluate((image) => image.complete && image.naturalWidth > 0), `${label} flag loads`);
+  assert.ok(await locator.evaluate((node) => Math.abs(node.querySelector("img").getBoundingClientRect().height - Number.parseFloat(getComputedStyle(node).fontSize)) <= 1), `${label} flag matches the location text height`);
+}
 
 async function layout(page) {
   return page.evaluate(() => {

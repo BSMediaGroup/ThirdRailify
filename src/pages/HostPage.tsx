@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import americanFlag from "../../assets/flags/us.svg";
+import canadianFlag from "../../assets/flags/ca.svg";
 import ginaHero from "../../assets/people/gina3.webp";
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnHero from "../../assets/people/shawn3.webp";
@@ -132,7 +134,7 @@ export function HostPage({ hostKey }: { hostKey: HostKey }) {
             </div>
             <div className="host-profile-hero__facts" aria-label={`${profile.name} show context`}>
               <span><b>{profile.key === "shawn" ? "HOST" : "CO-HOST"}</b><small>Third Railify</small></span>
-              <span><b>{profile.key === "shawn" ? "CA" : "US"}</b><small>{profile.key === "shawn" ? "Canadian · unfiltered" : "American · Massachusetts"}</small></span>
+              <span><b className="host-profile-hero__country"><img src={profile.key === "shawn" ? canadianFlag : americanFlag} alt="" />{profile.key === "shawn" ? "CA" : "US"}</b><small>{profile.key === "shawn" ? "Canadian · unfiltered" : "American · Massachusetts"}</small></span>
               <span><b>{profile.key === "shawn" ? "LIVE" : "JUST GINA"}</b><small>{profile.key === "shawn" ? "Most nights · 10 PM ET" : "Distinct lane"}</small></span>
             </div>
           </div>

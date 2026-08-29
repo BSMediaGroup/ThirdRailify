@@ -18,6 +18,7 @@ const HOSTS = {
     heading: /Shawn\.\s+Every tab is open\./i,
     required: ["Third Railify host", "@ThirdRailify", "Canadian", "News", "Crime", "Pop culture", "ADHD", "most nights around 10 PM Eastern", "The detour"],
     identity: /CA\s+Canadian · unfiltered/i,
+    flagPath: /\/assets\/flags\/ca\.svg$/,
     topicAnimation: ".host-topic-scan path",
     partnerHref: "/gina",
     partnerName: /Meet Gina/i,
@@ -26,6 +27,7 @@ const HOSTS = {
     heading: /Gina\.\s+The rabbit hole has company\./i,
     required: ["Third Railify co-host", "@JustGina", "American", "Massachusetts", "Mysteries", "conspiracies", "Culture", "Sass + humour", "Just Gina", "most nights around 10 PM Eastern"],
     identity: /US\s+American · Massachusetts/i,
+    flagPath: /\/assets\/flags\/us\.svg$/,
     topicAnimation: ".host-topic-case > div",
     partnerHref: "/shawn",
     partnerName: /Meet Shawn/i,
@@ -80,6 +82,13 @@ test("both host stories preserve verified facts, internal paths, and editorial b
     assert.equal(await main.getByRole("heading", { level: 1, name: profile.heading }).count(), 1);
     for (const required of profile.required) assert.match(text, new RegExp(escapeRegExp(required), "i"), `${host} contains ${required}`);
     assert.match(await main.locator(".host-profile-hero__facts > span").nth(1).innerText(), profile.identity, `${host} has the correct national identity and location`);
+    const countryLabel = main.locator(".host-profile-hero__country");
+    const countryFlag = countryLabel.locator("img");
+    assert.equal(await countryFlag.count(), 1, `${host} has one country flag`);
+    assert.equal(await countryFlag.getAttribute("alt"), "", `${host} flag remains decorative beside the readable country code`);
+    assert.match(new URL(await countryFlag.getAttribute("src"), ORIGIN).pathname, profile.flagPath, `${host} uses the correct country SVG`);
+    assert.ok(await countryFlag.evaluate((image) => image.complete && image.naturalWidth > 0), `${host} country flag SVG loads`);
+    assert.ok(await countryLabel.evaluate((label) => Math.abs(label.querySelector("img").getBoundingClientRect().height - Number.parseFloat(getComputedStyle(label).fontSize)) <= 1), `${host} country flag matches its country-code height`);
     if (host === "gina") assert.doesNotMatch(text, /\bCanadian\b/i, "Gina is not described as Canadian");
     for (const heading of [/What enters\s+the conversation\./i, host === "shawn" ? /No live wire runs solo\./i : /The other chair talks back\./i]) {
       assert.equal(await main.getByRole("heading", { level: 2, name: heading }).count(), 1, `${host} contains its story landmark`);

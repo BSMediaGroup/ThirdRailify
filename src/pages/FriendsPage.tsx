@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import australianFlag from "../../assets/flags/au.svg";
+import americanFlag from "../../assets/flags/us.svg";
 import danielPortrait from "../../assets/people/daniel-tradition.webp";
 import darnellPortrait from "../../assets/people/darnell1.webp";
 import davyPortrait from "../../assets/people/davy1.webp";
@@ -18,6 +20,8 @@ type FriendProfile = {
   nickname: string;
   portrait: string;
   portraitAlt: string;
+  location: string;
+  locationFlag: string;
   appearances: string;
   role: string;
   shortBio: string;
@@ -34,6 +38,8 @@ const friends: FriendProfile[] = [
     nickname: "CUNT",
     portrait: danielPortrait,
     portraitAlt: "Daniel Clancy holding a glass water pipe and torch",
+    location: "Sydney, Australia",
+    locationFlag: australianFlag,
     appearances: "Most News Hangouts",
     role: "Website builder / designer / professional noise source",
     shortBio: "Cheeky, strident, loud, and very, very silly. Builds the website, designs shit, makes annoying noises, and keeps inventing stupid names for people.",
@@ -52,6 +58,8 @@ const friends: FriendProfile[] = [
     nickname: "SQUIGGLE",
     portrait: darnellPortrait,
     portraitAlt: "Illustrated portrait of Darnell Quiggley",
+    location: "New Orleans, Louisiana",
+    locationFlag: americanFlag,
     appearances: "Pop Culture Beat Downs / occasional News Hangouts",
     role: "Ex-cop turned actor / straight-edge authority enjoyer",
     shortBio: "Hilariously silly, annoyingly straight edge, and still far too willing to trust authority. A regular in the Pop Culture Beat Down ring.",
@@ -69,6 +77,8 @@ const friends: FriendProfile[] = [
     nickname: "BAWLZ",
     portrait: davyPortrait,
     portraitAlt: "Portrait of Simple Davy in a dark hoodie",
+    location: "Kansas City, Missouri",
+    locationFlag: americanFlag,
     appearances: "Most News Hangouts",
     role: "Diabolical humour / evidentiary tweet department",
     shortBio: "A diabolical sense of humour and a direct-message history that should probably be reviewed by the appropriate authorities.",
@@ -81,6 +91,15 @@ const friends: FriendProfile[] = [
   },
 ];
 
+const friendsHeroStars = Array.from({ length: 42 }, (_, index) => ({
+  x: 2 + ((index * 37 + (index % 6) * 9) % 96),
+  y: 4 + ((index * 53 + (index % 5) * 7) % 90),
+  size: index % 6 === 0 || index % 11 === 0 ? 2 : 1,
+  delay: -((index * 17) % 83) / 10,
+  duration: 3.6 + ((index * 11) % 34) / 10,
+  color: ["#fff8d9", "#ffd12f", "#b889ff", "#d8fbff"][index % 4],
+}));
+
 export function FriendsPage() {
   const hero = useMotionGate<HTMLDivElement>();
   const roster = useMotionGate<HTMLElement>();
@@ -91,8 +110,12 @@ export function FriendsPage() {
 
   return (
     <div className="friends-page">
-      <section className="friends-hero" aria-labelledby="friends-title">
-        <div className="friends-hero__ambient" aria-hidden="true"><i /><i /><i /></div>
+      <section className={`friends-hero${hero.active ? " is-active" : ""}`} aria-labelledby="friends-title" data-motion={hero.active ? "active" : "static"}>
+        <div className="friends-hero__starlight" aria-hidden="true">
+          <span className="friends-hero__starfield">
+            {friendsHeroStars.map((star, index) => <i key={index} className="friends-hero__star" style={{ "--star-x": `${star.x}%`, "--star-y": `${star.y}%`, "--star-size": `${star.size}px`, "--star-delay": `${star.delay}s`, "--star-duration": `${star.duration}s`, "--star-color": star.color } as CSSProperties} />)}
+          </span>
+        </div>
         <div className="container friends-hero__layout">
           <div className="friends-hero__copy">
             <p className="eyebrow"><i /> Friends of the show / frequent offenders</p>
@@ -138,6 +161,7 @@ export function FriendsPage() {
               </span>
               <span className="friend-card__copy">
                 <span className="friend-card__identity"><small>{friend.name}</small><strong>“{friend.nickname}”</strong></span>
+                <FriendLocation profile={friend} className="friend-card__location" />
                 <span className="friend-card__appearance">{friend.appearances}</span>
                 <span className="friend-card__bio">{friend.shortBio}</span>
                 <span className="friend-card__open">Open dossier <ArrowIcon /></span>
@@ -164,6 +188,10 @@ export function FriendsPage() {
       {selected ? <FriendDialog profile={selected} onClose={closeProfile} /> : null}
     </div>
   );
+}
+
+function FriendLocation({ profile, className }: { profile: FriendProfile; className: string }) {
+  return <span className={`friend-location ${className}`}><img src={profile.locationFlag} alt="" /><span>{profile.location}</span></span>;
 }
 
 function FriendsSignalStage({ motion }: { motion: ReturnType<typeof useMotionGate<HTMLDivElement>> }) {
@@ -224,6 +252,7 @@ function FriendDialog({ profile, onClose }: { profile: FriendProfile; onClose: (
           <p className="eyebrow">Friends of the show / dossier {profile.number}</p>
           <h2 id={`friend-dialog-${profile.key}-title`}><span>{profile.name}</span>“{profile.nickname}”</h2>
           <p className="friend-dialog__role">{profile.role}</p>
+          <FriendLocation profile={profile} className="friend-dialog__location" />
           <p id={`friend-dialog-${profile.key}-bio`} className="friend-dialog__bio">{profile.fullBio}</p>
           <ul className="friend-dialog__signal" aria-label={`${profile.name} show signals`}>{profile.signal.map((item, index) => <li key={item}><span>0{index + 1}</span>{item}</li>)}</ul>
           <div className="friend-dialog__links" aria-label={`${profile.name} channel and social links`}>
