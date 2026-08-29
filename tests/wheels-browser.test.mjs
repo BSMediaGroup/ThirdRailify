@@ -14,7 +14,11 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
   const artifacts = fileURLToPath(
     new URL("../.artifacts/wheels-v1/", import.meta.url),
   );
+  const officialArtifacts = fileURLToPath(
+    new URL("../.artifacts/wheels-official-button/", import.meta.url),
+  );
   await mkdir(artifacts, { recursive: true });
+  await mkdir(officialArtifacts, { recursive: true });
   const server = spawn(
     process.execPath,
     [
@@ -739,6 +743,68 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
         writes += 1;
       },
     );
+  const writesBeforeOfficialPolish = writes;
+  await withPage(
+    browser,
+    { width: 1440, height: 900 },
+    async (page) => {
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+      await page.getByRole("button", { name: "Start demo spin" }).waitFor();
+      await assertPracticeTriggerUnchanged(page);
+      await page.getByRole("button", { name: "Official draw" }).click();
+      await assertOfficialTriggerTreatment(page, true, "normal mode");
+      await page.waitForTimeout(920);
+      await page.screenshot({
+        path: `${officialArtifacts}/official-spin-normal-1440.png`,
+        fullPage: false,
+      });
+
+      await page.setViewportSize({ width: 1920, height: 1080 });
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`);
+      await page.getByRole("button", { name: "Official draw" }).click();
+      await assertOfficialTriggerTreatment(page, true, "presentation mode");
+      await page.waitForTimeout(920);
+      await page.screenshot({
+        path: `${officialArtifacts}/official-spin-presentation-1920.png`,
+        fullPage: false,
+      });
+      assert.equal(
+        await page.evaluate(
+          () =>
+            document.documentElement.scrollWidth <=
+            document.documentElement.clientWidth + 1,
+        ),
+        true,
+        "official presentation treatment causes no horizontal overflow",
+      );
+    },
+    () => {
+      writes += 1;
+    },
+    "no-preference",
+  );
+  await withPage(
+    browser,
+    { width: 390, height: 844 },
+    async (page) => {
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`);
+      await page.getByRole("button", { name: "Official draw" }).click();
+      await assertOfficialTriggerTreatment(page, false, "reduced-motion presentation");
+      await assertPage(page, 390);
+      await page.screenshot({
+        path: `${officialArtifacts}/official-spin-reduced-mobile-390.png`,
+        fullPage: false,
+      });
+    },
+    () => {
+      writes += 1;
+    },
+  );
+  assert.equal(
+    writes,
+    writesBeforeOfficialPolish,
+    "official-button visual acceptance creates no spin or API write",
+  );
   await writeFile(
     `${artifacts}/v15-overflow-measurements.json`,
     `${JSON.stringify(overflowMeasurements, null, 2)}\n`,
@@ -912,6 +978,62 @@ test("Wheels reserve visual-effect clearance and expose the expanded palette lib
     );
   assert.equal(writes, 0, "spacing and palette previews perform no API writes");
 });
+
+async function assertPracticeTriggerUnchanged(page) {
+  const treatment = await page
+    .getByRole("button", { name: "Start demo spin" })
+    .evaluate((button) => ({
+      official: button.classList.contains("spin-trigger--official"),
+      animationName: getComputedStyle(button).animationName,
+      beforeContent: getComputedStyle(button, "::before").content,
+      afterContent: getComputedStyle(button, "::after").content,
+    }));
+  assert.deepEqual(treatment, {
+    official: false,
+    animationName: "none",
+    beforeContent: "none",
+    afterContent: "none",
+  });
+}
+
+async function assertOfficialTriggerTreatment(page, animated, label) {
+  const treatment = await page
+    .getByRole("button", { name: "Start recorded official draw", exact: true })
+    .evaluate((button) => {
+      const style = getComputedStyle(button);
+      const before = getComputedStyle(button, "::before");
+      const after = getComputedStyle(button, "::after");
+      const box = button.getBoundingClientRect();
+      return {
+        official: button.classList.contains("spin-trigger--official"),
+        backgroundImage: style.backgroundImage,
+        boxShadow: style.boxShadow,
+        overflow: style.overflow,
+        animationName: style.animationName,
+        beforeAnimation: before.animationName,
+        afterAnimation: after.animationName,
+        beforeContent: before.content,
+        afterContent: after.content,
+        box: box.toJSON(),
+      };
+    });
+  assert.equal(treatment.official, true, `${label} uses official-only styling`);
+  assert.match(treatment.backgroundImage, /linear-gradient/i, `${label} keeps the premium layered gradient`);
+  assert.notEqual(treatment.boxShadow, "none", `${label} keeps the premium glow`);
+  assert.equal(treatment.overflow, "hidden", `${label} contains glitter inside the button`);
+  assert.equal(treatment.beforeContent, '""', `${label} renders its bounded glitter layer`);
+  assert.equal(treatment.afterContent, '""', `${label} renders its bounded light sweep`);
+  assert.ok(treatment.box.left >= 0 && treatment.box.right <= (await page.evaluate(() => innerWidth)), `${label} remains inside the viewport`);
+  if (animated) {
+    assert.match(treatment.animationName, /officialSpinGradient.*officialSpinAura/);
+    assert.equal(treatment.beforeAnimation, "officialSpinGlitter");
+    assert.equal(treatment.afterAnimation, "officialSpinSweep");
+  } else {
+    assert.equal(treatment.animationName, "none", `${label} stops the glow animation`);
+    assert.equal(treatment.beforeAnimation, "none", `${label} stops glitter movement`);
+    assert.equal(treatment.afterAnimation, "none", `${label} stops the light sweep`);
+  }
+}
 
 async function withPage(
   browser,
