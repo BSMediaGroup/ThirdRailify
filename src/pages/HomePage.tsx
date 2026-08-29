@@ -25,6 +25,7 @@ import { useBroadcast } from "../hooks/useBroadcast";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import type { CatalogueProduct } from "../types/catalogue";
 import { DEFAULT_HOME_RAIL, type BannerConfig } from "../lib/banner";
+import { effectiveLiveCandidates } from "../lib/liveBanner";
 import type { SiteShellOutletContext } from "../components/SiteShell";
 
 const platforms = [
@@ -43,10 +44,11 @@ export function HomePage() {
   const { config } = useAuth();
   const { data, loading } = useBroadcast();
   const primary = data?.primary ?? null;
-  const live = Boolean(data?.liveNow.length);
-  const primaryIsLive = primary?.presentationState === "live";
-  const livePlatforms: ReadonlySet<string> = new Set(data?.liveNow.map((candidate) => candidate.platform) ?? []);
-  const liveDestinations: ReadonlyMap<string, string> = new Map(data?.liveNow.map((candidate) => [candidate.platform, candidate.watchUrl]) ?? []);
+  const confirmedLive = effectiveLiveCandidates(data);
+  const live = confirmedLive.length > 0;
+  const primaryIsLive = Boolean(primary && confirmedLive.some((candidate) => candidate.key === primary.key));
+  const livePlatforms: ReadonlySet<string> = new Set(confirmedLive.map((candidate) => candidate.platform));
+  const liveDestinations: ReadonlyMap<string, string> = new Map(confirmedLive.map((candidate) => [candidate.platform, candidate.watchUrl]));
   const [merchProducts, setMerchProducts] = useState<CatalogueProduct[]>([]);
   const [contactOpen, setContactOpen] = useState(false);
   const contactTrigger = useRef<HTMLButtonElement>(null);
@@ -105,7 +107,7 @@ export function HomePage() {
           <div><p className="eyebrow">Start here</p><h2>The argument is already in progress.</h2></div>
           <div><p>Third Railify is a daily podcast built around current events, crime, pop culture, community energy, and an intentionally unpredictable route through all of it.</p><Link className="text-link" to="/watch">Find the latest show <ArrowIcon /></Link></div>
         </div>
-        <div className={`container broadcast-card${primaryIsLive ? " is-live" : ""}`}>
+        <div className={`container broadcast-card${primaryIsLive ? " is-live live-event-perimeter" : ""}`}>
           <BroadcastPlayer candidate={primary} />
           <div className="broadcast-card__copy">
             {primary && data ? <BroadcastMetadata candidate={primary} freshness={data.freshness} /> : (

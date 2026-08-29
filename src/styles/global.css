@@ -7603,9 +7603,12 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   .about-network__core { border: 1px solid Highlight; }
 }
 
-/* Authoritative live-event perimeter for the primary Watch player. */
-.watch-v2 .watch-stage.is-live {
+/* Shared authoritative live-event perimeter for every current Public player. */
+.is-live.live-event-perimeter {
+  --live-perimeter-radius: 2px;
+  position: relative;
   isolation: isolate;
+  overflow: visible;
   border-color: rgba(255, 70, 93, .94);
   background:
     radial-gradient(circle at 78% 12%, rgba(255, 51, 79, .12), transparent 36%),
@@ -7619,24 +7622,30 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   animation: watch-live-stage-breathe 2.8s ease-in-out infinite;
 }
 
-.watch-v2 .watch-stage.is-live::before {
+.broadcast-card.live-event-perimeter { --live-perimeter-radius: var(--radius-lg); }
+.broadcast-card.live-event-perimeter > .broadcast-player { overflow: hidden; border-radius: var(--live-perimeter-radius) 0 0 var(--live-perimeter-radius); }
+
+.is-live.live-event-perimeter::before {
+  position: absolute;
   inset: -7px;
   z-index: 4;
   border: 1px solid rgba(255, 92, 113, .66);
-  border-radius: 7px;
+  border-radius: calc(var(--live-perimeter-radius) + 5px);
   background:
     linear-gradient(90deg, #ff334f, #ffd12f) 0 0 / 22% 2px no-repeat,
     linear-gradient(270deg, #ff334f, #ffd12f) 100% 100% / 22% 2px no-repeat;
   box-shadow: 0 0 24px rgba(255, 51, 79, .34), inset 0 0 18px rgba(255, 51, 79, .08);
+  content: "";
+  pointer-events: none;
   animation: watch-live-edge-pulse 2.8s ease-in-out infinite;
 }
 
-.watch-v2 .watch-stage.is-live::after {
+.is-live.live-event-perimeter::after {
   position: absolute;
   z-index: 3;
   inset: -17px;
   border: 1px solid rgba(255, 70, 93, .24);
-  border-radius: 12px;
+  border-radius: calc(var(--live-perimeter-radius) + 10px);
   box-shadow: 0 0 34px rgba(255, 51, 79, .26), 0 0 74px rgba(255, 209, 47, .09);
   content: "";
   opacity: .72;
@@ -7666,26 +7675,30 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 }
 
 @media (max-width: 680px) {
-  .watch-v2 .watch-stage.is-live::after { inset: -11px; }
+  .is-live.live-event-perimeter::after { inset: -11px; }
+}
+
+@media (max-width: 900px) {
+  .broadcast-card.live-event-perimeter > .broadcast-player { border-radius: var(--live-perimeter-radius) var(--live-perimeter-radius) 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .watch-v2 .watch-stage.is-live,
-  .watch-v2 .watch-stage.is-live::before,
-  .watch-v2 .watch-stage.is-live::after { animation: none; }
+  .is-live.live-event-perimeter,
+  .is-live.live-event-perimeter::before,
+  .is-live.live-event-perimeter::after { animation: none; }
 
-  .watch-v2 .watch-stage.is-live {
+  .is-live.live-event-perimeter {
     box-shadow: 0 28px 80px rgba(0, 0, 0, .62), 0 0 0 1px rgba(255, 209, 47, .24), 0 0 46px rgba(255, 51, 79, .5), 0 0 96px rgba(255, 51, 79, .24);
   }
 
-  .watch-v2 .watch-stage.is-live::before { opacity: .88; }
-  .watch-v2 .watch-stage.is-live::after { opacity: .62; transform: none; }
+  .is-live.live-event-perimeter::before { opacity: .88; }
+  .is-live.live-event-perimeter::after { opacity: .62; transform: none; }
 }
 
 @media (forced-colors: active) {
-  .watch-v2 .watch-stage.is-live,
-  .watch-v2 .watch-stage.is-live::before { border: 2px solid Highlight; box-shadow: none; }
-  .watch-v2 .watch-stage.is-live::after { display: none; }
+  .is-live.live-event-perimeter,
+  .is-live.live-event-perimeter::before { border: 2px solid Highlight; box-shadow: none; }
+  .is-live.live-event-perimeter::after { display: none; }
 }
 
 /* Dedicated Shawn and Gina host stories */

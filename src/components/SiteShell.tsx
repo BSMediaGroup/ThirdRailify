@@ -18,7 +18,6 @@ import { PrivacyControls } from "./PrivacyControls";
 const navItems = [
   { to: "/", label: "Home" },
   { to: "/watch", label: "Watch" },
-  { to: "/wheels", label: "Wheels" },
   { to: "/about", label: "The show" },
   { to: "/shop", label: "Shop" },
   { to: "/community", label: "Community" },
@@ -32,6 +31,8 @@ export function SiteShell() {
   const { account, openAuth } = useAuth();
   const bannerConfig = useBannerConfig();
   const liveNow = effectiveLiveCandidates(data);
+  const liveNavNumber = String(navItems.length + 1).padStart(2, "0");
+  const accountNavNumber = String(navItems.length + (liveNow.length > 0 ? 2 : 1)).padStart(2, "0");
 
   useEffect(() => {
     setMenuOpen(false);
@@ -77,10 +78,10 @@ export function SiteShell() {
         <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
           <div className="container">
             {navItems.map((item, index) => <NavLink key={item.to} to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>)}
-            {liveNow.length > 0 && <Link to="/watch"><span>07</span>Watch live now<ArrowIcon /></Link>}
+            {liveNow.length > 0 && <Link to="/watch"><span>{liveNavNumber}</span>Watch live now<ArrowIcon /></Link>}
             {account
-              ? <Link to="/account"><span>08</span>Your account<ArrowIcon /></Link>
-              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>08</span>Log in</button>}
+              ? <Link to="/account"><span>{accountNavNumber}</span>Your account<ArrowIcon /></Link>
+              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>{accountNavNumber}</span>Log in</button>}
           </div>
         </nav>
       </header>

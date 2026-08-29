@@ -289,3 +289,10 @@ When a listed provider is live, both homepage social rails now open that confirm
 - Hero framing refinement deployed as `85ef55fd-4e32-4979-9609-81bb257e29b8` (`https://85ef55fd.thirdrailify.pages.dev`); the stable six-viewport suite confirms Daniel's larger left-of-centre foreground geometry, all three visible portraits, and unchanged dialog/link accessibility.
 - Hero floor correction pins all three cutout wrappers to the instrument floor, removes vertical translation from their idle animation, moves Daniel farther left, and raises Darnell through bottom-anchored scaling so no portrait can expose a floating gap beneath it.
 - Card framing correction replaces the three dossier portraits' `contain` geometry with top-anchored full-bleed cover crops, explicitly bypasses the global image-width cap, and shifts Daniel's oversized layer left. The portraits now extend beyond both canvas edges without cropping their top edge at desktop, tablet, or phone widths; focused geometry assertions and fresh 1440/390 screenshots cover the result.
+
+## 2026-08-29 — shared current-live player perimeter
+
+- Extended the existing authoritative Watch-page crimson-and-gold live perimeter to the homepage current player and the dedicated `/watch/live` player, including the breathing stage, edge-bracket, and halo layers.
+- Applied the treatment only to candidates accepted by the shared bounded current-live authority; offline, stale, expired, archived, and fallback presentations remain unlit. Reduced-motion and forced-colour behavior remain intact.
+- Removed Wheels from the desktop and mobile main header only. The `/wheels` route and the Community-page entry remain available, and mobile navigation numbering now follows the visible header items.
+- Expanded the focused Watch browser suite across live, offline, stale, reduced-motion, 1440px, and 390px states, with header/Community navigation assertions and fresh visual captures for the homepage and dedicated live player.

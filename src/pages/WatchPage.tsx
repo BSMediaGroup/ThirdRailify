@@ -54,7 +54,7 @@ export function WatchPage() {
                 <BroadcastStatusBadge candidate={selected} />
               </div>
               <PlatformSelector candidates={options} selectedKey={selected.key} onSelect={(candidate) => setSelectedKey(candidate.key)} />
-              <div className={`watch-stage${selectedLive ? " is-live" : ""}`} data-state={selected.presentationState}>
+              <div className={`watch-stage${selectedLive ? " is-live live-event-perimeter" : ""}`} data-state={selected.presentationState}>
                 <div className="watch-stage__player"><div className="watch-stage__scan" aria-hidden="true" /><BroadcastPlayer candidate={selected} eager /></div>
                 <div className="watch-stage__copy">
                   <p className="watch-stage__state">TRF / {stateLabel}</p>

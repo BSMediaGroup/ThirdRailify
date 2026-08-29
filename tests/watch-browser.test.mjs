@@ -31,6 +31,7 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       await page.goto(`${ORIGIN}${url}`);
       await page.locator("h1").waitFor();
       assert.equal(await page.locator("h1").count(), 1, `${route} has one H1 at ${width}x${height}`);
+      assert.equal(await page.locator('.site-header a[href="/wheels"]').count(), 0, `Wheels is absent from the main header on ${route} at ${width}x${height}`);
       assert.equal(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true, `${route} has no overflow at ${width}x${height}`);
       assert.deepEqual(errors, [], `${route} has no console errors at ${width}x${height}`);
       if (route === "watch") {
@@ -78,6 +79,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await page.locator(".promo-banner--live").waitFor();
   assert.equal(await page.locator(".promo-banner--live").getByText("Fixture live transmission").count(), 1);
   assert.equal(await page.locator(".promo-banner--live .promo-banner__cta").getAttribute("href"), "/watch/live");
+  await page.goto(`${ORIGIN}/community`);
+  assert.equal(await page.locator('.site-header a[href="/wheels"]').count(), 0, "Wheels remains absent from the main header");
+  assert.equal(await page.locator('main a[href="/wheels"]').count(), 1, "Community retains the Competition wheels route");
   await context.close();
 
   for (const [width, height] of [[1440, 900], [390, 844]]) {
@@ -99,6 +103,20 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
     assert.notEqual(liveEffect.haloContent, "none");
     assert.equal(await livePage.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
     if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await livePage.locator(".watch-stage-section").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-live-event-${width}.png`) });
+
+    await livePage.goto(`${ORIGIN}/`);
+    const homeLivePlayer = livePage.locator(".broadcast-card.is-live.live-event-perimeter");
+    await homeLivePlayer.waitFor();
+    await assertLivePerimeter(homeLivePlayer, `home current player at ${width}px`);
+    assert.equal(await livePage.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true, `home live perimeter has no overflow at ${width}px`);
+    if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await livePage.locator(".show-intro").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-home-live-event-${width}.png`) });
+
+    await livePage.goto(`${ORIGIN}/watch/live?platform=youtube`);
+    const dedicatedLivePlayer = livePage.locator(".watch-theatre__stage.is-live.live-event-perimeter");
+    await dedicatedLivePlayer.waitFor();
+    await assertLivePerimeter(dedicatedLivePlayer, `dedicated current player at ${width}px`);
+    assert.equal(await livePage.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true, `dedicated live perimeter has no overflow at ${width}px`);
+    if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await livePage.locator(".watch-theatre").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-dedicated-live-event-${width}.png`) });
     await liveContext.close();
   }
 
@@ -106,12 +124,20 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await offlinePage.goto(`${ORIGIN}/watch`); const offlineStage = offlinePage.locator('.watch-stage[data-state="archive"]'); await offlineStage.waitFor();
   assert.equal(await offlineStage.getAttribute("class"), "watch-stage", "non-live transmissions do not inherit the live-event perimeter");
   assert.equal(await offlineStage.evaluate((element) => getComputedStyle(element, "::after").content), "none");
+  await offlinePage.goto(`${ORIGIN}/`); await offlinePage.locator(".broadcast-card").waitFor();
+  assert.equal(await offlinePage.locator(".broadcast-card.live-event-perimeter").count(), 0, "offline homepage player has no live-event perimeter");
+  await offlinePage.goto(`${ORIGIN}/watch/live`); await offlinePage.locator(".watch-theatre__stage").waitFor();
+  assert.equal(await offlinePage.locator(".watch-theatre__stage.live-event-perimeter").count(), 0, "offline dedicated player has no live-event perimeter");
   await offlineContext.close();
 
   const staleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } }); const stalePage = await staleContext.newPage(); await mockApis(stalePage, false, { watch: () => ({ ...watchPayload(true), freshness: "stale", ageSeconds: 9999 }) });
   await stalePage.goto(`${ORIGIN}/watch`); const staleStage = stalePage.locator('.watch-stage[data-state="live"]'); await staleStage.waitFor();
   assert.equal(await staleStage.getAttribute("class"), "watch-stage", "stale provider snapshots never receive the live-event perimeter");
   assert.equal(await stalePage.locator(".watch-hero.is-live").count(), 0, "stale provider snapshots never claim a live Watch hero");
+  await stalePage.goto(`${ORIGIN}/`); await stalePage.locator(".broadcast-card").waitFor();
+  assert.equal(await stalePage.locator(".broadcast-card.live-event-perimeter").count(), 0, "stale homepage signal never receives the live-event perimeter");
+  await stalePage.goto(`${ORIGIN}/watch/live`); await stalePage.locator(".watch-theatre__stage").waitFor();
+  assert.equal(await stalePage.locator(".watch-theatre__stage.live-event-perimeter").count(), 0, "stale dedicated signal never receives the live-event perimeter");
   await staleContext.close();
 
   const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" }); const reducedPage = await reducedContext.newPage(); await mockApis(reducedPage, false);
@@ -124,6 +150,10 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   await reducedPage.unroute("**/api/**"); await mockApis(reducedPage, true); await reducedPage.goto(`${ORIGIN}/watch`); const reducedLiveStage = reducedPage.locator(".watch-stage.is-live"); await reducedLiveStage.waitFor();
   assert.deepEqual(await reducedLiveStage.evaluate((element) => [getComputedStyle(element).animationName, getComputedStyle(element, "::before").animationName, getComputedStyle(element, "::after").animationName]), ["none", "none", "none"], "live glow remains strong but static when reduced motion is requested");
   assert.notEqual(await reducedLiveStage.evaluate((element) => getComputedStyle(element).boxShadow), "none");
+  await reducedPage.goto(`${ORIGIN}/`); const reducedHomeLive = reducedPage.locator(".broadcast-card.live-event-perimeter"); await reducedHomeLive.waitFor();
+  assert.deepEqual(await liveAnimations(reducedHomeLive), ["none", "none", "none"], "homepage live glow is static for reduced motion");
+  await reducedPage.goto(`${ORIGIN}/watch/live?platform=youtube`); const reducedDedicatedLive = reducedPage.locator(".watch-theatre__stage.live-event-perimeter"); await reducedDedicatedLive.waitFor();
+  assert.deepEqual(await liveAnimations(reducedDedicatedLive), ["none", "none", "none"], "dedicated live glow is static for reduced motion");
   await reducedContext.close();
 
   const jitterContext = await browser.newContext({ viewport: { width: 1024, height: 768 } }); const jitterPage = await jitterContext.newPage();
@@ -158,6 +188,27 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   assert.equal(await restorePage.locator(".promo-banner--live").count(), 0, "normal promo restores when the live snapshot ends without a reload");
   await restoreContext.close();
 });
+
+async function assertLivePerimeter(locator, label) {
+  const effect = await locator.evaluate((element) => ({
+    border: getComputedStyle(element).borderColor,
+    shadow: getComputedStyle(element).boxShadow,
+    stageAnimation: getComputedStyle(element).animationName,
+    edgeAnimation: getComputedStyle(element, "::before").animationName,
+    haloAnimation: getComputedStyle(element, "::after").animationName,
+    haloContent: getComputedStyle(element, "::after").content,
+  }));
+  assert.match(effect.border, /255, (?:70|71|72|73|74|75)/, `${label} has the red live perimeter`);
+  assert.notEqual(effect.shadow, "none", `${label} has the multi-layer live glow`);
+  assert.equal(effect.stageAnimation, "watch-live-stage-breathe", `${label} breathes with the Watch treatment`);
+  assert.equal(effect.edgeAnimation, "watch-live-edge-pulse", `${label} has pulsing edge brackets`);
+  assert.equal(effect.haloAnimation, "watch-live-halo-pulse", `${label} has the outer pulsing halo`);
+  assert.notEqual(effect.haloContent, "none", `${label} renders the halo layer`);
+}
+
+async function liveAnimations(locator) {
+  return locator.evaluate((element) => [getComputedStyle(element).animationName, getComputedStyle(element, "::before").animationName, getComputedStyle(element, "::after").animationName]);
+}
 
 async function mockApis(page, live, options = {}) {
   await page.route("**/api/**", (route) => {
