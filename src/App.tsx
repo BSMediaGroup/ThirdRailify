@@ -51,7 +51,7 @@ export function App() {
         <Route path="/watch/v/:episodeId" element={<EpisodeDetailPage />} />
         <Route path="/wheels" element={<WheelsPage />} />
         <Route path="/wheels/new" element={<WheelEditorPage create />} />
-        <Route path="/wheels/:slug/edit" element={<WheelEditorPage />} />
+        <Route path="/wheels/:slug/edit" element={<WheelPage editorRequested />} />
         <Route path="/wheels/:slug" element={<WheelPage />} />
         <Route path="/wheel" element={<Navigate to="/wheels" replace />} />
         <Route path="/live" element={<LiveAliasPage />} />

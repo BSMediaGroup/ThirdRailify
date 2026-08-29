@@ -1,5 +1,18 @@
 # Bump notes
 
+## 2026-08-29 — Wheels V1.2 in-context control and participant odds
+
+CURRENT VER=0.0.0-seed
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced the existing-wheel full-page editor presentation with a route-driven, responsive lightbox over the mounted wheel while retaining direct `/wheels/:slug/edit`, reload, browser-Back, clean close, authorization, revision-safe Save/Discard, dirty-close confirmation, and recoverable save-error behavior. `/wheels/new` remains the dedicated unsaved creation route.
+- Added the dedicated participant-management dialog with quick/bulk add, search/order/sort, Web Crypto shuffle, reverse, hide/unhide, remove/confirmed clear, weights, colours, duplicate warnings, bounds, and explicit revision-protected Save/Discard. Appearance remains a sibling preview-first dialog so modal editors never stack.
+- Added shared weighted angle/pointer/click geometry, the connected pointer-target HUD in detail and presentation modes, rotation-aware medallion/exterior-safe Canvas selection, keyboard participant-row selection, and a persistent desktop/mobile participant detail surface. Current odds are derived only as entry weight over total active weight; exact duplicate labels additionally show their combined active chance without exposing private metadata or invented history.
+- Added the reusable exact-path `trzap-0.svg` gold-gradient mark and replaced placeholder Wheels hero, loading/empty, card, default-centre, and winner motifs. Presentation Exit and Fullscreen controls now keep each icon and label aligned on one line.
+- Added deterministic geometry/odds tests and expanded Playwright coverage for route/modal state, unauthorized edit, dirty close, responsive editor/manager/details/HUD, list and Canvas selection, visible exact zap paths, delayed loading, presentation alignment, no overflow, and clean console output.
+- Deployed only the existing Public Pages project as production/main staging deployment `ce4d7c7b-9803-4ecd-a261-5f71b3de62f3` (`https://ce4d7c7b.thirdrailify.pages.dev`). Stable and immutable served the same `index-CHBvZ_x_.js` application asset. Stable browser acceptance proved the exact zap in landing/loading/wheel/winner states, the pointer HUD, matching row/Canvas participant details, authoritative `18.18%` odds for weight 2 of total 11, protected unauthenticated `/edit` over the mounted wheel, demo-spin celebration/audio cleanup, no `/api/` mutation during V1.2 inspection, no overflow, clean stable console, and inline-aligned Exit/Fullscreen icon-label pairs at 1920x1080, 1280x720, and 390x844. Authorized editor and participant-manager modal acceptance remained fixture-backed because bypassing the remote account boundary is prohibited.
+
 ## 2026-08-29 — Wheels V1.1, Community navigation, and VIP preview
 
 CURRENT VER=0.0.0-seed
@@ -293,6 +306,8 @@ When a listed provider is live, both homepage social rails now open that confirm
 - Replaced the generic, globally noindexed document metadata with one shared SEO authority covering every canonical Public route. Each indexable page now has a distinct title, description, canonical URL, Open Graph/Twitter large-card metadata, appropriate first-party social artwork, and schema.org JSON-LD; account, cart, checkout-result, submission, missing, unknown, and immutable-preview routes remain noindex.
 - Added root Pages middleware so Discord, X, search crawlers, and other unfurlers receive route-specific metadata in the initial HTML rather than waiting for React. Dynamic product, Watch episode, and approved GOATS detail previews reuse the existing sanitized Public read projections and fail softly without provider calls or new storage.
 - Added generated `/robots.txt` and `/sitemap.xml`, canonical edge redirects for legacy aliases, stable first-party `/social/*` assets, client-navigation metadata synchronization, an allowlisted presentation-only override seam for later Admin management, focused unit/browser coverage, and local Cloudflare Pages runtime acceptance. No Admin, Wix, provider, commerce authority, checkout, payment, fulfillment, DNS, or deployment state was changed.
+- Follow-up route audit fixed the post-release Wheels gap: `/wheels`, creation, public detail, protected editor, and presentation routes now publish deliberate titles, descriptions, canonicals, crawl policy, social metadata, and structured data instead of inheriting the 404 client title or generic home HTML. Public wheel details use the sanitized wheel projection, active public wheels are included in the sitemap, `/wheel` redirects canonically, and the SEO command now runs both route-authority and browser-navigation coverage.
+- Follow-up staging deployment: `1bd4db54` (`https://1bd4db54.thirdrailify.pages.dev`) on the existing Public Pages project. Stable HTTP and real-browser acceptance confirmed correct metadata for the Wheels directory and demo detail/presentation routes, a legitimate 404 only for missing routes, successful 404-to-Wheels client navigation without a stale title, sitemap discovery, and zero page errors. The isolated release excluded concurrent Wheels UI work and made no Admin, provider, payment, fulfillment, Wix, DNS, or production-domain change.
 
 ## 2026-08-29 — Friends of the show ensemble page
 

@@ -15,6 +15,7 @@ import {
   renderSeoHead,
   staticSeoForPath,
   staticSitemapPaths,
+  wheelSeo,
 } from "../seo/site-seo.js";
 
 const ORIGIN = "https://thirdrailify.pages.dev";
@@ -29,10 +30,12 @@ test("every Public route has deliberate SEO or a canonical edge redirect", async
     ["/product-page/:slug", "/product-page/bleh-unisex-classic-tee"],
     ["/watch/v/:episodeId", `/watch/v/ep_${"a".repeat(64)}`],
     ["/goats/:slug", "/goats/demo-goat"],
+    ["/wheels/:slug", "/wheels/demo-wheel"],
+    ["/wheels/:slug/edit", "/wheels/demo-wheel/edit"],
+    ["/wheels/:slug/present", "/wheels/demo-wheel/present"],
   ]);
   for (const declared of paths) {
     const path = samples.get(declared) || declared;
-    if (path === "/live") continue;
     const redirect = canonicalRedirectPath(path);
     const seo = staticSeoForPath(path, ORIGIN);
     assert.equal(Boolean(redirect) || seo.key !== "not-found", true, `${declared} has SEO or a canonical redirect`);
@@ -57,7 +60,7 @@ test("static pages publish unique titles, descriptions, canonicals, social image
     for (const marker of ["og:title", "og:description", "og:image", "twitter:card", "twitter:image", 'rel="canonical"', "application/ld\\+json"]) assert.match(head, new RegExp(marker));
     assert.doesNotMatch(head, /noindex/);
   }
-  for (const path of ["/account", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
+  for (const path of ["/account", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/live", "/wheels/new", "/wheels/demo-wheel/edit", "/wheels/demo-wheel/present", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
 });
 
 test("dynamic product, episode, and GOATS metadata uses sanitized page authority", () => {
@@ -77,6 +80,16 @@ test("dynamic product, episode, and GOATS metadata uses sanitized page authority
   assert.match(goat.title, /Daniel/);
   assert.equal(goat.description, "Taking the lore beyond the rail.");
   assert.equal(goat.jsonLd["@graph"].some((node) => node["@type"] === "SocialMediaPosting" && node.contentLocation.name === "Sydney, Australia"), true);
+
+  const wheel = wheelSeo(wheelPayload().wheel, ORIGIN);
+  assert.ok(wheel);
+  assert.equal(wheel.title, "Third Railify Demo Draw | Third Railify Wheels");
+  assert.equal(wheel.canonicalUrl, `${ORIGIN}/wheels/third-railify-demo-draw`);
+  assert.equal(wheel.jsonLd["@graph"].some((node) => node["@type"] === "WebApplication" && node.applicationCategory === "GameApplication"), true);
+  const editor = wheelSeo(wheelPayload().wheel, ORIGIN, "edit");
+  assert.equal(editor.robots, NOINDEX_ROBOTS);
+  assert.equal(editor.canonicalUrl, wheel.canonicalUrl);
+  assert.equal(wheelSeo({ ...wheelPayload().wheel, visibility: "hidden" }, ORIGIN).robots, NOINDEX_ROBOTS);
 });
 
 test("future Admin presentation overrides cannot change canonical, robots, key, or structured product truth", () => {
@@ -123,9 +136,19 @@ test("edge middleware gives social crawlers route-specific initial HTML and cano
   assert.equal(missingProduct.status, 404);
   assert.equal(missingProduct.headers.get("x-robots-tag"), NOINDEX_ROBOTS);
 
+  const wheelResponse = await seoMiddleware(context("/wheels/third-railify-demo-draw", index, { wheelsFetch: async () => Response.json(wheelPayload()) }));
+  assert.equal(wheelResponse.status, 200);
+  assert.match(await wheelResponse.text(), /Third Railify Demo Draw \| Third Railify Wheels/);
+  const missingWheel = await seoMiddleware(context("/wheels/missing-wheel", index, { wheelsFetch: async () => Response.json({ ok: false }, { status: 404 }) }));
+  assert.equal(missingWheel.status, 404);
+  assert.equal(missingWheel.headers.get("x-robots-tag"), NOINDEX_ROBOTS);
+
   const redirect = await seoMiddleware(context("/product-page/bleh-unisex-classic-tee?ref=old", index));
   assert.equal(redirect.status, 301);
   assert.equal(redirect.headers.get("location"), `${ORIGIN}/shop/bleh-unisex-classic-tee?ref=old`);
+  const wheelRedirect = await seoMiddleware(context("/wheel?ref=old", index));
+  assert.equal(wheelRedirect.status, 301);
+  assert.equal(wheelRedirect.headers.get("location"), `${ORIGIN}/wheels?ref=old`);
 });
 
 test("robots and the dynamic sitemap expose canonical crawl discovery without indexing APIs", async () => {
@@ -138,11 +161,11 @@ test("robots and the dynamic sitemap expose canonical crawl discovery without in
   const response = await sitemapRequest({
     request: new Request(`${ORIGIN}/sitemap.xml`),
     env: { THIRDRAILIFY_PUBLIC_ORIGIN: ORIGIN },
-    data: { seoSitemapData: { collections: [{ slug: "apparel", updatedAt: "2026-08-28" }], products: [productPayload().product], episodes: [{ id: `ep_${"b".repeat(64)}`, title: "Episode & test", archiveDate: "2026-08-27", thumbnailUrl: "https://i.ytimg.com/test.jpg" }], goats: [{ slug: "demo-goat", displayName: "Demo <Goat>", publishedAt: "2026-08-26", product: {}, media: {} }] } },
+    data: { seoSitemapData: { collections: [{ slug: "apparel", updatedAt: "2026-08-28" }], products: [productPayload().product], episodes: [{ id: `ep_${"b".repeat(64)}`, title: "Episode & test", archiveDate: "2026-08-27", thumbnailUrl: "https://i.ytimg.com/test.jpg" }], goats: [{ slug: "demo-goat", displayName: "Demo <Goat>", publishedAt: "2026-08-26", product: {}, media: {} }], wheels: [wheelPayload().wheel] } },
   });
   const xml = await response.text();
   assert.equal(response.headers.get("content-type"), "application/xml; charset=utf-8");
-  for (const url of ["/about", "/products/apparel", "/shop/bleh-unisex-classic-tee", `/watch/v/ep_${"b".repeat(64)}`, "/goats/demo-goat"]) assert.match(xml, new RegExp(xmlEscape(`${ORIGIN}${url}`)));
+  for (const url of ["/about", "/products/apparel", "/shop/bleh-unisex-classic-tee", `/watch/v/ep_${"b".repeat(64)}`, "/goats/demo-goat", "/wheels", "/wheels/third-railify-demo-draw"]) assert.match(xml, new RegExp(xmlEscape(`${ORIGIN}${url}`)));
   for (const excluded of ["/account", "/cart", "/checkout/success", "/goats/submit", "/product-page/"]) assert.doesNotMatch(xml, new RegExp(xmlEscape(`${ORIGIN}${excluded}`)));
   assert.match(xml, /Episode &amp; test/);
   assert.equal(renderSitemap(ORIGIN, [{ path: "/shop/item", image: "javascript:bad" }]).includes("javascript"), false);
@@ -169,6 +192,10 @@ function productPayload() {
     price: { currency: "CAD", minUnitAmount: 3550, maxUnitAmount: 4200, label: "$35.50–$42.00" }, available: true, updatedAt: "2026-08-28T00:00:00.000Z",
     variants: [{ id: "variant-bleh", label: "M / Black", size: "M", color: "Black", options: { Size: "M", Color: "Black" }, unitAmount: 3550, currency: "CAD", availability: "active" }],
   } };
+}
+
+function wheelPayload() {
+  return { ok: true, wheel: { slug: "third-railify-demo-draw", title: "Third Railify Demo Draw", description: "A clearly synthetic staging wheel for visual and security acceptance.", lifecycle: "active", visibility: "public", participantCount: 8, weighted: true, entries: [], config: {}, media: { background: null, centre: null }, demoEnabled: true, officialEnabled: true, latestOfficialResult: null, recentOfficialResults: [] }, access: { role: null, isMasterAdmin: false, canEdit: false, canSpinOfficially: false, editingLocked: false, officialSpinLocked: false } };
 }
 
 function xmlEscape(value) { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replaceAll("&", "&amp;"); }

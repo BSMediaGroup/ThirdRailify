@@ -1,6 +1,7 @@
 import { episodeDetailPayload } from "./api/watch/_episodes.js";
 import { readWatchArchive } from "./api/_state-backend.js";
 import { proxyRead as proxyGoatsRead } from "./api/goats/[[path]].js";
+import { proxyRead as proxyWheelsRead } from "./api/wheels/[[path]].js";
 import { proxyCommerceCatalogue } from "./_shared/commerce-catalogue-proxy.js";
 import {
   applySeoPresentationOverride,
@@ -11,6 +12,7 @@ import {
   NOINDEX_ROBOTS,
   productSeo,
   staticSeoForPath,
+  wheelSeo,
 } from "../seo/site-seo.js";
 
 export async function onRequest(context) {
@@ -75,6 +77,15 @@ async function seoResolutionForRequest(context, pathname, origin) {
       const response = await proxyGoatsRead(detailRequest, context.env, `listings/${goatSlug}`, context.data?.goatsFetch || fetch);
       if (response.status === 404) return { document: staticSeoForPath("/not-found", origin), status: 404 };
       if (response.ok) return { document: goatSeo((await response.json())?.item, origin) || base };
+    }
+    const wheelMatch = pathname.match(/^\/wheels\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|present))?\/?$/);
+    if (wheelMatch && wheelMatch[1] !== "new") {
+      const slug = wheelMatch[1];
+      const mode = wheelMatch[2] || "view";
+      const detailRequest = new Request(new URL(`/api/wheels/${encodeURIComponent(slug)}`, context.request.url), { headers: context.request.headers });
+      const response = await proxyWheelsRead(detailRequest, context.env, slug, context.data?.wheelsFetch || fetch);
+      if (response.status === 404) return { document: staticSeoForPath("/not-found", origin), status: 404 };
+      if (response.ok) return { document: wheelSeo((await response.json())?.wheel, origin, mode) || base };
     }
   } catch { /* Fail soft to truthful route metadata. */ }
   return { document: base };

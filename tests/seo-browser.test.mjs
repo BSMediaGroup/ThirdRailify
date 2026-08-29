@@ -2,13 +2,14 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import test from "node:test";
 import { chromium } from "playwright-core";
-import { episodeSeo, goatSeo, productSeo, staticSeoForPath } from "../seo/site-seo.js";
+import { episodeSeo, goatSeo, productSeo, staticSeoForPath, wheelSeo } from "../seo/site-seo.js";
 
 const ORIGIN = "http://127.0.0.1:4196";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const ROUTES = [
   "/", "/about", "/shawn", "/gina", "/watch", "/watch/live", "/watch/episodes", "/shop", "/products/apparel",
-  "/cart", "/checkout/success", "/community", "/friends", "/vip", "/donate", "/gift-cards", "/goats", "/goats/submit",
+  "/cart", "/checkout", "/checkout/success", "/community", "/friends", "/vip", "/donate", "/gift-cards", "/goats", "/goats/submit",
+  "/wheels", "/wheels/new",
   "/policies", "/terms", "/privacy", "/refunds", "/accessibility", "/account", "/account/login", "/missing-route",
 ];
 
@@ -53,10 +54,16 @@ test("React navigation publishes complete route-specific SEO without duplicate h
     assert.equal(Array.isArray(head.structured[0]?.["@graph"]), true, `${path} JSON-LD is valid`);
   }
 
+  await page.goto(`${ORIGIN}/live`);
+  await page.waitForURL(`${ORIGIN}/watch`);
+  await waitForHead(page, "/watch", staticSeoForPath("/watch", ORIGIN), pageErrors, serverLog);
+
   const dynamic = [
     { path: "/shop/bleh-unisex-classic-tee", expected: productSeo(commerceProduct(), ORIGIN) },
     { path: `/watch/v/${episodeDetail().item.id}`, expected: episodeSeo(episodeDetail(), ORIGIN) },
     { path: "/goats/demo-goat", expected: goatSeo(goatListing(), ORIGIN) },
+    { path: "/wheels/third-railify-demo-draw", expected: wheelSeo(wheelPayload().wheel, ORIGIN) },
+    { path: "/wheels/third-railify-demo-draw/present", expected: wheelSeo(wheelPayload().wheel, ORIGIN, "present") },
   ];
   for (const { path, expected } of dynamic) {
     assert.ok(expected);
@@ -67,6 +74,12 @@ test("React navigation publishes complete route-specific SEO without duplicate h
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), expected.canonicalUrl);
     assert.equal(await page.locator('script[type="application/ld+json"]').count(), 1);
   }
+
+  await page.goto(`${ORIGIN}/missing-route`);
+  await waitForHead(page, "/missing-route", staticSeoForPath("/missing-route", ORIGIN), pageErrors, serverLog);
+  await page.locator('a[href="/wheels"]').first().evaluate((element) => element.click());
+  await waitForHead(page, "/wheels", staticSeoForPath("/wheels", ORIGIN), pageErrors, serverLog);
+  assert.notEqual(await page.title(), "Page Not Found | Third Railify");
 });
 
 async function routeApi(route) {
@@ -83,6 +96,8 @@ async function routeApi(route) {
   if (path === `/api/watch/episodes/${episodeDetail().item.id}`) return json(route, episodeDetail());
   if (path === "/api/goats/listings/demo-goat") return json(route, { ok: true, item: goatListing() });
   if (path === "/api/goats/listings/demo-goat/comments") return json(route, { ok: true, items: [], page: 1, pageSize: 20, total: 0 });
+  if (path === "/api/wheels") return json(route, { ok: true, items: [wheelPayload().wheel], count: 1 });
+  if (path === "/api/wheels/third-railify-demo-draw") return json(route, wheelPayload());
   return json(route, { ok: false, error: "fixture_unavailable" }, 503);
 }
 
@@ -106,4 +121,7 @@ function episodeDetail() {
 }
 function goatListing() {
   return { id: "goat-demo", slug: "demo-goat", displayName: "Demo GOAT", description: "Taking the lore beyond the rail.", rating: 5, publishedAt: "2026-08-27T04:00:00.000Z", product: { id: "product-bleh", slug: "bleh-unisex-classic-tee", name: "BLEH tee", image: null }, location: { label: "Sydney, Australia", countryCode: "AU", latitude: -33.8688, longitude: 151.2093 }, media: { main: { id: "11111111-1111-4111-8111-111111111111", role: "main", sortOrder: 0, url: "https://thirdrailify-admin.pages.dev/api/goats/media/11111111-1111-4111-8111-111111111111" }, profile: null, gallery: [] }, engagement: { comments: "auto", reactions: "auto" }, counts: { likes: 1, dislikes: 0, comments: 0 }, currentReaction: 0, neighbours: { previous: null, next: null } };
+}
+function wheelPayload() {
+  return { ok: true, wheel: { slug: "third-railify-demo-draw", title: "Third Railify Demo Draw", description: "A clearly synthetic staging wheel for visual and security acceptance.", lifecycle: "active", visibility: "public", participantCount: 8, weighted: true, entries: [], config: { themePreset: "third-rail-gold", palette: ["#f3c928", "#b8182f"], pointerAccent: "#f3c928", centreTreatment: "bolt", backgroundIntensity: "medium", labelContrast: "light", spinDurationMs: 6000, tickingSoundEnabled: false, winnerSoundEnabled: false, celebrationEnabled: false, confettiEnabled: false, winnerLightingEnabled: false, celebrationIntensity: "normal", backgroundEnabled: false, backgroundFocalX: 50, backgroundFocalY: 50, backgroundImageOpacity: 1, backgroundOverlayIntensity: 0.5, winnerMessageTemplate: "{winner}", publicHistoryVisible: false }, media: { background: null, centre: null }, demoEnabled: true, officialEnabled: true, latestOfficialResult: null, recentOfficialResults: [] }, access: { role: null, isMasterAdmin: false, canEdit: false, canSpinOfficially: false, editingLocked: false, officialSpinLocked: false } };
 }

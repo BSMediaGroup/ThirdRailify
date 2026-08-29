@@ -52,6 +52,23 @@ const STATIC_ROUTES = [
     schemaType: "CollectionPage",
     imageAlt: "Third Railify episode archive",
   }),
+  route("/wheels", "wheels", "Competition Wheels | Third Railify", "Explore public Third Railify competition wheels for giveaways, games, raid calls, and live show segments, with practice spins kept separate from recorded official draws.", {
+    label: "Wheels",
+    parent: ["Community", "/community"],
+    schemaType: "CollectionPage",
+    imageAlt: "Third Railify competition wheels",
+  }),
+  route("/wheels/new", "wheels:new", "Build a Competition Wheel | Third Railify", "Create a Third Railify competition wheel with approved creator access, participant controls, appearance settings, and explicit publication choices.", {
+    label: "Build a wheel",
+    parent: ["Wheels", "/wheels"],
+    index: false,
+  }),
+  route("/live", "watch:live-alias", "Finding the Current Third Railify Broadcast", "Check the verified Third Railify broadcast state and continue to the current live player or the main Watch page.", {
+    label: "Current broadcast",
+    canonicalPath: "/watch",
+    parent: ["Watch", "/watch"],
+    index: false,
+  }),
   route("/shop", "shop", "Official Podcast Merch | Third Railify Shop", "Browse official Third Railify and Just Gina podcast merchandise, real catalogue variants, and authoritative CAD pricing.", {
     label: "Shop",
     schemaType: "CollectionPage",
@@ -186,6 +203,22 @@ export function staticSeoForPath(pathname, origin) {
     imageAlt: "GOATS in the Wild community story",
   }), origin);
 
+  const wheel = path.match(/^\/wheels\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|present))?$/);
+  if (wheel) {
+    const mode = wheel[2] || "view";
+    const canonicalPath = `/wheels/${wheel[1]}`;
+    const presentation = mode === "present";
+    const editing = mode === "edit";
+    return createSeoDocument(route(path, `wheel:${wheel[1]}:${mode}`, presentation ? "Present a Competition Wheel | Third Railify" : editing ? "Edit a Competition Wheel | Third Railify" : "Competition Wheel | Third Railify", presentation ? "Open a focused Third Railify competition-wheel presentation for practice or an authorized recorded official draw." : editing ? "Manage this Third Railify competition wheel through the protected approved-creator control surface." : "View and practice-spin a public Third Railify competition wheel, with recorded official draws available only to authorized operators.", {
+      label: presentation ? "Present" : editing ? "Edit" : "Competition wheel",
+      parent: ["Wheels", "/wheels"],
+      canonicalPath,
+      index: mode === "view",
+      schemaType: mode === "view" ? "WebApplication" : "WebPage",
+      imageAlt: "Third Railify competition wheel",
+    }), origin);
+  }
+
   return createSeoDocument(route(path, "not-found", "Page Not Found | Third Railify", "This route is not part of the current Third Railify public site.", {
     label: "Not found",
     index: false,
@@ -302,6 +335,40 @@ export function goatSeo(item, origin) {
   return document;
 }
 
+export function wheelSeo(wheel, origin, mode = "view") {
+  const slug = slugValue(wheel?.slug);
+  if (!slug || !new Set(["view", "edit", "present"]).has(mode)) return null;
+  const name = boundedText(wheel?.title, 100) || "Third Railify competition wheel";
+  const canonicalPath = `/wheels/${slug}`;
+  const description = metaDescription(wheel?.description, `Spin ${name}, a public Third Railify competition wheel with practice outcomes kept separate from recorded official draws.`);
+  const presentation = mode === "present";
+  const editing = mode === "edit";
+  const path = mode === "view" ? canonicalPath : `${canonicalPath}/${mode}`;
+  const title = presentation ? `Present ${name} | Third Railify` : editing ? `Edit ${name} | Third Railify` : `${name} | Third Railify Wheels`;
+  const image = safeUrl(wheel?.media?.background?.url || wheel?.media?.centre?.url) || DEFAULT_SOCIAL_IMAGE_PATH;
+  const document = createSeoDocument(route(path, `wheel:${slug}:${mode}`, title, description, {
+    label: presentation ? "Present" : editing ? "Edit" : name,
+    parent: ["Wheels", "/wheels"],
+    canonicalPath,
+    index: mode === "view",
+    schemaType: "WebPage",
+    imagePath: image,
+    imageAlt: `${name} competition wheel`,
+  }), origin);
+  if (mode === "view" && (wheel?.visibility !== "public" || wheel?.lifecycle !== "active")) document.robots = NOINDEX_ROBOTS;
+  if (mode === "view") document.jsonLd["@graph"].push(compactObject({
+    "@type": "WebApplication",
+    "@id": `${document.canonicalUrl}#wheel`,
+    name,
+    description,
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    url: document.canonicalUrl,
+    isAccessibleForFree: true,
+  }));
+  return document;
+}
+
 export function applySeoPresentationOverride(document, override) {
   if (!document || !override || typeof override !== "object" || Array.isArray(override)) return document;
   const title = boundedText(override.title, 120) || document.title;
@@ -360,6 +427,7 @@ export function canonicalRedirectPath(pathname) {
   const path = normalizePath(pathname);
   const exact = new Map([
     ["/store", "/shop"], ["/merch", "/shop"], ["/products/all", "/shop"],
+    ["/wheel", "/wheels"],
     ["/gift", "/gift-cards"], ["/support", "/donate"], ["/donate-1", "/donate"],
     ["/pricing-plans/list", "/vip"], ["/members-home", "/vip"], ["/cart-page", "/cart"], ["/goatgate", "/goats/submit"],
   ]).get(path);

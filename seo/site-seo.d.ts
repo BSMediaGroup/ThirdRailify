@@ -32,6 +32,7 @@ export function staticSeoForPath(pathname: string, origin?: string): SeoDocument
 export function productSeo(product: unknown, origin?: string): SeoDocument | null;
 export function episodeSeo(detail: unknown, origin?: string): SeoDocument | null;
 export function goatSeo(item: unknown, origin?: string): SeoDocument | null;
+export function wheelSeo(wheel: unknown, origin?: string, mode?: "view" | "edit" | "present"): SeoDocument | null;
 export function applySeoPresentationOverride(document: SeoDocument, override?: SeoPresentationOverride | null): SeoDocument;
 export function renderSeoHead(document: SeoDocument): string;
 export function injectSeoHead(htmlSource: string, document: SeoDocument): string;

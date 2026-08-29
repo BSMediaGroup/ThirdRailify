@@ -1,13 +1,15 @@
 import { useEffect, useRef } from "react";
-import { entryAngles } from "./engine.mjs";
+import { entryAngles, entryAtPointer, hitTestWheel } from "./engine.mjs";
 import type { WheelConfig, WheelEntry } from "./types";
-import defaultCentre from "../../assets/icons/trzap-0.svg";
+import { WheelsBrandMark } from "./WheelsBrandMark";
 
-type Props = { entries: WheelEntry[]; config: WheelConfig; rotation: number; durationMs: number; spinning: boolean; onSpinEnd?: () => void; compact?: boolean; centreImageUrl?: string | null; winner?: boolean };
+type Props = { entries: WheelEntry[]; config: WheelConfig; rotation: number; durationMs: number; spinning: boolean; onSpinEnd?: () => void; onPointerTargetChange?: (entry: WheelEntry | null) => void; onSegmentSelect?: (entry: WheelEntry, trigger: HTMLCanvasElement) => void; compact?: boolean; centreImageUrl?: string | null; winner?: boolean };
 
-export function WheelCanvas({ entries, config, rotation, durationMs, spinning, onSpinEnd, compact = false, centreImageUrl, winner = false }: Props) {
-  const canvas = useRef<HTMLCanvasElement>(null);
+export function WheelCanvas({ entries, config, rotation, durationMs, spinning, onSpinEnd, onPointerTargetChange, onSegmentSelect, compact = false, centreImageUrl, winner = false }: Props) {
+  const canvas = useRef<HTMLCanvasElement>(null); const rotor = useRef<HTMLDivElement>(null); const lastTarget = useRef<string | null>(null); const targetCallback = useRef(onPointerTargetChange);
   const active = entries.filter((entry) => entry.state === "active");
+
+  targetCallback.current = onPointerTargetChange;
 
   useEffect(() => {
     const element = canvas.current; if (!element) return;
@@ -17,6 +19,14 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, o
     return () => observer.disconnect();
   }, [active, config]);
 
+  useEffect(() => {
+    let frame = 0; let stopped = false;
+    const publish = (degrees: number) => { const entry = entryAtPointer(active, degrees); const id = entry?.id || null; if (id !== lastTarget.current) { lastTarget.current = id; targetCallback.current?.(entry); } };
+    const sample = () => { if (stopped) return; const transform = rotor.current ? getComputedStyle(rotor.current).transform : "none"; const matrix = transform === "none" ? null : new DOMMatrixReadOnly(transform); publish(matrix ? Math.atan2(matrix.b, matrix.a) * 180 / Math.PI : rotation); frame = requestAnimationFrame(sample); };
+    if (spinning) frame = requestAnimationFrame(sample); else publish(rotation);
+    return () => { stopped = true; cancelAnimationFrame(frame); };
+  }, [active, rotation, spinning]);
+
   const alternative = active.length ? `Wheel with ${active.length} active participants: ${active.slice(0, 12).map((entry) => entry.label).join(", ")}${active.length > 12 ? ", and more" : ""}.` : "Wheel with no active participants.";
   return (
     <div className={`wheel-stage${compact ? " wheel-stage--compact" : ""}${spinning ? " is-spinning" : ""}${winner ? " is-winner" : ""}`} style={{ "--pointer": config.pointerAccent } as React.CSSProperties}>
@@ -25,10 +35,10 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, o
       <div className="wheel-stage__rim wheel-stage__rim--inner" aria-hidden="true" />
       <div className="wheel-stage__energy" aria-hidden="true" />
       <div className="wheel-stage__pointer" aria-hidden="true"><span /></div>
-      <div className="wheel-stage__rotor" style={{ transform: `rotate(${rotation}deg)`, transitionDuration: spinning ? `${durationMs}ms` : "0ms" }} onTransitionEnd={(event) => { if (event.propertyName === "transform" && spinning) onSpinEnd?.(); }}>
-        <canvas ref={canvas} role="img" aria-label={alternative} />
+      <div ref={rotor} className="wheel-stage__rotor" style={{ transform: `rotate(${rotation}deg)`, transitionDuration: spinning ? `${durationMs}ms` : "0ms" }} onTransitionEnd={(event) => { if (event.propertyName === "transform" && spinning) onSpinEnd?.(); }}>
+        <canvas ref={canvas} role="img" aria-label={alternative} className={onSegmentSelect && !spinning ? "is-interactive" : undefined} onClick={(event) => { if (spinning || !onSegmentSelect) return; const rect = event.currentTarget.getBoundingClientRect(); const selected = hitTestWheel(active, { x: event.clientX - rect.left, y: event.clientY - rect.top }, Math.min(rect.width, rect.height), rotation); if (selected) onSegmentSelect(selected, event.currentTarget); }} />
       </div>
-      <div className={`wheel-stage__hub${centreImageUrl ? " is-custom" : " is-default"}`} aria-hidden="true"><img src={centreImageUrl || defaultCentre} alt="" decoding="async" /></div>
+      <div className={`wheel-stage__hub${centreImageUrl ? " is-custom" : " is-default"}`} aria-hidden="true">{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</div>
     </div>
   );
 }

@@ -4,4 +4,10 @@ export function secureBoundedInteger(maxExclusive: number, randomValues?: Random
 export function selectWeightedEntry(entries: WheelEntry[], randomValues?: RandomValues): WheelEntry;
 export function secureShuffle<T>(items: readonly T[], randomValues?: RandomValues): T[];
 export function entryAngles(entries: WheelEntry[]): Array<{ entry: WheelEntry; start: number; end: number; centre: number }>;
+export function normalizeTurn(value: number): number;
+export function entryAtAngle(entries: WheelEntry[], angle: number): WheelEntry | null;
+export function entryAtPointer(entries: WheelEntry[], rotationDegrees: number, pointerAngle?: number): WheelEntry | null;
+export function hitTestWheel(entries: WheelEntry[], point: { x: number; y: number }, size: number, rotationDegrees: number, innerRadiusRatio?: number, outerRadiusRatio?: number): WheelEntry | null;
+export function participantOdds(entries: WheelEntry[], entryId: string): { entry: WheelEntry | null; totalWeight: number; probability: number; combinedWeight: number; combinedProbability: number; eligibleCount: number };
+export function formatProbability(probability: number): string;
 export function spinPlan(entries: WheelEntry[], winnerId: string, durationMs: number, currentRotation?: number, extraTurns?: number): { winnerId: string; durationMs: number; turns: number; finalRotation: number };

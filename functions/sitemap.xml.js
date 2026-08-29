@@ -2,6 +2,7 @@ import { proxyCommerceCatalogue } from "./_shared/commerce-catalogue-proxy.js";
 import { readWatchArchive } from "./api/_state-backend.js";
 import { episodeListPayload } from "./api/watch/_episodes.js";
 import { proxyRead as proxyGoatsRead } from "./api/goats/[[path]].js";
+import { proxyRead as proxyWheelsRead } from "./api/wheels/[[path]].js";
 import { staticSitemapPaths } from "../seo/site-seo.js";
 
 export async function onRequest(context) {
@@ -15,6 +16,7 @@ export async function onRequest(context) {
     ...(dynamic.episodes || []).map((episode) => ({ path: `/watch/v/${episode.id}`, lastmod: episode.archiveDate, image: episode.thumbnailUrl, imageTitle: episode.title })),
     ...(dynamic.goats || []).map((goat) => ({ path: `/goats/${goat.slug}`, lastmod: goat.publishedAt, image: goat.media?.main?.url || goat.media?.profile?.url || goat.product?.image, imageTitle: `${goat.displayName} · GOATS in the Wild` })),
   ];
+  entries.push(...(dynamic.wheels || []).map((wheel) => ({ path: `/wheels/${wheel.slug}` })));
   const xml = renderSitemap(origin, entries);
   return new Response(context.request.method === "HEAD" ? null : xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=300, s-maxage=1800, stale-while-revalidate=3600", "X-Content-Type-Options": "nosniff" } });
 }
@@ -43,16 +45,18 @@ export function renderSitemap(originValue, entries) {
 }
 
 async function loadDynamicEntries(context) {
-  const [commerce, episodes, goats] = await Promise.allSettled([
+  const [commerce, episodes, goats, wheels] = await Promise.allSettled([
     loadCommerce(context),
     loadEpisodes(context),
     loadGoats(context),
+    loadWheels(context),
   ]);
   return {
     collections: commerce.status === "fulfilled" ? commerce.value.collections : [],
     products: commerce.status === "fulfilled" ? commerce.value.products : [],
     episodes: episodes.status === "fulfilled" ? episodes.value : [],
     goats: goats.status === "fulfilled" ? goats.value : [],
+    wheels: wheels.status === "fulfilled" ? wheels.value : [],
   };
 }
 
@@ -79,6 +83,14 @@ async function loadGoats(context) {
     if (!next.length || items.length >= Number(payload.total || 0)) break;
   }
   return items;
+}
+
+async function loadWheels(context) {
+  const request = new Request(new URL("/api/wheels?sort=recent", context.request.url), { headers: { Accept: "application/json" } });
+  const response = await proxyWheelsRead(request, context.env, "", context.data?.wheelsFetch || fetch);
+  if (!response.ok) throw new Error("wheels_unavailable");
+  const payload = await response.json();
+  return Array.isArray(payload.items) ? payload.items : [];
 }
 
 function publicOrigin(env, requestUrl) {

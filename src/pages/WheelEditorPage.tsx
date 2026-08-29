@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
+import { wheelSeo } from "../../seo/site-seo.js";
+import { usePageSeo } from "../seo/SeoProvider";
 import { createWheel, getCreatorAccess, getWheel, lifecycleAction, saveWheel } from "../wheels/client";
 import { secureShuffle } from "../wheels/engine.mjs";
 import type { Wheel, WheelAccess, WheelConfig, WheelEntry } from "../wheels/types";
 import { AppearanceDialog } from "../wheels/AppearanceDialog";
 import { WheelCanvas } from "../wheels/WheelCanvas";
+import { WheelsBrandMark } from "../wheels/WheelsBrandMark";
 import "../styles/wheels.css";
 
 const PRESETS: Record<WheelConfig["themePreset"], Pick<WheelConfig, "palette" | "pointerAccent">> = {
@@ -23,6 +26,8 @@ const EMPTY: EditorState = { title: "", description: "", visibility: "public", e
 export function WheelEditorPage({ create = false }: { create?: boolean }) {
   const { slug = "" } = useParams(); const navigate = useNavigate(); const { account, csrfToken, loading: authLoading, openAuth } = useAuth();
   const [form, setForm] = useState<EditorState>(EMPTY); const [baseline, setBaseline] = useState<EditorState>(EMPTY); const [sourceWheel, setSourceWheel] = useState<Wheel | null>(null); const [appearanceOpen, setAppearanceOpen] = useState(false); const [access, setAccess] = useState<WheelAccess | null>(null); const [canCreate, setCanCreate] = useState(false); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [busy, setBusy] = useState(false); const [quick, setQuick] = useState(""); const [bulk, setBulk] = useState(""); const [search, setSearch] = useState("");
+  const seo = useMemo(() => !create && sourceWheel ? wheelSeo(sourceWheel, window.location.origin, "edit") : null, [create, sourceWheel]);
+  usePageSeo(seo);
   const dirty = JSON.stringify(form) !== JSON.stringify(baseline);
   useEffect(() => { if (authLoading) return; let active = true; setLoading(true); const request = create ? getCreatorAccess().then((payload) => { if (!active) return; setCanCreate(payload.canCreate); setAccess(null); setSourceWheel(null); setForm(EMPTY); setBaseline(EMPTY); }) : getWheel(slug).then((payload) => { if (!active) return; const state = stateFrom(payload.wheel); setForm(state); setBaseline(state); setSourceWheel(payload.wheel); setAccess(payload.access); }); request.catch((reason) => active && setError(message(reason))).finally(() => active && setLoading(false)); return () => { active = false; }; }, [authLoading, create, slug]);
   useEffect(() => { const warn = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); }; window.addEventListener("beforeunload", warn); return () => window.removeEventListener("beforeunload", warn); }, [dirty]);
@@ -56,6 +61,6 @@ export function WheelEditorPage({ create = false }: { create?: boolean }) {
   </form>{appearanceOpen && sourceWheel && csrfToken ? <AppearanceDialog wheel={sourceWheel} draft={{ ...form, description: form.description || null }} csrfToken={csrfToken} onClose={() => setAppearanceOpen(false)} onSaved={(wheel) => { const next = stateFrom(wheel); setSourceWheel(wheel); setForm(next); setBaseline(next); setNotice("Appearance and media saved at the latest authoritative revision."); }} /> : null}</>;
 }
 
-function EditorGate({ title, message, action }: { title: string; message?: string; action?: React.ReactNode }) { return <div className="wheel-editor-gate"><span aria-hidden="true">ϟ</span><p className="eyebrow">WHEEL CONTROL</p><h1>{title}</h1>{message ? <p>{message}</p> : null}{action}<Link to="/wheels">Return to Wheels</Link></div>; }
+function EditorGate({ title, message, action }: { title: string; message?: string; action?: React.ReactNode }) { return <div className="wheel-editor-gate"><WheelsBrandMark /><p className="eyebrow">WHEEL CONTROL</p><h1>{title}</h1>{message ? <p>{message}</p> : null}{action}<Link to="/wheels">Return to Wheels</Link></div>; }
 function stateFrom(wheel: { title: string; description: string | null; visibility: "public" | "hidden"; entries: WheelEntry[]; config: WheelConfig; revision?: number; lifecycle: "draft" | "active" | "archived" }): EditorState { return { title: wheel.title, description: wheel.description || "", visibility: wheel.visibility, entries: wheel.entries, config: wheel.config, revision: wheel.revision, lifecycle: wheel.lifecycle }; }
 function message(reason: unknown) { return reason instanceof Error ? reason.message : "The wheel editor is unavailable."; }

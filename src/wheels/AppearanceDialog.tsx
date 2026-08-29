@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { getWheel, removeWheelMedia, saveWheel, uploadWheelMedia } from "./client";
 import type { Wheel, WheelConfig, WheelThemePreset } from "./types";
 import { WheelCanvas } from "./WheelCanvas";
@@ -19,7 +20,7 @@ type Tab = "theme" | "background" | "centre" | "celebration";
 export function AppearanceDialog({ wheel, draft, csrfToken, onClose, onSaved }: Props) {
   const root = useRef<HTMLDivElement>(null); const close = useRef<HTMLButtonElement>(null); const [tab, setTab] = useState<Tab>("theme"); const [config, setConfig] = useState(draft?.config || wheel.config); const [entries, setEntries] = useState(draft?.entries || wheel.entries); const [background, setBackground] = useState<File | null>(null); const [centre, setCentre] = useState<File | null>(null); const [removeBackground, setRemoveBackground] = useState(false); const [removeCentre, setRemoveCentre] = useState(false); const [search, setSearch] = useState(""); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
   const backgroundPreview = useObjectUrl(background); const centrePreview = useObjectUrl(centre); const visibleEntries = useMemo(() => entries.filter((entry) => entry.label.toLowerCase().includes(search.toLowerCase())).slice(0, 100), [entries, search]);
-  useEffect(() => { const previous = document.activeElement as HTMLElement | null; close.current?.focus(); const key = (event: KeyboardEvent) => { if (event.key === "Escape" && !busy) onClose(); if (event.key === "Tab" && root.current) trapFocus(event, root.current); }; document.addEventListener("keydown", key); return () => { document.removeEventListener("keydown", key); previous?.focus(); }; }, [busy, onClose]);
+  useEffect(() => { const previous = document.activeElement as HTMLElement | null; const priorOverflow = document.body.style.overflow; document.body.style.overflow = "hidden"; close.current?.focus(); const key = (event: KeyboardEvent) => { if (event.key === "Escape" && !busy) onClose(); if (event.key === "Tab" && root.current) trapFocus(event, root.current); }; document.addEventListener("keydown", key); return () => { document.removeEventListener("keydown", key); document.body.style.overflow = priorOverflow; previous?.focus(); }; }, [busy, onClose]);
   const patchConfig = (patch: Partial<WheelConfig>) => setConfig((current) => ({ ...current, ...patch }));
   const preset = (key: WheelThemePreset) => { const value = WHEEL_PRESETS[key]; patchConfig({ themePreset: key, palette: value.palette, pointerAccent: value.pointerAccent }); };
   const updateColour = (id: string, colour: string | null) => setEntries((current) => current.map((entry) => entry.id === id ? { ...entry, colour } : entry));
@@ -33,7 +34,7 @@ export function AppearanceDialog({ wheel, draft, csrfToken, onClose, onSaved }: 
       onSaved((await getWheel(wheel.slug)).wheel); onClose();
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Appearance could not be saved."); } finally { setBusy(false); }
   };
-  return <div className="appearance-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose(); }}>
+  return createPortal(<div className="appearance-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) onClose(); }}>
     <div ref={root} className="appearance-dialog" role="dialog" aria-modal="true" aria-labelledby="appearance-title">
       <header><div><p className="eyebrow">WHEEL CONTROL / APPEARANCE</p><h2 id="appearance-title">Tune the broadcast stage.</h2></div><button ref={close} type="button" onClick={onClose} disabled={busy} aria-label="Close appearance without saving">×</button></header>
       <div className="appearance-dialog__tabs" role="tablist" aria-label="Appearance sections">{(["theme", "background", "centre", "celebration"] as Tab[]).map((item) => <button key={item} role="tab" aria-selected={tab === item} className={tab === item ? "is-active" : ""} onClick={() => setTab(item)}>{item}</button>)}</div>
@@ -48,7 +49,7 @@ export function AppearanceDialog({ wheel, draft, csrfToken, onClose, onSaved }: 
       </div>
       {error ? <p className="wheel-alert" role="alert">{error}</p> : null}<footer><button type="button" onClick={onClose} disabled={busy}>Discard</button><button className="primary-button" type="button" onClick={() => void save()} disabled={busy}>{busy ? "Saving…" : "Save appearance"}</button></footer>
     </div>
-  </div>;
+  </div>, document.body);
 }
 
 function MediaPicker({ label, recommendation, file, existing, removed, onFile, onRemove }: { label: string; recommendation: string; file: File | null; existing: string | null; removed: boolean; onFile: (file: File) => void; onRemove: () => void }) { return <div className="media-picker"><label>{label}<input type="file" accept=".png,.jpg,.jpeg,.bmp,.webp,.svg,image/png,image/jpeg,image/bmp,image/webp,image/svg+xml" onChange={(event) => { const next = event.target.files?.[0]; if (next) onFile(next); }} /></label><small>{recommendation}</small><p>{file ? `Ready: ${file.name}` : removed ? "Will restore the default treatment" : existing ? "Current custom image is active" : "Using the Third Railify default"}</p>{(file || existing) && !removed ? <button type="button" onClick={onRemove}>Remove custom image</button> : null}</div>; }
