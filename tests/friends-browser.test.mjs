@@ -68,6 +68,10 @@ test("profile cards expose no social links until their accessible dialogs open",
   assert.equal(await main.locator("h1").count(), 1);
   assert.equal(await main.getByRole("heading", { level: 1, name: /The regulars\.\s+Chaos has a guest list\./i }).count(), 1);
   assert.equal(await main.locator(".friend-card").count(), 3);
+  const cardMicroType = await main.locator(".friend-card").first().evaluate((card) => ({ meta: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__meta")).fontSize), eyebrow: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__identity small")).fontSize), location: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__location")).fontSize) }));
+  assert.ok(Math.abs(cardMicroType.meta - 6.6) <= .1, "card metadata is enlarged by no more than ten percent");
+  assert.ok(Math.abs(cardMicroType.eyebrow - 8.8) <= .1, "card name eyebrows are enlarged by no more than ten percent");
+  assert.ok(Math.abs(cardMicroType.location - 7.7) <= .1, "card location tags are enlarged by no more than ten percent");
   assert.equal(await main.locator('.friend-card a[href^="http"]').count(), 0, "summary cards contain no social links");
   assert.equal(await main.locator('.friend-dialog a[href^="http"]').count(), 0, "social links are absent until a dialog opens");
 
@@ -81,6 +85,7 @@ test("profile cards expose no social links until their accessible dialogs open",
     const text = await dialog.innerText();
     for (const phrase of profile.required) assert.match(text, new RegExp(escapeRegExp(phrase), "i"), `${profile.name} dialog contains ${phrase}`);
     await assertLocation(dialog.locator(".friend-dialog__location"), profile, `${profile.name} dialog`);
+    assert.ok(Math.abs(await dialog.locator(".friend-dialog__location").evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize)) - 7.7) <= .1, `${profile.name} dialog location is enlarged by no more than ten percent`);
     const links = await dialog.locator('a[href^="http"]').evaluateAll((nodes) => nodes.map((node) => ({ href: node.href, target: node.target, rel: node.rel })));
     assert.deepEqual(links.map((link) => link.href), profile.links);
     assert.ok(links.every((link) => link.target === "_blank" && link.rel.includes("noopener") && link.rel.includes("noreferrer")));

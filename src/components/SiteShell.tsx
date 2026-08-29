@@ -30,6 +30,7 @@ export function SiteShell() {
   const [communityOpen, setCommunityOpen] = useState(false);
   const communityNav = useRef<HTMLLIElement>(null);
   const location = useLocation();
+  const previousPath = useRef(location.pathname);
   const cart = useCart();
   const { data } = useBroadcast();
   const { account, openAuth } = useAuth();
@@ -40,10 +41,14 @@ export function SiteShell() {
 
   useEffect(() => {
     setMenuOpen(false);
+    const state = location.state as { wheelSceneNavigation?: boolean } | null;
+    const wheelToWheel = /^\/wheels\/[^/]+$/.test(previousPath.current) && /^\/wheels\/[^/]+$/.test(location.pathname);
+    previousPath.current = location.pathname;
+    if (wheelToWheel || state?.wheelSceneNavigation && /^\/wheels\/[^/]+$/.test(location.pathname)) return;
     const target = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
     if (target) window.requestAnimationFrame(() => target.scrollIntoView({ block: "start" }));
     else window.scrollTo({ top: 0, behavior: "instant" });
-  }, [location.hash, location.pathname]);
+  }, [location.hash, location.pathname, location.state]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -64,7 +69,7 @@ export function SiteShell() {
   }, []);
 
   return (
-    <div className="site-frame">
+    <div className="site-frame" data-site-shell="mounted">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <div className="staging-rail"><span><BoltIcon /> V2 staging scaffold</span><strong>Wix remains production</strong></div>
       <PromoBanner config={bannerConfig} broadcast={data} />

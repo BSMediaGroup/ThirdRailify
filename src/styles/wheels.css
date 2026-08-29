@@ -121,3 +121,41 @@
 .wheel-editor-preview .wheel-stage{width:min(calc(100% - 32px),430px);margin:clamp(26px,3vw,34px) auto clamp(32px,3vw,40px)}.wheel-editor-preview dl{margin-top:0}
 .palette-grid button small{color:#8f8c80;font:8px "Geist Mono",monospace;letter-spacing:.06em;text-transform:uppercase}.palette-grid button.is-active small{color:#d7c777}
 @media(max-width:720px){.wheel-visual-wrap{padding:24px 12px}.wheel-spin-console{margin-top:24px}.wheel-control-page--presentation .wheel-stage{width:min(84vw,calc(100dvh - 300px))}.appearance-preview{padding-inline:4px}.appearance-preview .wheel-stage{width:calc(100% - 24px);margin-bottom:30px}.wheel-editor-dialog__preview .wheel-stage{width:min(240px,calc(100% - 24px));margin-top:24px;margin-bottom:30px}.wheel-editor-preview .wheel-stage{width:min(100%,430px)}}
+
+/* Wheels V1.6 adjacent gallery navigation, scene transitions, and shared wheel accent. */
+.wheel-control-page{--wheel-accent:#f3c928;background:radial-gradient(circle at 24% 36%,color-mix(in srgb,var(--wheel-accent),transparent 90%),transparent 34%),linear-gradient(145deg,#0c0d09,#070805 66%,color-mix(in srgb,var(--wheel-accent),#080906 94%))}
+.wheel-control-page:before{background:repeating-radial-gradient(circle at 38% 48%,transparent 0 94px,color-mix(in srgb,var(--wheel-accent),transparent 97%) 95px 96px)}
+.wheel-control-page:after{background:linear-gradient(105deg,transparent 0 42%,color-mix(in srgb,var(--wheel-accent),transparent 96%) 49%,transparent 56%)}
+.wheel-control-page .eyebrow,.wheel-control-page .rail-section-title span{color:var(--wheel-accent)}
+.wheel-stage__rim--outer{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--pointer),#24251e 70%),inset 0 0 0 8px #0c0d0a,0 0 0 1px color-mix(in srgb,var(--pointer),transparent 42%)}
+.wheel-scene-backgrounds{position:absolute;z-index:-3;inset:0;overflow:hidden;pointer-events:none}
+.wheel-scene-backgrounds .wheel-control-page__background{z-index:auto;will-change:opacity}
+.wheel-scene-viewport{position:relative;min-width:0;overflow:clip}
+.wheel-scene{position:relative;min-width:0;will-change:transform,opacity}
+.wheel-scene--outgoing{position:absolute;z-index:2;inset:0;pointer-events:none}
+.wheel-scene--incoming{position:relative;z-index:1}
+.wheel-scene--outgoing.is-next{animation:wheelSceneOutNext .56s cubic-bezier(.35,0,.16,1) both}
+.wheel-scene--incoming.is-next{animation:wheelSceneInNext .56s cubic-bezier(.18,.72,.16,1) both}
+.wheel-scene--outgoing.is-previous{animation:wheelSceneOutPrevious .56s cubic-bezier(.35,0,.16,1) both}
+.wheel-scene--incoming.is-previous{animation:wheelSceneInPrevious .56s cubic-bezier(.18,.72,.16,1) both}
+.wheel-control-page__background--outgoing{opacity:var(--wheel-bg-opacity,0)}
+.wheel-control-page__background--incoming{opacity:0;animation:wheelBackgroundIn .5s .08s ease-out both}
+.wheel-control-page__background--outgoing{animation:wheelBackgroundOut .44s ease-out both}
+@keyframes wheelSceneOutNext{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-6%)}}
+@keyframes wheelSceneInNext{from{opacity:0;transform:translateX(6%)}22%{opacity:0;transform:translateX(5%)}to{opacity:1;transform:translateX(0)}}
+@keyframes wheelSceneOutPrevious{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(6%)}}
+@keyframes wheelSceneInPrevious{from{opacity:0;transform:translateX(-6%)}22%{opacity:0;transform:translateX(-5%)}to{opacity:1;transform:translateX(0)}}
+@keyframes wheelBackgroundIn{from{opacity:0}to{opacity:var(--wheel-bg-opacity,0)}}
+@keyframes wheelBackgroundOut{from{opacity:var(--wheel-bg-opacity,0)}to{opacity:0}}
+.wheel-navigator{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:10px;margin:0 0 26px;border-block:1px solid color-mix(in srgb,var(--wheel-accent),transparent 70%);background:linear-gradient(90deg,color-mix(in srgb,var(--wheel-accent),transparent 95%),rgba(13,14,10,.88),color-mix(in srgb,var(--wheel-accent),transparent 95%))}
+.wheel-navigator__direction{display:flex;min-width:0;min-height:64px;padding:10px 14px;border:0;color:#f3f0e5;background:transparent;cursor:pointer;flex-direction:column;justify-content:center;gap:4px;font:inherit}
+.wheel-navigator__direction--previous{align-items:flex-start;text-align:left}.wheel-navigator__direction--next{align-items:flex-end;text-align:right}
+.wheel-navigator__direction span{color:var(--wheel-accent);font:800 10px "Geist Mono",monospace;letter-spacing:.1em;text-transform:uppercase}.wheel-navigator__direction small{display:block;max-width:100%;overflow:hidden;color:#c2beaf;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.wheel-navigator__direction:not(:disabled):hover{background:color-mix(in srgb,var(--wheel-accent),transparent 93%)}.wheel-navigator__direction:focus-visible{outline:2px solid var(--wheel-accent);outline-offset:-3px}.wheel-navigator__direction:disabled{opacity:.38;cursor:not-allowed}
+.wheel-navigator>p{display:flex;min-width:92px;margin:0;padding:9px 14px;border-inline:1px solid color-mix(in srgb,var(--wheel-accent),transparent 76%);align-items:center;justify-content:center;flex-direction:column;gap:3px}.wheel-navigator>p span{color:#77756b;font:8px "Geist Mono",monospace;letter-spacing:.12em;text-transform:uppercase}.wheel-navigator>p strong{color:#f3f0e5;font:800 11px "Geist Mono",monospace;letter-spacing:.08em}
+.wheel-transition-loading{position:fixed;z-index:30;left:50%;bottom:28px;display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid color-mix(in srgb,var(--wheel-accent),transparent 48%);color:#f3f0e5;background:rgba(10,11,8,.92);box-shadow:0 10px 32px #000;transform:translateX(-50%);font:800 9px "Geist Mono",monospace;letter-spacing:.08em;text-transform:uppercase}.wheel-transition-loading .wheels-brand-mark{width:22px;height:22px;color:var(--wheel-accent)}
+.wheel-transition-notice{position:relative;z-index:5;width:min(760px,calc(100% - 30px));margin:18px auto 0}
+.wheel-accent-control{display:grid;grid-template-columns:minmax(0,1fr) 48px minmax(88px,110px);align-items:center;gap:12px;margin:16px 0 24px;padding:14px;border:1px solid #3d3c31;background:color-mix(in srgb,var(--wheel-accent,#f3c928),transparent 94%)}.wheel-accent-control>div{display:flex;min-width:0;flex-direction:column;gap:3px}.wheel-accent-control b{color:#f3f0e5}.wheel-accent-control small{color:#929083;line-height:1.4}.wheel-accent-control input[type=color]{width:48px;height:42px;padding:3px}.wheel-accent-control input:last-child{width:100%;font-family:"Geist Mono",monospace;text-transform:uppercase}
+.appearance-preview{--wheel-accent:#f3c928;background-color:#090a07;background-image:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--wheel-accent),transparent 82%),transparent 52%)}
+@media(max-width:620px){.wheel-navigator{gap:0;margin-bottom:20px}.wheel-navigator__direction{min-height:54px;padding:8px}.wheel-navigator__direction small{max-width:34vw;font-size:10px}.wheel-navigator>p{min-width:70px;padding-inline:8px}.wheel-navigator>p span{display:none}.wheel-accent-control{grid-template-columns:minmax(0,1fr) 44px}.wheel-accent-control input:last-child{grid-column:1/-1}.wheel-control-page.is-scene-transitioning{overflow:hidden}}
+@media(prefers-reduced-motion:reduce){.wheel-scene--outgoing.is-next,.wheel-scene--incoming.is-next,.wheel-scene--outgoing.is-previous,.wheel-scene--incoming.is-previous{animation-duration:.06s;transform:none!important}.wheel-control-page__background--incoming,.wheel-control-page__background--outgoing{animation-duration:.06s;animation-delay:0s}.wheel-transition-loading{transition:none}}

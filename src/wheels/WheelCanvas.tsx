@@ -48,7 +48,7 @@ function drawWheel(canvas: HTMLCanvasElement, entries: WheelEntry[], config: Whe
   const pixels = Math.floor(size * ratio); if (canvas.width !== pixels || canvas.height !== pixels) { canvas.width = pixels; canvas.height = pixels; }
   const context = canvas.getContext("2d"); if (!context) return; context.setTransform(ratio, 0, 0, ratio, 0, 0); context.clearRect(0, 0, size, size);
   const centre = size / 2; const radius = centre - Math.max(8, size * .025); const segments = entryAngles(entries); context.save(); context.translate(centre, centre);
-  if (!segments.length) { context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fillStyle = "#171712"; context.fill(); context.strokeStyle = "#f3c928"; context.lineWidth = Math.max(2, size * .008); context.stroke(); context.restore(); return; }
+  if (!segments.length) { context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fillStyle = "#171712"; context.fill(); context.strokeStyle = config.pointerAccent; context.lineWidth = Math.max(2, size * .008); context.stroke(); context.restore(); return; }
   const density = segments.length <= 40 ? 1 : Math.ceil(segments.length / 40);
   segments.forEach(({ entry, start, end, centre: angle }, index) => {
     const segmentColour = entry.colour || config.palette[index % config.palette.length];
@@ -58,7 +58,7 @@ function drawWheel(canvas: HTMLCanvasElement, entries: WheelEntry[], config: Whe
     const useDarkLabel = config.labelContrast === "dark" || isExtraLight(segmentColour);
     context.save(); context.rotate(angle - Math.PI / 2); context.textAlign = "right"; context.textBaseline = "middle"; context.fillStyle = useDarkLabel ? "#171712" : "#fffdf3"; context.font = `700 ${Math.max(9, Math.min(18, size / (segments.length > 20 ? 42 : 31)))}px "Geist Mono", monospace`; context.shadowColor = useDarkLabel ? "rgba(255,255,255,.62)" : "rgba(0,0,0,.78)"; context.shadowBlur = useDarkLabel ? 2 : 4; context.fillText(label, radius - size * .055, 0, radius * .64); context.restore();
   });
-  const gradient = context.createRadialGradient(0, 0, radius * .5, 0, 0, radius); gradient.addColorStop(0, "transparent"); gradient.addColorStop(1, "rgba(0,0,0,.34)"); context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fillStyle = gradient; context.fill(); context.strokeStyle = "#d6ad13"; context.lineWidth = Math.max(5, size * .018); context.stroke(); context.restore();
+  const gradient = context.createRadialGradient(0, 0, radius * .5, 0, 0, radius); gradient.addColorStop(0, "transparent"); gradient.addColorStop(1, "rgba(0,0,0,.34)"); context.beginPath(); context.arc(0, 0, radius, 0, Math.PI * 2); context.fillStyle = gradient; context.fill(); context.strokeStyle = config.pointerAccent; context.lineWidth = Math.max(5, size * .018); context.stroke(); context.restore();
 }
 
 function isExtraLight(colour: string) {

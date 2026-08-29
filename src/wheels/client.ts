@@ -1,14 +1,26 @@
 import type { Wheel, WheelAccess, WheelSummary } from "./types";
 
 type ApiError = Error & { code?: string; status?: number };
+type WheelPayload = { ok: true; wheel: Wheel; access: WheelAccess };
+const wheelDetailCache = new Map<string, { expiresAt: number; promise: Promise<WheelPayload> }>();
+const WHEEL_DETAIL_CACHE_MS = 30_000;
+
 export async function listWheels(search = "", sort = "recent") { return request<{ ok: true; items: WheelSummary[]; count: number }>(`/api/wheels?search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}`); }
-export async function getWheel(slug: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>(`/api/wheels/${encodeURIComponent(slug)}`); }
+export function getWheel(slug: string, options: { force?: boolean } = {}) {
+  const now = Date.now(); const cached = wheelDetailCache.get(slug);
+  if (!options.force && cached && cached.expiresAt > now) return cached.promise;
+  const promise = request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}`).catch((error) => { wheelDetailCache.delete(slug); throw error; });
+  wheelDetailCache.set(slug, { expiresAt: now + WHEEL_DETAIL_CACHE_MS, promise });
+  return promise;
+}
+export function prefetchWheel(slug: string) { return getWheel(slug); }
+export function invalidateWheel(slug: string) { wheelDetailCache.delete(slug); }
 export async function getCreatorAccess() { return request<{ ok: true; authenticated: boolean; canCreate: boolean; isMasterAdmin: boolean; maximumOwnedWheels?: number }>("/api/wheels/access"); }
 export async function createWheel(input: Record<string, unknown>, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>("/api/wheels", { method: "POST", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
-export async function saveWheel(slug: string, input: Record<string, unknown>, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>(`/api/wheels/${encodeURIComponent(slug)}`, { method: "PUT", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
+export async function saveWheel(slug: string, input: Record<string, unknown>, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}`, { method: "PUT", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
 export async function officialSpin(slug: string, revision: number, idempotencyKey: string, csrfToken: string) { return request<{ ok: true; spin: { id: string; winningEntryId: string; winningLabel: string; createdAt: string }; idempotent: boolean }>(`/api/wheels/${encodeURIComponent(slug)}/spins`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ revision, idempotencyKey }) }); }
-export async function winnerAction(slug: string, entryId: string, action: string, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>(`/api/wheels/${encodeURIComponent(slug)}/winner-action`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ entryId, action }) }); }
-export async function lifecycleAction(slug: string, action: string, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>(`/api/wheels/${encodeURIComponent(slug)}/lifecycle`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ action }) }); }
+export async function winnerAction(slug: string, entryId: string, action: string, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}/winner-action`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ entryId, action }) }); }
+export async function lifecycleAction(slug: string, action: string, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}/lifecycle`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ action }) }); }
 export async function uploadWheelMedia(slug: string, purpose: "background" | "centre", file: Blob, csrfToken: string) { return request<{ ok: true; asset: Wheel["media"]["background"] }>(`/api/wheels/${encodeURIComponent(slug)}/media/${purpose}`, { method: "POST", headers: { "Content-Type": file.type || "application/octet-stream", "X-CSRF-Token": csrfToken }, body: file }); }
 export async function removeWheelMedia(slug: string, purpose: "background" | "centre", csrfToken: string) { return request<{ ok: true; removed: boolean; purpose: string }>(`/api/wheels/${encodeURIComponent(slug)}/media/${purpose}`, { method: "DELETE", headers: csrf(csrfToken), body: "{}" }); }
 function csrf(token: string) { return { "Content-Type": "application/json", "X-CSRF-Token": token }; }

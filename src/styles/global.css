@@ -8878,7 +8878,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   border-bottom: 1px solid rgba(var(--friend-rgb), .18);
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 6px;
+  font-size: 6.6px;
   font-style: normal;
   letter-spacing: .12em;
 }
@@ -8901,9 +8901,9 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 
 .friend-card__copy { display: flex; min-height: 0; flex: 1; flex-direction: column; padding: 26px 24px 25px; }
 .friend-card__identity { display: flex; flex-direction: column; }
-.friend-card__identity small { color: #d8d3c7; font-family: var(--mono); font-size: 8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.friend-card__identity small { color: #d8d3c7; font-family: var(--mono); font-size: 8.8px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .friend-card__identity strong { margin-top: 3px; color: var(--friend-accent); font-family: var(--display); font-size: clamp(46px, 4.2vw, 62px); font-weight: 400; line-height: .95; text-transform: uppercase; }
-.friend-location { display: inline-flex; width: fit-content; align-items: center; gap: 6px; color: #8f8c84; font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: .08em; line-height: 1; text-transform: uppercase; }
+.friend-location { display: inline-flex; width: fit-content; align-items: center; gap: 6px; color: #8f8c84; font-family: var(--mono); font-size: 7.7px; font-weight: 700; letter-spacing: .08em; line-height: 1; text-transform: uppercase; }
 .friend-location img { display: block; width: auto; height: 1em; flex: 0 0 auto; object-fit: contain; }
 .friend-card__location { margin-top: 11px; }
 .friend-card__appearance { margin-top: 13px; color: var(--paper); font-family: var(--mono); font-size: 7px; font-weight: 700; letter-spacing: .09em; line-height: 1.45; text-transform: uppercase; }
@@ -8990,7 +8990,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friend-dialog__copy h2 { display: flex; margin: 15px 0 11px; flex-direction: column; color: var(--friend-accent); font-family: var(--display); font-size: clamp(67px, 6.7vw, 94px); font-weight: 400; line-height: .81; text-transform: uppercase; }
 .friend-dialog__copy h2 span { margin-bottom: 12px; color: var(--paper); font-family: var(--mono); font-size: 12px; font-weight: 750; letter-spacing: .14em; line-height: 1; }
 .friend-dialog__role { margin: 0; color: #e1dccf; font-family: var(--mono); font-size: 8px; font-weight: 750; letter-spacing: .09em; line-height: 1.5; text-transform: uppercase; }
-.friend-dialog__location { margin-top: 11px; color: var(--friend-accent); font-size: 7px; opacity: .82; }
+.friend-dialog__location { margin-top: 11px; color: var(--friend-accent); font-size: 7.7px; opacity: .82; }
 .friend-dialog__bio { margin: 25px 0 0; color: #c3bfb4; font-size: 17px; line-height: 1.6; }
 .friend-dialog__signal { display: grid; margin: 28px 0 0; padding: 0; grid-template-columns: repeat(3, 1fr); border-block: 1px solid rgba(var(--friend-rgb), .18); list-style: none; }
 .friend-dialog__signal li { display: flex; min-height: 65px; flex-direction: column; justify-content: center; padding: 9px 12px; border-right: 1px solid rgba(var(--friend-rgb), .18); color: #d9d5c9; font-family: var(--mono); font-size: 6px; font-weight: 700; letter-spacing: .07em; line-height: 1.35; text-transform: uppercase; }
