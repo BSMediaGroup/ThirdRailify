@@ -4,77 +4,1342 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { chromium } from "playwright-core";
+import { CELEBRATION_PROFILES } from "../src/wheels/celebrationProfiles.mjs";
 
 const ORIGIN = "http://127.0.0.1:4178";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const overflowMeasurements = [];
 
 test("Wheels directory, demo result, editor, and presentation are responsive and truthful", async (t) => {
-  const artifacts = fileURLToPath(new URL("../.artifacts/wheels-v1/", import.meta.url)); await mkdir(artifacts, { recursive: true });
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4178"], { stdio: "ignore" }); t.after(() => server.kill()); await waitForPreview();
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close()); let writes = 0;
-  const directoryMatrix = [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 390, height: 844 }];
-  const wheelMatrix = [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1365, height: 768 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 390, height: 844 }];
-  const editorMatrix = [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1024, height: 768 }, { width: 768, height: 1024 }, { width: 390, height: 844 }];
-  const participantMatrix = [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }];
-  const transferMatrix = [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }];
-  const presentationMatrix = [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }, { width: 390, height: 844 }];
-  await withDelayedWheelPage(browser, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`); await page.locator(".wheel-route-state__mark").waitFor(); await page.getByText("Tuning the wheel signal…").waitFor(); const mark = await page.locator(".wheel-route-state__mark").boundingBox(); assert.ok(mark && mark.width > 40 && mark.height > 40); assert.equal(await page.locator(".wheel-route-state").getByText("ϟ", { exact: true }).count(), 0); await page.screenshot({ path: `${artifacts}/wheel-loading-zap-1440.png`, fullPage: false }); }, () => { writes += 1; });
-  await withUnauthorizedPage(browser, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`); await page.getByRole("dialog", { name: "Editor access required" }).waitFor(); assert.equal(await page.getByLabel("Wheel title").count(), 0, "unauthorized edit route exposes no editor fields"); assert.equal(await page.locator(".wheel-control-page").count(), 1, "truthful public wheel remains behind the access treatment"); await page.getByRole("link", { name: /Return to Third Railify Demo Draw/ }).click(); assert.equal(new URL(page.url()).pathname, "/wheels/third-railify-demo-draw"); }, () => { writes += 1; });
-  for (const viewport of directoryMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels`); await page.getByRole("heading", { level: 1, name: /SPIN THE/i }).waitFor(); await page.getByRole("link", { name: /Third Railify Demo Draw/i }).waitFor(); const build = page.getByRole("link", { name: /Build a wheel/i }); const explore = page.getByRole("link", { name: /Explore public wheels/i }); assert.equal(await build.evaluate((node) => node.classList.contains("button--primary")), true); assert.equal(await explore.evaluate((node) => node.classList.contains("button--ghost")), true); const heroControls = await page.locator(".wheels-hero__actions .button").evaluateAll((nodes) => nodes.map((node) => { const box = node.getBoundingClientRect(); return { centre: box.top + box.height / 2, height: box.height }; })); if (viewport.width > 620) assert.ok(Math.abs(heroControls[0].centre - heroControls[1].centre) < 2, `hero actions share a baseline at ${viewport.width}`); const railBorder = await page.locator(".wheels-trust-rail").evaluate((node) => ({ width: getComputedStyle(node).borderBottomWidth, style: getComputedStyle(node).borderBottomStyle })); assert.deepEqual(railBorder, { width: "1px", style: "solid" }); const mark = await page.locator(".hero-wheel__hub .wheels-brand-mark").boundingBox(); assert.ok(mark && mark.width > 20 && mark.height > 20, "exact local zap treatment is visibly sized in the hero"); const shape = await page.locator(".hero-wheel__hub .wheels-brand-mark path").evaluate((path) => { const box = path.getBBox(); return { width: box.width, height: box.height, source: path.closest("svg").dataset.brandSource || "" }; }); assert.ok(shape.width > 1000 && shape.height > 1000 && shape.source, "the exact local SVG path is present, not a text glyph or empty box"); assert.equal(await page.locator('.hero-wheel__hub:text-is("ϟ")').count(), 0); await assertPage(page, viewport.width); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/public-directory-desktop.png`, fullPage: true }); }, () => { writes += 1; });
-  for (const viewport of wheelMatrix) await withPage(browser, viewport, async (page) => {
-    await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`); await page.getByRole("heading", { level: 1, name: "Third Railify Demo Draw" }).waitFor(); assert.equal(await page.locator("canvas").count(), 1); const box = await page.locator(".wheel-stage").boundingBox(); assert.ok(box && Math.abs(box.width - box.height) < 1); assert.equal((await page.locator(".wheel-stage__hub").textContent()).trim(), "", "default medallion has no redundant TR text"); await page.getByText("POINTER TARGET").waitFor(); assert.equal(await page.locator(".pointer-target-hud").getByText("Demo GOAT 01").count(), 1); await assertContainedWheelDecorations(page, ".wheel-control-stage"); await assertPage(page, viewport.width); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/public-wheel-before-spin-desktop.png`, fullPage: true }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/public-wheel-before-spin-mobile.png`, fullPage: true });
-    if (viewport.width === 1440) { await page.locator(".participant-list").getByRole("button", { name: /Demo GOAT 03/ }).click(); const details = page.getByRole("dialog", { name: "Demo GOAT 03" }); await details.waitFor(); await assertSurfaceFits(details, "participant details"); await page.getByText("22.22%", { exact: true }).first().waitFor(); await page.screenshot({ path: `${artifacts}/participant-details-row-1440.png`, fullPage: false }); await page.getByRole("button", { name: "Close participant details" }).click(); const canvas = page.locator(".wheel-control-stage canvas"); const canvasBox = await canvas.boundingBox(); assert.ok(canvasBox); await canvas.click({ position: { x: canvasBox.width * .9, y: canvasBox.height * .5 } }); await page.getByRole("dialog", { name: "Demo GOAT 03" }).waitFor(); await page.screenshot({ path: `${artifacts}/participant-details-segment-1440.png`, fullPage: false }); await page.getByRole("button", { name: "Close participant details" }).click(); }
-    if (viewport.width === 390) { await page.locator(".participant-list").getByRole("button", { name: /Demo GOAT 03/ }).click(); const details = page.getByRole("dialog", { name: "Demo GOAT 03" }); await details.waitFor(); await assertSurfaceFits(details, "mobile participant details"); await page.screenshot({ path: `${artifacts}/participant-details-mobile-390.png`, fullPage: false }); await page.getByRole("button", { name: "Close participant details" }).click(); }
-    if (viewport.width === 1024) { await page.getByRole("link", { name: "Edit" }).click(); await page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/ }).waitFor(); assert.equal(new URL(page.url()).pathname, "/wheels/third-railify-demo-draw/edit"); await page.goBack(); await page.getByRole("heading", { level: 1, name: "Third Railify Demo Draw" }).waitFor(); assert.equal(await page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/ }).count(), 0, "browser Back closes the route-driven editor"); }
-    if (viewport.width === 1440 || viewport.width === 390) { const writesBeforeDemo = writes; await page.getByRole("button", { name: "Start demo spin" }).click(); await page.getByRole("dialog").waitFor(); await page.getByText("Demo result — not recorded as an official draw").waitFor(); assert.equal(await page.locator(".winner-confetti i").count(), 0, "reduced motion renders no falling confetti"); assert.equal(await page.locator(".winner-lightshow.is-static").count(), 1, "reduced motion retains a static winner halo"); assert.equal(await page.locator(".winner-dialog__mark .wheels-brand-mark path").count(), 1); assert.equal(await page.locator(".winner-dialog__mark").getByText("★", { exact: true }).count(), 0); assert.equal(await page.getByRole("button", { name: "Keep participant" }).evaluate((node) => node.classList.contains("button--secondary")), true); assert.equal(await page.getByRole("button", { name: "Remove entry" }).evaluate((node) => node.classList.contains("button--danger-outline")), true); assert.equal(await page.getByRole("button", { name: "Remove all matching" }).evaluate((node) => node.classList.contains("button--danger")), true); assert.equal(writes, writesBeforeDemo, "a demo spin performs no API write"); await assertPage(page, viewport.width); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/public-demo-winner-desktop.png`, fullPage: true }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/public-demo-winner-mobile-390.png`, fullPage: false }); await page.getByRole("button", { name: "Close result" }).click(); }
-    if (viewport.width === 1440) { const writesBeforeOfficial = writes; await page.getByRole("button", { name: "Official draw" }).click(); await page.getByRole("button", { name: "Start recorded official draw" }).click(); await page.getByRole("dialog").waitFor(); await page.getByText(/selected and persisted by the Third Railify authority/i).waitFor(); assert.equal(writes, writesBeforeOfficial + 1, "an official draw performs exactly one authenticated write"); await page.getByRole("button", { name: "Close result" }).click(); }
-  }, () => { writes += 1; });
-  for (const viewport of editorMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`); await page.getByRole("heading", { level: 1, name: "Third Railify Demo Draw" }).waitFor(); const editor = page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/i }); await editor.waitFor(); await page.getByLabel("Wheel title").waitFor(); const centring = await editor.evaluate((node) => { const box = node.getBoundingClientRect(); return { delta: Math.abs((box.left + box.width / 2) - window.innerWidth / 2), inside: box.left >= 0 && box.right <= window.innerWidth && box.top >= 0 && box.bottom <= window.innerHeight }; }); assert.ok(centring.delta <= 2, `editor is viewport-centred at ${viewport.width}px: ${JSON.stringify(centring)}`); assert.equal(centring.inside, true, `editor remains inside viewport at ${viewport.width}px`); await assertSurfaceFits(editor, `editor ${viewport.width}`); await assertSurfaceFits(page.locator(".wheel-editor-dialog__body"), `editor content ${viewport.width}`); await assertContainedWheelDecorations(page, ".wheel-editor-dialog__preview"); assert.equal(await page.locator(".wheel-control-page").count(), 1, "wheel detail remains mounted beneath editor"); assert.equal(await page.locator("canvas").count(), 2, "one underlying wheel and one compact editor preview"); assert.equal(await page.getByRole("button", { name: "Save changes" }).evaluate((node) => node.classList.contains("button--primary")), true); assert.equal(await page.getByRole("button", { name: "Discard" }).evaluate((node) => node.classList.contains("button--secondary")), true); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/public-approved-editor-desktop.png`, fullPage: false }); if (viewport.width === 390) { await page.screenshot({ path: `${artifacts}/public-approved-editor-mobile-390.png`, fullPage: false }); const writesBeforeSave = writes; await page.getByLabel("Wheel title").fill("Third Railify Demo Draw Revised"); await page.getByRole("button", { name: "Close wheel editor" }).click(); await page.getByText("Discard unsaved wheel changes?").waitFor(); await page.getByRole("button", { name: "Keep editing" }).click(); await page.getByRole("button", { name: "Save changes" }).click(); await page.getByText("Authoritative wheel revision saved.").waitFor(); assert.equal(writes, writesBeforeSave + 1); } await assertPage(page, viewport.width); }, () => { writes += 1; });
-  for (const viewport of editorMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`); const editor = page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/i }); await editor.waitFor(); await editor.getByRole("tab", { name: "appearance" }).click(); await editor.getByRole("button", { name: "Customize appearance" }).click(); const appearance = page.getByRole("dialog", { name: /Tune the broadcast stage/i }); await appearance.waitFor(); await assertSurfaceFits(appearance, `appearance ${viewport.width}`); await assertSurfaceFits(page.locator(".appearance-dialog__body"), `appearance content ${viewport.width}`); await assertContainedWheelDecorations(page, ".appearance-preview"); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/appearance-desktop-1440.png`, fullPage: false }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/appearance-mobile-390.png`, fullPage: false }); await page.getByRole("button", { name: "Discard" }).click(); }, () => { writes += 1; });
-  for (const viewport of participantMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`); await page.getByRole("button", { name: "Manage participants" }).click(); const participants = page.getByRole("dialog", { name: "Manage participants" }); await participants.waitFor(); await assertSurfaceFits(participants, `participant manager ${viewport.width}`); await assertSurfaceFits(page.locator(".participant-manager__body"), `participant manager body ${viewport.width}`); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/participant-manager-1440.png`, fullPage: false }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/participant-manager-mobile-390.png`, fullPage: false }); await page.getByRole("button", { name: "Close participant manager" }).click(); }, () => { writes += 1; });
-  for (const viewport of transferMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`); const editor = page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/i }); await editor.waitFor(); await editor.getByRole("button", { name: "Import / Export" }).click(); const transfer = page.getByRole("dialog", { name: "Import / Export" }); await transfer.waitFor(); await assertSurfaceFits(transfer, `import export ${viewport.width}`); await assertSurfaceFits(page.locator(".wheel-transfer-body"), `import export body ${viewport.width}`); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/import-export-1440.png`, fullPage: false }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/import-export-mobile-390.png`, fullPage: false }); await page.getByRole("button", { name: "Return to editor" }).click(); }, () => { writes += 1; });
-  for (const viewport of editorMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/new`); await page.getByRole("heading", { level: 1, name: "Build a competition wheel" }).waitFor(); const actions = page.locator(".wheel-editor-actions"); await actions.waitFor(); for (const [name, variant] of [["Import wheel", "button--secondary"], ["Exit editor", "button--ghost"], ["Discard", "button--secondary"], ["Create wheel", "button--primary"]]) assert.equal(await page.getByRole(name === "Exit editor" ? "link" : "button", { name }).evaluate((node, expected) => node.classList.contains(expected), variant), true, `${name} uses ${variant}`); await assertPage(page, viewport.width); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/public-new-wheel-actions-desktop.png`, fullPage: false }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/public-new-wheel-actions-mobile-390.png`, fullPage: false }); }, () => { writes += 1; });
-  await withPage(browser, { width: 1440, height: 900 }, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`); await page.getByRole("button", { name: "Start demo spin" }).click(); await page.getByRole("dialog").waitFor({ timeout: 6000 }); assert.equal(await page.locator(".winner-confetti i").count(), 96, "normal motion uses the bounded normal particle tier"); assert.equal(await page.locator(".winner-lightshow__bloom").count(), 1); assert.equal(await page.locator(".winner-lightshow b").count(), 2); await page.waitForTimeout(600); await page.screenshot({ path: `${artifacts}/public-demo-winner-motion-desktop.png`, fullPage: false }); await page.getByRole("button", { name: "Close result" }).click(); assert.equal(await page.locator(".winner-confetti i").count(), 0, "closing the result cleans up particles"); assert.equal(await page.locator(".winner-lightshow").count(), 0, "closing the result cleans up lights"); }, () => { writes += 1; }, "no-preference");
-  for (const viewport of presentationMatrix) await withPage(browser, viewport, async (page) => { await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`); await page.getByRole("heading", { level: 1, name: /presentation/i }).waitFor(); const exit = page.getByRole("link", { name: "Exit presentation mode" }); const fullscreen = page.getByRole("button", { name: "Fullscreen" }).first(); await exit.waitFor(); await page.getByText("POINTER TARGET").waitFor(); assert.equal(await page.locator(".winner-confetti,.winner-lightshow").count(), 0, "presentation is particle-free before a winner celebration"); await assertContainedWheelDecorations(page, ".wheel-control-stage"); const alignment = await page.evaluate(() => { const controls = [document.querySelector(".presentation-bar>a"), document.querySelector(".presentation-bar>button")]; return controls.map((control) => { const icon = control.querySelector("svg").getBoundingClientRect(); const label = control.querySelector("span").getBoundingClientRect(); return Math.abs((icon.top + icon.height / 2) - (label.top + label.height / 2)); }); }); assert.ok(alignment.every((delta) => delta < 2), `presentation icon/label centres align: ${alignment}`); await fullscreen.waitFor(); await assertPage(page, viewport.width); if (viewport.width === 1920) await page.screenshot({ path: `${artifacts}/public-presentation-desktop.png`, fullPage: true }); }, () => { writes += 1; });
-  await writeFile(`${artifacts}/v15-overflow-measurements.json`, `${JSON.stringify(overflowMeasurements, null, 2)}\n`);
+  const artifacts = fileURLToPath(
+    new URL("../.artifacts/wheels-v1/", import.meta.url),
+  );
+  await mkdir(artifacts, { recursive: true });
+  const server = spawn(
+    process.execPath,
+    [
+      "node_modules/vite/bin/vite.js",
+      "preview",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "4178",
+    ],
+    { stdio: "ignore" },
+  );
+  t.after(() => server.kill());
+  await waitForPreview();
+  const browser = await chromium.launch({
+    executablePath: CHROME,
+    headless: true,
+  });
+  t.after(() => browser.close());
+  let writes = 0;
+  const directoryMatrix = [
+    { width: 1920, height: 1080 },
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ];
+  const wheelMatrix = [
+    { width: 1920, height: 1080 },
+    { width: 1440, height: 900 },
+    { width: 1365, height: 768 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ];
+  const editorMatrix = [
+    { width: 1920, height: 1080 },
+    { width: 1440, height: 900 },
+    { width: 1024, height: 768 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ];
+  const participantMatrix = [
+    { width: 1440, height: 900 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ];
+  const transferMatrix = [
+    { width: 1440, height: 900 },
+    { width: 768, height: 1024 },
+    { width: 390, height: 844 },
+  ];
+  const presentationMatrix = [
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 720 },
+    { width: 390, height: 844 },
+  ];
+  await withDelayedWheelPage(
+    browser,
+    async (page) => {
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+      await page.locator(".wheel-route-state__mark").waitFor();
+      await page.getByText("Tuning the wheel signal…").waitFor();
+      const mark = await page.locator(".wheel-route-state__mark").boundingBox();
+      assert.ok(mark && mark.width > 40 && mark.height > 40);
+      assert.equal(
+        await page
+          .locator(".wheel-route-state")
+          .getByText("ϟ", { exact: true })
+          .count(),
+        0,
+      );
+      await page.screenshot({
+        path: `${artifacts}/wheel-loading-zap-1440.png`,
+        fullPage: false,
+      });
+    },
+    () => {
+      writes += 1;
+    },
+  );
+  await withUnauthorizedPage(
+    browser,
+    async (page) => {
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`);
+      await page
+        .getByRole("dialog", { name: "Editor access required" })
+        .waitFor();
+      assert.equal(
+        await page.getByLabel("Wheel title").count(),
+        0,
+        "unauthorized edit route exposes no editor fields",
+      );
+      assert.equal(
+        await page.locator(".wheel-control-page").count(),
+        1,
+        "truthful public wheel remains behind the access treatment",
+      );
+      await page
+        .getByRole("link", { name: /Return to Third Railify Demo Draw/ })
+        .click();
+      assert.equal(
+        new URL(page.url()).pathname,
+        "/wheels/third-railify-demo-draw",
+      );
+    },
+    () => {
+      writes += 1;
+    },
+  );
+  for (const viewport of directoryMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels`);
+        await page
+          .getByRole("heading", { level: 1, name: /SPIN THE/i })
+          .waitFor();
+        await page
+          .getByRole("link", { name: /Third Railify Demo Draw/i })
+          .waitFor();
+        const build = page.getByRole("link", { name: /Build a wheel/i });
+        const explore = page.getByRole("link", {
+          name: /Explore public wheels/i,
+        });
+        assert.equal(
+          await build.evaluate((node) =>
+            node.classList.contains("button--primary"),
+          ),
+          true,
+        );
+        assert.equal(
+          await explore.evaluate((node) =>
+            node.classList.contains("button--ghost"),
+          ),
+          true,
+        );
+        const heroControls = await page
+          .locator(".wheels-hero__actions .button")
+          .evaluateAll((nodes) =>
+            nodes.map((node) => {
+              const box = node.getBoundingClientRect();
+              return { centre: box.top + box.height / 2, height: box.height };
+            }),
+          );
+        if (viewport.width > 620)
+          assert.ok(
+            Math.abs(heroControls[0].centre - heroControls[1].centre) < 2,
+            `hero actions share a baseline at ${viewport.width}`,
+          );
+        const railBorder = await page
+          .locator(".wheels-trust-rail")
+          .evaluate((node) => ({
+            width: getComputedStyle(node).borderBottomWidth,
+            style: getComputedStyle(node).borderBottomStyle,
+          }));
+        assert.deepEqual(railBorder, { width: "1px", style: "solid" });
+        const mark = await page
+          .locator(".hero-wheel__hub .wheels-brand-mark")
+          .boundingBox();
+        assert.ok(
+          mark && mark.width > 20 && mark.height > 20,
+          "exact local zap treatment is visibly sized in the hero",
+        );
+        const shape = await page
+          .locator(".hero-wheel__hub .wheels-brand-mark path")
+          .evaluate((path) => {
+            const box = path.getBBox();
+            return {
+              width: box.width,
+              height: box.height,
+              source: path.closest("svg").dataset.brandSource || "",
+            };
+          });
+        assert.ok(
+          shape.width > 1000 && shape.height > 1000 && shape.source,
+          "the exact local SVG path is present, not a text glyph or empty box",
+        );
+        assert.equal(
+          await page.locator('.hero-wheel__hub:text-is("ϟ")').count(),
+          0,
+        );
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/public-directory-desktop.png`,
+            fullPage: true,
+          });
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of wheelMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+        await page
+          .getByRole("heading", { level: 1, name: "Third Railify Demo Draw" })
+          .waitFor();
+        assert.equal(await page.locator("canvas").count(), 1);
+        const box = await page.locator(".wheel-stage").boundingBox();
+        assert.ok(box && Math.abs(box.width - box.height) < 1);
+        assert.equal(
+          (await page.locator(".wheel-stage__hub").textContent()).trim(),
+          "",
+          "default medallion has no redundant TR text",
+        );
+        await page.getByText("POINTER TARGET").waitFor();
+        assert.equal(
+          await page
+            .locator(".pointer-target-hud")
+            .getByText("Demo GOAT 01")
+            .count(),
+          1,
+        );
+        await assertContainedWheelDecorations(page, ".wheel-control-stage");
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/public-wheel-before-spin-desktop.png`,
+            fullPage: true,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/public-wheel-before-spin-mobile.png`,
+            fullPage: true,
+          });
+        if (viewport.width === 1440) {
+          await page
+            .locator(".participant-list")
+            .getByRole("button", { name: /Demo GOAT 03/ })
+            .click();
+          const details = page.getByRole("dialog", { name: "Demo GOAT 03" });
+          await details.waitFor();
+          await assertSurfaceFits(details, "participant details");
+          await page.getByText("22.22%", { exact: true }).first().waitFor();
+          await page.screenshot({
+            path: `${artifacts}/participant-details-row-1440.png`,
+            fullPage: false,
+          });
+          await page
+            .getByRole("button", { name: "Close participant details" })
+            .click();
+          const canvas = page.locator(".wheel-control-stage canvas");
+          const canvasBox = await canvas.boundingBox();
+          assert.ok(canvasBox);
+          await canvas.click({
+            position: { x: canvasBox.width * 0.9, y: canvasBox.height * 0.5 },
+          });
+          await page.getByRole("dialog", { name: "Demo GOAT 03" }).waitFor();
+          await page.screenshot({
+            path: `${artifacts}/participant-details-segment-1440.png`,
+            fullPage: false,
+          });
+          await page
+            .getByRole("button", { name: "Close participant details" })
+            .click();
+        }
+        if (viewport.width === 390) {
+          await page
+            .locator(".participant-list")
+            .getByRole("button", { name: /Demo GOAT 03/ })
+            .click();
+          const details = page.getByRole("dialog", { name: "Demo GOAT 03" });
+          await details.waitFor();
+          await assertSurfaceFits(details, "mobile participant details");
+          await page.screenshot({
+            path: `${artifacts}/participant-details-mobile-390.png`,
+            fullPage: false,
+          });
+          await page
+            .getByRole("button", { name: "Close participant details" })
+            .click();
+        }
+        if (viewport.width === 1024) {
+          await page.getByRole("link", { name: "Edit" }).click();
+          await page
+            .getByRole("dialog", { name: /Edit Third Railify Demo Draw/ })
+            .waitFor();
+          assert.equal(
+            new URL(page.url()).pathname,
+            "/wheels/third-railify-demo-draw/edit",
+          );
+          await page.goBack();
+          await page
+            .getByRole("heading", { level: 1, name: "Third Railify Demo Draw" })
+            .waitFor();
+          assert.equal(
+            await page
+              .getByRole("dialog", { name: /Edit Third Railify Demo Draw/ })
+              .count(),
+            0,
+            "browser Back closes the route-driven editor",
+          );
+        }
+        if (viewport.width === 1440 || viewport.width === 390) {
+          const writesBeforeDemo = writes;
+          await page.getByRole("button", { name: "Start demo spin" }).click();
+          await page.getByRole("dialog").waitFor();
+          await page
+            .getByText("Demo result — not recorded as an official draw")
+            .waitFor();
+          assert.equal(
+            await page.locator(".winner-confetti i").count(),
+            0,
+            "reduced motion renders no falling confetti",
+          );
+          assert.equal(
+            await page.locator(".winner-lightshow.is-static").count(),
+            1,
+            "reduced motion retains a static winner halo",
+          );
+          assert.equal(
+            await page
+              .locator(".winner-dialog__mark .wheels-brand-mark path")
+              .count(),
+            1,
+          );
+          assert.equal(
+            await page
+              .locator(".winner-dialog__mark")
+              .getByText("★", { exact: true })
+              .count(),
+            0,
+          );
+          assert.equal(
+            await page
+              .getByRole("button", { name: "Keep participant" })
+              .evaluate((node) => node.classList.contains("button--secondary")),
+            true,
+          );
+          assert.equal(
+            await page
+              .getByRole("button", { name: "Remove entry" })
+              .evaluate((node) =>
+                node.classList.contains("button--danger-outline"),
+              ),
+            true,
+          );
+          assert.equal(
+            await page
+              .getByRole("button", { name: "Remove all matching" })
+              .evaluate((node) => node.classList.contains("button--danger")),
+            true,
+          );
+          assert.equal(
+            writes,
+            writesBeforeDemo,
+            "a demo spin performs no API write",
+          );
+          await assertPage(page, viewport.width);
+          if (viewport.width === 1440)
+            await page.screenshot({
+              path: `${artifacts}/public-demo-winner-desktop.png`,
+              fullPage: true,
+            });
+          if (viewport.width === 390)
+            await page.screenshot({
+              path: `${artifacts}/public-demo-winner-mobile-390.png`,
+              fullPage: false,
+            });
+          await page.getByRole("button", { name: "Close result" }).click();
+        }
+        if (viewport.width === 1440) {
+          const writesBeforeOfficial = writes;
+          await page.getByRole("button", { name: "Official draw" }).click();
+          await page
+            .getByRole("button", { name: "Start recorded official draw", exact: true })
+            .click();
+          await page.getByRole("dialog").waitFor();
+          await page
+            .getByText(/selected and persisted by the Third Railify authority/i)
+            .waitFor();
+          assert.equal(
+            writes,
+            writesBeforeOfficial + 1,
+            "an official draw performs exactly one authenticated write",
+          );
+          await page.getByRole("button", { name: "Close result" }).click();
+        }
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of editorMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`);
+        await page
+          .getByRole("heading", { level: 1, name: "Third Railify Demo Draw" })
+          .waitFor();
+        const editor = page.getByRole("dialog", {
+          name: /Edit Third Railify Demo Draw/i,
+        });
+        await editor.waitFor();
+        await page.getByLabel("Wheel title").waitFor();
+        const centring = await editor.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          return {
+            delta: Math.abs(box.left + box.width / 2 - window.innerWidth / 2),
+            inside:
+              box.left >= 0 &&
+              box.right <= window.innerWidth &&
+              box.top >= 0 &&
+              box.bottom <= window.innerHeight,
+          };
+        });
+        assert.ok(
+          centring.delta <= 2,
+          `editor is viewport-centred at ${viewport.width}px: ${JSON.stringify(centring)}`,
+        );
+        assert.equal(
+          centring.inside,
+          true,
+          `editor remains inside viewport at ${viewport.width}px`,
+        );
+        await assertSurfaceFits(editor, `editor ${viewport.width}`);
+        await assertSurfaceFits(
+          page.locator(".wheel-editor-dialog__body"),
+          `editor content ${viewport.width}`,
+        );
+        await assertContainedWheelDecorations(
+          page,
+          ".wheel-editor-dialog__preview",
+        );
+        assert.equal(
+          await page.locator(".wheel-control-page").count(),
+          1,
+          "wheel detail remains mounted beneath editor",
+        );
+        assert.equal(
+          await page.locator("canvas").count(),
+          2,
+          "one underlying wheel and one compact editor preview",
+        );
+        assert.equal(
+          await page
+            .getByRole("button", { name: "Save changes" })
+            .evaluate((node) => node.classList.contains("button--primary")),
+          true,
+        );
+        assert.equal(
+          await page
+            .getByRole("button", { name: "Discard" })
+            .evaluate((node) => node.classList.contains("button--secondary")),
+          true,
+        );
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/public-approved-editor-desktop.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390) {
+          await page.screenshot({
+            path: `${artifacts}/public-approved-editor-mobile-390.png`,
+            fullPage: false,
+          });
+          const writesBeforeSave = writes;
+          await page
+            .getByLabel("Wheel title")
+            .fill("Third Railify Demo Draw Revised");
+          await page
+            .getByRole("button", { name: "Close wheel editor" })
+            .click();
+          await page.getByText("Discard unsaved wheel changes?").waitFor();
+          await page.getByRole("button", { name: "Keep editing" }).click();
+          await page.getByRole("button", { name: "Save changes" }).click();
+          await page.getByText("Authoritative wheel revision saved.").waitFor();
+          assert.equal(writes, writesBeforeSave + 1);
+        }
+        await assertPage(page, viewport.width);
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of editorMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`);
+        const editor = page.getByRole("dialog", {
+          name: /Edit Third Railify Demo Draw/i,
+        });
+        await editor.waitFor();
+        await editor.getByRole("tab", { name: "appearance" }).click();
+        await editor
+          .getByRole("button", { name: "Customize appearance" })
+          .click();
+        const appearance = page.getByRole("dialog", {
+          name: /Tune the broadcast stage/i,
+        });
+        await appearance.waitFor();
+        await assertSurfaceFits(appearance, `appearance ${viewport.width}`);
+        await assertSurfaceFits(
+          page.locator(".appearance-dialog__body"),
+          `appearance content ${viewport.width}`,
+        );
+        await assertContainedWheelDecorations(page, ".appearance-preview");
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/appearance-desktop-1440.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/appearance-mobile-390.png`,
+            fullPage: false,
+          });
+        await page.getByRole("button", { name: "Discard" }).click();
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of participantMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+        await page.getByRole("button", { name: "Manage participants" }).click();
+        const participants = page.getByRole("dialog", {
+          name: "Manage participants",
+        });
+        await participants.waitFor();
+        await assertSurfaceFits(
+          participants,
+          `participant manager ${viewport.width}`,
+        );
+        await assertSurfaceFits(
+          page.locator(".participant-manager__body"),
+          `participant manager body ${viewport.width}`,
+        );
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/participant-manager-1440.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/participant-manager-mobile-390.png`,
+            fullPage: false,
+          });
+        await page
+          .getByRole("button", { name: "Close participant manager" })
+          .click();
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of transferMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`);
+        const editor = page.getByRole("dialog", {
+          name: /Edit Third Railify Demo Draw/i,
+        });
+        await editor.waitFor();
+        await editor.getByRole("button", { name: "Import / Export" }).click();
+        const transfer = page.getByRole("dialog", { name: "Import / Export" });
+        await transfer.waitFor();
+        await assertSurfaceFits(transfer, `import export ${viewport.width}`);
+        await assertSurfaceFits(
+          page.locator(".wheel-transfer-body"),
+          `import export body ${viewport.width}`,
+        );
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/import-export-1440.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/import-export-mobile-390.png`,
+            fullPage: false,
+          });
+        await page.getByRole("button", { name: "Return to editor" }).click();
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of editorMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/new`);
+        await page
+          .getByRole("heading", { level: 1, name: "Build a competition wheel" })
+          .waitFor();
+        const actions = page.locator(".wheel-editor-actions");
+        await actions.waitFor();
+        for (const [name, variant] of [
+          ["Import wheel", "button--secondary"],
+          ["Exit editor", "button--ghost"],
+          ["Discard", "button--secondary"],
+          ["Create wheel", "button--primary"],
+        ])
+          assert.equal(
+            await page
+              .getByRole(name === "Exit editor" ? "link" : "button", { name })
+              .evaluate(
+                (node, expected) => node.classList.contains(expected),
+                variant,
+              ),
+            true,
+            `${name} uses ${variant}`,
+          );
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/public-new-wheel-actions-desktop.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/public-new-wheel-actions-mobile-390.png`,
+            fullPage: false,
+          });
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  await withPage(
+    browser,
+    { width: 1440, height: 900 },
+    async (page) => {
+      await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+      await page.getByRole("button", { name: "Start demo spin" }).click();
+      await page.getByRole("dialog").waitFor({ timeout: 6000 });
+      assert.equal(
+        await page.locator(".winner-confetti i").count(),
+        CELEBRATION_PROFILES.normal.confettiCount,
+        "normal motion uses the centralized bounded normal particle tier",
+      );
+      assert.equal(await page.locator(".winner-fireworks").count(), 1);
+      assert.equal(await page.locator(".winner-lightshow__bloom").count(), 1);
+      assert.equal(await page.locator(".winner-lightshow b").count(), 2);
+      await page.waitForTimeout(900);
+      await page.screenshot({
+        path: `${artifacts}/public-demo-winner-motion-desktop.png`,
+        fullPage: false,
+      });
+      await page.getByRole("button", { name: "Close result" }).click();
+      assert.equal(
+        await page.locator(".winner-confetti i").count(),
+        0,
+        "closing the result cleans up particles",
+      );
+      assert.equal(
+        await page.locator(".winner-lightshow,.winner-fireworks").count(),
+        0,
+        "closing the result cleans up lights and fireworks",
+      );
+    },
+    () => {
+      writes += 1;
+    },
+    "no-preference",
+  );
+  for (const viewport of presentationMatrix)
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`);
+        await page
+          .getByRole("heading", { level: 1, name: /presentation/i })
+          .waitFor();
+        const exit = page.getByRole("link", { name: "Exit presentation mode" });
+        const fullscreen = page
+          .getByRole("button", { name: "Fullscreen" })
+          .first();
+        await exit.waitFor();
+        await page.getByText("POINTER TARGET").waitFor();
+        assert.equal(
+          await page.locator(".winner-confetti,.winner-lightshow").count(),
+          0,
+          "presentation is particle-free before a winner celebration",
+        );
+        await assertContainedWheelDecorations(page, ".wheel-control-stage");
+        const alignment = await page.evaluate(() => {
+          const controls = [
+            document.querySelector(".presentation-bar>a"),
+            document.querySelector(".presentation-bar>button"),
+          ];
+          return controls.map((control) => {
+            const icon = control.querySelector("svg").getBoundingClientRect();
+            const label = control.querySelector("span").getBoundingClientRect();
+            return Math.abs(
+              icon.top + icon.height / 2 - (label.top + label.height / 2),
+            );
+          });
+        });
+        assert.ok(
+          alignment.every((delta) => delta < 2),
+          `presentation icon/label centres align: ${alignment}`,
+        );
+        await fullscreen.waitFor();
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1920)
+          await page.screenshot({
+            path: `${artifacts}/public-presentation-desktop.png`,
+            fullPage: true,
+          });
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  await writeFile(
+    `${artifacts}/v15-overflow-measurements.json`,
+    `${JSON.stringify(overflowMeasurements, null, 2)}\n`,
+  );
 });
 
 test("Wheels reserve visual-effect clearance and expose the expanded palette library", async (t) => {
-  const artifacts = fileURLToPath(new URL("../.artifacts/wheels-v1/", import.meta.url)); await mkdir(artifacts, { recursive: true });
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4178"], { stdio: "ignore" }); t.after(() => server.kill()); await waitForPreview();
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close()); let writes = 0;
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) await withPage(browser, viewport, async (page) => {
-    await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`); const editor = page.getByRole("dialog", { name: /Edit Third Railify Demo Draw/i }); await editor.waitFor();
-    const preview = editor.locator(".wheel-editor-dialog__preview"); await assertVerticalClearance(preview.locator("h3"), preview.locator(".wheel-stage"), 23, `editor title to wheel ${viewport.width}`); await assertVerticalClearance(preview.locator(".wheel-stage"), preview.locator("dl"), 29, `editor wheel to stats ${viewport.width}`);
-    if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/wheel-spacing-editor-1440.png`, fullPage: false }); if (viewport.width === 390) await page.screenshot({ path: `${artifacts}/wheel-spacing-editor-390.png`, fullPage: false });
-    await editor.getByRole("tab", { name: "appearance" }).click(); await editor.getByRole("button", { name: "Customize appearance" }).click(); const appearance = page.getByRole("dialog", { name: /Tune the broadcast stage/i }); await appearance.waitFor(); const appearancePreview = appearance.locator(".appearance-preview");
-    await assertVerticalClearance(appearancePreview.locator(".wheel-stage"), appearancePreview.locator("p"), 29, `appearance wheel to help ${viewport.width}`); assert.equal(await appearance.locator(".palette-grid button").count(), 26, "Appearance exposes all curated palettes");
-    if (viewport.width === 1440) { const triTone = appearance.getByRole("button", { name: /Red \/ Charcoal \/ Gold/i }); await triTone.click(); assert.equal(await triTone.getAttribute("aria-pressed"), "true"); assert.equal(await triTone.locator("i span").count(), 3); await page.screenshot({ path: `${artifacts}/wheel-spacing-palettes-1440.png`, fullPage: false }); } else await page.screenshot({ path: `${artifacts}/wheel-spacing-appearance-390.png`, fullPage: false });
-    await assertSurfaceFits(appearance, `spacing appearance ${viewport.width}`); await appearance.getByRole("button", { name: "Discard" }).click();
-  }, () => { writes += 1; });
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) await withPage(browser, viewport, async (page) => {
-    await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`); await page.getByRole("heading", { level: 1, name: "Third Railify Demo Draw" }).waitFor(); await assertVerticalClearance(page.locator(".wheel-control-stage .wheel-stage"), page.locator(".wheel-spin-console"), 23, `wheel detail to controls ${viewport.width}`); await assertPage(page, viewport.width); if (viewport.width === 1440) await page.screenshot({ path: `${artifacts}/wheel-spacing-detail-1440.png`, fullPage: true });
-  }, () => { writes += 1; });
-  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }, { width: 390, height: 844 }]) await withPage(browser, viewport, async (page) => {
-    await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`); await page.getByRole("heading", { level: 1, name: /presentation/i }).waitFor(); await assertVerticalClearance(page.locator(".wheel-control-stage .wheel-stage"), page.locator(".wheel-spin-console"), 23, `presentation wheel to controls ${viewport.width}`); await assertPage(page, viewport.width); if (viewport.width === 1280) await page.screenshot({ path: `${artifacts}/wheel-spacing-presentation-1280x720.png`, fullPage: true });
-  }, () => { writes += 1; });
+  const artifacts = fileURLToPath(
+    new URL("../.artifacts/wheels-v1/", import.meta.url),
+  );
+  await mkdir(artifacts, { recursive: true });
+  const server = spawn(
+    process.execPath,
+    [
+      "node_modules/vite/bin/vite.js",
+      "preview",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "4178",
+    ],
+    { stdio: "ignore" },
+  );
+  t.after(() => server.kill());
+  await waitForPreview();
+  const browser = await chromium.launch({
+    executablePath: CHROME,
+    headless: true,
+  });
+  t.after(() => browser.close());
+  let writes = 0;
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ])
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/edit`);
+        const editor = page.getByRole("dialog", {
+          name: /Edit Third Railify Demo Draw/i,
+        });
+        await editor.waitFor();
+        const preview = editor.locator(".wheel-editor-dialog__preview");
+        await assertVerticalClearance(
+          preview.locator("h3"),
+          preview.locator(".wheel-stage"),
+          23,
+          `editor title to wheel ${viewport.width}`,
+        );
+        await assertVerticalClearance(
+          preview.locator(".wheel-stage"),
+          preview.locator("dl"),
+          29,
+          `editor wheel to stats ${viewport.width}`,
+        );
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-editor-1440.png`,
+            fullPage: false,
+          });
+        if (viewport.width === 390)
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-editor-390.png`,
+            fullPage: false,
+          });
+        await editor.getByRole("tab", { name: "appearance" }).click();
+        await editor
+          .getByRole("button", { name: "Customize appearance" })
+          .click();
+        const appearance = page.getByRole("dialog", {
+          name: /Tune the broadcast stage/i,
+        });
+        await appearance.waitFor();
+        const appearancePreview = appearance.locator(".appearance-preview");
+        if (viewport.width > 820) await assertVerticalClearance(appearancePreview.locator(".wheel-stage"), appearancePreview.locator("p"), 29, `appearance wheel to help ${viewport.width}`);
+        else {
+          const [wheelBox, helpBox] = await Promise.all([appearancePreview.locator(".wheel-stage").boundingBox(), appearancePreview.locator("p").boundingBox()]);
+          assert.ok(wheelBox && helpBox && wheelBox.x + wheelBox.width <= helpBox.x + 1, `compact appearance preview columns do not overlap at ${viewport.width}: ${JSON.stringify({ wheelBox, helpBox })}`);
+        }
+        assert.equal(
+          await appearance.locator(".palette-grid button").count(),
+          26,
+          "Appearance exposes all curated palettes",
+        );
+        if (viewport.width === 1440) {
+          const triTone = appearance.getByRole("button", {
+            name: /Red \/ Charcoal \/ Gold/i,
+          });
+          await triTone.click();
+          assert.equal(await triTone.getAttribute("aria-pressed"), "true");
+          assert.equal(await triTone.locator("i span").count(), 3);
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-palettes-1440.png`,
+            fullPage: false,
+          });
+        } else
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-appearance-390.png`,
+            fullPage: false,
+          });
+        await assertSurfaceFits(
+          appearance,
+          `spacing appearance ${viewport.width}`,
+        );
+        await appearance.getByRole("button", { name: "Discard" }).click();
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 390, height: 844 },
+  ])
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
+        await page
+          .getByRole("heading", { level: 1, name: "Third Railify Demo Draw" })
+          .waitFor();
+        await assertVerticalClearance(
+          page.locator(".wheel-control-stage .wheel-stage"),
+          page.locator(".wheel-spin-console"),
+          23,
+          `wheel detail to controls ${viewport.width}`,
+        );
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1440)
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-detail-1440.png`,
+            fullPage: true,
+          });
+      },
+      () => {
+        writes += 1;
+      },
+    );
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 1280, height: 720 },
+    { width: 390, height: 844 },
+  ])
+    await withPage(
+      browser,
+      viewport,
+      async (page) => {
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw/present`);
+        await page
+          .getByRole("heading", { level: 1, name: /presentation/i })
+          .waitFor();
+        await assertVerticalClearance(
+          page.locator(".wheel-control-stage .wheel-stage"),
+          page.locator(".wheel-spin-console"),
+          23,
+          `presentation wheel to controls ${viewport.width}`,
+        );
+        await assertPage(page, viewport.width);
+        if (viewport.width === 1280)
+          await page.screenshot({
+            path: `${artifacts}/wheel-spacing-presentation-1280x720.png`,
+            fullPage: true,
+          });
+      },
+      () => {
+        writes += 1;
+      },
+    );
   assert.equal(writes, 0, "spacing and palette previews perform no API writes");
 });
 
-async function withPage(browser, viewport, action, onWrite, reducedMotion = "reduce") { const context = await browser.newContext({ viewport, reducedMotion }); await addConsent(context); const page = await context.newPage(); const errors = []; page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); }); page.on("pageerror", (error) => errors.push(error.message)); await page.route("**/api/**", async (route) => respond(route, onWrite)); try { await action(page); assert.deepEqual(errors, []); } finally { await context.close(); } }
-async function withDelayedWheelPage(browser, action, onWrite) { const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" }); await addConsent(context); const page = await context.newPage(); const errors = []; page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); }); page.on("pageerror", (error) => errors.push(error.message)); await page.route("**/api/**", async (route) => { if (new URL(route.request().url()).pathname === "/api/wheels/third-railify-demo-draw") await new Promise((resolve) => setTimeout(resolve, 1200)); await respond(route, onWrite); }); try { await action(page); assert.deepEqual(errors, []); } finally { await context.close(); } }
-async function withUnauthorizedPage(browser, action, onWrite) { const context = await browser.newContext({ viewport: { width: 1024, height: 768 }, reducedMotion: "reduce" }); await addConsent(context); const page = await context.newPage(); const errors = []; page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); }); page.on("pageerror", (error) => errors.push(error.message)); await page.route("**/api/**", async (route) => { const path = new URL(route.request().url()).pathname; if (path === "/api/wheels/third-railify-demo-draw") { const payload = wheelPayload(); payload.access = { role: null, isMasterAdmin: false, canEdit: false, canSpinOfficially: false, editingLocked: false, officialSpinLocked: false }; return json(route, payload); } await respond(route, onWrite); }); try { await action(page); assert.deepEqual(errors, []); } finally { await context.close(); } }
-async function addConsent(context) { const now = Date.now(); await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date(now).toISOString(), expiry: new Date(now + 2_592_000_000).toISOString(), categories: { preferences: false, externalMedia: false } })), domain: "127.0.0.1", path: "/" }]); }
+async function withPage(
+  browser,
+  viewport,
+  action,
+  onWrite,
+  reducedMotion = "reduce",
+) {
+  const context = await browser.newContext({ viewport, reducedMotion });
+  await addConsent(context);
+  const page = await context.newPage();
+  const errors = [];
+  page.on("console", (entry) => {
+    if (entry.type() === "error") errors.push(entry.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/**", async (route) => respond(route, onWrite));
+  try {
+    await action(page);
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+  }
+}
+async function withDelayedWheelPage(browser, action, onWrite) {
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    reducedMotion: "reduce",
+  });
+  await addConsent(context);
+  const page = await context.newPage();
+  const errors = [];
+  page.on("console", (entry) => {
+    if (entry.type() === "error") errors.push(entry.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/**", async (route) => {
+    if (
+      new URL(route.request().url()).pathname ===
+      "/api/wheels/third-railify-demo-draw"
+    )
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+    await respond(route, onWrite);
+  });
+  try {
+    await action(page);
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+  }
+}
+async function withUnauthorizedPage(browser, action, onWrite) {
+  const context = await browser.newContext({
+    viewport: { width: 1024, height: 768 },
+    reducedMotion: "reduce",
+  });
+  await addConsent(context);
+  const page = await context.newPage();
+  const errors = [];
+  page.on("console", (entry) => {
+    if (entry.type() === "error") errors.push(entry.text());
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/**", async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === "/api/wheels/third-railify-demo-draw") {
+      const payload = wheelPayload();
+      payload.access = {
+        role: null,
+        isMasterAdmin: false,
+        canEdit: false,
+        canSpinOfficially: false,
+        editingLocked: false,
+        officialSpinLocked: false,
+      };
+      return json(route, payload);
+    }
+    await respond(route, onWrite);
+  });
+  try {
+    await action(page);
+    assert.deepEqual(errors, []);
+  } finally {
+    await context.close();
+  }
+}
+async function addConsent(context) {
+  const now = Date.now();
+  await context.addCookies([
+    {
+      name: "thirdrailify_consent",
+      value: encodeURIComponent(
+        JSON.stringify({
+          version: 1,
+          timestamp: new Date(now).toISOString(),
+          expiry: new Date(now + 2_592_000_000).toISOString(),
+          categories: { preferences: false, externalMedia: false },
+        }),
+      ),
+      domain: "127.0.0.1",
+      path: "/",
+    },
+  ]);
+}
 
-async function respond(route, onWrite) { const url = new URL(route.request().url()); const method = route.request().method(); if (method !== "GET") onWrite(); if (url.pathname === "/api/auth/config") return json(route, authConfig()); if (url.pathname === "/api/auth/session") return json(route, session()); if (url.pathname === "/api/wheels/access") return json(route, { ok: true, authenticated: true, canCreate: true, isMasterAdmin: false, maximumOwnedWheels: 20 }); if (url.pathname === "/api/wheels") { if (method === "POST") return json(route, wheelPayload()); return json(route, { ok: true, items: [summary()], count: 1 }); } if (url.pathname === "/api/wheels/third-railify-demo-draw/spins" && method === "POST") return json(route, { ok: true, spin: { id: "spin-fixture", winningEntryId: "10000000-0000-4000-8000-000000000003", winningLabel: "Demo GOAT 03", createdAt: "2026-08-29T00:00:00.000Z" }, idempotent: false }); if (url.pathname === "/api/wheels/third-railify-demo-draw") { if (method === "PUT") { const body = JSON.parse(route.request().postData() || "{}"); return json(route, wheelPayload({ title: body.title, revision: 8 })); } return json(route, wheelPayload()); } return json(route, { ok: true }); }
-function summary() { return { slug: "third-railify-demo-draw", title: "Third Railify Demo Draw", description: "Synthetic browser fixture", participantCount: 8, weighted: true, themePreset: "third-rail-gold", palette: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"], demoEnabled: true, officialEnabled: true, latestOfficialAt: null }; }
-function wheelPayload(overrides = {}) { const entries = Array.from({ length: 8 }, (_, index) => ({ id: `10000000-0000-4000-8000-00000000000${index + 1}`, label: `Demo GOAT 0${index + 1}`, order: index, weight: index === 2 ? 2 : 1, colour: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"][index % 4], state: "active" })); return { ok: true, wheel: { slug: "third-railify-demo-draw", title: "Third Railify Demo Draw", description: "Synthetic browser fixture", lifecycle: "active", visibility: "public", participantCount: 8, weighted: true, entries, config: { themePreset: "third-rail-gold", palette: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"], pointerAccent: "#F3C928", centreTreatment: "bolt", backgroundIntensity: "high", labelContrast: "light", spinDurationMs: 2000, tickingSoundEnabled: false, winnerSoundEnabled: false, celebrationIntensity: "full", winnerMessageTemplate: "Signal locked: {winner}", publicHistoryVisible: true }, demoEnabled: true, officialEnabled: true, latestOfficialResult: null, recentOfficialResults: [], revision: overrides.revision || 7, ...overrides }, access: { role: "editor", isMasterAdmin: false, canEdit: true, canSpinOfficially: true, editingLocked: false, officialSpinLocked: false, revision: overrides.revision || 7 } }; }
-function authConfig() { return { configured: true, emailSignupConfigured: true, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: "https://thirdrailify-admin.pages.dev", environment: "test", cookieMode: "host-only" }; }
-function session() { return { ok: true, authenticated: true, csrfToken: "wheel-browser-csrf", access: { isAdmin: false, isMasterAdmin: false }, account: { id: "creator", email: "creator@example.test", displayName: "Approved Creator", username: null, avatarUrl: null, providers: ["email"], role: "user", adminLevel: "none", status: "active", emailVerified: true, createdAt: "2026-08-29T00:00:00.000Z", lastLoginAt: null, source: "test" } }; }
-async function assertPage(page, width) { assert.equal(await page.locator("h1").count(), 1, `${width}px has one H1`); const layout = await page.evaluate(() => ({ fits: document.documentElement.scrollWidth <= document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth, offenders: [...document.querySelectorAll("*")].filter((element) => { const box = element.getBoundingClientRect(); return box.right > document.documentElement.clientWidth + 1 || box.left < -1; }).slice(0, 8).map((element) => ({ tag: element.tagName, className: element.className, box: element.getBoundingClientRect().toJSON() })) })); assert.equal(layout.fits, true, `${width}px has no horizontal overflow: ${JSON.stringify(layout)}`); }
-async function assertSurfaceFits(locator, label) { const layout = await locator.evaluate((node) => { const bounds = node.getBoundingClientRect(); const tolerance = 1.5; const offenders = [...node.querySelectorAll(":scope > *, :scope > * > *")].filter((child) => { const box = child.getBoundingClientRect(); return box.width > 0 && (box.left < bounds.left - tolerance || box.right > bounds.right + tolerance); }).slice(0, 8).map((child) => ({ tag: child.tagName, className: String(child.className), box: child.getBoundingClientRect().toJSON() })); return { scrollWidth: node.scrollWidth, clientWidth: node.clientWidth, scrollHeight: node.scrollHeight, clientHeight: node.clientHeight, overflowX: getComputedStyle(node).overflowX, bounds: bounds.toJSON(), offenders }; }); overflowMeasurements.push({ label, scrollWidth: layout.scrollWidth, clientWidth: layout.clientWidth, horizontalDelta: layout.scrollWidth - layout.clientWidth, scrollHeight: layout.scrollHeight, clientHeight: layout.clientHeight, overflowX: layout.overflowX }); assert.ok(layout.scrollWidth <= layout.clientWidth + 1, `${label} has no horizontal scroll range: ${JSON.stringify(layout)}`); assert.deepEqual(layout.offenders, [], `${label} has no direct child outside its bounds: ${JSON.stringify(layout)}`); }
-async function assertContainedWheelDecorations(page, parentSelector) { const result = await page.locator(parentSelector).evaluate((parent) => { const rims = [...parent.querySelectorAll(".wheel-stage__rim--outer")]; return rims.map((rim) => { const bounds = rim.getBoundingClientRect(); const markers = [...rim.querySelectorAll("i")].map((marker) => { const box = marker.getBoundingClientRect(); return { visible: getComputedStyle(marker).display !== "none", left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width, height: box.height }; }); const visible = markers.filter((marker) => marker.visible); return { bounds: bounds.toJSON(), markerCount: markers.length, visibleCount: visible.length, overflow: getComputedStyle(rim).overflow, contained: visible.every((box) => box.left >= bounds.left - 1 && box.right <= bounds.right + 1 && box.top >= bounds.top - 1 && box.bottom <= bounds.bottom + 1) }; }); }); assert.ok(result.length > 0, `${parentSelector} contains a wheel rim`); for (const rim of result) { assert.equal(rim.markerCount, 12); assert.match(rim.overflow, /clip|hidden/); assert.equal(rim.contained, true, `${parentSelector} visible markers stay in the clipped rim: ${JSON.stringify(rim)}`); } }
-async function assertVerticalClearance(upper, lower, minimum, label) { const [upperBox, lowerBox] = await Promise.all([upper.boundingBox(), lower.boundingBox()]); assert.ok(upperBox && lowerBox, `${label} elements are rendered`); const gap = lowerBox.y - (upperBox.y + upperBox.height); overflowMeasurements.push({ label, verticalClearance: gap }); assert.ok(gap >= minimum, `${label} reserves at least ${minimum}px for painted effects (actual ${gap}px)`); if (label.startsWith("presentation ")) { const viewport = await upper.page().evaluate(() => { const surface = document.querySelector(".wheel-control-page--presentation")?.getBoundingClientRect(); const consoleBox = document.querySelector(".wheel-spin-console")?.getBoundingClientRect(); return { innerHeight: window.innerHeight, surface: surface?.toJSON(), console: consoleBox?.toJSON(), htmlOverflowY: getComputedStyle(document.documentElement).overflowY, bodyOverflowY: getComputedStyle(document.body).overflowY }; }); assert.ok(viewport.surface && viewport.surface.top >= -1 && viewport.surface.bottom <= viewport.innerHeight + 1, `${label} surface fits the viewport: ${JSON.stringify(viewport)}`); assert.ok(viewport.console && viewport.console.bottom <= viewport.innerHeight + 1, `${label} console remains visible: ${JSON.stringify(viewport)}`); assert.match(`${viewport.htmlOverflowY} ${viewport.bodyOverflowY}`, /hidden/, `${label} disables surrounding page scroll`); } }
-function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }
-async function waitForPreview() { for (let attempt = 0; attempt < 60; attempt += 1) { try { if ((await fetch(ORIGIN)).ok) return; } catch { /* starting */ } await new Promise((resolve) => setTimeout(resolve, 100)); } throw new Error("Public preview did not start."); }
+async function respond(route, onWrite) {
+  const url = new URL(route.request().url());
+  const method = route.request().method();
+  if (method !== "GET") onWrite();
+  if (url.pathname === "/api/auth/config") return json(route, authConfig());
+  if (url.pathname === "/api/auth/session") return json(route, session());
+  if (url.pathname === "/api/wheels/access")
+    return json(route, {
+      ok: true,
+      authenticated: true,
+      canCreate: true,
+      isMasterAdmin: false,
+      maximumOwnedWheels: 20,
+    });
+  if (url.pathname === "/api/wheels") {
+    if (method === "POST") return json(route, wheelPayload());
+    return json(route, { ok: true, items: [summary()], count: 1 });
+  }
+  if (
+    url.pathname === "/api/wheels/third-railify-demo-draw/spins" &&
+    method === "POST"
+  )
+    return json(route, {
+      ok: true,
+      spin: {
+        id: "spin-fixture",
+        winningEntryId: "10000000-0000-4000-8000-000000000003",
+        winningLabel: "Demo GOAT 03",
+        createdAt: "2026-08-29T00:00:00.000Z",
+      },
+      idempotent: false,
+    });
+  if (url.pathname === "/api/wheels/third-railify-demo-draw") {
+    if (method === "PUT") {
+      const body = JSON.parse(route.request().postData() || "{}");
+      return json(route, wheelPayload({ title: body.title, revision: 8 }));
+    }
+    return json(route, wheelPayload());
+  }
+  return json(route, { ok: true });
+}
+function summary() {
+  return {
+    slug: "third-railify-demo-draw",
+    title: "Third Railify Demo Draw",
+    description: "Synthetic browser fixture",
+    participantCount: 8,
+    weighted: true,
+    themePreset: "third-rail-gold",
+    palette: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"],
+    demoEnabled: true,
+    officialEnabled: true,
+    latestOfficialAt: null,
+  };
+}
+function wheelPayload(overrides = {}) {
+  const entries = Array.from({ length: 8 }, (_, index) => ({
+    id: `10000000-0000-4000-8000-00000000000${index + 1}`,
+    label: `Demo GOAT 0${index + 1}`,
+    order: index,
+    weight: index === 2 ? 2 : 1,
+    colour: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"][index % 4],
+    state: "active",
+  }));
+  return {
+    ok: true,
+    wheel: {
+      slug: "third-railify-demo-draw",
+      title: "Third Railify Demo Draw",
+      description: "Synthetic browser fixture",
+      lifecycle: "active",
+      visibility: "public",
+      participantCount: 8,
+      weighted: true,
+      entries,
+      config: {
+        themePreset: "third-rail-gold",
+        palette: ["#F3C928", "#B8182F", "#F3F0E5", "#5B2C83"],
+        pointerAccent: "#F3C928",
+        centreTreatment: "bolt",
+        backgroundIntensity: "high",
+        labelContrast: "light",
+        spinDurationMs: 2000,
+        tickingSoundEnabled: false,
+        winnerSoundEnabled: false,
+        celebrationIntensity: "full",
+        winnerMessageTemplate: "Signal locked: {winner}",
+        publicHistoryVisible: true,
+      },
+      demoEnabled: true,
+      officialEnabled: true,
+      latestOfficialResult: null,
+      recentOfficialResults: [],
+      revision: overrides.revision || 7,
+      ...overrides,
+    },
+    access: {
+      role: "editor",
+      isMasterAdmin: false,
+      canEdit: true,
+      canSpinOfficially: true,
+      editingLocked: false,
+      officialSpinLocked: false,
+      revision: overrides.revision || 7,
+    },
+  };
+}
+function authConfig() {
+  return {
+    configured: true,
+    emailSignupConfigured: true,
+    turnstileSiteKey: null,
+    oauthProviders: [],
+    oauthProviderStates: [],
+    publicOrigin: ORIGIN,
+    adminOrigin: "https://thirdrailify-admin.pages.dev",
+    environment: "test",
+    cookieMode: "host-only",
+  };
+}
+function session() {
+  return {
+    ok: true,
+    authenticated: true,
+    csrfToken: "wheel-browser-csrf",
+    access: { isAdmin: false, isMasterAdmin: false },
+    account: {
+      id: "creator",
+      email: "creator@example.test",
+      displayName: "Approved Creator",
+      username: null,
+      avatarUrl: null,
+      providers: ["email"],
+      role: "user",
+      adminLevel: "none",
+      status: "active",
+      emailVerified: true,
+      createdAt: "2026-08-29T00:00:00.000Z",
+      lastLoginAt: null,
+      source: "test",
+    },
+  };
+}
+async function assertPage(page, width) {
+  assert.equal(await page.locator("h1").count(), 1, `${width}px has one H1`);
+  const layout = await page.evaluate(() => ({
+    fits:
+      document.documentElement.scrollWidth <=
+      document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+    offenders: [...document.querySelectorAll("*")]
+      .filter((element) => {
+        const box = element.getBoundingClientRect();
+        return (
+          box.right > document.documentElement.clientWidth + 1 || box.left < -1
+        );
+      })
+      .slice(0, 8)
+      .map((element) => ({
+        tag: element.tagName,
+        className: element.className,
+        box: element.getBoundingClientRect().toJSON(),
+      })),
+  }));
+  assert.equal(
+    layout.fits,
+    true,
+    `${width}px has no horizontal overflow: ${JSON.stringify(layout)}`,
+  );
+}
+async function assertSurfaceFits(locator, label) {
+  const layout = await locator.evaluate((node) => {
+    const bounds = node.getBoundingClientRect();
+    const tolerance = 1.5;
+    const offenders = [...node.querySelectorAll(":scope > *, :scope > * > *")]
+      .filter((child) => {
+        const box = child.getBoundingClientRect();
+        return (
+          box.width > 0 &&
+          (box.left < bounds.left - tolerance ||
+            box.right > bounds.right + tolerance)
+        );
+      })
+      .slice(0, 8)
+      .map((child) => ({
+        tag: child.tagName,
+        className: String(child.className),
+        box: child.getBoundingClientRect().toJSON(),
+      }));
+    return {
+      scrollWidth: node.scrollWidth,
+      clientWidth: node.clientWidth,
+      scrollHeight: node.scrollHeight,
+      clientHeight: node.clientHeight,
+      overflowX: getComputedStyle(node).overflowX,
+      bounds: bounds.toJSON(),
+      offenders,
+    };
+  });
+  overflowMeasurements.push({
+    label,
+    scrollWidth: layout.scrollWidth,
+    clientWidth: layout.clientWidth,
+    horizontalDelta: layout.scrollWidth - layout.clientWidth,
+    scrollHeight: layout.scrollHeight,
+    clientHeight: layout.clientHeight,
+    overflowX: layout.overflowX,
+  });
+  assert.ok(
+    layout.scrollWidth <= layout.clientWidth + 1,
+    `${label} has no horizontal scroll range: ${JSON.stringify(layout)}`,
+  );
+  assert.deepEqual(
+    layout.offenders,
+    [],
+    `${label} has no direct child outside its bounds: ${JSON.stringify(layout)}`,
+  );
+}
+async function assertContainedWheelDecorations(page, parentSelector) {
+  const result = await page.locator(parentSelector).evaluate((parent) => {
+    const rims = [...parent.querySelectorAll(".wheel-stage__rim--outer")];
+    return rims.map((rim) => {
+      const bounds = rim.getBoundingClientRect();
+      const markers = [...rim.querySelectorAll("i")].map((marker) => {
+        const box = marker.getBoundingClientRect();
+        return {
+          visible: getComputedStyle(marker).display !== "none",
+          left: box.left,
+          right: box.right,
+          top: box.top,
+          bottom: box.bottom,
+          width: box.width,
+          height: box.height,
+        };
+      });
+      const visible = markers.filter((marker) => marker.visible);
+      return {
+        bounds: bounds.toJSON(),
+        markerCount: markers.length,
+        visibleCount: visible.length,
+        overflow: getComputedStyle(rim).overflow,
+        contained: visible.every(
+          (box) =>
+            box.left >= bounds.left - 1 &&
+            box.right <= bounds.right + 1 &&
+            box.top >= bounds.top - 1 &&
+            box.bottom <= bounds.bottom + 1,
+        ),
+      };
+    });
+  });
+  assert.ok(result.length > 0, `${parentSelector} contains a wheel rim`);
+  for (const rim of result) {
+    assert.equal(rim.markerCount, 12);
+    assert.match(rim.overflow, /clip|hidden/);
+    assert.equal(
+      rim.contained,
+      true,
+      `${parentSelector} visible markers stay in the clipped rim: ${JSON.stringify(rim)}`,
+    );
+  }
+}
+async function assertVerticalClearance(upper, lower, minimum, label) {
+  const [upperBox, lowerBox] = await Promise.all([
+    upper.boundingBox(),
+    lower.boundingBox(),
+  ]);
+  assert.ok(upperBox && lowerBox, `${label} elements are rendered`);
+  const gap = lowerBox.y - (upperBox.y + upperBox.height);
+  overflowMeasurements.push({ label, verticalClearance: gap });
+  assert.ok(
+    gap >= minimum,
+    `${label} reserves at least ${minimum}px for painted effects (actual ${gap}px)`,
+  );
+  if (label.startsWith("presentation ")) {
+    const viewport = await upper.page().evaluate(() => {
+      const surface = document
+        .querySelector(".wheel-control-page--presentation")
+        ?.getBoundingClientRect();
+      const consoleBox = document
+        .querySelector(".wheel-spin-console")
+        ?.getBoundingClientRect();
+      return {
+        innerHeight: window.innerHeight,
+        surface: surface?.toJSON(),
+        console: consoleBox?.toJSON(),
+        htmlOverflowY: getComputedStyle(document.documentElement).overflowY,
+        bodyOverflowY: getComputedStyle(document.body).overflowY,
+      };
+    });
+    assert.ok(
+      viewport.surface &&
+        viewport.surface.top >= -1 &&
+        viewport.surface.bottom <= viewport.innerHeight + 1,
+      `${label} surface fits the viewport: ${JSON.stringify(viewport)}`,
+    );
+    assert.ok(
+      viewport.console && viewport.console.bottom <= viewport.innerHeight + 1,
+      `${label} console remains visible: ${JSON.stringify(viewport)}`,
+    );
+    assert.match(
+      `${viewport.htmlOverflowY} ${viewport.bodyOverflowY}`,
+      /hidden/,
+      `${label} disables surrounding page scroll`,
+    );
+  }
+}
+function json(route, body, status = 200) {
+  return route.fulfill({
+    status,
+    contentType: "application/json",
+    body: JSON.stringify(body),
+  });
+}
+async function waitForPreview() {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      if ((await fetch(ORIGIN)).ok) return;
+    } catch {
+      /* starting */
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+  throw new Error("Public preview did not start.");
+}

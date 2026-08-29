@@ -3,6 +3,8 @@ import test from "node:test";
 
 import { chromium } from "playwright-core";
 
+import { CELEBRATION_PROFILES } from "../src/wheels/celebrationProfiles.mjs";
+
 const ORIGIN = process.env.WHEELS_DEPLOY_ORIGIN;
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const SLUG = "third-railify-demo-draw";
@@ -21,7 +23,7 @@ test("deployed Wheels V1.4 exposes the polished landing and finite demo celebrat
   const wheelResponse = await context.request.get(`${ORIGIN}/api/wheels/${SLUG}`);
   assert.equal(wheelResponse.ok(), true);
   const wheelPayload = await wheelResponse.json();
-  const expectedParticles = wheelPayload.wheel.config.celebrationIntensity === "strong" ? 148 : wheelPayload.wheel.config.celebrationIntensity === "normal" ? 96 : 44;
+  const expectedParticles = CELEBRATION_PROFILES[wheelPayload.wheel.config.celebrationIntensity].confettiCount;
 
   await page.goto(`${ORIGIN}/wheels`, { waitUntil: "networkidle" });
   const build = page.locator(".wheels-hero__actions .button--primary");

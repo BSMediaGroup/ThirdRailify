@@ -23,7 +23,7 @@ An ordinary `.json` export contains exactly the same canonical document. File ex
   "wheel": {
     "title": "Example draw",
     "description": "Portable creator content",
-    "settings": { "themePreset": "third-rail-gold", "palette": ["#F3C928", "#B8182F"], "pointerAccent": "#F3C928", "centreTreatment": "bolt", "backgroundIntensity": "high", "labelContrast": "light", "spinDurationMs": 6500, "tickingSoundEnabled": true, "winnerSoundEnabled": true, "celebrationEnabled": true, "confettiEnabled": true, "winnerLightingEnabled": true, "celebrationIntensity": "normal", "backgroundEnabled": true, "backgroundFocalX": 50, "backgroundFocalY": 50, "backgroundImageOpacity": 72, "backgroundOverlayIntensity": 58, "winnerMessageTemplate": "Signal locked: {winner}", "publicHistoryVisible": true },
+    "settings": { "themePreset": "third-rail-gold", "palette": ["#F3C928", "#B8182F"], "pointerAccent": "#F3C928", "centreTreatment": "bolt", "backgroundIntensity": "high", "labelContrast": "light", "spinDurationMs": 6500, "tickingSoundEnabled": true, "winnerSoundEnabled": true, "celebrationEnabled": true, "confettiEnabled": true, "fireworksEnabled": true, "winnerLightingEnabled": true, "celebrationIntensity": "normal", "backgroundEnabled": true, "backgroundFocalX": 50, "backgroundFocalY": 50, "backgroundImageOpacity": 72, "backgroundOverlayIntensity": 58, "winnerMessageTemplate": "Signal locked: {winner}", "publicHistoryVisible": true },
     "entries": [{ "label": "Alice", "weight": 1, "color": "#F3C928", "active": true, "order": 0 }],
     "media": { "background": null, "center": null }
   },
@@ -34,6 +34,8 @@ An ordinary `.json` export contains exactly the same canonical document. File ex
 The digest is SHA-256 over the deterministically key-sorted, normalized `wheel` value. It detects accidental corruption or modification; it is not a signature and does not authenticate the author. Imports reject a present mismatched digest and clearly distinguish a verified digest from an absent one.
 
 Entries have portable identity only: order, label, weight, colour and active state. Exports never contain authoritative entry IDs. Imports mint fresh browser-local IDs, and the Admin service remains free to mint or validate final IDs on Save.
+
+V1.7 remains `formatVersion: 1`. A custom palette is represented without a parallel model as `themePreset: "custom"`, a `palette` of 1–5 strict six-digit hex colours, and the existing independent `pointerAccent`. Explicit entrant colours preserve the applied cycle and later manual edits. `fireworksEnabled` is an optional backward-compatible setting: current exports include it, while older V1 files that omit it normalize to the enabled default. Named/legacy palettes retain their existing 2–12 import bound so older supported files and Wheel of Names conversion remain compatible.
 
 ## Authority deliberately excluded
 

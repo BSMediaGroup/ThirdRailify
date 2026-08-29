@@ -14,7 +14,7 @@ import { embeddedMediaBlob, type PortableMediaSet } from "../wheels/portable.mjs
 import { BackIcon, ImportIcon, PaletteIcon, TrashIcon } from "../components/Icons";
 import "../styles/wheels.css";
 
-const PRESETS: Record<WheelConfig["themePreset"], Pick<WheelConfig, "palette" | "pointerAccent">> = {
+const PRESETS: Record<Exclude<WheelConfig["themePreset"], "custom">, Pick<WheelConfig, "palette" | "pointerAccent">> = {
   "third-rail-gold": { palette: ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"], pointerAccent: "#F3C928" },
   "live-wire-red": { palette: ["#B8182F", "#F05A47", "#F3C928", "#211115"], pointerAccent: "#F05A47" },
   "gina-violet": { palette: ["#6D3A93", "#A965C7", "#F3C928", "#24162D"], pointerAccent: "#C98BE5" },
@@ -22,7 +22,7 @@ const PRESETS: Record<WheelConfig["themePreset"], Pick<WheelConfig, "palette" | 
   "signal-teal": { palette: ["#27C9B8", "#0D6F73", "#F3C928", "#172725"], pointerAccent: "#5FE5D5" },
   "after-hours": { palette: ["#D6A521", "#70452D", "#9B1B36", "#16110F"], pointerAccent: "#FFD65B" },
 };
-const DEFAULT_CONFIG: WheelConfig = { themePreset: "third-rail-gold", ...PRESETS["third-rail-gold"], centreTreatment: "bolt", backgroundIntensity: "high", labelContrast: "light", spinDurationMs: 6500, tickingSoundEnabled: true, winnerSoundEnabled: true, celebrationEnabled: true, confettiEnabled: true, winnerLightingEnabled: true, celebrationIntensity: "normal", backgroundEnabled: true, backgroundFocalX: 50, backgroundFocalY: 50, backgroundImageOpacity: 72, backgroundOverlayIntensity: 58, winnerMessageTemplate: "Signal locked: {winner}", publicHistoryVisible: true };
+const DEFAULT_CONFIG: WheelConfig = { themePreset: "third-rail-gold", ...PRESETS["third-rail-gold"], centreTreatment: "bolt", backgroundIntensity: "high", labelContrast: "light", spinDurationMs: 6500, tickingSoundEnabled: true, winnerSoundEnabled: true, celebrationEnabled: true, confettiEnabled: true, fireworksEnabled: true, winnerLightingEnabled: true, celebrationIntensity: "normal", backgroundEnabled: true, backgroundFocalX: 50, backgroundFocalY: 50, backgroundImageOpacity: 72, backgroundOverlayIntensity: 58, winnerMessageTemplate: "Signal locked: {winner}", publicHistoryVisible: true };
 type EditorState = { title: string; description: string; visibility: "public" | "hidden"; entries: WheelEntry[]; config: WheelConfig; revision?: number; lifecycle: "draft" | "active" | "archived" };
 const EMPTY: EditorState = { title: "", description: "", visibility: "public", entries: [], config: DEFAULT_CONFIG, lifecycle: "active" };
 

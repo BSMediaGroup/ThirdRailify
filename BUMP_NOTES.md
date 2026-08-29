@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-08-30 — Wheels V1.7 custom appearance and celebration
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added portable custom palettes using the existing config authority: 1–5 strict hex entrant colours, an independent accent, keyboard reorder/add/remove/reset controls, immediate local preview, deterministic display-order application, explicit manual override/reset semantics, and unchanged V1 TWL/JSON compatibility.
+- Rebuilt Appearance so header/tabs/footer and the left preview remain stationary while only the right controls pane scrolls; mobile uses a bounded stacked preview and controls scroller. Custom centre artwork now fills and centre-crops inside the circular medallion.
+- Added backward-compatible `fireworksEnabled`, one finite Canvas fireworks engine, centralized visibly distinct 68/138/210-piece celebration profiles, longer 3.8/5.3/7.2-second confetti, scaled lighting/stage energy, local no-write/no-audio preview, and reduced-motion suppression of travelling effects.
+- Added pure validation/portability/profile coverage plus real-browser desktop/mobile geometry, toggle, cleanup, centre-fill and visual screenshot proof. No migration, D1/R2 mutation, official result, provider, Wix, DNS, domain, secret, checkout, payment, fulfillment, or production-cutover change is part of V1.7.
+- Released Admin first as `7329f40c-1af4-4c9b-9106-20263fd56c6a` (`https://7329f40c.thirdrailify-admin.pages.dev`) and Public as `985c6189-53a9-474c-bd12-a76595a7a4b9` (`https://985c6189.thirdrailify.pages.dev`). Stable and immutable wheel pages and direct APIs return the expected HTML/JSON routes; deployed V1.3-V1.6 browser acceptance passes with protected editor authority, reduced-motion handling, clean cleanup, and zero non-read API requests.
+
 ## 2026-08-29 — Guest and Account checkout identity
 
 - Added a deliberate `Continue as guest` / `Sign in to purchase` choice to `/checkout`. Existing Accounts default to account-backed checkout and prefill only authoritative display name and verified email; all checkout-specific fields remain editable without mutating the Account profile.

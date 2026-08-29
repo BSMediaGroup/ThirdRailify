@@ -114,16 +114,16 @@
     "horizontalDelta": 0,
     "scrollHeight": 898,
     "clientHeight": 898,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance content 1920",
     "scrollWidth": 1118,
     "clientWidth": 1118,
     "horizontalDelta": 0,
-    "scrollHeight": 1837,
+    "scrollHeight": 622,
     "clientHeight": 622,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance 1440",
@@ -132,16 +132,16 @@
     "horizontalDelta": 0,
     "scrollHeight": 858,
     "clientHeight": 858,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance content 1440",
     "scrollWidth": 1118,
     "clientWidth": 1118,
     "horizontalDelta": 0,
-    "scrollHeight": 1837,
+    "scrollHeight": 582,
     "clientHeight": 582,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance 1024",
@@ -150,16 +150,16 @@
     "horizontalDelta": 0,
     "scrollHeight": 726,
     "clientHeight": 726,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance content 1024",
     "scrollWidth": 982,
     "clientWidth": 982,
     "horizontalDelta": 0,
-    "scrollHeight": 1837,
+    "scrollHeight": 461,
     "clientHeight": 461,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance 768",
@@ -168,16 +168,16 @@
     "horizontalDelta": 0,
     "scrollHeight": 898,
     "clientHeight": 898,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance content 768",
     "scrollWidth": 726,
     "clientWidth": 726,
     "horizontalDelta": 0,
-    "scrollHeight": 1977,
+    "scrollHeight": 648,
     "clientHeight": 648,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance 390",
@@ -186,16 +186,16 @@
     "horizontalDelta": 0,
     "scrollHeight": 844,
     "clientHeight": 844,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "appearance content 390",
     "scrollWidth": 390,
     "clientWidth": 390,
     "horizontalDelta": 0,
-    "scrollHeight": 3548,
+    "scrollHeight": 516,
     "clientHeight": 516,
-    "overflowX": "hidden"
+    "overflowX": "clip"
   },
   {
     "label": "participant manager 1440",
