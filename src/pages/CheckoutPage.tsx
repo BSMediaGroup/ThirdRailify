@@ -12,6 +12,7 @@ import type { AccountAddress } from "../account/types";
 type Delivery = { name: string; company: string; address1: string; address2: string; city: string; region: string; postalCode: string; countryCode: string; phone: string };
 type Rate = { id: string; name: string; amount: number; currency: "CAD"; totalAmount: number; delivery: null | { minDays: number | null; maxDays: number | null; minDate: string | null; maxDate: string | null } };
 type Quote = { id: string; expiresAt: string; currency: "CAD"; subtotalAmount: number; requiresShipping: boolean; checkoutAvailable: boolean; options: Rate[] };
+type ShippingMarket = { countryCode: string; displayName: string };
 
 const EMPTY_DELIVERY: Delivery = { name: "", company: "", address1: "", address2: "", city: "", region: "", postalCode: "", countryCode: "CA", phone: "" };
 const REGION_REQUIRED = new Set(["AU", "CA", "US"]);
@@ -21,6 +22,7 @@ export function CheckoutPage() {
   const { account, loading: authLoading, openAuth, csrfToken } = useAuth();
   const accountCommerce = useAccountCommerce(Boolean(account));
   const [products, setProducts] = useState<CatalogueProduct[]>([]);
+  const [shippingMarkets, setShippingMarkets] = useState<ShippingMarket[]>([]);
   const [catalogueError, setCatalogueError] = useState("");
   const [delivery, setDelivery] = useState<Delivery>(EMPTY_DELIVERY);
   const [customerMode, setCustomerMode] = useState<"guest" | "account" | null>(null);
@@ -41,6 +43,19 @@ export function CheckoutPage() {
   useEffect(() => {
     const controller = new AbortController();
     catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(""); }).catch(() => setCatalogueError("Current catalogue details are unavailable."));
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/commerce/shipping-markets", { headers: { Accept: "application/json" }, signal: controller.signal })
+      .then(async (response) => ({ response, payload: await response.json() as { ok?: boolean; markets?: ShippingMarket[] } }))
+      .then(({ response, payload }) => {
+        if (!response.ok || payload.ok !== true || !Array.isArray(payload.markets) || !payload.markets.length) throw new Error("shipping_markets_unavailable");
+        setShippingMarkets(payload.markets);
+        setDelivery((current) => payload.markets!.some((market) => market.countryCode === current.countryCode) ? current : { ...current, countryCode: payload.markets![0].countryCode });
+      })
+      .catch(() => setMessage("Eligible shipping destinations are temporarily unavailable."));
     return () => controller.abort();
   }, []);
 
@@ -142,7 +157,7 @@ export function CheckoutPage() {
             <CheckoutField label="City / locality" name="city" value={delivery.city} change={change} error={touched ? errors.city : undefined} autoComplete="address-level2" />
             <CheckoutField label="State / province / region" name="region" value={delivery.region} change={change} error={touched ? errors.region : undefined} autoComplete="address-level1" />
             <CheckoutField label="Postal / ZIP code" name="postalCode" value={delivery.postalCode} change={change} error={touched ? errors.postalCode : undefined} autoComplete="postal-code" />
-            <CheckoutField label="Destination country code" name="countryCode" value={delivery.countryCode} change={change} error={touched ? errors.countryCode : undefined} autoComplete="country" maxLength={2} hint="Two-letter ISO code, such as CA, US, AU, GB, or NZ." />
+            <label className={`checkout-field ${touched && errors.countryCode ? "has-error" : ""}`}><span>Destination country</span><select name="countryCode" value={delivery.countryCode} onChange={(event) => change("countryCode", event.target.value)} autoComplete="country" disabled={!shippingMarkets.length}>{shippingMarkets.length ? shippingMarkets.map((market) => <option key={market.countryCode} value={market.countryCode}>{market.displayName} ({market.countryCode})</option>) : <option value="">No destinations available</option>}</select>{touched && errors.countryCode ? <strong>{errors.countryCode}</strong> : <small>Only destinations enabled by commerce operations are shown.</small>}</label>
             <CheckoutField label="Telephone (optional)" name="phone" value={delivery.phone} change={change} autoComplete="tel" maxLength={32} />
           </div>
           {account && !selectedAddressId && <div className="checkout-save-address"><label><input type="checkbox" checked={saveAddress} onChange={(event) => setSaveAddress(event.target.checked)} /><span>Save this address to my account</span></label>{saveAddress && <label><span>Address label</span><input value={addressLabel} maxLength={40} onChange={(event) => setAddressLabel(event.target.value)} /></label>}</div>}
@@ -157,6 +172,7 @@ export function CheckoutPage() {
         <dl><div><dt>Product subtotal</dt><dd><CadAmount minorUnits={displayedSubtotal} /></dd></div><div><dt>Shipping</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.amount} /> : "Calculated at checkout"}</dd></div><div><dt>Tax</dt><dd>Calculated before payment</dd></div><div className="checkout-summary__total"><dt>Order total</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.totalAmount} /> : "Pending authoritative amounts"}</dd></div></dl>
         <button className="button button--primary" type="button" onClick={() => void continueToPayment()} disabled={!quote || !selectedRate || !quote.checkoutAvailable || checkoutBusy}>{checkoutBusy ? "Opening secure payment…" : "Continue to secure payment"}</button>
         <p className="checkout-gate-message">{quote?.checkoutAvailable ? "Stripe receives payment details through the existing secure hosted handoff. Third Railify does not store raw card data." : "Checkout is currently unavailable. No order or payment can be created."}</p>
+        <p className="checkout-policy-links">Review the <Link to="/terms">Terms of Use &amp; Sale</Link>, <Link to="/privacy">Privacy Policy</Link>, <Link to="/terms">shipping terms</Link>, and <Link to="/refunds">Returns &amp; Refund Policy</Link> before payment.</p>
         {message && quote ? <div className="checkout-error" role="alert">{message}</div> : null}
       </aside>
     </div>

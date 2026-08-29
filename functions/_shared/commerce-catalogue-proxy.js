@@ -15,6 +15,27 @@ export async function proxyCommerceCatalogue(env, path, fetchImpl = fetch) {
   } finally { clearTimeout(timeout); }
 }
 
+export async function proxyCommerceShippingMarkets(env, fetchImpl = fetch) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  try {
+    const adminOrigin = configuredAdminOrigin(env?.THIRDRAILIFY_ADMIN_ORIGIN);
+    const response = await fetchImpl(`${adminOrigin}/api/public/commerce/shipping-markets`, { headers: { Accept: "application/json" }, signal: controller.signal });
+    if (!response.ok) throw new Error("shipping_markets_upstream_unavailable");
+    const input = await response.json();
+    if (!input || input.ok !== true || input.authority !== "Commerce D1" || !Array.isArray(input.markets) || input.markets.length > 250) throw new Error("shipping_markets_invalid");
+    const markets = input.markets.map((market) => {
+      const countryCode = boundedText(market?.countryCode, 2).toUpperCase();
+      const displayName = boundedText(market?.displayName, 80);
+      if (!/^[A-Z]{2}$/.test(countryCode) || !displayName) throw new Error("shipping_market_invalid");
+      return { countryCode, displayName };
+    });
+    return Response.json({ ok: true, authority: "Commerce D1", markets }, { headers: publicCacheHeaders() });
+  } catch {
+    return Response.json({ ok: false, error: "shipping_markets_unavailable", message: "Shipping destinations are temporarily unavailable." }, { status: 503, headers: noStoreHeaders() });
+  } finally { clearTimeout(timeout); }
+}
+
 export function normalizeCatalogue(input) {
   if (!input || input.ok !== true || input.source !== "commerce-d1" || !Array.isArray(input.products)) throw new Error("catalogue_invalid");
   const products = input.products.map(normalizeProduct);
