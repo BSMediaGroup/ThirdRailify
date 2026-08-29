@@ -22,7 +22,36 @@ const WHEEL_PALETTES: readonly PaletteOption[] = [
   { key: "green-gold-duo", label: "Green / Gold Duo", kind: "2 tone", palette: ["#167B50", "#F3C928"], pointerAccent: "#F3C928", themePreset: "signal-teal" },
   { key: "gold-gradient", label: "Gold Gradient", kind: "Tonal 5 step", palette: ["#6B4F00", "#9B7200", "#C99B12", "#F3C928", "#FFE477"], pointerAccent: "#F3C928", themePreset: "third-rail-gold" },
   { key: "navy-silver-red", label: "Navy / Silver / Red", kind: "3 tone", palette: ["#17304F", "#C9CBC8", "#B8182F"], pointerAccent: "#D6DEE8", themePreset: "high-voltage-mono" },
+  { key: "electric-blue-white", label: "Electric Blue / White", kind: "2 tone", palette: ["#246BFD", "#F7F9FF"], pointerAccent: "#79AFFF", themePreset: "high-voltage-mono" },
+  { key: "midnight-blue-white", label: "Midnight Blue / White", kind: "2 tone", palette: ["#082B63", "#F3F6FF"], pointerAccent: "#5BA8FF", themePreset: "high-voltage-mono" },
+  { key: "cobalt-black", label: "Cobalt / Black", kind: "2 tone", palette: ["#2563EB", "#090B10"], pointerAccent: "#60A5FA", themePreset: "high-voltage-mono" },
+  { key: "ice-blue-navy-white", label: "Ice Blue / Navy / White", kind: "3 tone", palette: ["#8AD8FF", "#123B73", "#F7FBFF"], pointerAccent: "#8AD8FF", themePreset: "signal-teal" },
+  { key: "royal-blue-gradient", label: "Royal Blue Gradient", kind: "Tonal 5 step", palette: ["#071B45", "#123B82", "#1E5BC6", "#4385F5", "#9CC7FF"], pointerAccent: "#79AFFF", themePreset: "high-voltage-mono" },
+  { key: "purple-white", label: "Purple / White", kind: "2 tone", palette: ["#6D3A93", "#F7F2FF"], pointerAccent: "#C98BE5", themePreset: "gina-violet" },
+  { key: "pink-black", label: "Pink / Black", kind: "2 tone", palette: ["#F04491", "#101014"], pointerAccent: "#FF7AB8", themePreset: "gina-violet" },
+  { key: "gold-purple", label: "Gold / Purple", kind: "2 tone", palette: ["#F3C928", "#5B2C83"], pointerAccent: "#F3C928", themePreset: "gina-violet" },
+  { key: "green-black", label: "Green / Black", kind: "2 tone", palette: ["#1DBF73", "#07110D"], pointerAccent: "#53E69B", themePreset: "signal-teal" },
+  { key: "sky-white-navy", label: "Sky / White / Navy", kind: "3 tone", palette: ["#5DB7FF", "#F8FBFF", "#102A56"], pointerAccent: "#8AD8FF", themePreset: "signal-teal" },
 ];
+
+const DEFAULT_APPEARANCE_CONFIG: Partial<WheelConfig> = {
+  themePreset: "third-rail-gold",
+  palette: ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"],
+  pointerAccent: "#F3C928",
+  centreTreatment: "bolt",
+  backgroundIntensity: "high",
+  labelContrast: "light",
+  winnerSoundEnabled: true,
+  celebrationEnabled: true,
+  confettiEnabled: true,
+  winnerLightingEnabled: true,
+  celebrationIntensity: "normal",
+  backgroundEnabled: true,
+  backgroundFocalX: 50,
+  backgroundFocalY: 50,
+  backgroundImageOpacity: 72,
+  backgroundOverlayIntensity: 58,
+};
 
 type AppearanceDraft = Pick<Wheel, "title" | "description" | "visibility" | "lifecycle" | "config" | "entries" | "revision">;
 type Props = { wheel: Wheel; draft?: AppearanceDraft; csrfToken: string; onClose: () => void; onSaved: (wheel: Wheel) => void };
@@ -35,6 +64,11 @@ export function AppearanceDialog({ wheel, draft, csrfToken, onClose, onSaved }: 
   const patchConfig = (patch: Partial<WheelConfig>) => setConfig((current) => ({ ...current, ...patch }));
   const selectPalette = (option: PaletteOption) => patchConfig({ themePreset: option.themePreset, palette: option.palette, pointerAccent: option.pointerAccent });
   const updateColour = (id: string, colour: string | null) => setEntries((current) => current.map((entry) => entry.id === id ? { ...entry, colour } : entry));
+  const resetAppearance = () => {
+    setConfig((current) => ({ ...current, ...DEFAULT_APPEARANCE_CONFIG }));
+    setEntries((current) => current.map((entry) => ({ ...entry, colour: null })));
+    setBackground(null); setCentre(null); setRemoveBackground(Boolean(wheel.media.background)); setRemoveCentre(Boolean(wheel.media.centre)); setSearch(""); setError(""); setTab("theme");
+  };
   const save = async () => {
     if (!wheel.revision) return; setBusy(true); setError("");
     try {
@@ -58,7 +92,7 @@ export function AppearanceDialog({ wheel, draft, csrfToken, onClose, onSaved }: 
           {tab === "celebration" ? <><p className="appearance-help">The result always remains visible. These controls affect only the finite broadcast celebration.</p><Toggle label="Winner celebration" checked={config.celebrationEnabled} onChange={(value) => patchConfig({ celebrationEnabled: value })} /><Toggle label="Visible confetti" checked={config.confettiEnabled} onChange={(value) => patchConfig({ confettiEnabled: value })} /><Toggle label="Full-stage lighting" checked={config.winnerLightingEnabled} onChange={(value) => patchConfig({ winnerLightingEnabled: value })} /><Toggle label="Winner music stinger" checked={config.winnerSoundEnabled} onChange={(value) => patchConfig({ winnerSoundEnabled: value })} /><label>Celebration intensity<select value={config.celebrationIntensity} onChange={(event) => patchConfig({ celebrationIntensity: event.target.value as WheelConfig["celebrationIntensity"] })}><option value="subtle">Subtle</option><option value="normal">Normal</option><option value="strong">Strong</option></select></label></> : null}
         </section>
       </div>
-      {error ? <p className="wheel-alert" role="alert">{error}</p> : null}<footer><button className="button button--secondary" type="button" onClick={onClose} disabled={busy}>Discard</button><button className="button button--primary" type="button" onClick={() => void save()} disabled={busy}>{busy ? "Saving…" : "Save appearance"}</button></footer>
+      {error ? <p className="wheel-alert" role="alert">{error}</p> : null}<footer><button className="button button--secondary appearance-reset" type="button" onClick={resetAppearance} disabled={busy}>Reset to default</button><span className="appearance-dialog__footer-spacer" /><button className="button button--secondary" type="button" onClick={onClose} disabled={busy}>Discard</button><button className="button button--primary" type="button" onClick={() => void save()} disabled={busy}>{busy ? "Saving…" : "Save appearance"}</button></footer>
     </div>
   </div>, document.body);
 }

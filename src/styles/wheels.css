@@ -159,3 +159,29 @@
 .appearance-preview{--wheel-accent:#f3c928;background-color:#090a07;background-image:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--wheel-accent),transparent 82%),transparent 52%)}
 @media(max-width:620px){.wheel-navigator{gap:0;margin-bottom:20px}.wheel-navigator__direction{min-height:54px;padding:8px}.wheel-navigator__direction small{max-width:34vw;font-size:10px}.wheel-navigator>p{min-width:70px;padding-inline:8px}.wheel-navigator>p span{display:none}.wheel-accent-control{grid-template-columns:minmax(0,1fr) 44px}.wheel-accent-control input:last-child{grid-column:1/-1}.wheel-control-page.is-scene-transitioning{overflow:hidden}}
 @media(prefers-reduced-motion:reduce){.wheel-scene--outgoing.is-next,.wheel-scene--incoming.is-next,.wheel-scene--outgoing.is-previous,.wheel-scene--incoming.is-previous{animation-duration:.06s;transform:none!important}.wheel-control-page__background--incoming,.wheel-control-page__background--outgoing{animation-duration:.06s;animation-delay:0s}.wheel-transition-loading{transition:none}}
+
+/* Wheels V1.6 compact controls and presentation navigation refinement */
+.wheel-control-heading h1{font-size:clamp(42px,4.8vw,69px);line-height:.92}
+.wheel-navigator{gap:8px;margin-bottom:22px}
+.wheel-navigator__direction{min-height:56px;padding:7px 12px;gap:3px}
+.wheel-navigator>p{min-width:86px;padding:7px 12px}
+.wheel-spin-console__tools{min-width:0;flex-wrap:wrap}
+.sound-toggle{box-sizing:border-box;min-height:46px;padding:10px 14px;overflow:visible;line-height:1.2}
+.wheel-control-page--presentation .wheel-presentation-layout{padding-top:60px}
+.wheel-control-page--presentation .wheel-control-stage{grid-template-rows:auto minmax(0,1fr) auto}
+.wheel-control-page--presentation .wheel-navigator{width:min(900px,calc(100vw - 40px));margin:0 auto 6px}
+.wheel-control-page--presentation .wheel-visual-wrap{padding:10px 20px}
+.wheel-control-page--presentation .wheel-stage{width:min(70vh,calc(100dvh - 350px),72vw,860px)}
+.wheel-control-page--presentation .wheel-spin-console{grid-template-columns:minmax(180px,1fr) minmax(300px,360px) minmax(330px,1fr);width:min(100%,1040px);gap:16px}
+.wheel-control-page--presentation .wheel-spin-console__tools{display:flex;justify-content:flex-start;flex-wrap:nowrap}
+.wheel-control-page--presentation .wheel-spin-console__tools .sound-toggle{flex:0 0 auto;min-width:max-content}
+.wheel-transition-notice{position:fixed;z-index:1000;top:76px;left:50%;margin:0;transform:translateX(-50%);box-shadow:0 16px 42px rgba(0,0,0,.48)}
+.appearance-dialog__footer-spacer{flex:1 1 auto}
+.appearance-dialog>footer .appearance-reset{border-color:#776821;color:#f3d968;background:#1e1b0f}
+@media(max-width:1100px){.wheel-control-page--presentation .wheel-spin-console{grid-template-columns:1fr;width:min(100%,540px)}.wheel-control-page--presentation .wheel-spin-console__tools{justify-content:center;flex-wrap:wrap}}
+@media(max-width:620px){.wheel-control-heading h1{font-size:44px}.wheel-navigator{margin-bottom:17px}.wheel-navigator__direction{min-height:50px;padding:6px 8px}.wheel-navigator>p{min-width:68px;padding:6px}.wheel-control-page--presentation .wheel-presentation-layout{padding:58px 8px 8px}.wheel-control-page--presentation .wheel-navigator{width:100%;margin-bottom:2px}.wheel-control-page--presentation .wheel-visual-wrap{padding:6px 2px}.wheel-control-page--presentation .wheel-stage{width:min(84vw,calc(100dvh - 360px))}.wheel-control-page--presentation .wheel-spin-console{margin-top:10px}.wheel-control-page--presentation .wheel-spin-console__tools{width:100%}.wheel-control-page--presentation .wheel-spin-console__tools .sound-toggle{flex:1 1 118px;min-width:0}.appearance-dialog>footer{flex-wrap:wrap;padding:12px 14px}.appearance-dialog__footer-spacer{display:none}.appearance-dialog>footer .appearance-reset{flex:1 1 100%}.appearance-dialog>footer button:not(.appearance-reset){flex:1 1 130px;min-width:0}.wheel-transition-notice{top:62px}}
+
+.wheel-stage__hub.is-spin-control{appearance:none;font:inherit;cursor:pointer;transition:filter .16s ease,box-shadow .16s ease,transform .16s ease}
+.wheel-stage__hub.is-spin-control:hover:not(:disabled){filter:brightness(1.08);box-shadow:0 0 0 7px #090a07,0 0 0 9px color-mix(in srgb,var(--pointer),#fff 16%),0 0 42px color-mix(in srgb,var(--pointer),transparent 48%);transform:scale(1.025)}
+.wheel-stage__hub.is-spin-control:focus-visible{outline:3px solid #fff3a0;outline-offset:7px}
+.wheel-stage__hub.is-spin-control:disabled{cursor:not-allowed}

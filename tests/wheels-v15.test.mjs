@@ -43,8 +43,8 @@ test("Wheels V1.5 follow-up reserves painted-effect clearance and outlines the p
 test("Wheels V1.5 follow-up adds bounded two-tone, three-tone and tonal palettes without expanding the preset contract", async () => {
   const [appearance, types] = await Promise.all([read("src/wheels/AppearanceDialog.tsx"), read("src/wheels/types.ts")]);
   const library = appearance.slice(appearance.indexOf("const WHEEL_PALETTES"), appearance.indexOf("];", appearance.indexOf("const WHEEL_PALETTES")) + 2);
-  assert.equal([...library.matchAll(/\{ key:/g)].length, 16);
-  for (const label of ["Red / Gold Duo", "Red / Charcoal / Gold", "Silver Gradient", "Crimson Gradient", "Blue / Red Duo", "Blue / Red Gradient", "Emerald Gradient", "Green / Gold Duo"]) assert.ok(library.includes(label), `${label} is available`);
+  assert.equal([...library.matchAll(/\{ key:/g)].length, 26);
+  for (const label of ["Red / Gold Duo", "Red / Charcoal / Gold", "Silver Gradient", "Crimson Gradient", "Blue / Red Duo", "Blue / Red Gradient", "Emerald Gradient", "Green / Gold Duo", "Electric Blue / White", "Midnight Blue / White", "Cobalt / Black", "Ice Blue / Navy / White", "Royal Blue Gradient", "Purple / White", "Pink / Black", "Gold / Purple", "Green / Black", "Sky / White / Navy"]) assert.ok(library.includes(label), `${label} is available`);
   assert.match(appearance, /themePreset: option\.themePreset, palette: option\.palette, pointerAccent: option\.pointerAccent/);
   assert.equal((types.match(/export type WheelThemePreset = ([^;]+)/) || [])[1], '"third-rail-gold" | "live-wire-red" | "gina-violet" | "high-voltage-mono" | "signal-teal" | "after-hours"');
 });

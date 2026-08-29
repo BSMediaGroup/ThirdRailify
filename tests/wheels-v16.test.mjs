@@ -41,3 +41,39 @@ test("Wheel accent reuses the validated pointerAccent contract across palette, r
   assert.match(page, /"--wheel-accent": wheel\.config\.pointerAccent/);
   assert.match(styles, /\.wheel-stage__rim--outer\{[^}]*var\(--pointer\)/);
 });
+
+test("Wheels V1.6 refinement exposes expanded palettes, reset, presentation navigation, and reliable sharing", async () => {
+  const [appearance, page, styles] = await Promise.all([
+    readFile(new URL("../src/wheels/AppearanceDialog.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/WheelPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
+  ]);
+  const library = appearance.slice(appearance.indexOf("const WHEEL_PALETTES"), appearance.indexOf("];", appearance.indexOf("const WHEEL_PALETTES")) + 2);
+  assert.equal([...library.matchAll(/\{ key:/g)].length, 26);
+  for (const label of ["Electric Blue / White", "Midnight Blue / White", "Cobalt / Black", "Ice Blue / Navy / White", "Royal Blue Gradient", "Purple / White", "Pink / Black", "Gold / Purple", "Green / Black", "Sky / White / Navy"]) assert.ok(library.includes(label), `${label} is available`);
+  assert.match(appearance, /DEFAULT_APPEARANCE_CONFIG/);
+  assert.match(appearance, /Reset to default/);
+  assert.match(appearance, /colour: null/);
+  assert.match(page, /navigator\.share/);
+  assert.match(page, /Wheel link copied to your clipboard/);
+  assert.match(page, /Share options were unavailable, so the wheel link was copied instead/);
+  assert.match(page, /summary\.slug\}\$\{presentation \? "\/present" : ""\}/);
+  assert.match(page, /<WheelNavigator neighbours=\{props\.neighbours\} locked=\{locked\} onNavigate=\{props\.onNavigate\} \/><\/\>/);
+  assert.match(styles, /\.wheel-control-heading h1\{font-size:clamp\(42px,4\.8vw,69px\)/);
+  assert.match(styles, /\.wheel-navigator__direction\{min-height:56px;padding:7px 12px/);
+  assert.match(styles, /\.wheel-control-page--presentation \.wheel-spin-console\{grid-template-columns:[^}]*minmax\(330px,1fr\)/);
+});
+
+test("the live wheel centre shares the existing spin authority and lock", async () => {
+  const [canvas, page, styles] = await Promise.all([
+    readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/pages/WheelPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(canvas, /onCentreSpin\?: \(\) => void/);
+  assert.match(canvas, /className={`wheel-stage__hub is-spin-control/);
+  assert.match(canvas, /disabled=\{centreSpinDisabled\}/);
+  assert.match(page, /onCentreSpin=\{interactive \? \(\) => void props\.onSpin\(\) : undefined\}/);
+  assert.match(page, /centreSpinDisabled=\{spinDisabled\}/);
+  assert.match(styles, /\.wheel-stage__hub\.is-spin-control:focus-visible/);
+});
