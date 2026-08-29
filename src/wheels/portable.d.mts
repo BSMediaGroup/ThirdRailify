@@ -1,0 +1,38 @@
+import type { Wheel, WheelConfig, WheelEntry } from "./types";
+
+export type PortableMedia = { mode: "embedded"; fileName: string; mimeType: string; sha256: string; base64: string };
+export type PortableMediaSet = { background: PortableMedia | null; center: PortableMedia | null };
+export type ImportMessage = { severity: "info" | "warning" | "error"; sourceField: string; target: string; reason: string };
+export type WheelImportProposal = {
+  title: string;
+  description: string;
+  config: WheelConfig;
+  entries: WheelEntry[];
+  media: PortableMediaSet;
+  messages: ImportMessage[];
+  sourceIndex: number;
+  integrityStatus: "verified" | "absent";
+  summary: { participantCount: number; activeCount: number; hiddenCount: number; duplicateLabelCount: number; weightedEntryCount: number; totalWeight: number; colourCount: number; mediaDetected: boolean };
+};
+export type WheelImportResult = { detectedFormat: "thirdrailify" | "wheel-of-names" | "generic-json"; formatLabel: string; version: number | null; sourceName: string; proposals: WheelImportProposal[] };
+export const WHEEL_FILE_FORMAT_ID: "thirdrailify-wheel";
+export const WHEEL_FILE_FORMAT_VERSION: 1;
+export const WHEEL_FILE_MIME: string;
+export const WHEEL_JSON_MIME: string;
+export const WHEEL_IMPORT_ACCEPT: string;
+export const WHEEL_FILE_LIMITS: Readonly<Record<string, number>>;
+export const THIRD_RAIL_GOLD_CONFIG: Readonly<WheelConfig>;
+export function createPortableWheel(input: Pick<Wheel, "title" | "description" | "config" | "entries">, options?: { media?: PortableMediaSet; exportedAt?: string; generatorVersion?: string; sourceSlug?: string }): Promise<Record<string, unknown>>;
+export function serializePortableWheel(document: Record<string, unknown>): string;
+export function canonicalStringify(value: unknown): string;
+export function parseWheelImport(input: string | Uint8Array | ArrayBuffer, options?: { sourceName?: string; defaultConfig?: WheelConfig }): Promise<WheelImportResult>;
+export function embedCurrentWheelMedia(wheel: Wheel, fetchImpl?: typeof fetch): Promise<PortableMediaSet>;
+export function embeddedMediaBlob(item: PortableMedia | null): File | null;
+export function safeWheelFilename(value: string, extension?: "twl" | "json"): string;
+export function downloadPortableText(text: string, fileName: string, mimeType: string): void;
+export function copyPortableText(text: string): Promise<void>;
+export function decodeBase64(value: string): Uint8Array;
+export function encodeBase64(value: Uint8Array): string;
+export function normalizeMediaType(value: string): string;
+export function sha256Hex(value: string | Uint8Array): Promise<string>;
+export function validateMedia(bytes: Uint8Array, mimeType: string, purpose: "background" | "center"): void;

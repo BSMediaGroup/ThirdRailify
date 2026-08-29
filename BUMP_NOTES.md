@@ -1,5 +1,9 @@
 # Bump notes
 
+- Added Wheels V1.3 portable creator files: deterministic `thirdrailify-wheel` v1 `.twl` and equivalent JSON/copy exports, SHA-256 wheel-payload integrity, bounded optional same-origin embedded media, and explicit exclusion of owner/access/history/lock/revision/R2/session/security authority.
+- Added content-detected `.twl`, canonical/generic JSON and Wheel of Names `.wheel` import with strict UTF-8/size/depth/key/array/string/media limits, fresh local entry IDs, one-at-a-time multi-config selection, complete preview/conversion warnings, and local dirty editor state that persists only through existing Save/Create permission and revision contracts.
+- Added the served v1 JSON Schema, `WHEELS_FILE_FORMAT.md`, a sanitized eight-entry Wheel of Names fixture, deterministic round-trip/conversion/security/media tests, an Import / Export sibling dialog in the existing editor, and the `/wheels/new` import path. No Admin/API/schema/migration/D1/R2 authority was added or changed.
+
 ## 2026-08-29 — Wheels V1.2 in-context control and participant odds
 
 CURRENT VER=0.0.0-seed

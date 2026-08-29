@@ -19,6 +19,8 @@ Hidden wheels return a legitimate 404 to anonymous and unrelated accounts. Archi
 
 For an existing wheel, `/wheels/:slug/edit` is a route-driven lightbox state over the same mounted `WheelPage`, not a separate page presentation. Direct navigation and reload reconstruct the public wheel before opening the authorized editor; browser Back closes the editor; clean close returns to the base wheel URL; and unauthorized accounts receive a truthful access dialog with no draft fields. `/wheels/new` remains the dedicated unsaved creation route.
 
+V1.3 adds a sibling Import / Export dialog for owner/editor/Master users and an import-only entry point on `/wheels/new`. The versioned `thirdrailify-wheel` v1 `.twl` format is UTF-8 JSON with the real creator-editable config names, ordered portable entries, optional embedded media, and a deterministic SHA-256 corruption-detection hash. `.json` download/copy uses the same document. Content detection also accepts bounded Wheel of Names and intentionally narrow generic participant JSON. Every import shows a selectable preview and field-level conversion report, mints fresh local entry IDs, and remains unsaved editor state until the existing Save/Create action. See `WHEELS_FILE_FORMAT.md` and `/schemas/thirdrailify-wheel-v1.schema.json`.
+
 ## Demo and official draws
 
 Demo/practice selection is entirely local. `crypto.getRandomValues()` feeds unbiased rejection sampling over the sum of positive integer weights. It performs no Function request and creates no result or audit row. The result is labelled `Demo result — not recorded as an official draw`.
@@ -65,9 +67,11 @@ V1.2 centralizes the Wheels brand mark in `WheelsBrandMark.tsx`. It safely inlin
 
 Public has no R2 binding. Upload/remove uses the same-origin Public route, authenticated session, exact origin, CSRF, bounded raw body, and a signed server-to-server Admin request. Admin revalidates owner/editor or Master access, edit locks, media rate limits, magic/content type, byte size, dimensions/pixel count, and purpose. Accepted sources are PNG, JPG/JPEG, BMP, WebP, and strictly screened SVG. Script, event handlers, `foreignObject`, external resources, unsafe URLs/data, DTD/entity content, excessive size, and excessive complexity are rejected.
 
+Portable media is opt-in and off by default. Export fetches only the current authorized same-origin wheel-media projection and embeds raw base64 plus MIME, safe filename and SHA-256; it never embeds the media URL or R2 authority. Imported media is decoded and screened locally for preview but stays in memory and makes no upload request until explicit Save, when the unchanged authorized media route revalidates it. Background, centre, combined-media and whole-file bounds are 8 MB, 4 MB, 12 MB and 18 MB respectively.
+
 Admin migration `0016_wheels_media.sql` stores asset ID, wheel/purpose, opaque R2 key, SHA-256, normalized MIME, bytes, dimensions, lifecycle, uploader, and timestamps. Only one active asset exists per wheel/purpose. Public projections contain an asset ID and same-origin URL, never an R2 key. Public active-wheel media is immutable-cacheable; hidden media requires an assigned account/Admin and otherwise returns 404. Replacement/removal deletes the R2 object and retains bounded lifecycle/audit metadata. SVG delivery adds `nosniff`, same-origin resource policy, and a sandboxed deny-by-default CSP.
 
-Deferred: multi-wheel display/spin, Sheets/chat/raid/donation ingestion, Rumble/Twitch/YouTube integration, payments and prize fulfilment, public external API, profile/sound uploads, local `.wheel` files, remote OBS control/websockets, cloning/marketplace, and provider writes.
+Deferred: multi-wheel display/spin, Sheets/chat/raid/donation ingestion, Rumble/Twitch/YouTube integration, payments and prize fulfilment, public external API, profile/sound uploads, Wheel of Names export, remote OBS control/websockets, cloning/marketplace, and provider writes.
 
 ## Staging acceptance — 29 August 2026
 

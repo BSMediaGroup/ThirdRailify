@@ -28,6 +28,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 - Compact non-modal privacy choices with equal first-layer Accept/Reject actions, granular Preferences and External media controls, a versioned 183-day first-party choice cookie, footer withdrawal, and consent-gated optional local storage and Watch iframes.
 - Truthful `/checkout/success` states backed by an exact opaque-Session local payment-status projection; no provider metadata, internal account identity, audit data, Printful mapping, or browser-side Stripe authority is exposed.
 - Complete presentation-only `/donate` destination with a cinematic signal hero, accessible one-time/monthly/yearly and CAD amount controls, explicit donation-purpose/disclaimer copy, and a visibly disabled PayPal handoff until real provider wiring is implemented.
+- Versioned Wheels portable files: canonical `.twl`/JSON download and clipboard export, content-detected `.twl`/JSON/Wheel of Names import, conversion preview/reporting, one-at-a-time multi-config selection, fresh entry identity, and opt-in bounded embedded media that remains local until explicit Save.
 - Homepage direct-contact band with a keyboard-contained lightbox form, explicit privacy acknowledgement, Turnstile challenge, bounded same-origin relay to the Admin mail authority, and a separate `/donate` action. Public receives no Resend credential or delivery-recipient authority.
 - Polished migration shells for discovered major routes and a branded 404.
 - Cloudflare Pages output with route-aware crawler metadata, canonical URLs, structured data, XML sitemap/robots endpoints, SPA fallback, immutable-preview noindex protection, and baseline security headers.
@@ -64,6 +65,7 @@ npm run test:browser:seo
 npm run test:kv-ban
 npm run test:state-budget
 npm run test:state-fingerprint
+npm run test:wheels
 npm run build
 npm run preview
 ```
@@ -130,7 +132,8 @@ ThirdRailify/
 ├── public/
 │   ├── _headers            Cloudflare static response policy
 │   ├── _redirects          Static canonical aliases
-│   └── _routes.json        Invoke Functions for HTML SEO plus same-origin Public APIs
+│   ├── _routes.json        Invoke Functions for HTML SEO plus same-origin Public APIs
+│   └── schemas/            Served Third Railify wheel-file JSON Schema
 ├── seo/                   Shared edge/browser route metadata and structured-data authority
 ├── src/
 │   ├── auth/               Shared session provider, modal, Turnstile, and header account widget
@@ -146,7 +149,8 @@ ThirdRailify/
 │   ├── pages/              Public routes, including the real cart/checkout and result flow
 │   ├── store/              Local-only cart state
 │   ├── styles/             Tokens and responsive visual system
-│   └── types/              Provider-neutral catalogue contracts
+│   ├── types/              Provider-neutral catalogue contracts
+│   └── wheels/             Wheel engine, editors, portable format/converters, dialogs and types
 ├── scripts/                KV mutation ban, budget/fingerprint checks, and live backend verifier
 ├── tests/                  Function, browser, SEO, Durable Object, migration, isolation, Watch, and About fixtures
 ├── Verify-Cloudflare-State-Backend.cmd  Double-clickable read-only live verifier
@@ -158,6 +162,7 @@ ThirdRailify/
 ├── CONTACT_ROLE_MATRIX.md    Published/sender/reply-to contact roles without monitoring assumptions
 ├── DATA_RETENTION_MATRIX.md  Implemented TTLs, cleanup paths, capacity bounds, and undecided schedules
 ├── GOATS_V2.md             Public routes, API boundary, map configuration, and migration posture
+├── WHEELS_FILE_FORMAT.md   `.twl` v1 format, conversion, media and security contract
 ├── LIVE_SITE_AUDIT.md
 ├── LEGAL_RELEASE_CHECKLIST.md  Internal unresolved operator, sales, privacy, and legal sign-off items
 ├── POLICIES.md            Policy route, content-source, maintenance, and review notes
@@ -176,7 +181,7 @@ The display system uses the seeded American Captain asset at its real weight wit
 
 ## Data and provider boundaries
 
-Competition-wheel persistence, custom-media metadata, and the existing R2 binding belong only to `ThirdRailify-Admin`. Public `/wheels` reads a sanitized Admin projection and uses a same-origin signed gateway for approved creation/editing, media upload/removal, and official draws; it has no wheel/Commerce D1 or R2 binding. V1.2 keeps the existing wheel mounted beneath the route-driven `/wheels/:slug/edit` lightbox, gives participants a separate in-context manager, resolves the weighted pointer target and Canvas clicks through shared pure geometry, and exposes public-only per-entry/duplicate-label weighted odds through an accessible details surface. `WheelsBrandMark.tsx` uses the exact local `assets/icons/trzap-0.svg` path for gold-gradient hero/loading/medallion/result treatments. V1.1's centred `SPIN WHEEL` console, industrial rim, finite celebration, generated audio, Appearance workflow, palettes, per-entry colours, and custom stage/centre artwork remain intact. Demo spins use browser Web Crypto and never persist. Official winners are selected and recorded server-side with revision/idempotency serialization and immutable winner/snapshot evidence. See `WHEELS_V1.md` for routes, roles, media validation, accessibility, staging fixture, and deferred integrations.
+Competition-wheel persistence, custom-media metadata, and the existing R2 binding belong only to `ThirdRailify-Admin`. Public `/wheels` reads a sanitized Admin projection and uses a same-origin signed gateway for approved creation/editing, media upload/removal, and official draws; it has no wheel/Commerce D1 or R2 binding. V1.3 adds browser-local, content-detected `.twl`/JSON/Wheel of Names import and canonical `.twl`/JSON/copy export with conversion preview, fresh entry IDs, optional bounded embedded media, and no imported authority; imported content remains dirty editor state until the existing Save/Create contract runs. V1.2 keeps the existing wheel mounted beneath the route-driven `/wheels/:slug/edit` lightbox, gives participants a separate in-context manager, resolves the weighted pointer target and Canvas clicks through shared pure geometry, and exposes public-only per-entry/duplicate-label weighted odds through an accessible details surface. `WheelsBrandMark.tsx` uses the exact local `assets/icons/trzap-0.svg` path for gold-gradient hero/loading/medallion/result treatments. V1.1's centred `SPIN WHEEL` console, industrial rim, finite celebration, generated audio, Appearance workflow, palettes, per-entry colours, and custom stage/centre artwork remain intact. Demo spins use browser Web Crypto and never persist. Official winners are selected and recorded server-side with revision/idempotency serialization and immutable winner/snapshot evidence. See `WHEELS_V1.md` and `WHEELS_FILE_FORMAT.md` for routes, roles, media validation, accessibility, portable files, and deferred integrations.
 
 The Public header keeps Community as a direct route while exposing semantic Friends, GOATS in the Wild, and Wheels children on hover/focus and explicitly in mobile navigation. VIP is a first-class link. One reusable truthful VIP feature appears below the Community paths and between the Home Discord/community section and Follow the Rail; `/vip` is a dedicated gated preview with no price, billing, entitlement, or purchase action.
 
