@@ -33,7 +33,9 @@ test("status normalization exposes only bounded payment state and rejects provid
 
 test("success page checks the server projection and never treats the query string as payment authority", async () => {
   const source = await readFile(new URL("../src/pages/CheckoutSuccessPage.tsx", import.meta.url), "utf8");
-  assert.match(source, /fetch\(`\/api\/commerce\/order-status\?session_id=/);
+  assert.match(source, /\/api\/commerce\/payment-status\?attempt_id=/);
+  assert.match(source, /\/api\/commerce\/order-status\?session_id=/);
+  assert.match(source, /payload\.payment\.status === "completed"/);
   assert.match(source, /payload\.order\.paymentStatus === "paid"/);
   assert.match(source, /signed webhook/);
   assert.doesNotMatch(source, /searchParams\.get\("(?:paid|payment_status|success)"\)/);

@@ -1,5 +1,12 @@
 # Bump notes
 
+## 2026-08-30 - PayPal store checkout and one-time donations
+
+- Added route-scoped PayPal React SDK v6 UI backed by server-owned CAD totals, Orders v2 creation, protected capture, and local status reconciliation.
+- Preserved guest/account checkout, authoritative shipping quotes, cart state, and the existing Donations page and amount controls.
+- Donations are one-time only, use a distinct local donation authority, and never enter shipping or Printful workflows.
+- Stripe has no active Public control; the truthful customer state is "Card payments temporarily unavailable." PayPal remains hidden until credentials, webhook evidence, and explicit gates are ready.
+
 ## 2026-08-30 - About-to-Friends navigation
 
 CURRENT VER=0.1.0-alpha.0

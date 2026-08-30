@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test:contact": "node --test --test-concurrency=1 tests/contact-functions.test.mjs",
-    "test:functions": "node --test tests/contact-functions.test.mjs tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs tests/account-commerce-functions.test.mjs tests/banner-functions.test.mjs tests/checkout-success.test.mjs tests/wheels-functions.test.mjs",
+    "test:functions": "node --test tests/contact-functions.test.mjs tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs tests/account-commerce-functions.test.mjs tests/banner-functions.test.mjs tests/checkout-success.test.mjs tests/paypal-commerce-proxy.test.mjs tests/wheels-functions.test.mjs",
+    "test:paypal": "node --test tests/paypal-commerce-proxy.test.mjs",
     "test:account-commerce": "node --test --test-concurrency=1 tests/account-commerce-functions.test.mjs",
     "test:watch": "node --test tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs",
     "test:browser:watch": "node --test --test-concurrency=1 tests/watch-browser.test.mjs",
@@ -55,6 +56,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
+    "@paypal/react-paypal-js": "^10.4.0",
     "leaflet": "1.9.4",
     "maplibre-gl": "6.6.0",
     "react": "18.3.1",

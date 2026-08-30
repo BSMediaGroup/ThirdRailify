@@ -1,5 +1,7 @@
 # Third Railify V2 public site
 
+Store checkout and one-time donations use the standard PayPal experience backed by server-created and server-captured Orders API v2 payments. The PayPal SDK loads only on checkout and donation routes after a sanitized configuration response. Card payments are retained server-side for a future milestone but are currently unavailable.
+
 ## Replacement shop commerce source
 
 Account V2 provides real `/account`, `/account/profile`, `/account/delivery`, `/account/orders`, `/account/orders/:orderId`, and `/account/security` destinations. Signed-in customers can maintain a current encrypted contact name/phone and an encrypted, revisioned delivery address book in Admin-owned Commerce D1; verified account email stays read-only. Order history is linked only by the server-resolved Account-to-Customer relationship, keeps TEST and LIVE records distinct, and returns bounded projections without provider credentials or payment-card data. Checkout can preselect the default saved address or use another address once; saving a new address is opt-in and unchecked. Contact and delivery PII never enter browser storage, checkout remains disabled from canonical authority, and no saved-card vault exists.

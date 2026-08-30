@@ -1,24 +1,27 @@
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
-
-type DonationFrequency = "once" | "monthly" | "yearly";
-
-const frequencies: Array<{ value: DonationFrequency; label: string; note: string }> = [
-  { value: "once", label: "One time", note: "A single contribution" },
-  { value: "monthly", label: "Monthly", note: "Recurring each month" },
-  { value: "yearly", label: "Yearly", note: "Recurring each year" },
-];
+import type { PayPalCreateResult } from "../payments/paypal-types";
+const PayPalPayment = lazy(() => import("../components/PayPalPayment").then((module) => ({ default: module.PayPalPayment })));
 const suggestedAmounts = [5, 15, 25, 50];
 
 export function DonatePage() {
-  const [frequency, setFrequency] = useState<DonationFrequency>("once");
   const [amount, setAmount] = useState("15");
+  const [completedReference, setCompletedReference] = useState("");
+  const donationRequestId = useRef(crypto.randomUUID());
 
   const amountNumber = Number(amount);
   const safeAmount = Number.isFinite(amountNumber) && amountNumber > 0 ? amountNumber : 0;
-  const cadence = frequency === "once" ? "one-time" : frequency;
+  const amountMinor = Number.isSafeInteger(safeAmount * 100) ? safeAmount * 100 : 0;
+  const changeAmount = (value: string) => { setAmount(value); donationRequestId.current = crypto.randomUUID(); setCompletedReference(""); };
+  const createDonation = async (): Promise<PayPalCreateResult> => {
+    if (!Number.isSafeInteger(amountMinor) || amountMinor < 100 || amountMinor > 1_000_000) throw new Error("Choose a whole-dollar donation between CA$1 and CA$10,000.");
+    const response = await fetch("/api/commerce/paypal/donation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ donationRequestId: donationRequestId.current, amountMinor }) });
+    const payload = await response.json() as PayPalCreateResult & { message?: string };
+    if (!response.ok || payload.ok !== true || payload.provider !== "paypal" || payload.target !== "donation") throw new Error(payload.message || "PayPal donations are unavailable.");
+    return payload;
+  };
 
   return <main className="donate-page">
     <section className="donate-hero" aria-labelledby="donate-title">
@@ -29,7 +32,7 @@ export function DonatePage() {
           <p className="eyebrow">Independent signal · Community powered</p>
           <h1 id="donate-title">Donate.<span>Power the signal.</span></h1>
           <p>Help keep Third Railify broadcasting with a direct contribution toward the independent production behind the show.</p>
-          <div className="donate-availability" role="status"><span><i />Payment rail</span><strong>PayPal connection coming soon</strong><small>No payment or donation can be submitted from this staging page.</small></div>
+          <div className="donate-availability" role="status"><span><i />Preferred payment rail</span><strong>PayPal direct merchant</strong><small>Availability is controlled by verified server-side credentials, webhook evidence, and explicit commerce gates.</small></div>
           <div className="button-row"><a className="button button--primary" href="#donation-console">Build a donation <ArrowIcon /></a><Link className="button button--secondary" to="/watch">Watch the show</Link></div>
         </div>
         <DonationSignal />
@@ -38,15 +41,15 @@ export function DonatePage() {
     </section>
 
     <section className="donate-console-section" id="donation-console" aria-labelledby="donation-console-title">
-      <div className="container donate-console-heading"><div><p className="eyebrow">Donation console</p><h2 id="donation-console-title">Set your signal.</h2></div><p>Choose a cadence and amount now. The controls are ready for the future PayPal handoff, but remain safely non-transactional until that connection is verified.</p></div>
+      <div className="container donate-console-heading"><div><p className="eyebrow">Donation console</p><h2 id="donation-console-title">Set your signal.</h2></div><p>Choose a one-time amount. PayPal is shown only when the direct-merchant credentials, verified webhook, and donation gate are all ready.</p></div>
       <div className="container donate-console-layout">
-        <form className="donate-form" onSubmit={(event) => preventDonation(event)}>
+        <form className="donate-form" onSubmit={(event) => event.preventDefault()}>
           <header><span>TR / DONATE 01</span><strong>Contribution setup</strong><small>CAD authoritative</small></header>
-          <fieldset className="donate-frequency"><legend>How often?</legend><div>{frequencies.map((option) => <label key={option.value} className={frequency === option.value ? "is-selected" : ""}><input type="radio" name="donation-frequency" value={option.value} checked={frequency === option.value} onChange={() => setFrequency(option.value)} /><span><strong>{option.label}</strong><small>{option.note}</small></span></label>)}</div></fieldset>
-          <fieldset className="donate-amount"><legend>Choose an amount</legend><div>{suggestedAmounts.map((value) => <label key={value} className={amount === String(value) ? "is-selected" : ""}><input type="radio" name="donation-amount" value={value} checked={amount === String(value)} onChange={(event) => setAmount(event.target.value)} /><span><small>CAD</small><strong>${value}</strong></span></label>)}</div><label className="donate-custom-amount"><span>Custom amount</span><span><b>CAD</b><input type="number" inputMode="decimal" min="1" max="10000" step="1" value={amount} onChange={(event) => setAmount(event.target.value)} aria-describedby="donation-payment-note" /></span></label></fieldset>
-          <div className="donate-summary" aria-live="polite"><span>Prepared contribution</span><strong>{safeAmount ? `$${safeAmount.toLocaleString("en-CA", { maximumFractionDigits: 2 })} CAD` : "Enter an amount"}</strong><small>{cadence} donation · no transaction created</small></div>
-          <button className="donate-paypal-button" type="submit" disabled><span>PayPal</span><strong>Donations coming soon</strong></button>
-          <p id="donation-payment-note" className="donate-payment-note"><BoltIcon /> PayPal wiring is deferred. This form does not collect payment details, open a provider checkout, or create a recurring agreement.</p>
+          <fieldset className="donate-frequency"><legend>How often?</legend><div><label className="is-selected"><input type="radio" name="donation-frequency" value="once" checked readOnly /><span><strong>One time</strong><small>A single contribution; recurring agreements are not offered.</small></span></label></div></fieldset>
+          <fieldset className="donate-amount"><legend>Choose an amount</legend><div>{suggestedAmounts.map((value) => <label key={value} className={amount === String(value) ? "is-selected" : ""}><input type="radio" name="donation-amount" value={value} checked={amount === String(value)} onChange={(event) => changeAmount(event.target.value)} /><span><small>CAD</small><strong>${value}</strong></span></label>)}</div><label className="donate-custom-amount"><span>Custom amount</span><span><b>CAD</b><input type="number" inputMode="numeric" min="1" max="10000" step="1" value={amount} onChange={(event) => changeAmount(event.target.value)} aria-describedby="donation-payment-note" /></span></label></fieldset>
+          <div className="donate-summary" aria-live="polite"><span>Prepared contribution</span><strong>{safeAmount ? `$${safeAmount.toLocaleString("en-CA", { maximumFractionDigits: 0 })} CAD` : "Enter an amount"}</strong><small>one-time donation · created only after PayPal is selected</small></div>
+          <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="donation" disabled={!Number.isSafeInteger(amountMinor) || amountMinor < 100 || amountMinor > 1_000_000 || Boolean(completedReference)} createPayment={createDonation} onCaptured={(result) => { if (result.status === "completed") setCompletedReference(result.reference); }} /></Suspense>
+          {completedReference ? <p className="donate-payment-note" role="status"><BoltIcon /> Donation confirmed. Reference {completedReference}.</p> : <p id="donation-payment-note" className="donate-payment-note"><BoltIcon /> One-time PayPal payment only. No subscription or recurring agreement is created.</p>}
         </form>
 
         <aside className="donate-purpose" aria-label="About Third Railify donations">
@@ -66,5 +69,3 @@ export function DonatePage() {
 function DonationSignal() {
   return <div className="donate-signal" aria-label="Third Railify community-powered donation signal"><div className="donate-signal__meta"><span>TR / POWER BUS</span><strong>STANDBY</strong></div><div className="donate-signal__scope" aria-hidden="true"><i className="donate-signal__orbit donate-signal__orbit--outer" /><i className="donate-signal__orbit donate-signal__orbit--inner" /><span className="donate-signal__node donate-signal__node--one">MIC</span><span className="donate-signal__node donate-signal__node--two">HOST</span><span className="donate-signal__node donate-signal__node--three">EDIT</span><div className="donate-signal__core"><BoltIcon /><small>COMMUNITY</small><strong>POWER</strong></div></div><div className="donate-signal__wave" aria-hidden="true">{Array.from({ length: 19 }, (_, index) => <i key={index} />)}</div><footer><span><RadioIcon /> Independent broadcast</span><strong>PAYPAL / PENDING</strong></footer></div>;
 }
-
-function preventDonation(event: FormEvent<HTMLFormElement>) { event.preventDefault(); }

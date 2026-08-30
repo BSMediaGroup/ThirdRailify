@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { CadAmount } from "../components/CurrencyPrice";
 import { BagIcon } from "../components/Icons";
@@ -8,6 +8,9 @@ import type { CatalogueProduct } from "../types/catalogue";
 import { useAuth } from "../auth/AuthProvider";
 import { createAccountAddress, useAccountCommerce } from "../account/client";
 import type { AccountAddress } from "../account/types";
+import type { PayPalCreateResult } from "../payments/paypal-types";
+
+const PayPalPayment = lazy(() => import("../components/PayPalPayment").then((module) => ({ default: module.PayPalPayment })));
 
 type Delivery = { name: string; company: string; address1: string; address2: string; city: string; region: string; postalCode: string; countryCode: string; phone: string };
 type Rate = { id: string; name: string; amount: number; currency: "CAD"; totalAmount: number; delivery: null | { minDays: number | null; maxDays: number | null; minDate: string | null; maxDate: string | null } };
@@ -34,7 +37,6 @@ export function CheckoutPage() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [selectedRateId, setSelectedRateId] = useState("");
   const [quoteBusy, setQuoteBusy] = useState(false);
-  const [checkoutBusy, setCheckoutBusy] = useState(false);
   const [message, setMessage] = useState("Shipping calculation is not available yet.");
   const checkoutRequestId = useRef(crypto.randomUUID());
   const addressInitialized = useRef(false);
@@ -124,21 +126,19 @@ export function CheckoutPage() {
     finally { setQuoteBusy(false); }
   };
 
-  const continueToPayment = async () => {
-    if (!quote || !selectedRate || !quote.checkoutAvailable || checkoutBusy) return;
-    setCheckoutBusy(true); setMessage("");
-    try {
-      const response = await fetch("/api/commerce/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ checkoutRequestId: checkoutRequestId.current, items: cart.items, recipient: delivery, quoteId: quote.id, shippingOptionId: selectedRate.id, customer: { mode: customerMode, name: delivery.name, email: customerEmail } }) });
-      const payload = await response.json() as { ok?: boolean; checkoutUrl?: string; message?: string };
-      if (!response.ok || payload.ok !== true || !payload.checkoutUrl) throw new Error(payload.message || "Checkout is unavailable.");
-      window.location.assign(payload.checkoutUrl);
-    } catch (reason) { setMessage(reason instanceof Error ? reason.message : "Checkout is unavailable."); setCheckoutBusy(false); }
+  const createPayPalPayment = async (): Promise<PayPalCreateResult> => {
+    setTouched(true); setMessage("");
+    if (!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length || !customerMode) throw new Error("Complete the customer, delivery, and current shipping selections before payment.");
+    const response = await fetch("/api/commerce/paypal/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ checkoutRequestId: checkoutRequestId.current, items: cart.items, recipient: delivery, quoteId: quote.id, shippingOptionId: selectedRate.id, customer: { mode: customerMode, name: delivery.name, email: customerEmail } }) });
+    const payload = await response.json() as PayPalCreateResult & { message?: string };
+    if (!response.ok || payload.ok !== true || payload.provider !== "paypal") throw new Error(payload.message || "PayPal checkout is unavailable.");
+    return payload;
   };
 
   if (!cart.items.length) return <section className="checkout-page"><div className="container"><div className="empty-state empty-state--cart-page"><BagIcon /><p className="eyebrow">Checkout</p><h1>Your cart is empty.</h1><p>Add a product variant before entering delivery details.</p><Link className="button button--primary" to="/shop">Browse the shop</Link></div></div></section>;
 
   return <section className="checkout-page"><div className="container">
-    <header className="checkout-heading"><div><p className="eyebrow">Secure checkout · CAD authority</p><h1>Delivery &amp; checkout.</h1><p>Confirm contact and delivery details, review server-issued shipping, then continue to Stripe only when every checkout gate is enabled.</p></div><Link className="button button--secondary" to="/cart">Back to cart</Link></header>
+    <header className="checkout-heading"><div><p className="eyebrow">Secure checkout · CAD authority</p><h1>Delivery &amp; checkout.</h1><p>Confirm contact and delivery details, review server-issued shipping, then approve the server-created order with PayPal when every checkout gate is enabled.</p></div><Link className="button button--secondary" to="/cart">Back to cart</Link></header>
     {catalogueError ? <div className="admin-alert" role="alert">{catalogueError}</div> : null}
     <div className="checkout-layout">
       <form className="checkout-form" onSubmit={requestRates} noValidate>
@@ -170,8 +170,8 @@ export function CheckoutPage() {
       <aside className="checkout-summary" aria-labelledby="checkout-summary-title"><p className="eyebrow">04 · Order review & secure payment</p><h2 id="checkout-summary-title">Your order.</h2><div className="checkout-summary__items">{rows.map(({ item, product, variant }) => <article key={`${product.id}:${variant.id}`}>{product.image ? <img src={product.image} alt="" /> : <span className="checkout-summary__placeholder">TR</span>}<div><strong>{product.name}</strong><span>{variant.label} · Qty {item.quantity}</span></div><CadAmount minorUnits={variant.unitAmount * item.quantity} /></article>)}</div>
         {delivery.address1 && <div className="checkout-summary__delivery"><span>Delivery</span><strong>{delivery.name}</strong><small>{delivery.city}{delivery.region ? `, ${delivery.region}` : ""} · {delivery.countryCode}</small></div>}
         <dl><div><dt>Product subtotal</dt><dd><CadAmount minorUnits={displayedSubtotal} /></dd></div><div><dt>Shipping</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.amount} /> : "Calculated at checkout"}</dd></div><div><dt>Tax</dt><dd>Calculated before payment</dd></div><div className="checkout-summary__total"><dt>Order total</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.totalAmount} /> : "Pending authoritative amounts"}</dd></div></dl>
-        <button className="button button--primary" type="button" onClick={() => void continueToPayment()} disabled={!quote || !selectedRate || !quote.checkoutAvailable || checkoutBusy}>{checkoutBusy ? "Opening secure payment…" : "Continue to secure payment"}</button>
-        <p className="checkout-gate-message">{quote?.checkoutAvailable ? "Stripe receives payment details through the existing secure hosted handoff. Third Railify does not store raw card data." : "Checkout is currently unavailable. No order or payment can be created."}</p>
+        <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="store" disabled={!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
+        <p className="checkout-gate-message">{quote?.checkoutAvailable ? "PayPal handles payment approval. Third Railify creates and captures the order on the server and never stores raw payment credentials." : "Checkout is currently unavailable. No order or payment can be created."}</p>
         <p className="checkout-policy-links">Review the <Link to="/terms">Terms of Use &amp; Sale</Link>, <Link to="/privacy">Privacy Policy</Link>, <Link to="/terms">shipping terms</Link>, and <Link to="/refunds">Returns &amp; Refund Policy</Link> before payment.</p>
         {message && quote ? <div className="checkout-error" role="alert">{message}</div> : null}
       </aside>

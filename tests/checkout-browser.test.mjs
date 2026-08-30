@@ -33,6 +33,8 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
       if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
       if (path === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
       if (path === "/api/commerce/catalogue") return json(route, catalogue());
+      if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }] });
+      if (path === "/api/commerce/payment-config") return json(route, paymentConfig());
       if (path === "/api/commerce/shipping-quotes") {
         quoteCalls += 1;
         if (quoteMode === "unavailable") return json(route, { ok: false, error: "shipping_unavailable", message: "Shipping calculation is not available yet." }, 409);
@@ -77,7 +79,8 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     await page.getByRole("radio", { name: /Standard delivery/ }).waitFor();
     assert.equal(await page.getByRole("radio", { name: /Standard delivery/ }).isChecked(), true);
     assert.match(await page.locator(".checkout-summary").innerText(), /\$8\.95 CAD/); assert.match(await page.locator(".checkout-summary").innerText(), /\$39\.45 CAD/);
-    assert.equal(await page.getByRole("button", { name: "Continue to secure payment" }).isDisabled(), true);
+    assert.match(await page.locator(".paypal-payment").innerText(), /PayPal unavailable[\s\S]*credentials are not configured/i);
+    assert.match(await page.locator(".paypal-payment").innerText(), /Card payments temporarily unavailable/i);
     assert.match(await page.locator(".checkout-gate-message").innerText(), /Checkout is currently unavailable/);
     assert.doesNotMatch(await page.locator("body").innerText(), /11576|target-variant|printful|sync_variant|store_id|providerRateId/i);
 
@@ -110,6 +113,8 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, account: { id: "account-fixture", email: "verified@example.test", displayName: "Account Fixture", username: null, avatarUrl: null, providers: ["email"], role: "user", adminLevel: "none", status: "active", emailVerified: true, createdAt: "2026-08-29T00:00:00.000Z", lastLoginAt: null, source: "test" }, access: { isAdmin: false, isMasterAdmin: false } });
     if (path === "/api/account/commerce") return json(route, { ok: true, authority: "Admin Commerce D1", linked: true, contact: { name: "Account Fixture", phone: "", email: "verified@example.test", emailVerified: true, revision: 1 }, addresses: [], orders: [], summary: { savedAddressCount: 0, orderCount: 0, liveOrderCount: 0, testOrderCount: 0 }, checkout: { enabled: false, livePaymentCaptureEnabled: false, fulfillmentSubmissionEnabled: false, shippingConfigured: false, message: "Checkout is currently unavailable. No order or payment can be created." } });
     if (path === "/api/commerce/catalogue") return json(route, catalogue());
+    if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }] });
+    if (path === "/api/commerce/payment-config") return json(route, paymentConfig());
     if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     return json(route, { ok: false, error: "not_found" }, 404);
@@ -132,8 +137,9 @@ async function fillDelivery(page) {
   await page.getByLabel("City / locality").fill("London");
   await page.getByLabel("State / province / region").fill("ON");
   await page.getByLabel("Postal / ZIP code").fill("N6A 1A1");
-  await page.getByLabel("Destination country code").fill("CA");
+  await page.getByLabel("Destination country").selectOption("CA");
 }
+function paymentConfig() { return { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: null, configured: false, webhookConfigured: false, storeCheckoutEnabled: false, donationsEnabled: false, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: "PayPal credentials are not configured." }; }
 function shippingQuote() { return { ok: true, quote: { id: "shq_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", expiresAt: "2099-08-29T01:15:00.000Z", currency: "CAD", subtotalAmount: 3050, requiresShipping: true, checkoutAvailable: false, options: [{ id: "shr_bbbbbbbbbbbbbbbbbbbbbbbb", name: "Standard delivery", amount: 895, currency: "CAD", totalAmount: 3945, delivery: { minDays: 3, maxDays: 7, minDate: null, maxDate: null } }] } }; }
 function catalogue() { return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-29T00:00:00.000Z", collections: [], products: [{ id: "product-1", slug: "bleh-fixture", title: "BLEH Fixture", description: "Fixture product.", images: [IMAGE], categories: ["Apparel"], collectionSlugs: [], tags: [], featured: false, featuredOrder: null, displayOrder: 10, maxQuantity: 5, available: true, price: { minUnitAmount: 3050, maxUnitAmount: 3050, label: "CA$30.50" }, variants: [{ id: "variant-1", label: "M / Black", size: "M", color: "Black", options: { Size: "M", Color: "Black" }, unitAmount: 3050, currency: "CAD", availability: "active" }] }] }; }
 function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }

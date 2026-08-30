@@ -8,7 +8,7 @@ const ORIGIN = "http://127.0.0.1:4198";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const VIEWPORTS = [[1440, 900], [768, 1024], [390, 844]];
 
-test("Donate is a complete responsive, accessible, and safely non-transactional destination", async (t) => {
+test("Donate is a complete responsive, accessible, and fail-closed one-time PayPal destination", async (t) => {
   const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
   t.after(() => server.kill());
   await waitForServer();
@@ -21,7 +21,7 @@ test("Donate is a complete responsive, accessible, and safely non-transactional 
     const errors = []; const paypalRequests = []; const failedResponses = [];
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     page.on("pageerror", (error) => errors.push(error.message));
-    page.on("request", (request) => { if (/paypal/i.test(request.url())) paypalRequests.push(request.url()); });
+    page.on("request", (request) => { const host = new URL(request.url()).hostname; if (host === "paypal.com" || host.endsWith(".paypal.com") || host.endsWith(".paypalobjects.com")) paypalRequests.push(request.url()); });
     page.on("response", (response) => { if (response.status() >= 400) failedResponses.push(`${response.status()} ${response.url()}`); });
     await mockShellApis(page);
     await page.goto(`${ORIGIN}/donate`, { waitUntil: "domcontentloaded" });
@@ -37,19 +37,17 @@ test("Donate is a complete responsive, accessible, and safely non-transactional 
     const headerBottom = await page.locator(".site-header").evaluate((element) => element.getBoundingClientRect().bottom);
     const headingTop = await page.locator("h1").evaluate((element) => element.getBoundingClientRect().top);
     assert.ok(headingTop >= headerBottom, `heading clears the global header at ${width}x${height}`);
-    assert.equal(await page.locator('input[name="donation-frequency"]').count(), 3);
+    assert.equal(await page.locator('input[name="donation-frequency"]').count(), 1);
     assert.equal(await page.locator('input[name="donation-amount"]').count(), 4);
-    const monthly = page.locator('input[name="donation-frequency"][value="monthly"]');
-    await monthly.focus(); await page.keyboard.press("Space");
-    assert.equal(await monthly.isChecked(), true, "frequency is keyboard operable");
+    const once = page.locator('input[name="donation-frequency"][value="once"]');
+    assert.equal(await once.isChecked(), true, "only one-time donations are offered");
     await page.locator(".donate-amount label").filter({ has: page.locator('input[value="25"]') }).click();
     assert.equal(await page.locator('input[name="donation-amount"][value="25"]').isChecked(), true, "suggested amount label selects its radio");
-    assert.match(await page.locator(".donate-summary").innerText(), /\$25 CAD[\s\S]*monthly donation/i);
+    assert.match(await page.locator(".donate-summary").innerText(), /\$25 CAD[\s\S]*one-time donation/i);
     await page.locator(".donate-custom-amount input").fill("73");
     assert.match(await page.locator(".donate-summary").innerText(), /\$73 CAD/);
-    const payment = page.locator(".donate-paypal-button");
-    assert.equal(await payment.isDisabled(), true, "PayPal handoff remains disabled");
-    assert.match(await payment.innerText(), /PayPal[\s\S]*Donations coming soon/i);
+    const payment = page.locator(".paypal-payment");
+    assert.match(await payment.innerText(), /PayPal unavailable[\s\S]*credentials are not configured/i);
     assert.equal(await page.locator(".donate-form[action], .donate-form a[href*='paypal' i]").count(), 0, "no provider handoff exists");
     assert.deepEqual(paypalRequests, [], "the page creates no PayPal request");
     assert.equal(await page.locator('.site-footer a[href="/donate"]').getByText("Donate", { exact: true }).count(), 1);
@@ -91,6 +89,7 @@ async function mockShellApis(page) {
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1, USD: .73, AUD: 1.1 } });
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], updatedAt: null });
+    if (pathname === "/api/commerce/payment-config") return json(route, { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: null, configured: false, webhookConfigured: false, storeCheckoutEnabled: false, donationsEnabled: false, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: "PayPal credentials are not configured." });
     if (pathname === "/api/catalogue/banner") return json(route, { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: false, messages: [], mode: "static", speed: "normal" }, live: { enabled: false }, updatedAt: "2026-08-29T00:00:00.000Z" });
     return json(route, { error: "not_found" }, 404);
   });
