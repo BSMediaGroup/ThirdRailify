@@ -12,14 +12,19 @@ test("Stage layout deterministically fits one through six wheels without overlap
   }
 });
 
-test("1920 Stage fits three across and six as a useful 3x2 grid", () => {
+test("desktop Stage uses the exact one-through-six editorial arrangements", () => {
+  const expected = [[1], [2], [3], [2, 2], [3, 2], [3, 3]];
+  for (let count = 1; count <= 6; count += 1) {
+    const layout = computeStageLayout({ count, width: 1840, height: 850 });
+    assert.deepEqual(layout.rowCounts, expected[count - 1]);
+  }
   const three = computeStageLayout({ count: 3, width: 1840, height: 850 }); assert.equal(three.rows, 1); assert.equal(three.columns, 3); assert.ok(three.wheelDiameter >= 500);
   const six = computeStageLayout({ count: 6, width: 1840, height: 850 }); assert.equal(six.rows, 2); assert.equal(six.columns, 3); assert.deepEqual(six.rowCounts, [3, 3]); assert.ok(six.wheelDiameter >= 300);
   const b = six.cells[1].neighbors; assert.equal(b.left, 0); assert.equal(b.right, 2); assert.equal(b.down, 4); assert.equal(b.up, null);
   const e = six.cells[4].neighbors; assert.equal(e.left, 3); assert.equal(e.right, 5); assert.equal(e.up, 1); assert.equal(e.down, null);
 });
 
-test("ultrawide Stage uses additional width and phone remains one column", () => {
-  const wide = computeStageLayout({ count: 6, width: 3300, height: 1180 }); assert.ok(wide.columns >= 4); assert.ok(wide.wheelDiameter >= 480);
-  const phone = computeStageLayout({ count: 6, width: 358, height: 1300 }); assert.equal(phone.columns, 1); assert.equal(phone.rows, 6);
+test("ultrawide Stage preserves the 3x2 composition and phone wheels stay circular and compact", () => {
+  const wide = computeStageLayout({ count: 6, width: 3300, height: 1180 }); assert.equal(wide.columns, 3); assert.deepEqual(wide.rowCounts, [3, 3]); assert.ok(wide.wheelDiameter >= 480);
+  const phone = computeStageLayout({ count: 6, width: 358, height: 1968 }); assert.equal(phone.columns, 1); assert.equal(phone.rows, 6); assert.ok(phone.wheelDiameter <= 358 * .7 + .01); assert.ok(phone.wheelDiameter >= 240);
 });

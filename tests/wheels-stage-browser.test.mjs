@@ -38,10 +38,24 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     headless: true,
   });
   t.after(() => browser.close());
+  const directoryContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await consent(directoryContext);
+  const directoryPage = await directoryContext.newPage();
+  await routes(directoryPage);
+  await directoryPage.goto(`${ORIGIN}/wheels`, { waitUntil: "networkidle" });
+  await directoryPage.locator(".wheel-card").first().waitFor();
+  const cards = await directoryPage.locator(".wheel-card").evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
+  assert.equal(cards.length, 2); assert.ok(Math.abs(cards[0].width - cards[1].width) <= 1); assert.ok(Math.abs(cards[0].height - cards[1].height) <= 1);
+  assert.equal(await directoryPage.locator(".wheel-card--featured").count(), 0); assert.equal(await directoryPage.locator(".wheel-card--stage .stage-card__emblem>i").count(), 3);
+  await directoryPage.screenshot({ path: join(ARTIFACTS, "directory-unified-cards-1440x900.png"), fullPage: true });
+  await directoryContext.close();
   const matrix = [];
   for (const surface of [
     { count: 1, width: 1920, height: 1080 },
+    { count: 2, width: 1920, height: 1080 },
     { count: 3, width: 1920, height: 1080 },
+    { count: 4, width: 1920, height: 1080 },
+    { count: 5, width: 1920, height: 1080 },
     { count: 6, width: 1920, height: 1080 },
     { count: 6, width: 2560, height: 1440 },
     { count: 6, width: 3440, height: 1440 },
@@ -87,6 +101,11 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       };
     });
     assert.equal(geometry.tiles.length, surface.count);
+    if (surface.width === 1920) {
+      const renderedRows = [...new Set(geometry.tiles.map((tile) => Math.round(tile.top)))].map((top) => geometry.tiles.filter((tile) => Math.abs(tile.top - top) <= 1).length);
+      assert.deepEqual(renderedRows, [[1], [2], [3], [2, 2], [3, 2], [3, 3]][surface.count - 1]);
+    }
+    assert.equal(await page.locator('[aria-label^="Wheel owner and access details"]').count(), surface.count);
     assert.ok(
       geometry.overflow <= 1 &&
         geometry.surface.top < 100 &&
@@ -107,7 +126,7 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     for (const wheel of geometry.wheels)
       assert.ok(
         Math.abs(wheel.width - wheel.height) <= 1 &&
-          (surface.width >= 520 || wheel.width >= 250),
+          (surface.width >= 520 || wheel.width >= 230 && wheel.width <= geometry.surface.width * .72),
         JSON.stringify({ surface, wheel }),
       );
     for (let left = 0; left < geometry.tiles.length; left += 1)
@@ -122,6 +141,14 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
           }),
         );
     assert.deepEqual(errors, []);
+    if (surface.count === 6 && surface.width === 1920) {
+      await page.locator('[aria-label^="Wheel owner and access details"]').first().click();
+      const ownerPanel = page.getByRole("dialog", { name: /ownership and permissions/ });
+      await ownerPanel.waitFor(); await ownerPanel.getByText("Fixture Owner", { exact: true }).waitFor();
+      assert.equal(await ownerPanel.locator(".wheel-owner__avatar img").count(), 1);
+      await page.screenshot({ path: join(ARTIFACTS, "stage-owner-details-1920x1080.png") });
+      await ownerPanel.getByRole("button", { name: "Close ownership details" }).click();
+    }
     await page.screenshot({
       path: join(
         ARTIFACTS,
@@ -323,6 +350,15 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       { waitUntil: "networkidle" },
     );
     await widePage.locator(".wheel-stage canvas").first().waitFor();
+    const ownerTrigger = widePage.getByRole("button", { name: /Wheel owner and access details/ });
+    await ownerTrigger.waitFor();
+    if (surface.width === 1920) {
+      await ownerTrigger.click();
+      const ownerPanel = widePage.getByRole("dialog", { name: /ownership and permissions/ });
+      await ownerPanel.waitFor(); await ownerPanel.getByText("Fixture Owner", { exact: true }).waitFor();
+      if (surface.mode === "detail") await widePage.screenshot({ path: join(ARTIFACTS, "wheel-owner-details-1920x1080.png") });
+      await ownerPanel.getByRole("button", { name: "Close ownership details" }).click();
+    }
     const geometry = await widePage.evaluate((mode) => {
       const shell = document
         .querySelector(
@@ -693,7 +729,7 @@ async function respond(route, options = {}) {
       count: 1,
     });
   if (url.pathname === "/api/wheels/stages")
-    return json(route, { ok: true, items: [], count: 0 });
+    return json(route, { ok: true, items: [{ type: "stage", slug: "stage-2", title: "Fixture Two-Wheel Stage", description: "A compact Stage listing fixture", wheelCount: 2, visibility: "public", wheels: [wheelSummary(0, 0), wheelSummary(1, 1)], updatedAt: "2026-08-31T00:00:00Z" }], count: 1 });
   return json(route, { ok: true });
 }
 function stagePayload(count, options = {}) {
@@ -742,6 +778,9 @@ function wheel(index, duration = 3000, official = false) {
     description: "Stage fixture",
     lifecycle: "active",
     visibility: "public",
+    owner: { displayName: "Fixture Owner", avatarUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23f3c928'/%3E%3C/svg%3E" },
+    createdAt: "2026-08-29T00:00:00.000Z",
+    updatedAt: "2026-08-31T00:00:00.000Z",
     participantCount: 8,
     weighted: false,
     entries: Array.from({ length: 8 }, (_, order) => ({
@@ -791,6 +830,7 @@ function wheel(index, duration = 3000, official = false) {
     revision: 1,
   };
 }
+function wheelSummary(index, position) { const item = wheel(index); return { slug: item.slug, title: item.title, description: item.description, participantCount: item.participantCount, weighted: item.weighted, themePreset: item.config.themePreset, palette: item.config.palette, demoEnabled: item.demoEnabled, officialEnabled: item.officialEnabled, latestOfficialAt: null, updatedAt: item.updatedAt, position }; }
 async function consent(context) {
   const now = Date.now();
   await context.addCookies([

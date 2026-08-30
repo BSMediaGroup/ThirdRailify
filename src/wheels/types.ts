@@ -80,12 +80,19 @@ export type WheelAccess = {
   officialSpinLocked: boolean;
   revision?: number;
 };
+export type WheelOwner = {
+  displayName: string;
+  avatarUrl: string | null;
+};
 export type Wheel = {
   slug: string;
   title: string;
   description: string | null;
   lifecycle: "draft" | "active" | "archived";
   visibility: "public" | "hidden";
+  owner: WheelOwner;
+  createdAt: string;
+  updatedAt: string;
   participantCount: number;
   weighted: boolean;
   entries: WheelEntry[];
