@@ -98,8 +98,18 @@ export function GoatsPage() {
         {loading ? <div className="goats-map-loading" aria-busy="true">Loading the map projection…</div> : mapData.features.length ? <div className="goats-map-stage__grid"><Suspense fallback={<div className="goats-map-loading">Loading the map engine…</div>}><GoatsMap data={mapData} selectedId={selectedId} onSelect={select} /></Suspense><SelectedListing item={selected} /></div> : <div className="goats-empty goats-empty--map"><span>00</span><div><strong>No approved map points yet.</strong><p>The initial V2 gallery is intentionally empty. Approved submissions will appear here after moderation.</p></div></div>}
       </section>}
 
-      <section className="goats-gallery" aria-labelledby="goats-gallery-title"><header><div><p className="eyebrow">Approved dispatches</p><h2 id="goats-gallery-title">Spotted beyond the rail.</h2></div></header>
-        {loading ? <div className="goats-card-grid" aria-busy="true">{Array.from({ length: 3 }, (_, index) => <div className="goat-card goat-card--skeleton" key={index} />)}</div> : payload.items.length ? <><div className="goats-card-grid">{payload.items.map((item) => <GoatCard key={item.id} item={item} selected={item.id === selectedId} onSelect={select} />)}</div>{totalPages > 1 ? <nav className="goats-pagination" aria-label="GOATS gallery pages"><button type="button" disabled={payload.page <= 1} onClick={() => goToPage(payload.page - 1)}>Previous</button><span>Page {payload.page} of {totalPages}</span><button type="button" disabled={payload.page >= totalPages} onClick={() => goToPage(payload.page + 1)}>Next</button></nav> : null}</> : !error ? <div className="goats-empty"><span>00</span><div><strong>{params.toString() ? "No approved GOATS match these filters." : "The wild is ready for its first approved GOAT."}</strong><p>{params.toString() ? "Clear or change the filters to widen the signal." : "Production starts empty. Existing Wix records will be imported later from an owner-supplied export; optional demo records are local/test only."}</p><div className="button-row">{params.toString() ? <button className="button button--secondary" type="button" onClick={clear}>Clear filters</button> : null}<Link className="button button--primary" to="/goats/submit">Submit your GOATED drip</Link></div></div></div> : null}
+      <section className="goats-gallery" aria-labelledby="goats-gallery-title">
+        <header><div><p className="eyebrow">Approved dispatches</p><h2 id="goats-gallery-title">Spotted beyond the rail.</h2></div></header>
+        {loading
+          ? <div className="goats-card-grid" aria-busy="true">{Array.from({ length: 3 }, (_, index) => <div className="goat-card goat-card--skeleton" key={index} />)}</div>
+          : payload.items.length
+            ? <>
+                <div className="goats-card-grid">{payload.items.map((item) => <GoatCard key={item.id} item={item} selected={item.id === selectedId} onSelect={select} />)}</div>
+                {totalPages > 1 ? <nav className="goats-pagination" aria-label="GOATS gallery pages"><button type="button" disabled={payload.page <= 1} onClick={() => goToPage(payload.page - 1)}>Previous</button><span>Page {payload.page} of {totalPages}</span><button type="button" disabled={payload.page >= totalPages} onClick={() => goToPage(payload.page + 1)}>Next</button></nav> : null}
+              </>
+            : !error
+              ? <div className="goats-empty"><span>00</span><div><strong>{params.toString() ? "No approved GOATS match these filters." : "The wild is ready for its first approved GOAT."}</strong><p>{params.toString() ? "Clear or change the filters to widen the signal." : "No approved records are available for this view yet. Optional demo records remain local/test only."}</p><div className="button-row">{params.toString() ? <button className="button button--secondary" type="button" onClick={clear}>Clear filters</button> : null}<Link className="button button--primary" to="/goats/submit">Submit your GOATED drip</Link></div></div></div>
+              : null}
       </section>
     </main>
   </div>;

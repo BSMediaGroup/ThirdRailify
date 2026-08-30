@@ -64,7 +64,7 @@ export function CartDrawer() {
           <div><span className="eyebrow">Commerce catalogue</span><h2 id="cart-title">Your cart</h2></div>
           <button ref={closeRef} className="icon-button" type="button" onClick={cart.close} aria-label="Close cart"><CloseIcon /></button>
         </div>
-        <p className="cart-boundary">Selections stay on this device. Checkout is coming online during the store migration.</p>
+        <p className="cart-boundary">Selections stay on this device. Checkout remains disabled until its production gates are cleared.</p>
         {catalogueError ? <p className="cart-boundary" role="alert">Current catalogue details are unavailable. Retry from the shop before continuing.</p> : null}
         <div className="cart-drawer__items">
           {rows.length ? rows.map(({ item, product, variant }) => (
@@ -88,7 +88,7 @@ export function CartDrawer() {
         </div>
         <div className="cart-drawer__footer">
           <div><span>Cart subtotal</span><CadAmount minorUnits={subtotal} /></div>
-          <button className="button button--disabled" type="button" disabled>Checkout coming online during store migration</button>
+          <button className="button button--disabled" type="button" disabled>Checkout unavailable</button>
           <Link className="button button--secondary" to="/cart" onClick={cart.close}>View full cart</Link>
           {rows.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
         </div>

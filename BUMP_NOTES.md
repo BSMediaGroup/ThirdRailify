@@ -1,5 +1,11 @@
 # Bump notes
 
+## 2026-08-30 - Canonical production domain cutover
+
+- Activated Cloudflare Pages custom domains for `thirdrailify.com`, `www.thirdrailify.com`, and `admin.thirdrailify.com`; enabled the host-aware production cutover switch without changing preview origins or Commerce gates.
+- Final Public deployment is `f51ffb90-d820-446d-aa14-405ba873d88b`. Apex is canonical, `www` and the stable Public Pages hostname permanently preserve path/query to apex, and Public canonical/OG/JSON-LD/robots/sitemap authority is `https://thirdrailify.com`.
+- Removed obsolete migration/cutover wording while keeping checkout truthfully disabled, and allowlisted only Cloudflare Web Analytics' script and collection origins in CSP. No payment, order, email, document, fulfillment, or provider write occurred.
+
 ## 2026-08-30 - Wheels V1.8 segment patterns, image fills, sound presets, and pointer
 
 CURRENT VER=0.1.0-alpha.0

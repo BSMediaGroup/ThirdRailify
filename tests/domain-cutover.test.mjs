@@ -25,14 +25,17 @@ test("preparation mode and non-navigation methods do not redirect", async () => 
 });
 
 test("production shell and static SEO use canonical authority without global staging language", async () => {
-  const [shell, index, wrangler] = await Promise.all([
+  const [shell, index, wrangler, headers] = await Promise.all([
     readFile(new URL("../src/components/SiteShell.tsx", import.meta.url), "utf8"),
     readFile(new URL("../index.html", import.meta.url), "utf8"),
     readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8"),
+    readFile(new URL("../public/_headers", import.meta.url), "utf8"),
   ]);
   assert.doesNotMatch(shell, /staging scaffold|Wix remains production/i);
   assert.match(index, /https:\/\/thirdrailify\.com\//);
   assert.doesNotMatch(index, /thirdrailify\.pages\.dev/);
   assert.match(wrangler, /"THIRDRAILIFY_PUBLIC_ORIGIN": "https:\/\/thirdrailify\.com"/);
   assert.match(wrangler, /"THIRDRAILIFY_ADMIN_ORIGIN": "https:\/\/admin\.thirdrailify\.com"/);
+  assert.match(headers, /script-src[^\n]+https:\/\/static\.cloudflareinsights\.com/);
+  assert.match(headers, /connect-src[^\n]+https:\/\/cloudflareinsights\.com/);
 });

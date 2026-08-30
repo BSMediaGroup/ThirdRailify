@@ -156,7 +156,7 @@ export function HomePage() {
       <section className="section section--panel merch-preview">
         <div className="container split-heading">
           <div><p className="eyebrow">From the replacement store</p><h2>Merch with lore attached.</h2></div>
-          <div><p>Products, variants, images, and CAD prices come from the replacement commerce catalogue. Checkout remains disabled before cutover.</p><Link className="text-link" to="/shop">Explore the catalogue <ArrowIcon /></Link></div>
+          <div><p>Products, variants, images, and CAD prices come from the Commerce catalogue. Checkout remains disabled until its production gates are cleared.</p><Link className="text-link" to="/shop">Explore the catalogue <ArrowIcon /></Link></div>
         </div>
         <div className="container product-grid product-grid--featured">
           {merchProducts.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}
