@@ -34,6 +34,17 @@ test("Public account widget matches Admin typography and opens the shield link i
 
   await page.goto(ORIGIN, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Master Admin 1 account menu" }).click();
+  assert.equal(await page.locator(".account-menu__identity .account-access-badge--master_admin").getAttribute("aria-label"), "Master Admin");
+  const identityLine = await page.locator(".account-menu__identity .account-identity-name").evaluate((row) => {
+    const name = row.querySelector("span:first-child"); const badge = row.querySelector(".account-access-badge");
+    const nameBox = name?.getBoundingClientRect(); const badgeBox = badge?.getBoundingClientRect();
+    return { display: getComputedStyle(row).display, fontSize: name ? getComputedStyle(name).fontSize : "", nameRight: nameBox?.right || 0, badgeLeft: badgeBox?.left || 0, nameTop: nameBox?.top || 0, badgeTop: badgeBox?.top || 0 };
+  });
+  assert.equal(identityLine.display, "flex", "inline-flex identity is blockified only as the grid item; its children remain one flex row");
+  assert.equal(identityLine.fontSize, "13.28px", "display name keeps the original identity typography");
+  assert.ok(identityLine.badgeLeft > identityLine.nameRight && Math.abs(identityLine.badgeTop - identityLine.nameTop) < 4, "badge stays inline after the display name");
+  assert.equal(await page.locator(".account-menu__identity > div > small").count(), 0, "identity header has no obsolete third role row");
+  assert.equal(await page.locator(".account-menu__identity i, .account-widget__trigger > i").count(), 0, "account identity has no status dot");
   const messagesLink = page.getByRole("menuitem", { name: /Messages/ });
   await messagesLink.waitFor();
   assert.equal(await messagesLink.getAttribute("href"), "/account/messages");
@@ -47,6 +58,24 @@ test("Public account widget matches Admin typography and opens the shield link i
   assert.equal(await page.locator(".account-menu__identity > div > span").evaluate((element) => getComputedStyle(element).fontSize), "9.92px");
   assert.equal(await page.locator(".account-menu__overview dt").first().evaluate((element) => getComputedStyle(element).fontSize), "8px");
   assert.ok(await page.locator(".account-menu").evaluate((element) => element.scrollWidth <= element.clientWidth));
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Master Admin 1 account menu" }).click();
+    const widgetLayout = await page.locator(".account-widget").evaluate((element) => {
+      const trigger = element.querySelector(".account-widget__trigger")?.getBoundingClientRect();
+      const menu = element.querySelector(".account-menu")?.getBoundingClientRect();
+      return { viewport: document.documentElement.clientWidth, trigger: trigger && { left: trigger.left, right: trigger.right }, menu: menu && { left: menu.left, right: menu.right } };
+    });
+    assert.ok(widgetLayout.trigger && widgetLayout.trigger.left >= 0 && widgetLayout.trigger.right <= widgetLayout.viewport, `compact account trigger fits ${viewport.width}px`);
+    assert.ok(widgetLayout.menu && widgetLayout.menu.left >= 0 && widgetLayout.menu.right <= widgetLayout.viewport, `account menu fits ${viewport.width}px`);
+    const badge = page.locator(".account-menu__identity .account-access-badge");
+    assert.equal(await badge.isVisible(), true, `role badge remains visible at ${viewport.width}px`);
+    assert.equal(await page.locator(".account-widget__trigger .account-access-badge").isVisible(), true, `compact role badge remains visible at ${viewport.width}px`);
+    const menu = await page.locator(".account-menu").boundingBox();
+    assert.ok(menu && menu.width <= viewport.width, `account menu fits ${viewport.width}px`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: join(tmpdir(), "thirdrailify-account-widget-1440x900.png") });
   assert.deepEqual(errors, []);
 });

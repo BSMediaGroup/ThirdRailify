@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-08-31 - Account identity access presentation
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added a shared presentation-only Master Admin, Full Admin, and Regular User shield-badge system to the compact Public account trigger and two-row account dropdown without changing Account/session authority.
+- Preserved `/account/messages`, unread-count behavior, and authorized Admin-dashboard access; small-screen account triggers retain the badge without horizontal overflow.
+- Left Public Wheel owner surfaces unchanged because their bounded owner contract does not expose role information; no role was inferred and no API was expanded for decoration.
+- Added focused desktop, tablet, and 390px account-widget assertions. No deployment, database, provider, payment, purchase, donation, refund, DNS, or Cloudflare resource change occurred.
+
 ## 2026-08-31 - Wheels V1.10 and Stage V1.1
 
 CURRENT VER=0.1.0-alpha.0

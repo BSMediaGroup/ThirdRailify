@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, 
 import { Link } from "react-router-dom";
 import { getAccountInbox } from "../account/inbox-client";
 import { useAuth } from "./AuthProvider";
+import { AccountAccessBadge } from "./AccountAccessBadge";
 
 export function AccountWidget() {
   const { account, loading, openAuth, signOut, openAdminSite } = useAuth();
@@ -34,7 +35,7 @@ export function AccountWidget() {
 
   if (loading) return <span className="account-widget account-widget--loading" aria-label="Loading account" />;
   if (!account) return <button className="account-login" type="button" onClick={() => openAuth("signin")}>Log in</button>;
-  const accountType = account.role === "admin" ? (account.adminLevel === "master" ? "Master Admin" : "Admin") : "Member";
+  const secondaryIdentity = account.email || (account.username ? `@${account.username}` : "Third Railify account");
   const handleMenuKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('[role="menuitem"]'));
     const index = controls.indexOf(document.activeElement as HTMLElement);
@@ -48,12 +49,12 @@ export function AccountWidget() {
     <div className="account-widget" ref={root}>
       <button className="account-widget__trigger" type="button" onClick={() => setOpen((value) => !value)} aria-label={`${account.displayName} account menu`} aria-expanded={open} aria-haspopup="menu">
         <AccountAvatar account={account} />
-        <span className="account-widget__copy"><strong>{account.displayName}</strong><small>{accountType}</small></span>
+        <span className="account-widget__copy"><strong className="account-identity-name"><span>{account.displayName}</span><AccountAccessBadge account={account} /></strong><small>{secondaryIdentity}</small></span>
         <b aria-hidden="true">&#9662;</b>
       </button>
       {open && (
         <div className="account-menu" role="menu" aria-label="Account menu" onKeyDown={handleMenuKeyDown}>
-          <div className="account-menu__identity"><AccountAvatar account={account} /><div><strong>{account.displayName}</strong><span>{account.email || `@${account.username || "member"}`}</span><small>{accountType}</small></div></div>
+          <div className="account-menu__identity"><AccountAvatar account={account} /><div><strong className="account-identity-name"><span>{account.displayName}</span><AccountAccessBadge account={account} /></strong><span>{secondaryIdentity}</span></div></div>
           <dl className="account-menu__overview">
             <div><dt>Display name</dt><dd>{account.displayName}</dd></div>
             <div><dt>Handle</dt><dd>{account.username ? `@${account.username}` : "Member"}</dd></div>
@@ -67,7 +68,7 @@ export function AccountWidget() {
             <Link to="/shop" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="shop" /><span>Shop</span></Link>
             <Link to="/community" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="community" /><span>Community</span></Link>
             <span className="account-menu__divider" role="separator" />
-            <a href="https://admin.thirdrailify.com" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={(event) => { event.preventDefault(); setOpen(false); void openAdminSite("/", true); }}><AccountMenuIcon name="shield" /><span>Admin dashboard</span></a>
+            {account.role === "admin" && account.status === "active" ? <a href="https://admin.thirdrailify.com" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={(event) => { event.preventDefault(); setOpen(false); void openAdminSite("/", true); }}><AccountMenuIcon name="shield" /><span>Admin dashboard</span></a> : null}
             <button className="account-menu__logout" type="button" role="menuitem" onClick={() => { setOpen(false); void signOut(); }}><AccountMenuIcon name="logout" /><span>Sign out</span></button>
           </div>
         </div>

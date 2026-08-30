@@ -1,5 +1,13 @@
 # Third Railify V2 public site
 
+## Account identity access badges (local implementation)
+
+Authenticated account widgets now use one presentation-only role visual system without changing session, Account, or authorization authority. Master Admin uses a gold lightning shield, Full Admin uses a gold check shield, and Regular User uses a muted gray check shield. The compact header places the badge immediately after the display name, while the dropdown identity is limited to display name plus badge and one email/username line. The badge stays visible when the compact trigger collapses on small screens.
+
+The existing `/account/messages` destination and unread-count behavior are unchanged. The Admin dashboard link is still shown only to an active Admin account. Public Wheel owner projections do not currently contain role/admin-level data, so no decorative role was guessed and no Public API contract was expanded for this UI-only milestone.
+
+Repository tree addition: `src/auth/AccountAccessBadge.tsx`. No route, auth, database, payment, provider, deployment, or Cloudflare configuration change was made.
+
 ## Analytics V1 and account inbox (local implementation)
 
 Public now emits privacy-minimized `page_view` events from initial loads and genuine SPA route changes through same-origin `POST /api/analytics`. The browser never receives the ingestion credential. The Pages Function strips query strings/fragments, rejects API/static paths, honours DNT and Global Privacy Control, derives coarse location/device/member classification on the server, uses a 30-minute HttpOnly session cookie only when collection is configured, and relays events to the Admin authority with a dedicated HMAC secret. Collection failures are deliberately non-blocking and return an empty `204`.
