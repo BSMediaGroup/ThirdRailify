@@ -71,7 +71,7 @@ export function SiteShell() {
   return (
     <div className="site-frame" data-site-shell="mounted">
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <div className="staging-rail"><span><BoltIcon /> V2 staging scaffold</span><strong>Wix remains production</strong></div>
+      <div className="site-rail"><span><BoltIcon /> Third Railify</span><strong>Independent Canadian media</strong></div>
       <PromoBanner config={bannerConfig} broadcast={data} />
       <header className="site-header">
         <div className="container site-header__inner">
@@ -125,7 +125,7 @@ function SiteFooter() {
         <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/wheels">Competition wheels</Link><Link to="/vip">VIP</Link><Link to="/donate">Donate</Link></div>
         <div><h2>Policies</h2><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/refunds">Refunds</Link><Link to="/accessibility">Accessibility</Link><Link to="/policies">Policy Library</Link></div>
       </div>
-      <div className="container footer-bottom"><span>Third Railify V2 staging scaffold · 2026</span><div className="footer-bottom__utilities"><button className="footer-privacy-button" type="button" onClick={privacy.openManager}>Privacy choices</button><span>Current Wix site remains production</span></div></div>
+      <div className="container footer-bottom"><span>Third Railify · 2026</span><div className="footer-bottom__utilities"><button className="footer-privacy-button" type="button" onClick={privacy.openManager}>Privacy choices</button></div></div>
     </footer>
   );
 }

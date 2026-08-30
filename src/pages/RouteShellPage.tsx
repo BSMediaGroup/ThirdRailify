@@ -19,19 +19,17 @@ const content: Record<RouteKey, RouteContent> = {
     eyebrow: "GOATs in the wild",
     title: "The merch has left the station.",
     description: "The current community gallery lets viewers share Third Railify and Just Gina merch in the wild.",
-    status: "Uploads, comments, likes, locations, and member identity are not implemented in this public scaffold.",
-    sourceHref: "https://www.thirdrailify.com/goats",
-    sourceLabel: "See the current gallery",
-    points: ["Community gallery route preserved", "Submission flow deferred", "No member data copied into V2"],
+    status: "The current GOATS experience is available from the main community route.",
+    sourceHref: "/goats",
+    sourceLabel: "Open GOATS",
+    points: ["Approved public gallery", "Policy-aware submissions", "Account and media boundaries enforced"],
   },
   giftCards: {
-    eyebrow: "Current Wix commerce",
+    eyebrow: "Gift cards",
     title: "Gift cards need a real handoff.",
     description: "The current store offers a Third Railify™ gift card in CAD with preset and custom amounts.",
-    status: "Gift-card issuance, balance, delivery, and payment remain entirely on Wix for this milestone.",
-    sourceHref: "https://www.thirdrailify.com/gift",
-    sourceLabel: "Open current gift cards",
-    points: ["Current presets start at CA$15", "Scheduled or immediate delivery", "No V2 purchase flow"],
+    status: "Gift cards are not currently available. No purchase, payment, or delivery action is exposed here.",
+    points: ["Issuance disabled", "Payments disabled", "No balance or delivery workflow"],
   },
 };
 
@@ -46,7 +44,7 @@ export function RouteShellPage({ routeKey }: { routeKey: RouteKey }) {
           <p className="eyebrow">{route.eyebrow}</p>
           <h1>{route.title}</h1>
           <p className="route-lede">{route.description}</p>
-          <div className="route-status"><BoltIcon /><span><strong>Migration-stage route</strong>{route.status}</span></div>
+          <div className="route-status"><BoltIcon /><span><strong>Current status</strong>{route.status}</span></div>
           <div className="button-row">
             {route.sourceHref ? <a className="button button--primary" href={route.sourceHref} target="_blank" rel="noreferrer">{route.sourceLabel} <ArrowIcon /></a> : null}
             <Link className="button button--secondary" to="/">Back home</Link>

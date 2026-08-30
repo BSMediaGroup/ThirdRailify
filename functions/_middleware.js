@@ -19,6 +19,9 @@ export async function onRequest(context) {
   const { request } = context;
   if (request.method !== "GET" && request.method !== "HEAD") return context.next();
   const requestUrl = new URL(request.url);
+  if (context.env?.THIRDRAILIFY_DOMAIN_CUTOVER_ACTIVE === "true" && new Set(["www.thirdrailify.com", "thirdrailify.pages.dev"]).has(requestUrl.hostname)) {
+    return hostRedirect(requestUrl, "https://thirdrailify.com");
+  }
   const redirectPath = canonicalRedirectPath(requestUrl.pathname);
   if (redirectPath) return canonicalRedirect(requestUrl, redirectPath);
 
@@ -104,6 +107,11 @@ function canonicalRedirect(requestUrl, pathname) {
   return new Response(null, { status: 301, headers: { Location: location.href, "Cache-Control": "public, max-age=3600", "X-Content-Type-Options": "nosniff" } });
 }
 
+function hostRedirect(requestUrl, origin) {
+  const location = new URL(`${requestUrl.pathname}${requestUrl.search}`, origin);
+  return new Response(null, { status: 301, headers: { Location: location.href, "Cache-Control": "public, max-age=3600", "X-Content-Type-Options": "nosniff" } });
+}
+
 function productSlug(pathname) {
   return pathname.match(/^\/shop\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/)?.[1]
     || pathname.match(/^\/product-page\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/)?.[1]
@@ -118,7 +126,7 @@ function publicOrigin(env, requestUrl) {
       if (url.protocol === "https:" || new Set(["localhost", "127.0.0.1"]).has(url.hostname)) return url.origin;
     } catch { /* try the request origin */ }
   }
-  return "https://thirdrailify.pages.dev";
+  return "https://thirdrailify.com";
 }
 
 function isPreviewOrigin(requestUrl, canonicalOrigin) {

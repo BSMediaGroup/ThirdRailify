@@ -64,8 +64,8 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "Who these Terms cover",
         eyebrow: "Scope",
         paragraphs: [
-          "These Terms apply to the Third Railify and Third Railify Official website, authorised staging domains, accounts, Watch features, community features, and storefront. Third Railify is a Canadian business owned and operated by Shawn from London, Ontario, Canada. For personal safety, the owner is identified here by the established public professional name “Shawn”. In these Terms, “Third Railify”, “we”, “us”, and “our” refer to that business; “you” means a visitor, account holder, contributor, or customer.",
-          "The site is currently a staging replacement for the existing Wix site. The contracting identity and contact information presented at an enabled checkout or in an order confirmation form part of that sale and must be read with these Terms.",
+          "These Terms apply to the Third Railify and Third Railify Official website, accounts, Watch features, community features, and storefront. Third Railify is a Canadian business owned and operated by Shawn from London, Ontario, Canada. For personal safety, the owner is identified here by the established public professional name “Shawn”. In these Terms, “Third Railify”, “we”, “us”, and “our” refer to that business; “you” means a visitor, account holder, contributor, or customer.",
+          "The contracting identity and contact information presented at an enabled checkout or in an order confirmation form part of that sale and must be read with these Terms. Checkout is currently disabled.",
         ],
       },
       {
@@ -277,7 +277,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "Who operates this service",
         eyebrow: "Responsibility",
         paragraphs: [
-          "This policy applies to the Third Railify and Third Railify Official website, authorised staging domains, account service, GOATS community workflow, Watch experience, and storefront. Third Railify is a Canadian business owned and operated by Shawn from London, Ontario, Canada. For personal safety, the owner is identified here by the established public professional name “Shawn”. Privacy questions, requests, and complaints can be sent to privacy@thirdrailify.com.",
+          "This policy applies to the Third Railify and Third Railify Official website, account service, GOATS community workflow, Watch experience, and storefront. Third Railify is a Canadian business owned and operated by Shawn from London, Ontario, Canada. For personal safety, the owner is identified here by the established public professional name “Shawn”. Privacy questions, requests, and complaints can be sent to privacy@thirdrailify.com.",
         ],
       },
       {

@@ -5,11 +5,12 @@
   "pages_build_output_dir": "./dist",
   "vars": {
     "AUTH_ENVIRONMENT": "staging",
-    "THIRDRAILIFY_PUBLIC_ORIGIN": "https://thirdrailify.pages.dev",
-    "THIRDRAILIFY_ADMIN_ORIGIN": "https://thirdrailify-admin.pages.dev",
-    "THIRDRAILIFY_PROFILE_MEDIA_ORIGIN": "https://thirdrailify-admin.pages.dev",
+    "THIRDRAILIFY_PUBLIC_ORIGIN": "https://thirdrailify.com",
+    "THIRDRAILIFY_ADMIN_ORIGIN": "https://admin.thirdrailify.com",
+    "THIRDRAILIFY_PROFILE_MEDIA_ORIGIN": "https://admin.thirdrailify.com",
     "THIRDRAILIFY_AUTH_COOKIE_DOMAIN": "",
-    "VITE_THIRDRAILIFY_ADMIN_ORIGIN": "https://thirdrailify-admin.pages.dev",
+    "VITE_THIRDRAILIFY_ADMIN_ORIGIN": "https://admin.thirdrailify.com",
+    "THIRDRAILIFY_DOMAIN_CUTOVER_ACTIVE": "false",
     "THIRDRAILIFY_TURNSTILE_SITE_KEY": "0x4AAAAAAEctN9Bb4evywXmW",
     "CURRENCY_RATES_API_URL": "https://api.frankfurter.dev/v1/latest?base=CAD",
     "VITE_GOATS_MAP_STYLE_URL": "https://tiles.openfreemap.org/styles/dark"

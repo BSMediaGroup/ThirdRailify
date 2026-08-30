@@ -1,6 +1,6 @@
 # Cloudflare Pages and public-state setup
 
-The established staging target is the Cloudflare Pages project `thirdrailify` at `https://thirdrailify.pages.dev`, built from `main`. Wix remains the public custom-domain authority; this setup does not authorize DNS, nameserver, Wix, or custom-domain changes.
+The production target is the Cloudflare Pages project `thirdrailify`, built from `main` and served canonically at `https://thirdrailify.com`. The `thirdrailify.pages.dev` alias is retained only as a permanent path/query-preserving redirect after the custom domain is healthy.
 
 The account milestone adds a second independent shared-D1 prerequisite. Follow `CLOUDFLARE_AUTH_SETUP.md` for the Public client boundary and the Admin repository's detailed setup guide. No account database ID or binding is claimed by the checked-in Wrangler file.
 

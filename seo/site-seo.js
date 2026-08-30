@@ -541,8 +541,8 @@ function canonicalProductSlug(path) {
 }
 
 function safeOrigin(value) {
-  try { const url = new URL(String(value || "https://thirdrailify.pages.dev")); if (url.protocol === "https:" || new Set(["localhost", "127.0.0.1"]).has(url.hostname)) return url.origin; } catch { /* use staging fallback */ }
-  return "https://thirdrailify.pages.dev";
+  try { const url = new URL(String(value || "https://thirdrailify.com")); if (url.protocol === "https:" || new Set(["localhost", "127.0.0.1"]).has(url.hostname)) return url.origin; } catch { /* use production fallback */ }
+  return "https://thirdrailify.com";
 }
 
 function normalizePath(value) {
