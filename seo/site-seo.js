@@ -170,6 +170,11 @@ const STATIC_ROUTES = [
     canonicalPath: "/account",
     index: false,
   }),
+  route("/account/messages", "account:messages", "Messages | Third Railify Account", "Review private account and order messages issued by authoritative Third Railify workflows.", {
+    label: "Messages",
+    canonicalPath: "/account",
+    index: false,
+  }),
   route("/account/security", "account:security", "Security & Privacy | Third Railify Account", "Review connected sign-in methods, authenticated session state, account privacy controls, and current self-service security boundaries.", {
     label: "Security & privacy",
     canonicalPath: "/account",

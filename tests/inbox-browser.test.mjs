@@ -37,6 +37,11 @@ test("Public account messages open full details and support individual and bulk 
 
     await page.goto(`${ORIGIN}/account/messages`);
     await page.getByRole("heading", { level: 1, name: "Messages" }).waitFor();
+    assert.equal(await page.title(), "Messages | Third Railify Account");
+    const disabledRead = page.locator(".account-inbox__bulk").getByRole("button", { name: "Read", exact: true });
+    const disabledColors = await disabledRead.evaluate((element) => { const style = getComputedStyle(element); return { color: style.color, border: style.borderTopColor }; });
+    assert.equal(disabledColors.color, disabledColors.border, "disabled label matches its visible border color");
+    assert.notEqual(disabledColors.color, "rgb(0, 0, 0)");
     await page.locator(".account-message").click();
     const dialog = page.getByRole("dialog", { name: "Your order is on the rail" });
     await dialog.waitFor();

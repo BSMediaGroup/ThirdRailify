@@ -26,6 +26,7 @@ test("Public account widget matches Admin typography and opens the shield link i
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/auth/config") return json(route, { configured: true, publicOrigin: ORIGIN, adminOrigin: ORIGIN, oauthProviders: [], oauthProviderStates: [], cookieMode: "host-only" });
     if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, csrfToken: "fixture-csrf", access: { isAdmin: true, isMasterAdmin: true }, account: { id: "fixture", email: "master@example.test", displayName: "Master Admin 1", username: null, avatarUrl: null, providers: ["email"], role: "admin", adminLevel: "master", status: "active", emailVerified: true, createdAt: "2026-08-30T00:00:00.000Z", lastLoginAt: null, source: "test" } });
+    if (path === "/api/account/commerce/inbox") return json(route, { ok: true, authority: "Admin Commerce D1", items: [], total: 3, unread: 3 });
     if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     return json(route, { ok: false, error: "not_found" }, 404);
@@ -33,6 +34,10 @@ test("Public account widget matches Admin typography and opens the shield link i
 
   await page.goto(ORIGIN, { waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: "Master Admin 1 account menu" }).click();
+  const messagesLink = page.getByRole("menuitem", { name: /Messages/ });
+  await messagesLink.waitFor();
+  assert.equal(await messagesLink.getAttribute("href"), "/account/messages");
+  assert.equal(await messagesLink.locator(".account-menu__badge").innerText(), "3");
   const adminLink = page.getByRole("menuitem", { name: "Admin dashboard" });
   await adminLink.waitFor();
   assert.equal(await adminLink.getAttribute("target"), "_blank");

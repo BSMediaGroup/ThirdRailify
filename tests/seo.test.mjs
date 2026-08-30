@@ -63,7 +63,7 @@ test("static pages publish unique titles, descriptions, canonicals, social image
     for (const marker of ["og:title", "og:description", "og:image", "twitter:card", "twitter:image", 'rel="canonical"', "application/ld\\+json"]) assert.match(head, new RegExp(marker));
     assert.doesNotMatch(head, /noindex/);
   }
-  for (const path of ["/account", "/account/profile", "/account/delivery", "/account/orders", "/account/orders/ord_test", "/account/security", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/live", "/wheels/new", "/wheels/demo-wheel/edit", "/wheels/demo-wheel/present", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
+  for (const path of ["/account", "/account/profile", "/account/delivery", "/account/orders", "/account/orders/ord_test", "/account/messages", "/account/security", "/account/login", "/cart", "/checkout/success", "/goats/submit", "/live", "/wheels/new", "/wheels/demo-wheel/edit", "/wheels/demo-wheel/present", "/missing"]) assert.equal(staticSeoForPath(path, ORIGIN).robots, NOINDEX_ROBOTS);
 });
 
 test("dynamic product, episode, and GOATS metadata uses sanitized page authority", () => {

@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { getAccountInbox } from "../account/inbox-client";
 import { useAuth } from "./AuthProvider";
 
 export function AccountWidget() {
   const { account, loading, openAuth, signOut, openAdminSite } = useAuth();
   const [open, setOpen] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const root = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!account) { setUnreadMessages(0); return; }
+    const controller = new AbortController();
+    void getAccountInbox(false, controller.signal)
+      .then((payload) => setUnreadMessages(payload.unread))
+      .catch(() => { /* The menu destination remains available if inbox summary loading fails. */ });
+    return () => controller.abort();
+  }, [account, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -51,6 +62,7 @@ export function AccountWidget() {
           </dl>
           <div className="account-menu__actions">
             <Link to="/account" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="profile" /><span>Account settings</span></Link>
+            <Link to="/account/messages" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="messages" /><span>Messages</span>{unreadMessages > 0 ? <b className="account-menu__badge" aria-label={`${unreadMessages} unread messages`}>{unreadMessages > 99 ? "99+" : unreadMessages}</b> : null}</Link>
             <Link to="/watch" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="watch" /><span>Watch</span></Link>
             <Link to="/shop" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="shop" /><span>Shop</span></Link>
             <Link to="/community" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="community" /><span>Community</span></Link>
@@ -64,9 +76,10 @@ export function AccountWidget() {
   );
 }
 
-function AccountMenuIcon({ name }: { name: "profile" | "watch" | "shop" | "community" | "shield" | "logout" }) {
+function AccountMenuIcon({ name }: { name: "profile" | "messages" | "watch" | "shop" | "community" | "shield" | "logout" }) {
   const paths: Record<typeof name, ReactNode> = {
     profile: <><circle cx="12" cy="8" r="3"/><path d="M5 21c.6-4.7 3-7 7-7s6.4 2.3 7 7"/></>,
+    messages: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></>,
     watch: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></>,
     shop: <><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></>,
     community: <><circle cx="9" cy="8" r="3"/><path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6M16 7a3 3 0 0 1 0 5M16 15c3 0 4.5 1.7 5 5"/></>,
