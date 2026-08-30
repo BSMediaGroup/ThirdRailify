@@ -64,6 +64,7 @@ export function App() {
         <Route path="/account/delivery" element={<AccountPage />} />
         <Route path="/account/orders" element={<AccountPage />} />
         <Route path="/account/orders/:orderId" element={<AccountPage />} />
+        <Route path="/account/messages" element={<AccountPage />} />
         <Route path="/account/security" element={<AccountPage />} />
         <Route path="/account/login" element={<AccountPage openLogin />} />
         <Route path="/shawn" element={<HostPage hostKey="shawn" />} />

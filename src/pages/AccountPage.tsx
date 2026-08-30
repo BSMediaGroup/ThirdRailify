@@ -11,6 +11,7 @@ import { importAvatarUrl, updateDisplayName, uploadAvatar } from "../auth/client
 import { CadAmount } from "../components/CurrencyPrice";
 import { usePrivacy } from "../privacy/PrivacyProvider";
 import { useCart } from "../store/cart";
+import { AccountInbox } from "../account/AccountInbox";
 
 const EMPTY_ADDRESS: AddressInput = { label: "Home", recipientName: "", company: "", address1: "", address2: "", city: "", region: "", postalCode: "", countryCode: "CA", phone: "", isDefault: false };
 
@@ -21,7 +22,7 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
   const commerce = useAccountCommerce(Boolean(auth.account));
   const opened = useRef(false);
   const section = accountSection(location.pathname, params.orderId);
-  const title = section === "overview" ? "Your account" : section === "profile" ? "Profile & contact" : section === "delivery" ? "Delivery addresses" : section === "security" ? "Security & privacy" : params.orderId ? "Order details" : "Orders & payments";
+  const title = section === "overview" ? "Your account" : section === "profile" ? "Profile & contact" : section === "delivery" ? "Delivery addresses" : section === "security" ? "Security & privacy" : section === "messages" ? "Messages" : params.orderId ? "Order details" : "Orders & payments";
 
   useEffect(() => {
     if (openLogin && !auth.loading && !auth.account && !opened.current) { opened.current = true; auth.openAuth("signin"); }
@@ -35,13 +36,14 @@ export function AccountPage({ openLogin = false }: { openLogin?: boolean }) {
       <div className="account-identity-strip__main"><AccountAvatar account={auth.account} large /><div><p className="eyebrow">Third Railify account</p><h1>{title}</h1><p>{auth.account.displayName}<span aria-hidden="true"> / </span>{auth.account.email || `@${auth.account.username || "member"}`}</p></div></div>
       <div className="account-identity-strip__signals"><Signal label="Account" value={auth.account.status === "active" ? "Active" : readable(auth.account.status)} tone={auth.account.status === "active" ? "good" : "warn"} /><Signal label="Addresses" value={commerce.loading ? "…" : commerce.data ? String(commerce.data.summary.savedAddressCount) : "Unavailable"} /><Signal label="Orders" value={commerce.loading ? "…" : commerce.data ? String(commerce.data.summary.orderCount) : "Unavailable"} /></div>
     </header>
-    <nav className="account-nav" aria-label="Account sections"><AccountNavLink to="/account" end>Overview</AccountNavLink><AccountNavLink to="/account/profile">Profile</AccountNavLink><AccountNavLink to="/account/delivery">Delivery</AccountNavLink><AccountNavLink to="/account/orders">Orders &amp; payments</AccountNavLink><AccountNavLink to="/account/security">Security &amp; privacy</AccountNavLink></nav>
+    <nav className="account-nav" aria-label="Account sections"><AccountNavLink to="/account" end>Overview</AccountNavLink><AccountNavLink to="/account/profile">Profile</AccountNavLink><AccountNavLink to="/account/delivery">Delivery</AccountNavLink><AccountNavLink to="/account/orders">Orders &amp; payments</AccountNavLink><AccountNavLink to="/account/messages">Messages</AccountNavLink><AccountNavLink to="/account/security">Security &amp; privacy</AccountNavLink></nav>
     {commerce.error && <div className="account-service-alert" role="alert"><strong>Commerce details unavailable</strong><span>{commerce.error}</span><button type="button" onClick={() => void commerce.refresh()}>Try again</button></div>}
     {commerce.loading ? <div className="account-panel account-panel--loading" role="status">Loading your private commerce details…</div> : <AccountSection section={section} orderId={params.orderId} auth={auth} commerce={commerce} />}
   </div></section>;
 }
 
 function AccountSection({ section, orderId, auth, commerce }: { section: string; orderId?: string; auth: ReturnType<typeof useAuth>; commerce: ReturnType<typeof useAccountCommerce> }) {
+  if (section === "messages") return <AccountInbox csrfToken={auth.csrfToken} />;
   if (!commerce.data) return <div className="account-panel account-panel--empty"><h2>Account commerce is unavailable.</h2><p>Your authentication profile remains available, but delivery and order authority could not be loaded.</p></div>;
   if (section === "profile") return <ProfileSection auth={auth} data={commerce.data} refresh={commerce.refresh} />;
   if (section === "delivery") return <DeliverySection csrfToken={auth.csrfToken} data={commerce.data} refresh={commerce.refresh} />;
@@ -121,7 +123,7 @@ function OrderMini({ order }: { order: AccountOrderSummary }) { return <Link to=
 function OrderRow({ order }: { order: AccountOrderSummary }) { return <article className="order-row"><div><span className={`status-chip is-${order.environment}`}>{order.environment.toUpperCase()}</span><h3><Link to={`/account/orders/${encodeURIComponent(order.id)}`}>{order.reference}</Link></h3><p>{formatDate(order.createdAt)} · {order.itemCount} {order.itemCount === 1 ? "item" : "items"}</p></div><dl><StatusDefinition label="Payment" value={readable(order.paymentStatus)} /><StatusDefinition label="Fulfilment" value={readable(order.fulfillmentStatus)} /><StatusDefinition label="Total" value={<CadAmount minorUnits={order.totalAmount} />} /></dl><Link className="order-row__action" to={`/account/orders/${encodeURIComponent(order.id)}`}>View order <span aria-hidden="true">→</span></Link></article>; }
 function AddressField({ label, value, change, maxLength, autoComplete }: { label: string; value: string; change: (value: string) => void; maxLength: number; autoComplete: string }) { return <label><span>{label}</span><input value={value} maxLength={maxLength} autoComplete={autoComplete} onChange={(event) => change(event.target.value)} /></label>; }
 function AccountState({ title, message }: { title: string; message: string }) { return <section className="account-v2"><div className="container account-panel account-panel--loading"><p className="eyebrow">Third Railify account</p><h1>{title}</h1><p role="status">{message}</p></div></section>; }
-function accountSection(pathname: string, orderId?: string) { if (orderId || pathname.startsWith("/account/orders")) return "orders"; if (pathname === "/account/profile") return "profile"; if (pathname === "/account/delivery") return "delivery"; if (pathname === "/account/security") return "security"; return "overview"; }
+function accountSection(pathname: string, orderId?: string) { if (orderId || pathname.startsWith("/account/orders")) return "orders"; if (pathname === "/account/profile") return "profile"; if (pathname === "/account/delivery") return "delivery"; if (pathname === "/account/messages") return "messages"; if (pathname === "/account/security") return "security"; return "overview"; }
 function addressInput(address: AccountAddress): AddressInput { return { label: address.label, recipientName: address.recipientName, company: address.company || "", address1: address.address1, address2: address.address2 || "", city: address.city, region: address.region || "", postalCode: address.postalCode, countryCode: address.countryCode, phone: address.phone || "", isDefault: address.isDefault }; }
 function readable(value: string) { return value.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase()); }
 function formatDate(value: string) { const date = new Date(value); return Number.isNaN(date.getTime()) ? "Not recorded" : new Intl.DateTimeFormat("en-CA", { dateStyle: "medium", timeStyle: "short" }).format(date); }

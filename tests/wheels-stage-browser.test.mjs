@@ -303,6 +303,7 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   for (const surface of [
     { mode: "detail", width: 1920, height: 1080 },
     { mode: "detail", width: 1440, height: 900 },
+    { mode: "detail", width: 390, height: 844 },
     { mode: "present", width: 1920, height: 1080 },
     { mode: "present", width: 3440, height: 1440 },
   ]) {
@@ -326,9 +327,21 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       const wheel = document
         .querySelector(".wheel-stage")
         .getBoundingClientRect();
+      const actionGroup = document.querySelector(
+        ".wheel-control-heading__actions",
+      );
+      const actions = actionGroup
+        ? {
+            group: actionGroup.getBoundingClientRect().toJSON(),
+            items: [...actionGroup.children].map((node) =>
+              node.getBoundingClientRect().toJSON(),
+            ),
+          }
+        : null;
       return {
         shell: shell.toJSON(),
         wheel: wheel.toJSON(),
+        actions,
         overflow:
           document.documentElement.scrollWidth -
           document.documentElement.clientWidth,
@@ -343,6 +356,30 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
         geometry.shell.width > 1600 && geometry.shell.width <= 1721,
         JSON.stringify(geometry),
       );
+    if (surface.mode === "detail") {
+      assert.equal(geometry.actions.items.length, 4, JSON.stringify(geometry));
+      assert.ok(
+        geometry.actions.group.width <=
+          (surface.width > 620 ? 249 : surface.width - 27),
+        JSON.stringify(geometry),
+      );
+      assert.equal(
+        new Set(geometry.actions.items.map((item) => Math.round(item.left))).size,
+        2,
+        JSON.stringify(geometry),
+      );
+      assert.equal(
+        new Set(geometry.actions.items.map((item) => Math.round(item.top))).size,
+        2,
+        JSON.stringify(geometry),
+      );
+      assert.ok(
+        geometry.actions.items.every(
+          (item) => Math.abs(item.width - geometry.actions.items[0].width) <= 1,
+        ),
+        JSON.stringify(geometry),
+      );
+    }
     if (surface.mode === "present")
       assert.ok(geometry.shell.width <= 1921, JSON.stringify(geometry));
     await widePage.screenshot({

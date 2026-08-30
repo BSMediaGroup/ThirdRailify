@@ -1,0 +1,6 @@
+export type AccountMessage = { id:string; category:string; sourceType:string; sourceId:string; title:string; preview:string; body:string; actionUrl:string|null; actionLabel:string|null; details:Record<string,unknown>; createdAt:string; expiresAt:string|null; readAt:string|null; unread:boolean };
+export type AccountInboxPayload = { ok:true; authority:string; items:AccountMessage[]; total:number; unread:number };
+
+export async function getAccountInbox(unread=false, signal?:AbortSignal) { return request<AccountInboxPayload>(`/api/account/commerce/inbox?unread=${unread}`,{ method:"GET",signal }); }
+export async function mutateAccountMessages(ids:string[],action:"read"|"unread"|"delete",csrfToken:string) { return request<{ok:true;updated:number}>("/api/account/commerce/inbox/bulk",{ method:"POST",headers:{"Content-Type":"application/json","X-CSRF-Token":csrfToken},body:JSON.stringify({ids,action}) }); }
+async function request<T>(url:string,init:RequestInit){const response=await fetch(url,{...init,credentials:"include",cache:"no-store"});const payload=await response.json().catch(()=>null) as (T&{message?:string})|null;if(!response.ok||!payload)throw new Error(payload?.message||"Your messages are temporarily unavailable.");return payload;}

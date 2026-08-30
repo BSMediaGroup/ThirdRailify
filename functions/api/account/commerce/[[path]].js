@@ -44,6 +44,8 @@ function routeFor(method, path) {
   if (method === "PATCH" && path === "contact") return "contact";
   if (method === "POST" && path === "addresses") return "addresses/create";
   if (method === "GET" && path === "orders") return "orders";
+  if (method === "GET" && path === "inbox") return "inbox";
+  if (method === "POST" && path === "inbox/bulk") return "inbox/mutate";
   const address = path.match(/^addresses\/(adr_[0-9a-f-]{36})$/);
   if (address && method === "PATCH") return `addresses/${address[1]}/update`;
   if (address && method === "DELETE") return `addresses/${address[1]}/delete`;

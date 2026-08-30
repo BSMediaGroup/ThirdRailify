@@ -1,5 +1,21 @@
 # Bump notes
 
+## 2026-08-31 - Analytics V1 collection and public account inbox
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added non-blocking, same-origin first-party `page_view` collection for initial loads and genuine SPA route changes with query/fragment removal, API/static exclusions, DNT/GPC suppression, server-derived coarse geography/device/member class, idempotent event IDs, and a 30-minute HttpOnly session only when configured.
+- Added a dedicated HMAC-signed Public-to-Admin analytics relay using `THIRDRAILIFY_ANALYTICS_INGEST_SECRET`; missing configuration returns an uninteresting `204`, creates no analytics cookie, and cannot interrupt navigation, accounts, or commerce.
+- Added authenticated `/account/messages` with individual/bulk read, unread, and delete controls, whole-card accessible full-detail lightboxes, complete safe detail fields, and preserved CTA buttons through the existing signed account-commerce authority.
+- Added focused analytics/privacy/inbox tests plus responsive browser interaction coverage for the account message lightbox and individual/bulk controls; documented migration `0024`, secret custody, Admin-first rollout, and local-only status. No deployment, remote migration, DNS/domain, provider, payment, or commerce-gate change occurred.
+
+## 2026-08-31 - Post-cutover account acceptance
+
+- Legitimate Public Google and X sign-ins passed through the custom Admin callbacks and consumed one-time Public handoffs without putting a token in the final URL or creating Admin authority. The X confidential token request was corrected in Admin and its matching OAuth 2.0 Client Secret was rotated directly into encrypted Cloudflare custody.
+- Public account/login, one-time handoff, CSRF logout, shield/new-tab Admin link, responsive account routes, typecheck, lint, build, and Pages Functions compilation passed. Google and X legacy Pages callbacks can be removed; Discord and GitHub retain theirs only until provider-specific custom-domain acceptance passes.
+
 ## 2026-08-30 - Wheels Stage V1 and portable multi-wheel imports
 
 - Added Admin-authoritative one-to-six-Wheel Stages with public/private lifecycle, revision checks, independent member reauthorization, mixed public discovery, responsive overview/focus/D-pad presentation, and one-active-spin isolation while preserving every Wheel and official result.

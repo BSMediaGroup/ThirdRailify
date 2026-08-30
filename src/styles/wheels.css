@@ -293,3 +293,10 @@
 .segment-style-fields{display:grid;gap:14px}.segment-style-fields>label{display:grid;gap:6px}.segment-style-colour{display:grid;grid-template-columns:46px 1fr;gap:8px}.segment-style-colour input{width:100%;min-width:0}.segment-style-colour input[type=color]{padding:3px}.segment-style-image-fields{display:grid;gap:8px;padding:12px;border:1px solid #302f28;background:#171712}.segment-style-image-fields label{display:grid;gap:6px}.segment-style-image-fields p{margin:0;color:#aaa796;font-size:12px}.segment-style-upload small{color:#8f8d80}.segment-style-dialog>footer{margin-top:20px;justify-content:flex-end}
 .segment-style-action{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:center;gap:10px;width:100%;padding:7px;border:1px solid #36362e;color:inherit;background:#181813;text-align:left}.segment-style-action .segment-style-preview{height:36px}.segment-style-action small{display:block;color:#918e82}
 @media(max-width:520px){.segment-style-backdrop{padding:8px}.segment-style-dialog{width:100%;max-height:96dvh;padding:14px}.segment-style-dialog>.segment-style-preview{height:72px}}
+
+/* Wheel detail actions are a deliberate compact stack, never an accidental 3+1 wrap. */
+.wheel-control-heading__actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:248px;flex:0 0 248px;gap:8px}
+.wheel-control-heading__actions .icon-control{justify-content:center;width:100%;min-width:0;white-space:nowrap;text-align:center}
+.wheel-control-heading__actions .icon-control:last-child:nth-child(odd){grid-column:1/-1}
+@media(max-width:820px){.wheel-control-heading__actions{width:min(100%,248px);flex-basis:auto}}
+@media(max-width:620px){.wheel-control-heading__actions{width:100%}}

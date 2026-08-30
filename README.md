@@ -1,5 +1,20 @@
 # Third Railify V2 public site
 
+## Analytics V1 and account inbox (local implementation)
+
+Public now emits privacy-minimized `page_view` events from initial loads and genuine SPA route changes through same-origin `POST /api/analytics`. The browser never receives the ingestion credential. The Pages Function strips query strings/fragments, rejects API/static paths, honours DNT and Global Privacy Control, derives coarse location/device/member classification on the server, uses a 30-minute HttpOnly session cookie only when collection is configured, and relays events to the Admin authority with a dedicated HMAC secret. Collection failures are deliberately non-blocking and return an empty `204`.
+
+Authenticated accounts now have `/account/messages`. Messages remain Admin Commerce D1-owned and travel through the existing signed account-commerce relay. The page supports individual and bulk read/unread/delete controls, whole-card detail lightboxes, full safe details, and preserved CTA buttons. Delete is recipient-scoped soft deletion; it does not erase an authoritative source record.
+
+Local/production configuration introduced by this milestone:
+
+- Cloudflare encrypted secret `THIRDRAILIFY_ANALYTICS_INGEST_SECRET`, with the same high-entropy value configured independently on Public and Admin Pages.
+- Existing `THIRDRAILIFY_ADMIN_ORIGIN` and `THIRDRAILIFY_PUBLIC_ORIGIN` remain the exact signed boundary; no browser variable contains the secret.
+- Admin migration `0024_analytics_and_message_controls.sql` must be applied deliberately before either application is deployed.
+- Deploy Admin before Public after the migration and secret are verified. No remote migration, deployment, DNS, domain, or provider change was performed for this local implementation.
+
+Repository tree additions: `functions/api/analytics.js`, `src/analytics/AnalyticsCollector.tsx`, `src/account/AccountInbox.tsx`, `src/account/inbox-client.ts`, `tests/analytics-inbox.test.mjs`, and `tests/inbox-browser.test.mjs`.
+
 Store checkout and one-time donations use the standard PayPal experience backed by server-created and server-captured Orders API v2 payments. The PayPal SDK loads only on checkout and donation routes after a sanitized configuration response. Card payments are retained server-side for a future milestone but are currently unavailable.
 
 ## Replacement shop commerce source
@@ -195,7 +210,7 @@ The Public header keeps Community as a direct route while exposing semantic Frie
 
 GOATS persistence belongs only to `ThirdRailify-Admin`. Public exposes fixed same-origin `/api/goats/*` routes, signs server-to-server mutations with an encrypted shared secret, and has no commerce D1 or media R2 binding. Public responses contain approved/published fields only; private email, account IDs, moderator data, object keys, exact location input, email state, and audit metadata remain Admin-only. See `GOATS_V2.md` for route, environment, local fixture, and provider-fallback details.
 
-Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Production offers Discord, Google, GitHub, and X through this centralized server-side flow; Google is production-enabled while preview stays disabled pending a separately configured preview client and callback allowlist. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
+Account authority lives only in `ThirdRailify-Admin`. Public sends credential and OAuth-start requests to the exact configured Admin origin, receives only a short-lived one-time handoff code, and consumes that code through its same-origin Function to create a host-only staging session. Production offers Discord, Google, GitHub, and X through this centralized server-side flow; legitimate Google and X custom-domain sign-ins have passed, while Discord and GitHub still require provider-specific post-cutover acceptance before their legacy callbacks are removed. Google is production-enabled while preview stays disabled pending a separately configured preview client and callback allowlist. Display-name and avatar submissions use narrow same-origin proxies that forward the existing session cookie and CSRF proof to Admin; Public has no profile-media object binding and performs no account-row mutation. Public never stores canonical identity in local storage and contains no password hashing, provider secret, Turnstile secret, Resend key, or role authority. Existing sign-in credentials are not subject to the 12-character policy used when creating or resetting a password.
 
 `src/types/catalogue.ts` remains provider-neutral. `src/lib/catalogueProvider.ts` consumes only the sanitized same-origin Commerce D1 product and ordered visible-collection projection; it has no runtime Wix fallback. Gallery, related-product, and cart amounts stay authoritative CAD with local Canadian SVG flags. Reference conversion is isolated to product details and never changes the CAD catalogue/cart authority. Provider credentials and all write operations remain server-side.
 

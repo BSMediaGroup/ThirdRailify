@@ -9,12 +9,14 @@ import { CurrencyProvider } from "./currency/CurrencyProvider";
 import { PrivacyProvider } from "./privacy/PrivacyProvider";
 import { SeoProvider } from "./seo/SeoProvider";
 import "./styles/global.css";
+import { AnalyticsCollector } from "./analytics/AnalyticsCollector";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <SeoProvider>
         <PrivacyProvider>
+          <AnalyticsCollector />
           <AuthProvider>
             <CartProvider>
               <CurrencyProvider><BroadcastProvider><App /></BroadcastProvider></CurrencyProvider>
