@@ -56,10 +56,18 @@
   margin: 0;
 }
 
+.wheel-owner--identity {
+  height: 38px;
+  min-height: 38px;
+  align-items: center;
+}
+
 .wheel-owner--identity .wheel-owner__trigger {
   width: max-content;
+  height: 38px;
   max-width: 38px;
-  min-height: 38px;
+  min-height: 0;
+  max-height: 38px;
   gap: 0;
   overflow: hidden;
   padding: 4px;
@@ -69,6 +77,12 @@
     padding-right .42s cubic-bezier(.22, 1, .36, 1),
     border-color .2s ease,
     background-color .2s ease;
+}
+
+.wheel-owner--identity .wheel-owner__avatar {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
 }
 
 .wheel-owner--identity .wheel-owner__trigger > span:not(.wheel-owner__avatar) {
@@ -120,7 +134,7 @@
 .wheel-control-page:not(.wheel-control-page--presentation) .pointer-target-hud,
 .wheel-control-page--presentation .pointer-target-hud--presentation {
   right: auto;
-  left: calc(50% + var(--wheel-target-radius) + 14px);
+  left: calc(50% + var(--wheel-target-radius) + 4px);
 }
 
 .wheel-control-page--presentation .wheel-visual-wrap {

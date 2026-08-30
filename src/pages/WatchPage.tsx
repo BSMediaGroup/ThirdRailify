@@ -6,8 +6,10 @@ import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelec
 import { EpisodeCard } from "../components/EpisodeComponents";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
 import { SignalField } from "../components/SignalField";
+import { SparklingSky } from "../components/SparklingSky";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useEpisodes } from "../hooks/useEpisodes";
+import { useMotionGate } from "../hooks/useMotionGate";
 import { RUMBLE_URL, YOUTUBE_URL } from "../lib/broadcast";
 import { featuredEpisodes } from "../lib/episodes";
 import { effectiveLiveCandidates } from "../lib/liveBanner";
@@ -15,6 +17,7 @@ import { effectiveLiveCandidates } from "../lib/liveBanner";
 export function WatchPage() {
   const { data, loading, unavailable, error } = useBroadcast();
   const archive = useEpisodes();
+  const schedule = useMotionGate<HTMLElement>();
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const options = data ? broadcastCandidates(data.primary, data.latestByPlatform) : [];
   const selected = options.find((candidate) => candidate.key === selectedKey) ?? data?.primary ?? null;
@@ -79,13 +82,31 @@ export function WatchPage() {
         <div className="container watch-archive-drawer__action"><Link className="button button--outline" to="/watch/episodes">Explore the full archive <ArrowIcon /></Link></div>
       </section>
 
-      <section className="section section--panel watch-schedule" aria-labelledby="watch-schedule-title">
+      <section ref={schedule.ref} className={`section section--panel watch-schedule${schedule.active ? " is-active" : ""}`} aria-labelledby="watch-schedule-title" data-motion={schedule.active ? "active" : "static"}>
+        <SparklingSky theme="watch" />
+        <div className="watch-schedule__rails" aria-hidden="true"><i /><i /><i /></div>
         <div className="container watch-schedule__grid">
-          <div><p className="eyebrow">Signal schedule</p><h2 id="watch-schedule-title">Six nights. One live wire.</h2><p>{unavailable ? "The website snapshot is unavailable, but the official platform routes remain direct." : live ? "The current show has a recent positive provider confirmation." : "No current live signal is confirmed. The latest validated broadcast remains above."}</p></div>
-          <div className="watch-schedule__time"><RadioIcon /><strong>10 PM</strong><span>Eastern · Sunday—Friday</span></div>
-          <div className="watch-platform-links">
-            <a href={RUMBLE_URL} target="_blank" rel="noreferrer"><img src={rumbleIcon} alt="" /><span><strong>Rumble</strong><small>Primary channel</small></span><ArrowIcon /></a>
-            <a href={YOUTUBE_URL} target="_blank" rel="noreferrer"><img src={youtubeIcon} alt="" /><span><strong>YouTube</strong><small>Videos + clips</small></span><ArrowIcon /></a>
+          <div className="watch-schedule__copy">
+            <p className="eyebrow"><i /> Signal schedule / transmission window</p>
+            <h2 id="watch-schedule-title">Six nights.<br /><span>One live wire.</span></h2>
+            <p>{unavailable ? "The website snapshot is unavailable, but the official platform routes remain direct." : live ? "The current show has a recent positive provider confirmation." : "No current live signal is confirmed. The latest validated broadcast remains above."}</p>
+            <dl className="watch-schedule__facts"><div><dt>Window</dt><dd>Sunday—Friday</dd></div><div><dt>Time</dt><dd>10 PM</dd></div><div><dt>Zone</dt><dd>Eastern</dd></div></dl>
+          </div>
+          <div className="watch-schedule__orbit" aria-hidden="true">
+            <div className="watch-schedule__rings"><i /><i /><i /></div>
+            <div className="watch-schedule__sweep" />
+            <div className="watch-schedule__time"><RadioIcon /><small>TR / NIGHT SIGNAL</small><strong>10 PM</strong><span>Eastern</span></div>
+            <span className="watch-schedule__node watch-schedule__node--days"><i />SUN—FRI</span>
+            <span className="watch-schedule__node watch-schedule__node--state"><i />SIGNAL OPEN</span>
+            <span className="watch-schedule__node watch-schedule__node--live"><i />LIVE WIRE</span>
+          </div>
+          <div className="watch-platform-deck">
+            <div className="watch-platform-deck__meta"><span>TR / OFFICIAL OUTPUTS</span><strong>DIRECT ROUTES</strong></div>
+            <div className="watch-platform-links">
+              <a href={RUMBLE_URL} target="_blank" rel="noreferrer"><img src={rumbleIcon} alt="" /><span><strong>Rumble</strong><small>Primary channel</small></span><ArrowIcon /></a>
+              <a href={YOUTUBE_URL} target="_blank" rel="noreferrer"><img src={youtubeIcon} alt="" /><span><strong>YouTube</strong><small>Videos + clips</small></span><ArrowIcon /></a>
+            </div>
+            <div className="watch-platform-deck__status"><span><i /> Channels ready</span><b>Choose your platform</b></div>
           </div>
         </div>
       </section>

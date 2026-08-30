@@ -19,16 +19,25 @@ test("regular Wheel detail owns its wide composition instead of inheriting the s
 
 test("regular and Presentation owner identity rests as an avatar and expands for hover or keyboard focus", () => {
   assert.equal((wheelPage.match(/<WheelOwnerDetails wheel=\{wheel\} access=\{access\} disabled=\{!interactive\} \/>/g) || []).length, 2);
+  assert.match(styles, /\.wheel-owner--identity\s*\{[^}]*height:\s*38px;[^}]*min-height:\s*38px;/s);
+  assert.match(styles, /\.wheel-owner--identity \.wheel-owner__trigger\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;/s);
+  assert.match(styles, /\.wheel-owner--identity \.wheel-owner__avatar\s*\{[^}]*width:\s*28px;[^}]*height:\s*28px;/s);
   assert.match(styles, /\.wheel-owner--identity \.wheel-owner__trigger\s*\{[^}]*max-width:\s*38px[^}]*cubic-bezier\(\.22, 1, \.36, 1\)/s);
   assert.match(styles, /\.wheel-owner--identity:hover \.wheel-owner__trigger,[\s\S]*\.wheel-owner--identity:focus-within \.wheel-owner__trigger,[\s\S]*max-width:\s*270px/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce[\s\S]*\.wheel-owner--identity \.wheel-owner__trigger/);
 });
 
 test("pointer target reader stays anchored to the wheel in regular and Presentation layouts", () => {
-  assert.match(styles, /\.wheel-control-page:not\(\.wheel-control-page--presentation\) \.pointer-target-hud,[\s\S]*\.wheel-control-page--presentation \.pointer-target-hud--presentation\s*\{[^}]*right:\s*auto[^}]*left:\s*calc\(50% \+ var\(--wheel-target-radius\) \+ 14px\)/);
+  assert.match(styles, /\.wheel-control-page:not\(\.wheel-control-page--presentation\) \.pointer-target-hud,[\s\S]*\.wheel-control-page--presentation \.pointer-target-hud--presentation\s*\{[^}]*right:\s*auto[^}]*left:\s*calc\(50% \+ var\(--wheel-target-radius\) \+ 4px\)/);
   assert.match(styles, /\.wheel-control-page--presentation \.wheel-visual-wrap\s*\{[^}]*--wheel-target-radius:\s*min\(35vh, calc\(50dvh - 175px\), 36vw, 430px\)/s);
   assert.match(styles, /@media \(max-width: 1060px\)[\s\S]*\.wheel-control-page:not\(\.wheel-control-page--presentation\) \.pointer-target-hud\s*\{[^}]*position:\s*relative[^}]*left:\s*auto/s);
   assert.match(styles, /@media \(max-width: 720px\)[\s\S]*\.wheel-control-page--presentation \.pointer-target-hud--presentation[\s\S]*left:\s*auto/);
+});
+
+test("Wheel segments open participant details in regular and Presentation modes", () => {
+  assert.match(wheelPage, /onSegmentSelect=\{interactive \? \(entry, trigger\) => props\.onParticipant\(entry, trigger\) : undefined\}/);
+  assert.doesNotMatch(wheelPage, /onSegmentSelect=\{!props\.presentation/);
+  assert.match(wheelPage, /\{participantDetail \? <ParticipantDetails/);
 });
 
 test("Presentation owner clears the navigator at the mobile breakpoint only", () => {

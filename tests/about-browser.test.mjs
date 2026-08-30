@@ -112,12 +112,24 @@ test("About remains composed, animated, complete, and overflow-free at every req
     assert.equal(settledLayout.overflow, false, `no horizontal overflow at ${width}x${height}: ${JSON.stringify(settledLayout.offenders)}`);
     assert.ok(settledLayout.h1Left >= -1 && settledLayout.h1Right <= width + 1, `headline fits at ${width}px`);
     assert.ok(settledLayout.h1Top >= settledLayout.headerBottom, `headline clears the shared header at ${width}px`);
+    await page.locator(".about-hero.is-active").waitFor({ timeout: 8_000 });
+    assert.equal(await page.locator(".about-hero .sparkling-sky__star").count(), 144, `About carries the complete adapted starfield at ${width}px`);
+    assert.notEqual(await page.locator(".about-hero .sparkling-sky__star").first().evaluate((element) => getComputedStyle(element).animationName), "none", `About stars twinkle at ${width}px`);
     await page.locator(".about-network").scrollIntoViewIfNeeded();
     await page.locator(".about-network.is-active").waitFor({ timeout: 8_000 });
     const animatedNetworkTop = await page.locator(".about-network").evaluate((element) => element.getBoundingClientRect().top);
     await page.waitForTimeout(500);
     assert.ok(Math.abs(animatedNetworkTop - await page.locator(".about-network").evaluate((element) => element.getBoundingClientRect().top)) <= 1, `hero animation does not shift its visual at ${width}px`);
     assert.notEqual(await page.locator(".about-network__pulse").first().evaluate((element) => getComputedStyle(element).animationName), "none");
+    const networkGeometry = await page.locator(".about-network").evaluate((network) => {
+      const box = network.getBoundingClientRect();
+      const centre = (selector) => { const node = network.querySelector(selector)?.getBoundingClientRect(); return node ? { x: node.left + node.width / 2 - box.left, y: node.top + node.height / 2 - box.top } : null; };
+      return { width: box.width, height: box.height, core: centre(".about-network__core"), news: centre(".about-network__node--news"), culture: centre(".about-network__node--culture"), chaos: centre(".about-network__node--chaos"), chat: centre(".about-network__node--chat") };
+    });
+    assert.ok(networkGeometry.core && Math.abs(networkGeometry.core.x - networkGeometry.width / 2) <= 1 && Math.abs(networkGeometry.core.y - networkGeometry.height / 2) <= 1, `network core is geometrically centered at ${width}px: ${JSON.stringify(networkGeometry)}`);
+    assert.ok(networkGeometry.news && networkGeometry.culture && networkGeometry.chaos && networkGeometry.chat, "all four network nodes expose geometry");
+    assert.ok(Math.abs(networkGeometry.news.x + networkGeometry.culture.x - networkGeometry.width) <= 2 && Math.abs(networkGeometry.chat.x + networkGeometry.chaos.x - networkGeometry.width) <= 2, `network nodes are horizontally symmetric at ${width}px`);
+    assert.ok(Math.abs(networkGeometry.news.y + networkGeometry.chat.y - networkGeometry.height) <= 2 && Math.abs(networkGeometry.culture.y + networkGeometry.chaos.y - networkGeometry.height) <= 2, `network nodes are vertically symmetric at ${width}px`);
 
     await page.locator(".about-hosts").scrollIntoViewIfNeeded();
     await page.waitForFunction(() => [...document.querySelectorAll(".host-panel img")].every((image) => image.complete), null, { timeout: 15_000 });
@@ -161,10 +173,11 @@ test("reduced motion keeps the complete About story while disabling nonessential
   const page = await context.newPage();
   await mockApis(page);
   await page.goto(`${ORIGIN}/about`, { waitUntil: "domcontentloaded" });
+  assert.equal(await page.locator(".about-hero").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-network").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-formats").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-community").getAttribute("data-motion"), "static");
-  for (const selector of [".about-network__pulse", ".format-bracket b", ".community-circuit__scope i"]) {
+  for (const selector of [".about-hero .sparkling-sky__star", ".about-network__pulse", ".format-bracket b", ".community-circuit__scope i"]) {
     assert.equal(await page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${selector} is static in reduced motion`);
   }
   assert.equal(await page.getByRole("heading", { level: 2, name: /Grab the rail\.\s+Don’t let go\./i }).count(), 1);
@@ -213,6 +226,7 @@ async function mockApis(page) {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
     if (pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
+    if (pathname === "/api/analytics") return json(route, { ok: true, accepted: true });
     if (pathname === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1 } });

@@ -41,6 +41,20 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder)").count(), 1);
         assert.equal(await page.locator(".episode-featured-grid .episode-card:not(.episode-card--placeholder) h3").textContent(), "Older retained transmission");
         assert.equal(await page.getByRole("link", { name: /Open dedicated player/ }).getAttribute("href"), "/watch/live?platform=youtube");
+        const schedule = page.locator(".watch-schedule");
+        await schedule.scrollIntoViewIfNeeded();
+        await page.locator(".watch-schedule.is-active").waitFor({ timeout: 8_000 });
+        assert.equal(await schedule.locator(".sparkling-sky__star").count(), 144, `Watch schedule carries the complete starfield at ${width}x${height}`);
+        assert.notEqual(await schedule.locator(".sparkling-sky__star").first().evaluate((element) => getComputedStyle(element).animationName), "none", `Watch schedule stars twinkle at ${width}x${height}`);
+        assert.equal(await schedule.locator(".watch-platform-links a").count(), 2);
+        const orbitalGeometry = await schedule.locator(".watch-schedule__orbit").evaluate((orbit) => { const orbitBox = orbit.getBoundingClientRect(); const coreBox = orbit.querySelector(".watch-schedule__time")?.getBoundingClientRect(); return { width: orbitBox.width, height: orbitBox.height, coreX: coreBox ? coreBox.left + coreBox.width / 2 - orbitBox.left : null, coreY: coreBox ? coreBox.top + coreBox.height / 2 - orbitBox.top : null }; });
+        assert.ok(Math.abs(orbitalGeometry.width - orbitalGeometry.height) <= 1, `Watch schedule orbit remains circular at ${width}x${height}`);
+        assert.ok(orbitalGeometry.coreX !== null && orbitalGeometry.coreY !== null && Math.abs(orbitalGeometry.coreX - orbitalGeometry.width / 2) <= 1 && Math.abs(orbitalGeometry.coreY - orbitalGeometry.height / 2) <= 1, `Watch time core stays centered at ${width}x${height}: ${JSON.stringify(orbitalGeometry)}`);
+        if (process.env.WATCH_BROWSER_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
+          await page.addStyleTag({ content: ".site-header, .skip-link, .privacy-dock { display: none !important; }" });
+          await schedule.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-schedule-${width}.png`) });
+        }
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true, `polished Watch schedule has no overflow at ${width}x${height}`);
       }
       if (route === "live") { await page.locator(".broadcast-player").waitFor(); assert.equal(await page.locator(".broadcast-player").count(), 1, "dedicated route has one player stack"); }
       if (route === "episodes") {
@@ -149,6 +163,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   assert.equal(await reducedPage.locator(".episodes-signal-field__glow").evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero light field respects reduced motion");
   assert.equal(await reducedPage.locator(".archive-status").evaluate((element) => getComputedStyle(element, "::after").animationName), "none", "archive register sweep respects reduced motion");
   await reducedPage.unroute("**/api/**"); await mockApis(reducedPage, true); await reducedPage.goto(`${ORIGIN}/watch`); const reducedLiveStage = reducedPage.locator(".watch-stage.is-live"); await reducedLiveStage.waitFor();
+  await reducedPage.locator(".watch-schedule").scrollIntoViewIfNeeded();
+  assert.equal(await reducedPage.locator(".watch-schedule").getAttribute("data-motion"), "static");
+  assert.deepEqual(await reducedPage.locator(".watch-schedule").evaluate((section) => [getComputedStyle(section.querySelector(".sparkling-sky__star")).animationName, getComputedStyle(section.querySelector(".watch-schedule__sweep")).animationName]), ["none", "none"], "Watch schedule night sky and orbit are static for reduced motion");
   assert.deepEqual(await reducedLiveStage.evaluate((element) => [getComputedStyle(element).animationName, getComputedStyle(element, "::before").animationName, getComputedStyle(element, "::after").animationName]), ["none", "none", "none"], "live glow remains strong but static when reduced motion is requested");
   assert.notEqual(await reducedLiveStage.evaluate((element) => getComputedStyle(element).boxShadow), "none");
   await reducedPage.goto(`${ORIGIN}/`); const reducedHomeLive = reducedPage.locator(".broadcast-card.live-event-perimeter"); await reducedHomeLive.waitFor();
@@ -216,6 +233,7 @@ async function mockApis(page, live, options = {}) {
     const url = new URL(route.request().url());
     if (url.pathname === "/api/auth/config") return json(route, authConfig());
     if (url.pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
+    if (url.pathname === "/api/analytics") return json(route, { ok: true, accepted: true });
     if (url.pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-28", rates: { CAD: 1, USD: .75 } });
     if (url.pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], updatedAt: null });
     if (url.pathname === "/api/catalogue/banner") return json(route, options.banner ? options.banner() : bannerPayload());

@@ -3,6 +3,7 @@ import canadianFlag from "../../assets/flags/ca.svg";
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon, PlayIcon } from "../components/Icons";
+import { SparklingSky } from "../components/SparklingSky";
 import { useMotionGate } from "../hooks/useMotionGate";
 
 const formatModules = [
@@ -37,12 +38,14 @@ const formatModules = [
 ] as const;
 
 export function AboutPage() {
+  const hero = useMotionGate<HTMLElement>();
   const formats = useMotionGate<HTMLElement>();
   const community = useMotionGate<HTMLElement>();
 
   return (
     <div className="about-page">
-      <section className="about-hero" aria-labelledby="about-title">
+      <section ref={hero.ref} className={`about-hero${hero.active ? " is-active" : ""}`} aria-labelledby="about-title" data-motion={hero.active ? "active" : "static"}>
+        <SparklingSky theme="about" />
         <div className="about-hero__ambient" aria-hidden="true"><i /><i /><i /></div>
         <div className="container about-hero__layout">
           <div className="about-hero__copy">
@@ -180,36 +183,39 @@ function HighVoltageNetwork() {
     <div ref={motion.ref} className={`about-network${motion.active ? " is-active" : ""}`} data-motion={motion.active ? "active" : "static"} aria-hidden="true">
       <div className="about-network__meta"><span>TR / LIVE NETWORK</span><strong>HIGH VOLTAGE</strong></div>
       <div className="about-network__grid" />
-      <svg viewBox="0 0 620 560" focusable="false">
+      <div className="about-network__satellites"><i /><i /><i /><i /><i /><i /><i /><i /></div>
+      <svg viewBox="0 0 620 540" focusable="false">
         <defs>
           <linearGradient id="about-line" x1="0" x2="1"><stop stopColor="#ffd12f" stopOpacity="0" /><stop offset=".48" stopColor="#ffd12f" /><stop offset="1" stopColor="#fff0ae" stopOpacity=".15" /></linearGradient>
+          <radialGradient id="about-core-wash"><stop stopColor="#ffd12f" stopOpacity=".14" /><stop offset="1" stopColor="#ffd12f" stopOpacity="0" /></radialGradient>
           <filter id="about-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
         </defs>
+        <circle className="about-network__wash" cx="310" cy="270" r="204" fill="url(#about-core-wash)" />
         <g className="about-network__orbits">
-          <circle cx="332" cy="286" r="166" />
-          <circle cx="332" cy="286" r="112" />
-          <path d="M79 478C178 370 236 337 332 286S492 179 567 80" />
+          <circle cx="310" cy="270" r="166" />
+          <circle cx="310" cy="270" r="112" />
+          <ellipse cx="310" cy="270" rx="226" ry="78" />
         </g>
         <g className="about-network__feeds">
-          <path d="M75 112C168 112 218 184 332 286" />
-          <path d="M540 120C478 168 423 216 332 286" />
-          <path d="M548 446C462 410 408 357 332 286" />
-          <path d="M70 442C163 408 223 354 332 286" />
+          <path d="M94 126C174 126 228 198 310 270" />
+          <path d="M526 126C446 126 392 198 310 270" />
+          <path d="M526 414C446 414 392 342 310 270" />
+          <path d="M94 414C174 414 228 342 310 270" />
         </g>
         <g className="about-network__pulses" filter="url(#about-glow)">
-          <path className="about-network__pulse about-network__pulse--one" d="M75 112C168 112 218 184 332 286" />
-          <path className="about-network__pulse about-network__pulse--two" d="M540 120C478 168 423 216 332 286" />
-          <path className="about-network__pulse about-network__pulse--three" d="M548 446C462 410 408 357 332 286" />
-          <path className="about-network__pulse about-network__pulse--four" d="M70 442C163 408 223 354 332 286" />
+          <path className="about-network__pulse about-network__pulse--one" d="M94 126C174 126 228 198 310 270" />
+          <path className="about-network__pulse about-network__pulse--two" d="M526 126C446 126 392 198 310 270" />
+          <path className="about-network__pulse about-network__pulse--three" d="M526 414C446 414 392 342 310 270" />
+          <path className="about-network__pulse about-network__pulse--four" d="M94 414C174 414 228 342 310 270" />
         </g>
-        <path className="about-network__rail" d="M40 315H574" />
-        <path className="about-network__rail-live" d="M40 315H574" />
+        <path className="about-network__rail" d="M42 270H578" />
+        <path className="about-network__rail-live" d="M42 270H578" />
         <g className="about-network__wave">
-          <path d="M88 366h55l16-26 24 54 24-77 28 49h54l18-18 27 35 25-54 27 37h109" />
+          <path d="M88 342h54l17-24 24 50 24-72 28 46h49l18-17 27 33 25-51 27 35h111" />
         </g>
         <g className="about-network__junction">
-          <circle cx="332" cy="286" r="58" />
-          <circle cx="332" cy="286" r="43" />
+          <circle cx="310" cy="270" r="66" />
+          <circle cx="310" cy="270" r="47" />
         </g>
       </svg>
       <div className="about-network__core"><BoltIcon /><b>ON AIR</b><small>JUNCTION 01</small></div>
