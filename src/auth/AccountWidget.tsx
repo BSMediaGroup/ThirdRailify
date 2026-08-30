@@ -50,7 +50,6 @@ export function AccountWidget() {
       <button className="account-widget__trigger" type="button" onClick={() => setOpen((value) => !value)} aria-label={`${account.displayName} account menu`} aria-expanded={open} aria-haspopup="menu">
         <AccountAvatar account={account} />
         <span className="account-widget__copy"><strong className="account-identity-name"><span>{account.displayName}</span><AccountAccessBadge account={account} /></strong><small>{secondaryIdentity}</small></span>
-        <b aria-hidden="true">&#9662;</b>
       </button>
       {open && (
         <div className="account-menu" role="menu" aria-label="Account menu" onKeyDown={handleMenuKeyDown}>

@@ -45,6 +45,7 @@ test("Public account widget matches Admin typography and opens the shield link i
   assert.ok(identityLine.badgeLeft > identityLine.nameRight && Math.abs(identityLine.badgeTop - identityLine.nameTop) < 4, "badge stays inline after the display name");
   assert.equal(await page.locator(".account-menu__identity > div > small").count(), 0, "identity header has no obsolete third role row");
   assert.equal(await page.locator(".account-menu__identity i, .account-widget__trigger > i").count(), 0, "account identity has no status dot");
+  assert.equal(await page.locator(".account-widget__trigger > b").count(), 0, "compact account trigger has no dropdown chevron");
   const messagesLink = page.getByRole("menuitem", { name: /Messages/ });
   await messagesLink.waitFor();
   assert.equal(await messagesLink.getAttribute("href"), "/account/messages");
@@ -69,9 +70,14 @@ test("Public account widget matches Admin typography and opens the shield link i
     });
     assert.ok(widgetLayout.trigger && widgetLayout.trigger.left >= 0 && widgetLayout.trigger.right <= widgetLayout.viewport, `compact account trigger fits ${viewport.width}px`);
     assert.ok(widgetLayout.menu && widgetLayout.menu.left >= 0 && widgetLayout.menu.right <= widgetLayout.viewport, `account menu fits ${viewport.width}px`);
-    const badge = page.locator(".account-menu__identity .account-access-badge");
-    assert.equal(await badge.isVisible(), true, `role badge remains visible at ${viewport.width}px`);
-    assert.equal(await page.locator(".account-widget__trigger .account-access-badge").isVisible(), true, `compact role badge remains visible at ${viewport.width}px`);
+    const badgesExpected = viewport.width > 680;
+    assert.equal(await page.locator(".account-menu__identity .account-access-badge").isVisible(), badgesExpected, `menu role badge follows the ${viewport.width}px breakpoint`);
+    assert.equal(await page.locator(".account-widget__trigger .account-access-badge").isVisible(), badgesExpected, `compact role badge follows the ${viewport.width}px breakpoint`);
+    if (!badgesExpected) {
+      const trigger = await page.locator(".account-widget__trigger").boundingBox();
+      assert.ok(trigger && trigger.width <= 43, `mobile trigger returns to avatar-only width: ${JSON.stringify(trigger)}`);
+      await page.screenshot({ path: join(tmpdir(), "thirdrailify-account-widget-390x844.png") });
+    }
     const menu = await page.locator(".account-menu").boundingBox();
     assert.ok(menu && menu.width <= viewport.width, `account menu fits ${viewport.width}px`);
   }

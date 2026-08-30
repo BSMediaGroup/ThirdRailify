@@ -5417,7 +5417,6 @@ h3 {
 .account-widget__copy { display: grid; min-width: 0; text-align: left; text-transform: none; }
 .account-widget__copy strong { overflow: hidden; font-family: var(--body); font-size: .76rem; text-overflow: ellipsis; white-space: nowrap; }
 .account-widget__copy small { color: var(--gold-soft); font: .52rem var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.account-widget__trigger b { color: var(--gold); font-size: .55rem; }
 
 .account-avatar {
   width: 32px;
@@ -5620,8 +5619,7 @@ h3 {
 
 @media (max-width: 680px) {
   .account-widget__trigger { width: 42px; padding: 4px; }
-  .account-widget__trigger > span:not(.account-avatar),
-  .account-widget__trigger b { display: none; }
+  .account-widget__trigger > .account-widget__copy { display: none; }
   .account-widget--loading { width: 42px; }
   .account-menu { position: fixed; top: 102px; right: 14px; }
   .auth-backdrop { align-items: end; padding: 0; }
@@ -9456,9 +9454,5 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .account-widget__copy small { max-width: 174px; overflow: hidden; text-overflow: ellipsis; text-transform: none; white-space: nowrap; }
 .account-menu__identity .account-access-badge { width: 18px; height: 18px; flex-basis: 18px; }
 @media (max-width: 680px) {
-  .account-widget__trigger { width: 62px; position: relative; }
-  .account-widget__trigger > span.account-widget__copy:not(.account-avatar) { display: block; min-width: 15px; }
-  .account-widget__copy .account-identity-name { display: inline-flex; }
-  .account-widget__copy .account-identity-name > span:first-child,
-  .account-widget__copy small { display: none; }
+  .account-menu__identity .account-access-badge { display: none; }
 }
