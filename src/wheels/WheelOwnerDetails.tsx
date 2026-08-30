@@ -4,7 +4,7 @@ import type { Wheel, WheelAccess, WheelOwner } from "./types";
 type Props = {
   wheel: Wheel;
   access: WheelAccess | null;
-  variant?: "identity" | "info";
+  variant?: "identity" | "info" | "avatar";
   disabled?: boolean;
 };
 
@@ -15,6 +15,8 @@ export function WheelOwnerDetails({ wheel, access, variant = "identity", disable
   const trigger = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const owner = wheel.owner || { displayName: "Unavailable creator", avatarUrl: null };
+  const avatarTrigger = variant === "avatar";
+  const triggerLabel = avatarTrigger ? `Wheel details for ${wheel.title}` : `Wheel owner and access details for ${wheel.title}`;
 
   useEffect(() => {
     if (!open) return;
@@ -47,8 +49,8 @@ export function WheelOwnerDetails({ wheel, access, variant = "identity", disable
   };
 
   return <div ref={root} className={`wheel-owner wheel-owner--${variant}`}>
-    <button ref={trigger} type="button" className="wheel-owner__trigger" disabled={disabled} aria-expanded={open} aria-controls={panelId} aria-haspopup="dialog" aria-label={`Wheel owner and access details for ${wheel.title}`} onClick={toggle}>
-      {variant === "identity" ? <><OwnerAvatar owner={owner} /><span><small>Owned by</small><strong>{owner.displayName}</strong></span></> : <span className="wheel-owner__info" aria-hidden="true">i</span>}
+    <button ref={trigger} type="button" className="wheel-owner__trigger" disabled={disabled} aria-expanded={open} aria-controls={panelId} aria-haspopup="dialog" aria-label={triggerLabel} title={avatarTrigger ? triggerLabel : undefined} onClick={toggle}>
+      {variant === "identity" ? <><OwnerAvatar owner={owner} /><span><small>Owned by</small><strong>{owner.displayName}</strong></span></> : avatarTrigger ? <OwnerAvatar owner={owner} /> : <span className="wheel-owner__info" aria-hidden="true">i</span>}
     </button>
     {open ? <section ref={panel} id={panelId} className="wheel-owner__panel" role="dialog" aria-label={`${wheel.title} ownership and permissions`} tabIndex={-1}>
       <header><OwnerAvatar owner={owner} /><div><small>Wheel owner</small><strong>{owner.displayName}</strong></div><button type="button" onClick={() => { setOpen(false); window.requestAnimationFrame(() => trigger.current?.focus()); }} aria-label="Close ownership details">×</button></header>
@@ -69,7 +71,10 @@ export function WheelOwnerDetails({ wheel, access, variant = "identity", disable
 }
 
 function OwnerAvatar({ owner }: { owner: WheelOwner }) {
-  return <span className="wheel-owner__avatar" aria-hidden="true">{owner.avatarUrl ? <img src={owner.avatarUrl} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /> : <b>{initials(owner.displayName)}</b>}</span>;
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  useEffect(() => setFailedUrl(null), [owner.avatarUrl]);
+  const showImage = Boolean(owner.avatarUrl && failedUrl !== owner.avatarUrl);
+  return <span className="wheel-owner__avatar" aria-hidden="true">{showImage ? <img src={owner.avatarUrl!} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailedUrl(owner.avatarUrl)} /> : <b>{initials(owner.displayName)}</b>}</span>;
 }
 
 function Detail({ label, value }: { label: string; value: string }) {

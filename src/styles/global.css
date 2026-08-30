@@ -9445,10 +9445,10 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .account-access-badge { display: inline-grid; width: 17px; height: 17px; flex: 0 0 17px; place-items: center; color: var(--gold); vertical-align: middle; }
 .account-access-badge svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .account-access-badge__shield { fill: rgba(255,209,47,.12); stroke: currentColor; stroke-width: 1.45; }
+.account-access-badge__verified { fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
 .account-access-badge__mark { fill: currentColor; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
 .account-access-badge--full_admin { color: var(--gold); }
 .account-access-badge--regular_user { color: #8d8b82; }
-.account-access-badge--regular_user .account-access-badge__shield { fill: rgba(160,160,154,.08); }
 .account-widget__copy .account-identity-name { max-width: 174px; }
 .account-widget__copy .account-access-badge { width: 15px; height: 15px; flex-basis: 15px; }
 .account-widget__copy small { max-width: 174px; overflow: hidden; text-overflow: ellipsis; text-transform: none; white-space: nowrap; }

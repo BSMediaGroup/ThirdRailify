@@ -1,5 +1,20 @@
 # Bump notes
 
+## 2026-08-31 - Wheels V1.11 wide layout and Stage control polish
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Removed the ordinary 1240px `.container` from regular Wheel detail's actual composition and gave it the measured 1720px Wheels-only shell, flexible main column, bounded result rail, compact inline owner/description identity row, and deliberate action cluster. Presentation and normal Public-page widths remain independent and unchanged.
+- Replaced Stage Overview information glyphs with same-footprint safe owner avatars plus deterministic initials fallback while preserving the existing safe panel, keyboard/Escape behavior, and the focused Stage information-icon exception. Admin's existing display-name/sanitized-avatar projection was sufficient, so Admin and its current Analytics worktree were untouched.
+- Rebuilt focused Stage around a 286px broadcast rail, compact Practice/Official segmented selector, 52px Spin action, 38px Sound utility, and aligned three-part top bar while retaining D-pad/focus, Fullscreen, Stage Spin All, result, media, sound, and authority behavior.
+- Unified Wheel and Stage directory cards at an exact shared 458px desktop footprint with a 184px feature-art area. Wheel cards show one palette-derived symbolic Wheel; Stage cards always show three lightweight symbolic Wheels using first-available palettes plus deterministic coordinated fallbacks, with no Canvas/media/audio/spin runtime.
+- Increased duration-aware Wheel travel so a normal 6.5-second spin launches at approximately 3.7–4.3 rotations per second and decays linearly to zero; the selected entry, configured duration, official landing fraction, and idempotent result authority are unchanged.
+- Changed regular-detail and Presentation owner identity controls to rest as circular avatars and smoothly expand to the existing full `OWNED BY` chip on mouse hover, keyboard focus, or while the click-open details panel is active; reduced motion switches states without interpolation.
+- Extended static and real-browser coverage for 1–6 editorial Stage geometry (including centred 3+2), overview avatar panel safety/focus return, focused-info preservation, focus control/top-bar dimensions, 3-Wheel plus 1/2/4-Wheel gallery fixtures, equal card/art geometry, wide detail measurements, and the requested responsive detail/presentation matrix. No migration, schema, D1/R2, official-result, permission, payment/provider, DNS, or custom-domain configuration changed.
+- Final isolated Pages preview `9b340411-3a50-4338-b830-3199f986ead5` and production `858fffc5-f982-46cf-a0e5-fed53ddb3d1d` serve the identical 46-file artifact (manifest SHA-256 `6ceb0f04eefdcbfe0f3d4717c46d4878423c12e68ab3b50e05b604d6147a3056`). The release was rebuilt from clean `c48319a` plus only the Wheels files, excluding concurrent Account badge/global CSS work. Stable acceptance measured 38px resting and 129.6px expanded owner controls in detail and Presentation, a 3.52 rotations-per-second launch on the real 11-second Wheel, exact settlement, the genuine four-Wheel Stage overview/focus modes, zero Wheel writes, and zero application errors.
+
 ## 2026-08-31 - Account identity access presentation
 
 CURRENT VER=0.1.0-alpha.0

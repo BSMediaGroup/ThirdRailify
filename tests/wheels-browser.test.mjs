@@ -143,7 +143,7 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
           .waitFor();
         const build = page.getByRole("link", { name: /Build a wheel/i });
         const explore = page.getByRole("link", {
-          name: /Explore public wheels/i,
+          name: /Explore public draws/i,
         });
         assert.equal(
           await build.evaluate((node) =>
@@ -1141,7 +1141,7 @@ async function addConsent(context) {
 async function respond(route, onWrite) {
   const url = new URL(route.request().url());
   const method = route.request().method();
-  if (method !== "GET") onWrite();
+  if (method !== "GET" && url.pathname.startsWith("/api/wheels")) onWrite();
   if (url.pathname === "/api/auth/config") return json(route, authConfig());
   if (url.pathname === "/api/auth/session") return json(route, session());
   if (url.pathname === "/api/wheels/access")
@@ -1156,6 +1156,8 @@ async function respond(route, onWrite) {
     if (method === "POST") return json(route, wheelPayload());
     return json(route, { ok: true, items: [summary()], count: 1 });
   }
+  if (url.pathname === "/api/wheels/stages")
+    return json(route, { ok: true, items: [], count: 0 });
   if (
     url.pathname === "/api/wheels/third-railify-demo-draw/spins" &&
     method === "POST"

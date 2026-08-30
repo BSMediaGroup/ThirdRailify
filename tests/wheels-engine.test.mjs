@@ -51,6 +51,19 @@ test("bounded full-turn variance scales with duration without changing configure
   assert.ok(short[0] >= 1 && short[1] > short[0]); assert.ok(normal[0] > short[0]); assert.ok(long[0] > normal[0]); assert.ok(long[1] / 60 < short[1] / 2, "long-duration RPM remains bounded");
 });
 
+test("normal spins launch quickly and preserve a natural constant-deceleration stop", () => {
+  const duration = 6500; const plan = spinPlan(entries, "b", duration, 0, { landingFraction: .51, turnRandom: .51 });
+  const launchRps = constantDecelerationVelocity(0, duration, plan.totalTravel) * 1000 / 360;
+  const midpointRps = constantDecelerationVelocity(duration / 2, duration, plan.totalTravel) * 1000 / 360;
+  const lateRps = constantDecelerationVelocity(duration * .9, duration, plan.totalTravel) * 1000 / 360;
+  assert.ok(plan.turns >= 12 && plan.turns <= 14, `expected 12-14 turns, received ${plan.turns}`);
+  assert.ok(launchRps >= 3.6 && launchRps <= 4.6, `launch speed ${launchRps.toFixed(2)} rps is outside the intended range`);
+  assert.ok(Math.abs(midpointRps - launchRps / 2) < 1e-12);
+  assert.ok(Math.abs(lateRps - launchRps * .1) < 1e-12);
+  assert.equal(constantDecelerationVelocity(duration, duration, plan.totalTravel), 0);
+  assert.equal(entryAtPointer(entries, plan.finalRotation).id, "b", "faster travel must not change the authoritative winner");
+});
+
 test("weighted winner probability times uniform within-wedge position produces uniform angular density", () => {
   const segments = entryAngles(entries); const total = entries.filter((entry) => entry.state === "active").reduce((sum, entry) => sum + entry.weight, 0);
   for (const segment of segments) { const winnerProbability = segment.entry.weight / total; const densityWithinSegment = 1 / segment.span; assert.ok(Math.abs(winnerProbability * densityWithinSegment - 1 / (Math.PI * 2)) < 1e-12); }

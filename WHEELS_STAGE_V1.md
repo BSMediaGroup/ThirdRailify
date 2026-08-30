@@ -2,6 +2,12 @@
 
 Stage Mode composes one to six existing Wheels without duplicating Wheel configuration, entrants, media authority, or official results. Public owns discovery and presentation; Admin and Commerce D1 remain the source of truth.
 
+## V1.11 presentation polish
+
+Stage overview retains the deterministic desktop map: 1 centred, 2 across, 3 across, 4 as 2×2, 5 as a centred 3+2, and 6 as 3×2. The geometric helper centres every partial row and still gives phone layouts one Wheel per row with a 70%-of-surface diameter cap (roughly 230–270px on current phone widths). The Overview-only details trigger now shows each Wheel owner's safe avatar in the existing compact footprint and opens the existing safe owner/access panel. Focused Stage deliberately keeps the information icon instead.
+
+Focused Stage uses the broad Stage surface with a 286px desktop broadcast rail. Practice/Official is a 38px-high horizontal segmented selector, `SPIN WHEEL` is a 52px primary control, and Sound is a normal 38px icon-and-label utility. The Wheel receives the remaining main surface; the D-pad and all existing focus navigation remain intact. The top bar is a compact three-part grid with a content-sized Wheels exit, centred Stage/focus identity, and consistently sized Overview, Fullscreen, and authorized Edit Stage utilities. Tablet and phone breakpoints stack the focus surface deliberately without horizontal overflow.
+
 ## V1.1 Spin All
 
 Overview adds one Stage-wide `SPIN ALL` coordinator. Anonymous viewers receive Demo All; authenticated creators/spinners default to Practice All and may choose Official All only when every active Stage Wheel independently grants Official authority and is unlocked/current. Practice/Demo preflights and creates every secure Web Crypto plan before motion, then writes nothing. Official All calls one signed Public-to-Admin operation; Admin re-resolves the Stage, ordered Wheels, permissions, revisions, locks, cooldowns, and active participant sets, server-selects every winner, and persists ordinary Wheel result/audit rows in one transactional D1 batch before returning animation plans. A secure batch key deterministically derives per-Wheel idempotency keys. A retry returns the same ordered result IDs, winners, and landing plans. No Stage result row or schema change exists.
@@ -22,9 +28,9 @@ Every Stage load reauthorizes every underlying Wheel. Public Stages accept only 
 
 ## Responsive layout
 
-`stageLayout.mjs` scores balanced arrangements by usable Wheel diameter. Phones use one column, tablets at most two, ordinary widescreen usually renders six as 3x2, and ultrawide screens may use four to six columns when that improves diameter. Focus navigation uses geometric neighbours from the selected layout.
+`stageLayout.mjs` uses explicit editorial arrangements by count. Phones use one column, tablets at most two, and desktop/ultrawide preserves 1, 2, 3, 2×2, centred 3+2, and 3×2 for one through six Wheels. Focus navigation uses geometric neighbours from the selected layout.
 
-Wheels alone use the dedicated widths defined in `wheels-stage.css`: 1720px detail, 1920px Presentation, and a 3320px Stage ceiling with 94-97vw-style safe gutters. The normal Public `.container` remains 1240px.
+Wheels alone use the dedicated widths defined across `wheels-stage.css` and `wheels-v111.css`: 1720px detail, 1920px Presentation, and a 3320px Stage ceiling with 94-97vw-style safe gutters. The detail composition no longer inherits `.container`; the normal Public `.container` remains 1240px.
 
 ## Import
 

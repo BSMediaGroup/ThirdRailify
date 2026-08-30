@@ -95,8 +95,12 @@ export function fullTurnsForDuration(durationMs, turnRandom) {
   const random = turnRandom ?? secureUnitFraction();
   if (!Number.isFinite(random) || random <= 0 || random >= 1) throw new Error("The turn variance must be strictly between zero and one.");
   const seconds = duration / 1000;
-  const minimum = Math.max(3, Math.ceil(2 + seconds * .5));
-  const spread = Math.max(2, Math.ceil(seconds * .15));
+  // Constant deceleration averages half of the launch speed. Budget enough
+  // travel to make the first frame decisive, then let velocity fall linearly
+  // to zero without changing the configured duration or landing authority.
+  const launchRotationsPerSecond = Math.max(2.5, 3.6 - Math.max(0, seconds - 2) * .02);
+  const minimum = Math.max(4, Math.ceil(launchRotationsPerSecond * seconds / 2));
+  const spread = Math.max(2, Math.ceil(Math.min(8, seconds * .18)));
   return minimum + Math.floor(random * (spread + 1));
 }
 

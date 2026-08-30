@@ -42,7 +42,7 @@ Production Public website and storefront foundation for Third Railify. The canon
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
-- Wheels V1.10 adds secure random within-wedge landings and exact constant-deceleration RAF motion without changing weighted winner authority, while retaining the V1.9 cached rigid renderer and runtime-only TWL semantics.
+- Wheels V1.11 gives regular detail a true 1720px Wheels-only composition, compact inline owner identity, safe Stage Overview avatar controls, a 286px focused broadcast rail, and exact shared premium Wheel/Stage cards. `wheels-v111.css` contains the scoped geometry and card system; V1.10 secure within-wedge landings, exact constant-deceleration RAF motion, V1.9 cached rigid rendering, and runtime-only TWL semantics remain unchanged.
 - Wheels Stage V1.1 adds coordinated Demo/Practice/Official Spin All, shared-start individual-duration animation, compact per-tile locks, normalized Stage audio, and one responsive fullscreen-root combined celebration. New implementation modules include `StageWinnerCelebration.tsx`, `stageSpinAll.mjs`, `focusTrap.ts`, and `wheels-stage-v11.css`; see `WHEELS_STAGE_V1.md` and `WHEELS_STAGE_FILE_FORMAT.md`.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
 - Dedicated `/shawn` and `/gina` editorial host profiles with distinct first-party portrait systems, topic instruments, shared-show chemistry, internal viewing paths, and reduced-motion-safe presentation.

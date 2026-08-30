@@ -38,17 +38,29 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     headless: true,
   });
   t.after(() => browser.close());
-  const directoryContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  await consent(directoryContext);
-  const directoryPage = await directoryContext.newPage();
-  await routes(directoryPage);
-  await directoryPage.goto(`${ORIGIN}/wheels`, { waitUntil: "networkidle" });
-  await directoryPage.locator(".wheel-card").first().waitFor();
-  const cards = await directoryPage.locator(".wheel-card").evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().toJSON()));
-  assert.equal(cards.length, 2); assert.ok(Math.abs(cards[0].width - cards[1].width) <= 1); assert.ok(Math.abs(cards[0].height - cards[1].height) <= 1);
-  assert.equal(await directoryPage.locator(".wheel-card--featured").count(), 0); assert.equal(await directoryPage.locator(".wheel-card--stage .stage-card__emblem>i").count(), 3);
-  await directoryPage.screenshot({ path: join(ARTIFACTS, "directory-unified-cards-1440x900.png"), fullPage: true });
-  await directoryContext.close();
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+    const directoryContext = await browser.newContext({ viewport });
+    await consent(directoryContext);
+    const directoryPage = await directoryContext.newPage();
+    await routes(directoryPage);
+    await directoryPage.goto(`${ORIGIN}/wheels`, { waitUntil: "networkidle" });
+    await directoryPage.locator(".wheel-card").first().waitFor();
+    const cards = await directoryPage.locator(".wheel-card").evaluateAll((nodes) => nodes.map((node) => ({ outer: node.getBoundingClientRect().toJSON(), art: node.querySelector(".wheel-card__art").getBoundingClientRect().toJSON() })));
+    assert.equal(cards.length, 6);
+    assert.equal(await directoryPage.locator(".wheel-card--single").count(), 3);
+    assert.equal(await directoryPage.locator(".wheel-card--stage").count(), 3);
+    for (const card of cards) {
+      assert.ok(Math.abs(card.outer.width - cards[0].outer.width) <= 1, JSON.stringify({ viewport, cards }));
+      assert.ok(Math.abs(card.outer.height - cards[0].outer.height) <= 1, JSON.stringify({ viewport, cards }));
+      assert.ok(Math.abs(card.art.height - cards[0].art.height) <= 1, JSON.stringify({ viewport, cards }));
+    }
+    assert.equal(await directoryPage.locator(".wheel-card--featured").count(), 0);
+    assert.equal(await directoryPage.locator(".wheel-card--stage .stage-card__emblem>i").count(), 9);
+    assert.equal(await directoryPage.locator(".wheel-card--stage").evaluateAll((nodes) => nodes.every((node) => getComputedStyle(node).gridColumnEnd === "auto")), true);
+    assert.ok(await directoryPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1));
+    await directoryPage.screenshot({ path: join(ARTIFACTS, `directory-unified-cards-${viewport.width}x${viewport.height}.png`), fullPage: true });
+    await directoryContext.close();
+  }
   const matrix = [];
   for (const surface of [
     { count: 1, width: 1920, height: 1080 },
@@ -61,6 +73,7 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     { count: 6, width: 3440, height: 1440 },
     { count: 6, width: 1440, height: 900 },
     { count: 6, width: 1365, height: 768 },
+    { count: 6, width: 1024, height: 768 },
     { count: 6, width: 768, height: 1024 },
     { count: 6, width: 390, height: 844 },
   ]) {
@@ -105,7 +118,8 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       const renderedRows = [...new Set(geometry.tiles.map((tile) => Math.round(tile.top)))].map((top) => geometry.tiles.filter((tile) => Math.abs(tile.top - top) <= 1).length);
       assert.deepEqual(renderedRows, [[1], [2], [3], [2, 2], [3, 2], [3, 3]][surface.count - 1]);
     }
-    assert.equal(await page.locator('[aria-label^="Wheel owner and access details"]').count(), surface.count);
+    assert.equal(await page.locator('[aria-label^="Wheel details for"]').count(), surface.count);
+    assert.equal(await page.locator(".stage-wheel-tile .wheel-owner--info").count(), 0);
     assert.ok(
       geometry.overflow <= 1 &&
         geometry.surface.top < 100 &&
@@ -142,12 +156,17 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
         );
     assert.deepEqual(errors, []);
     if (surface.count === 6 && surface.width === 1920) {
-      await page.locator('[aria-label^="Wheel owner and access details"]').first().click();
+      const avatarTrigger = page.locator('[aria-label^="Wheel details for"]').first();
+      assert.equal(await avatarTrigger.locator(".wheel-owner__avatar img").count(), 1);
+      await avatarTrigger.click();
       const ownerPanel = page.getByRole("dialog", { name: /ownership and permissions/ });
       await ownerPanel.waitFor(); await ownerPanel.getByText("Fixture Owner", { exact: true }).waitFor();
       assert.equal(await ownerPanel.locator(".wheel-owner__avatar img").count(), 1);
+      assert.doesNotMatch(await ownerPanel.innerText(), /creator@example\.test|ACCOUNT ID\s*[\r\n:]/i);
       await page.screenshot({ path: join(ARTIFACTS, "stage-owner-details-1920x1080.png") });
-      await ownerPanel.getByRole("button", { name: "Close ownership details" }).click();
+      await page.keyboard.press("Escape");
+      await ownerPanel.waitFor({ state: "detached" });
+      assert.equal(await avatarTrigger.evaluate((node) => document.activeElement === node), true);
     }
     await page.screenshot({
       path: join(
@@ -165,7 +184,7 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   });
   await consent(context);
   const page = await context.newPage();
-  await routes(page);
+  await routes(page, { official: true });
   await page.goto(`${ORIGIN}/wheels/stages/stage-6`);
   await page.getByRole("button", { name: "Focus Fixture Wheel 1" }).click();
   await page.locator(".stage-focused-wheel").waitFor();
@@ -178,14 +197,28 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       .querySelector(".stage-focused-wheel .wheel-stage")
       .getBoundingClientRect()
       .toJSON(),
+    rail: document.querySelector(".stage-focus-controls").getBoundingClientRect().toJSON(),
+    modeButtons: [...document.querySelectorAll(".stage-focus-controls fieldset button")].map((node) => node.getBoundingClientRect().toJSON()),
+    spin: document.querySelector(".stage-focus-spin").getBoundingClientRect().toJSON(),
+    sound: document.querySelector(".stage-focus-sound").getBoundingClientRect().toJSON(),
+    topbar: document.querySelector(".stage-topbar").getBoundingClientRect().toJSON(),
+    topbarItems: [...document.querySelectorAll(".stage-topbar > a, .stage-topbar nav > *")].map((node) => node.getBoundingClientRect().toJSON()),
     query: location.search,
   }));
   assert.ok(
     focus.overflow <= 1 &&
       focus.dpad &&
-      Math.abs(focus.wheel.width - focus.wheel.height) <= 1,
+      Math.abs(focus.wheel.width - focus.wheel.height) <= 1 &&
+      focus.rail.width >= 250 && focus.rail.width <= 300 &&
+      focus.modeButtons.every((button) => button.height <= 42) &&
+      focus.spin.height <= 54 && focus.sound.height <= 42 &&
+      focus.topbar.height <= 60 &&
+      focus.topbarItems.every((item) => item.height <= 40),
+    JSON.stringify(focus),
   );
   assert.equal(focus.query, "?focus=1");
+  assert.equal(await page.locator(".stage-focused-wheel .wheel-owner--info").count(), 1, "focused mode keeps the approved info icon");
+  assert.equal(await page.locator(".stage-focused-wheel .wheel-owner--avatar").count(), 0, "focused mode does not substitute the owner avatar");
   await page.screenshot({ path: join(ARTIFACTS, "stage-focus-1920x1080.png") });
   await page
     .getByRole("button", { name: /Overview/ })
@@ -207,6 +240,24 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     path: join(ARTIFACTS, "stage-focus-settled-1920x1080.png"),
   });
   await settledContext.close();
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1365, height: 768 }, { width: 390, height: 844 }]) {
+    const responsiveFocusContext = await browser.newContext({ viewport, reducedMotion: "reduce" });
+    await consent(responsiveFocusContext);
+    const responsiveFocusPage = await responsiveFocusContext.newPage();
+    await routes(responsiveFocusPage, { official: true });
+    await responsiveFocusPage.goto(`${ORIGIN}/wheels/stages/stage-6?focus=1`, { waitUntil: "networkidle" });
+    await responsiveFocusPage.locator(".stage-focused-wheel").waitFor();
+    const responsiveFocus = await responsiveFocusPage.evaluate(() => ({
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      wheel: document.querySelector(".stage-focused-wheel .wheel-stage").getBoundingClientRect().toJSON(),
+      controls: document.querySelector(".stage-focus-controls").getBoundingClientRect().toJSON(),
+      topbar: document.querySelector(".stage-topbar").getBoundingClientRect().toJSON(),
+    }));
+    assert.ok(responsiveFocus.overflow <= 1 && Math.abs(responsiveFocus.wheel.width - responsiveFocus.wheel.height) <= 1 && responsiveFocus.controls.right <= viewport.width + 1 && responsiveFocus.topbar.right <= viewport.width + 1, JSON.stringify({ viewport, responsiveFocus }));
+    assert.equal(await responsiveFocusPage.locator(".stage-focused-wheel .wheel-owner--info").count(), 1);
+    await responsiveFocusPage.screenshot({ path: join(ARTIFACTS, `stage-focus-${viewport.width}x${viewport.height}.png`) });
+    await responsiveFocusContext.close();
+  }
   const exportContext = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
     acceptDownloads: true,
@@ -334,10 +385,17 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   const wide = [];
   for (const surface of [
     { mode: "detail", width: 1920, height: 1080 },
+    { mode: "detail", width: 1600, height: 900 },
     { mode: "detail", width: 1440, height: 900 },
+    { mode: "detail", width: 1365, height: 768 },
+    { mode: "detail", width: 1024, height: 768 },
+    { mode: "detail", width: 768, height: 1024 },
     { mode: "detail", width: 390, height: 844 },
     { mode: "present", width: 1920, height: 1080 },
+    { mode: "present", width: 2560, height: 1080 },
     { mode: "present", width: 3440, height: 1440 },
+    { mode: "present", width: 1280, height: 720 },
+    { mode: "present", width: 390, height: 844 },
   ]) {
     const wideContext = await browser.newContext({
       viewport: { width: surface.width, height: surface.height },
@@ -353,11 +411,36 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     const ownerTrigger = widePage.getByRole("button", { name: /Wheel owner and access details/ });
     await ownerTrigger.waitFor();
     if (surface.width === 1920) {
+      await widePage.mouse.move(1, 1);
+      const restingOwner = await ownerTrigger.boundingBox();
+      assert.ok(restingOwner && restingOwner.width <= 40, JSON.stringify({ surface, restingOwner }));
+      await widePage.screenshot({ path: join(ARTIFACTS, `owner-chip-${surface.mode}-rest-1920x1080.png`) });
+      await widePage.mouse.move(restingOwner.x + restingOwner.width / 2, restingOwner.y + restingOwner.height / 2);
+      await widePage.waitForTimeout(500);
+      await widePage.waitForFunction(() => {
+        const trigger = document.querySelector(".wheel-owner--identity .wheel-owner__trigger");
+        const label = trigger?.querySelector("strong");
+        return trigger?.getBoundingClientRect().width > 100 && label && Number(getComputedStyle(label.parentElement).opacity) > .99;
+      });
+      const expandedOwner = await ownerTrigger.boundingBox();
+      assert.ok(expandedOwner && expandedOwner.width > restingOwner.width + 60, JSON.stringify({ surface, restingOwner, expandedOwner }));
+      await widePage.screenshot({ path: join(ARTIFACTS, `owner-chip-${surface.mode}-hover-1920x1080.png`) });
       await ownerTrigger.click();
       const ownerPanel = widePage.getByRole("dialog", { name: /ownership and permissions/ });
       await ownerPanel.waitFor(); await ownerPanel.getByText("Fixture Owner", { exact: true }).waitFor();
       if (surface.mode === "detail") await widePage.screenshot({ path: join(ARTIFACTS, "wheel-owner-details-1920x1080.png") });
       await ownerPanel.getByRole("button", { name: "Close ownership details" }).click();
+      await widePage.waitForTimeout(50);
+      await ownerTrigger.evaluate((node) => node.blur());
+      await widePage.mouse.move(surface.width - 2, surface.height - 2);
+      await widePage.waitForFunction(() => document.querySelector(".wheel-owner--identity .wheel-owner__trigger")?.getBoundingClientRect().width <= 40);
+      await ownerTrigger.focus();
+      await widePage.waitForTimeout(500);
+      assert.ok((await ownerTrigger.boundingBox()).width > restingOwner.width + 60, "keyboard focus expands the owner chip");
+      await ownerTrigger.evaluate((node) => node.blur());
+      await widePage.mouse.move(1, 1);
+      await widePage.waitForTimeout(450);
+      await widePage.evaluate(() => window.scrollTo(0, 0));
     }
     const geometry = await widePage.evaluate((mode) => {
       const shell = document
@@ -368,6 +451,11 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       const wheel = document
         .querySelector(".wheel-stage")
         .getBoundingClientRect();
+      const composition = document.querySelector(".wheel-control-layout")?.getBoundingClientRect();
+      const main = document.querySelector(".wheel-control-stage")?.getBoundingClientRect();
+      const sidebar = document.querySelector(".wheel-result-rail")?.getBoundingClientRect();
+      const title = document.querySelector(".wheel-control-heading h1")?.getBoundingClientRect();
+      const owner = document.querySelector(".wheel-control-heading .wheel-owner")?.getBoundingClientRect();
       const actionGroup = document.querySelector(
         ".wheel-control-heading__actions",
       );
@@ -382,6 +470,11 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       return {
         shell: shell.toJSON(),
         wheel: wheel.toJSON(),
+        composition: composition?.toJSON() || null,
+        main: main?.toJSON() || null,
+        sidebar: sidebar?.toJSON() || null,
+        title: title?.toJSON() || null,
+        owner: owner?.toJSON() || null,
         actions,
         overflow:
           document.documentElement.scrollWidth -
@@ -394,14 +487,20 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     );
     if (surface.mode === "detail" && surface.width === 1920)
       assert.ok(
-        geometry.shell.width > 1600 && geometry.shell.width <= 1721,
+        geometry.shell.width > 1600 && geometry.shell.width <= 1721 &&
+        geometry.composition.width > 1600 && geometry.composition.width <= 1721 &&
+        geometry.main.width > 1200 &&
+        geometry.sidebar.width >= 340 && geometry.sidebar.width <= 381 &&
+        geometry.composition.left < 110 && geometry.composition.right > 1810 &&
+        geometry.wheel.top < 560 && geometry.title.height < 90 &&
+        geometry.owner.top < geometry.wheel.top,
         JSON.stringify(geometry),
       );
     if (surface.mode === "detail") {
       assert.equal(geometry.actions.items.length, 4, JSON.stringify(geometry));
       assert.ok(
         geometry.actions.group.width <=
-          (surface.width > 620 ? 249 : surface.width - 27),
+          (surface.width > 820 ? 249 : surface.width > 620 ? 541 : surface.width - 19),
         JSON.stringify(geometry),
       );
       assert.equal(
@@ -712,24 +811,11 @@ async function respond(route, options = {}) {
   if (url.pathname === "/api/wheels")
     return json(route, {
       ok: true,
-      items: [
-        {
-          slug: "fixture-wheel-1",
-          title: "Fixture Wheel 1",
-          description: "Stage fixture",
-          participantCount: 8,
-          weighted: false,
-          themePreset: "custom",
-          palette: ["#f3c928", "#b8182f", "#f3f0e5"],
-          demoEnabled: true,
-          officialEnabled: false,
-          latestOfficialAt: null,
-        },
-      ],
-      count: 1,
+      items: Array.from({ length: 3 }, (_, index) => wheelSummary(index, index)),
+      count: 3,
     });
   if (url.pathname === "/api/wheels/stages")
-    return json(route, { ok: true, items: [{ type: "stage", slug: "stage-2", title: "Fixture Two-Wheel Stage", description: "A compact Stage listing fixture", wheelCount: 2, visibility: "public", wheels: [wheelSummary(0, 0), wheelSummary(1, 1)], updatedAt: "2026-08-31T00:00:00Z" }], count: 1 });
+    return json(route, { ok: true, items: [1, 2, 4].map((count) => ({ type: "stage", slug: `stage-${count}`, title: `Fixture ${count}-Wheel Stage`, description: "A compact Stage listing fixture", wheelCount: count, visibility: "public", wheels: Array.from({ length: count }, (_, index) => wheelSummary(index, index)), updatedAt: `2026-08-31T00:00:0${count}Z` })), count: 3 });
   return json(route, { ok: true });
 }
 function stagePayload(count, options = {}) {

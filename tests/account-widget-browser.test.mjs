@@ -20,12 +20,13 @@ test("Public account widget matches Admin typography and opens the shield link i
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
   const errors = [];
+  let sessionAccount = { id: "fixture", email: "master@example.test", displayName: "Master Admin 1", username: null, avatarUrl: null, providers: ["email"], role: "admin", adminLevel: "master", status: "active", emailVerified: true, createdAt: "2026-08-30T00:00:00.000Z", lastLoginAt: null, source: "test" };
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) errors.push(message.text()); });
   await page.route("**/api/**", async (route) => {
     const path = new URL(route.request().url()).pathname;
     if (path === "/api/auth/config") return json(route, { configured: true, publicOrigin: ORIGIN, adminOrigin: ORIGIN, oauthProviders: [], oauthProviderStates: [], cookieMode: "host-only" });
-    if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, csrfToken: "fixture-csrf", access: { isAdmin: true, isMasterAdmin: true }, account: { id: "fixture", email: "master@example.test", displayName: "Master Admin 1", username: null, avatarUrl: null, providers: ["email"], role: "admin", adminLevel: "master", status: "active", emailVerified: true, createdAt: "2026-08-30T00:00:00.000Z", lastLoginAt: null, source: "test" } });
+    if (path === "/api/auth/session") return json(route, { ok: true, authenticated: true, csrfToken: "fixture-csrf", access: { isAdmin: sessionAccount.role === "admin", isMasterAdmin: sessionAccount.adminLevel === "master" }, account: sessionAccount });
     if (path === "/api/account/commerce/inbox") return json(route, { ok: true, authority: "Admin Commerce D1", items: [], total: 3, unread: 3 });
     if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
@@ -83,6 +84,15 @@ test("Public account widget matches Admin typography and opens the shield link i
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.screenshot({ path: join(tmpdir(), "thirdrailify-account-widget-1440x900.png") });
+  sessionAccount = { ...sessionAccount, email: "creator@example.test", displayName: "Creator", role: "user", adminLevel: null };
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Creator account menu" }).click();
+  const regularBadge = page.locator(".account-menu__identity .account-access-badge--regular_user");
+  assert.equal(await regularBadge.getAttribute("aria-label"), "Regular User");
+  assert.equal(await regularBadge.locator(".account-access-badge__verified").count(), 1, "Regular User uses the outlined verified badge");
+  assert.equal(await regularBadge.locator(".account-access-badge__shield").count(), 0, "Regular User does not reuse an Admin shield");
+  assert.equal(await regularBadge.locator(".account-access-badge__verified").evaluate((icon) => getComputedStyle(icon).fill), "none");
+  await page.screenshot({ path: join(tmpdir(), "thirdrailify-account-widget-regular-1440x900.png") });
   assert.deepEqual(errors, []);
 });
 

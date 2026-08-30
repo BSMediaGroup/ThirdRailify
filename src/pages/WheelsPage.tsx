@@ -7,6 +7,7 @@ import { WheelsBrandMark } from "../wheels/WheelsBrandMark";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
 import "../styles/wheels.css";
 import "../styles/wheels-stage.css";
+import "../styles/wheels-v111.css";
 
 type DirectoryItem = { type: "wheel"; item: WheelSummary } | { type: "stage"; item: StageSummary };
 
@@ -52,11 +53,11 @@ export function WheelsPage() {
   </div>;
 }
 
-function WheelCard({ wheel }: { wheel: WheelSummary }) { return <Link className="wheel-card wheel-card--single" to={`/wheels/${wheel.slug}`} style={{ "--wheel-a": wheel.palette?.[0] || "#f3c928", "--wheel-b": wheel.palette?.[1] || "#b8182f" } as React.CSSProperties}><div className="wheel-card__orbit" aria-hidden="true"><i /><i /><i /><WheelsBrandMark /></div><div className="wheel-card__copy"><p className="eyebrow">{wheel.officialEnabled ? "OFFICIAL READY" : "PUBLIC DEMO"}</p><h3>{wheel.title}</h3><p>{wheel.description || "A public Third Railify competition Wheel."}</p><div><span>{wheel.participantCount} participants</span>{wheel.weighted ? <span>Weighted</span> : null}<span>{wheel.demoEnabled ? "Demo enabled" : "View only"}</span></div></div><span className="wheel-card__arrow">↗</span></Link>; }
+function WheelCard({ wheel }: { wheel: WheelSummary }) { return <Link className="wheel-card wheel-card--single" to={`/wheels/${wheel.slug}`} style={{ "--wheel-a": wheel.palette?.[0] || "#f3c928", "--wheel-b": wheel.palette?.[1] || "#b8182f" } as React.CSSProperties}><div className="wheel-card__art" aria-hidden="true"><span className="wheel-card__art-label">SINGLE DRAW</span><div className="wheel-card__orbit"><i /><i /><i /><WheelsBrandMark /></div></div><div className="wheel-card__copy"><p className="eyebrow">WHEEL</p><h3>{wheel.title}</h3><p>{wheel.description || "A public Third Railify competition Wheel."}</p><div className="wheel-card__meta"><span>{wheel.participantCount} participants</span><span>{wheel.weighted ? "Weighted" : "Equal weight"}</span><span>{wheel.officialEnabled ? "Official ready" : wheel.demoEnabled ? "Public demo" : "View only"}</span></div><span className="wheel-card__open">Open Wheel <span aria-hidden="true">↗</span></span></div></Link>; }
 
 function StageCard({ stage }: { stage: StageSummary }) {
   const palettes = stageCardPalettes(stage);
-  return <Link className="wheel-card wheel-card--stage" to={`/wheels/stages/${stage.slug}`} style={{ "--wheel-a": palettes[0][0], "--wheel-b": palettes[0][1] } as React.CSSProperties}><div className="stage-card__emblem" aria-hidden="true">{palettes.map((palette, index) => <i key={index} style={{ "--stage-card-a": palette[0], "--stage-card-b": palette[1] } as React.CSSProperties}><span>{index === 1 ? <WheelsBrandMark /> : null}</span></i>)}</div><div className="wheel-card__copy"><p className="eyebrow">MULTI-WHEEL STAGE</p><h3>{stage.title}</h3><p>{stage.description || "A public multi-wheel Third Railify Stage."}</p><div><span>{stage.wheelCount} {stage.wheelCount === 1 ? "Wheel" : "Wheels"}</span><span>{participantTotal({ type: "stage", item: stage })} participants</span></div></div><span className="wheel-card__arrow">↗</span></Link>;
+  return <Link className="wheel-card wheel-card--stage" to={`/wheels/stages/${stage.slug}`} style={{ "--wheel-a": palettes[0][0], "--wheel-b": palettes[0][1] } as React.CSSProperties}><div className="wheel-card__art" aria-hidden="true"><span className="wheel-card__art-label">BROADCAST GROUP</span><div className="stage-card__emblem">{palettes.map((palette, index) => <i key={index} style={{ "--stage-card-a": palette[0], "--stage-card-b": palette[1] } as React.CSSProperties}><span>{index === 1 ? <WheelsBrandMark /> : null}</span></i>)}</div></div><div className="wheel-card__copy"><p className="eyebrow">STAGE</p><h3>{stage.title}</h3><p>{stage.description || "A public multi-wheel Third Railify Stage."}</p><div className="wheel-card__meta"><span>{stage.wheelCount} {stage.wheelCount === 1 ? "Wheel" : "Wheels"}</span><span>{participantTotal({ type: "stage", item: stage })} participants</span><span>Public</span></div><span className="wheel-card__open">Open Stage <span aria-hidden="true">↗</span></span></div></Link>;
 }
 
 function stageCardPalettes(stage: StageSummary): Array<[string, string]> {

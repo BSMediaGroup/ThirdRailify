@@ -1,4 +1,18 @@
-# Third Railify Wheels V1.10
+# Third Railify Wheels V1.11
+
+## V1.11 wide detail and premium directory polish
+
+Regular `/wheels/:slug` detail now owns its full Wheels-only shell instead of combining the 1720px scene with the ordinary Public `.container`. At 1920px the two-column composition therefore reaches the same 1720px safe envelope, with a flexible main column and a bounded 340–380px result rail. The breadcrumb and navigator remain unchanged, while the identity header keeps title, description, compact `OWNED BY` trigger, and a deliberate 2×2 action cluster in one short region so normal titles retain their available width and the Wheel begins materially higher. Presentation keeps its separate 1920px ceiling. Ordinary Public `.container` pages remain 1240px.
+
+The shared owner panel continues to consume only the established safe Wheel projection: public display name, sanitized avatar URL, Wheel timestamps/publication, segment/draw facts, and already-authorized access/lock booleans. Regular detail uses the compact identity chip. Stage overview uses the same 32px control footprint with the safe owner avatar or deterministic initials fallback and the accessible label `Wheel details for <title>`. Focused Stage intentionally retains the approved circular information icon. Failed avatar loads fall back cleanly rather than exposing a broken image or expanding the projection; email, account ID, private role internals, and authentication identifiers remain absent.
+
+The `/wheels` directory now gives Wheel and Stage entries the same 458px desktop card and 184px feature-art region. Wheel art is one lightweight palette-derived stylized Wheel; Stage art is always three lightweight symbolic CSS Wheels, using the first three available palette summaries and deterministic Third Rail Gold, Gina Violet, and Live Wire-compatible fallbacks when fewer than three are available. No Wheel Canvas, media decoder, audio graph, spin loop, runtime randomness, or entity-specific grid span is used in listing art. Tablet and phone cards share the same paired breakpoints, restrained hover/focus edge light, and reduced-motion static state.
+
+The shared spin planner now gives a normal 6.5-second draw 12–14 full turns, launching at roughly twice the previous angular speed before the existing constant-deceleration curve reaches zero. Configured duration, weighted selection, official landing fraction, idempotency, and the final pointer-selected entry are unchanged.
+
+Regular detail and Presentation now rest the owner identity control at its circular safe avatar/initials footprint. Mouse hover, keyboard focus, and the open-panel state smoothly reveal the existing `OWNED BY` name chip with a bounded ease-out width/text transition; clicking still opens the same details dialog, touch retains a stable circular target, and reduced motion removes the interpolation.
+
+The final isolated release is preview `9b340411-3a50-4338-b830-3199f986ead5` and production `858fffc5-f982-46cf-a0e5-fed53ddb3d1d`, both from the identical 46-file manifest SHA-256 `6ceb0f04eefdcbfe0f3d4717c46d4878423c12e68ab3b50e05b604d6147a3056`. Stable detail, Presentation, and the genuine four-Wheel Stage passed read-only browser acceptance with no application errors or Wheel writes.
 
 ## V1.10 natural landing physics
 

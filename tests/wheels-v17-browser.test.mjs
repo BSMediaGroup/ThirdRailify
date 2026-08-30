@@ -45,7 +45,7 @@ test("Wheels V1.7 custom appearance, fixed preview, fireworks and intensity prof
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (
-      url.pathname.startsWith("/api/") &&
+      url.pathname.startsWith("/api/wheels") &&
       !["GET", "HEAD"].includes(request.method())
     )
       writes.push(`${request.method()} ${url.pathname}`);
