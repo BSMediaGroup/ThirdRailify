@@ -38,6 +38,15 @@ test("Public account messages open full details and support individual and bulk 
     await page.goto(`${ORIGIN}/account/messages`);
     await page.getByRole("heading", { level: 1, name: "Messages" }).waitFor();
     assert.equal(await page.title(), "Messages | Third Railify Account");
+    const messageFilters = page.locator('.account-inbox__filters');
+    for (const name of ["All", "Unread"]) {
+      const filter = messageFilters.getByRole("button", { name, exact: true });
+      const colors = await filter.evaluate((element) => { const style = getComputedStyle(element); return { color: style.color, background: style.backgroundColor }; });
+      assert.notEqual(colors.color, "rgb(0, 0, 0)", `${name} filter label remains readable`);
+      assert.notEqual(colors.color, colors.background, `${name} filter label contrasts its background`);
+    }
+    assert.equal(await messageFilters.getByRole("button", { name: "All", exact: true }).getAttribute("aria-pressed"), "true");
+    assert.equal(await messageFilters.getByRole("button", { name: "Unread", exact: true }).getAttribute("aria-pressed"), "false");
     const disabledRead = page.locator(".account-inbox__bulk").getByRole("button", { name: "Read", exact: true });
     const disabledColors = await disabledRead.evaluate((element) => { const style = getComputedStyle(element); return { color: style.color, border: style.borderTopColor }; });
     assert.equal(disabledColors.color, disabledColors.border, "disabled label matches its visible border color");
