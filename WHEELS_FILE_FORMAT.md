@@ -1,71 +1,41 @@
 # Third Railify portable wheel files
 
-## Format
+## Format and compatibility
 
-Third Railify `.twl` files are human-readable UTF-8 JSON. Version 1 uses:
+Third Railify `.twl` files are canonical UTF-8 JSON with MIME type `application/vnd.thirdrailify.wheel+json`. Current exports use `format: "thirdrailify-wheel"`, `formatVersion: 2`, and `/schemas/thirdrailify-wheel-v2.schema.json`. The v1 schema remains at `/schemas/thirdrailify-wheel-v1.schema.json`, and the importer continues to normalize valid v1 files. V2 is explicit because v1 rejects unknown fields and therefore could not faithfully carry segment styles, segment-image logical references, or sound preset IDs.
 
-- format ID: `thirdrailify-wheel`
-- format version: `1`
-- MIME type: `application/vnd.thirdrailify.wheel+json`
-- public schema: `/schemas/thirdrailify-wheel-v1.schema.json`
+The document contains `exportedAt`, bounded generator/source metadata, one `wheel` payload, and a SHA-256 digest of the deterministically key-sorted normalized wheel payload. The digest detects corruption; it is not a signature or author claim.
 
-An ordinary `.json` export contains exactly the same canonical document. File extensions are usability hints only; import format detection uses parsed content.
+## Creator-editable model
 
-## Canonical document
+`wheel.settings` retains the existing palette and display controls and adds:
+
+- `paletteStyles`: one style per palette colour;
+- `spinSoundPreset`: `classic-tick`, `relay-click`, `arc-pulse`, `mechanical-ratchet`, `soft-tick`, or `silent`;
+- `winnerSoundPreset`: `gold-rise`, `broadcast-hit`, `voltage-chime`, `crimson-impact`, `synth-fanfare`, `short-burst`, or `silent`.
+
+A style is exactly one of:
 
 ```json
-{
-  "format": "thirdrailify-wheel",
-  "formatVersion": 1,
-  "exportedAt": "2026-08-29T00:00:00.000Z",
-  "generator": { "name": "Third Railify", "version": "0.1.0-alpha.0" },
-  "source": { "slug": "informational-only" },
-  "wheel": {
-    "title": "Example draw",
-    "description": "Portable creator content",
-    "settings": { "themePreset": "third-rail-gold", "palette": ["#F3C928", "#B8182F"], "pointerAccent": "#F3C928", "centreTreatment": "bolt", "backgroundIntensity": "high", "labelContrast": "light", "spinDurationMs": 6500, "tickingSoundEnabled": true, "winnerSoundEnabled": true, "celebrationEnabled": true, "confettiEnabled": true, "fireworksEnabled": true, "winnerLightingEnabled": true, "celebrationIntensity": "normal", "backgroundEnabled": true, "backgroundFocalX": 50, "backgroundFocalY": 50, "backgroundImageOpacity": 72, "backgroundOverlayIntensity": 58, "winnerMessageTemplate": "Signal locked: {winner}", "publicHistoryVisible": true },
-    "entries": [{ "label": "Alice", "weight": 1, "color": "#F3C928", "active": true, "order": 0 }],
-    "media": { "background": null, "center": null }
-  },
-  "integrity": { "algorithm": "SHA-256", "wheelPayload": "lowercase-64-character-hex-digest" }
-}
+{ "mode": "solid", "color": "#B8182F" }
+{ "mode": "pattern", "color": "#B8182F", "pattern": "zigzag", "patternColor": "#FF8EA0" }
+{ "mode": "image", "color": "#B8182F", "imageAssetRef": "segment-0123456789abcdef" }
 ```
 
-The digest is SHA-256 over the deterministically key-sorted, normalized `wheel` value. It detects accidental corruption or modification; it is not a signature and does not authenticate the author. Imports reject a present mismatched digest and clearly distinguish a verified digest from an absent one.
-
-Entries have portable identity only: order, label, weight, colour and active state. Exports never contain authoritative entry IDs. Imports mint fresh browser-local IDs, and the Admin service remains free to mint or validate final IDs on Save.
-
-V1.7 remains `formatVersion: 1`. A custom palette is represented without a parallel model as `themePreset: "custom"`, a `palette` of 1–5 strict six-digit hex colours, and the existing independent `pointerAccent`. Explicit entrant colours preserve the applied cycle and later manual edits. `fireworksEnabled` is an optional backward-compatible setting: current exports include it, while older V1 files that omit it normalize to the enabled default. Named/legacy palettes retain their existing 2–12 import bound so older supported files and Wheel of Names conversion remain compatible.
-
-## Authority deliberately excluded
-
-Portable files cannot contain or control wheel/account owner IDs, grants, roles, permissions, Admin capabilities, authoritative wheel IDs or slugs, internal revisions, lifecycle locks, official result or spin history, participant snapshot hashes, audits, rate-limit state, R2 keys, signed media URLs, HMAC/CSRF/session values, secrets, or payment/provider data. The optional `source.slug` is informational and is never claimed on import.
+Pattern IDs are `diagonal-stripes`, `reverse-stripes`, `zigzag`, `dots`, `checkers`, `triangles`, `chevrons`, `waves`, and `third-rail-bolts`. Entries carry optional complete `style` metadata in addition to the legacy nullable `color`. On v1 import, missing styles normalize from palette/entry colours as solid and missing sound presets normalize to Classic Tick and Gold Rise.
 
 ## Media
 
-Custom images are excluded by default. When the creator explicitly enables media export, the browser fetches only the wheel's existing authorized same-origin media route and embeds normalized MIME, safe filename, SHA-256 and raw base64 bytes—never a URL or `data:` URI. Supported types match the Wheels pipeline: PNG, JPEG, WebP, BMP and screened SVG. Bounds are 8 MB for background, 4 MB for centre and 12 MB combined; the whole JSON file is bounded at 18 MB.
+Custom media is excluded by default. With **Include custom media** enabled, background, centre, and only referenced segment images are fetched through authorized same-origin `/api/wheels/media/:assetId` routes. The file embeds MIME, safe filename, SHA-256, and base64 bytes—never URLs, R2 keys, signed URLs, uploaders, account IDs, or server asset IDs.
 
-Imported images stay in browser memory during preview. They are decoded, magic/MIME checked, SHA-256 checked, and unsafe/external SVG content is rejected. No upload occurs until the creator explicitly uses the existing Save action, which delegates to the existing authorized Wheels media endpoint for authoritative validation and replacement.
+Segment bytes are embedded once per logical `assetRef`; palette and participant styles reuse that reference. Segment exports accept PNG, JPEG, WebP, BMP, GIF, and screened SVG. The portable bounds mirror runtime safety: 20 segment assets, 2 MiB per segment payload, and 12 MiB combined embedded media, while Admin applies the stricter SVG/static/GIF format budgets. Import verifies magic/MIME, per-asset SHA-256, total bounds, and SVG safety before retaining media in browser memory. Save uploads segment assets first, replaces temporary logical references with newly returned same-wheel opaque IDs, then submits the ordinary revision-protected config/entries save.
 
-## Imports
+## Authority deliberately excluded
 
-Detection order is canonical Third Railify, Wheel of Names (`wheelConfigs` array), then intentionally narrow generic participant JSON. Supported generic shapes are:
+Portable files cannot contain or control wheel/account owners, grants, roles, authoritative wheel or entry IDs, revisions, lifecycle locks, official results/history, snapshot hashes, audits, rate limits, R2 keys, signed URLs, sessions, CSRF, HMAC, secrets, or payment/provider state. Imports mint fresh entry IDs and never import official history.
 
-- `['Alice', 'Bob']`
-- `{ "entries": ['Alice', 'Bob'] }`
-- `{ "participants": [{ "label": "Alice", "weight": 2, "color": "#FFCC00", "active": true }] }`
-- `{ "entries": [{ "text": "Alice", "weight": 2, "color": "#FFCC00", "enabled": true }] }`
+## Other imports
 
-Generic entry labels use `label`, then `text`, then `name`; state uses `active`, then `enabled`, then inverse `hidden`. Conflicts appear in the conversion report. Generic JSON imports participants and a safe optional title/description only; current/default settings remain in place.
+Detection order is canonical Third Railify, Wheel of Names (`wheelConfigs`), then narrow generic participant JSON. Generic imports accept participant arrays or `entries`/`participants` arrays and retain current/default settings. Wheel of Names content maps bounded entries, colours, spin duration, sound presence, confetti, message, and screened embedded centre/background media. Proprietary sound names do not map one-for-one: presence selects the default generated Third Railify preset. Unsupported fields are reported rather than silently treated as authority.
 
-Wheel of Names conversion maps `entries[].text`, order, supported weight/colour/state variants, enabled `colorSettings`, `spinTime`, sound presence, confetti, winner animation/message, and bounded embedded centre/cover data URIs. Source IDs are discarded. Colours cycle across entries, or fall back to Third Rail Gold. `spinTime` is converted from seconds to `spinDurationMs` and clamped to 2–20 seconds. Named source sounds become only the existing enabled built-in tick/stinger state; no audio files or claimed sound equivalence are imported. Unsupported font, shadow, outline, gradient, hub, layout, picture and post-win behaviours are listed field-by-field rather than silently hidden. `shareMode`, permissions and official history never import.
-
-If multiple `wheelConfigs` exist, the dialog lists every title/count and retains the parsed document while one configuration is selected and loaded at a time. There is no batch create transaction.
-
-## Safety and compatibility
-
-Version 1 rejects future or malformed versions, dangerous `__proto__`/`prototype`/`constructor` keys, malformed UTF-8/Unicode, more than 32 nesting levels, more than 20,000 keys, oversized arrays/strings/files/media, invalid colours/weights and unsupported executable content. JSON is parsed only with `JSON.parse`; no evaluation or dynamic module import occurs.
-
-Importing into `/wheels/new` fills the unsaved creator form and leaves visibility to the existing choice. Replacing an existing editable wheel requires a second explicit confirmation and changes only local creator-editable draft content. Identity, authority, history and locks remain unchanged, and nothing is persisted until the ordinary Save action passes existing permission, revision and media checks.
-
-Version dispatch is explicit. A future format must add a reviewed migration path; version 1 import never guesses how to interpret a future document.
+Every import remains local editor state until Create/Save. Existing-wheel replacement requires explicit review. JSON uses `JSON.parse` only and rejects dangerous prototype keys, malformed UTF-8/Unicode, excessive depth/key/array/file bounds, invalid weights/colours/styles, unknown pattern/sound IDs, remote media, corrupt hashes, and unsupported future versions.

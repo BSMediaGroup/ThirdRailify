@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-08-30 - Wheels V1.8 segment patterns, image fills, sound presets, and pointer
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added solid/pattern/image segment styles across palettes, participants, Canvas, Admin sanitization, and TWL v2 while retaining v1 and legacy-colour import.
+- Added nine procedural patterns including the first-party Third Rail bolt silhouette, four patterned palettes, bounded wheel-owned SVG/BMP/JPEG/GIF/WebP/PNG fills, a wheel-scoped native GIF frame decoder capped at 13.3 fps while visible, generated Web Audio presets, and a graphite accent-tonal selector pointer.
+- Public remains without D1/R2; official result selection and all payment/provider/checkout authority are unchanged.
+- Deployed the validated Public release as `d5920f63` (`https://d5920f63.thirdrailify.pages.dev`) after Admin `0bcab315`; stable `/wheels`, detail, presentation, and read-only browser acceptance pass without API writes. Immutable Public preview routes work, while authenticated cross-origin bootstrap remains intentionally limited to the configured stable Public origin.
+
 ## 2026-08-30 - Friends hero night-sky polish
 
 CURRENT VER=0.1.0-alpha.0

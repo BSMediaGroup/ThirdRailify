@@ -41,7 +41,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
   const requestClose = useCallback(() => { if (!busy) onClose(); }, [busy, onClose]); useModalDialog(root, close, requestClose);
   const proposal = result?.proposals[selected] || null;
   const estimatedBaseBytes = useMemo(() => Math.max(500, JSON.stringify({ title: source.title, description: source.description, config: source.config, entries: source.entries }).length * 1.2), [source]);
-  const estimatedMediaBytes = includeMedia ? Number(source.media?.background?.byteSize || 0) + Number(source.media?.centre?.byteSize || 0) : 0;
+  const estimatedMediaBytes = includeMedia ? Number(source.media?.background?.byteSize || 0) + Number(source.media?.centre?.byteSize || 0) + (source.media?.segmentFills || []).reduce((total, asset) => total + asset.byteSize, 0) : 0;
 
   const parseInput = async (input: string | Uint8Array, sourceName: string) => {
     setBusy(true); setError(""); setNotice(""); setConfirming(false);
@@ -59,7 +59,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
   const exportWheel = async (kind: "twl" | "json" | "copy") => {
     if (exportBusy.current) return; exportBusy.current = true; setBusy(true); setError(""); setNotice("");
     try {
-      const media = includeMedia ? await embedCurrentWheelMedia(source as Wheel) : { background: null, center: null };
+      const media = includeMedia ? await embedCurrentWheelMedia(source as Wheel) : { background: null, center: null, segments: [] };
       const portable = await createPortableWheel(source, { media, generatorVersion: packageInfo.version, sourceSlug: source.slug || "" });
       const text = serializePortableWheel(portable);
       if (kind === "copy") { await copyPortableText(text); setNotice("Canonical Third Railify wheel JSON copied."); }
@@ -79,7 +79,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
           {proposal && confirming ? <div className="wheel-replace-confirm" role="alert"><strong>Load imported content into this editor?</strong><dl><div><dt>Title</dt><dd>{source.title} → {proposal.title}</dd></div><div><dt>Participants</dt><dd>{source.entries.length} → {proposal.entries.length}</dd></div><div><dt>Custom media</dt><dd>{mediaChange(currentMedia || source.media, proposal.media)}</dd></div></dl><p>Wheel identity, owner, grants, locks and official result history remain unchanged. Nothing is persisted until you press the editor’s existing Save action.</p><div><button type="button" className="button button--secondary" onClick={() => setConfirming(false)}>Back to review</button><button type="button" className="button button--primary" onClick={apply}>Load import into editor</button></div></div> : null}
         </section> : <section className="wheel-transfer-export" aria-label="Export wheel content">
           <div className="wheel-format-card"><p className="eyebrow">THIRD RAILIFY PORTABLE WHEEL</p><h3>.twl format v{WHEEL_FILE_FORMAT_VERSION}</h3><p>UTF-8 JSON with canonical creator-editable settings, entries, ordering and a SHA-256 corruption-detection hash.</p><dl><div><dt>Estimated file</dt><dd>{formatBytes(estimatedBaseBytes + estimatedMediaBytes * 1.34)}</dd></div><div><dt>Media</dt><dd>{includeMedia ? formatBytes(estimatedMediaBytes) : "Not included"}</dd></div></dl></div>
-          <label className="wheel-media-export-toggle"><input type="checkbox" checked={includeMedia} onChange={(event) => setIncludeMedia(event.target.checked)} /><span><strong>Include custom background and centre images</strong><small>Off by default. Only authorized same-origin wheel media is fetched; total embedded bytes are capped at 12 MB.</small></span></label>
+          <label className="wheel-media-export-toggle"><input type="checkbox" checked={includeMedia} onChange={(event) => setIncludeMedia(event.target.checked)} /><span><strong>Include custom background, centre, and referenced segment images</strong><small>Off by default. Each referenced segment asset is embedded once; authorized media is capped at 12 MB total.</small></span></label>
           {!includeMedia ? <p className="wheel-transfer-note">Custom imagery is not included. Media URLs, R2 keys and signed URLs are never exported.</p> : null}
           <div className="wheel-export-actions"><button type="button" className="button button--primary" disabled={busy} onClick={() => void exportWheel("twl")}>Download .twl</button><button type="button" className="button button--secondary" disabled={busy} onClick={() => void exportWheel("json")}>Download JSON</button><button type="button" className="button button--ghost" disabled={busy} onClick={() => void exportWheel("copy")}><CopyIcon /> Copy JSON</button></div>
           <div className="wheel-export-exclusions"><strong>Deliberately excluded</strong><p>Owner/account IDs, grants, permissions, authoritative IDs/slugs/revisions, official results and spin IDs, locks, audits, rate limits, R2 keys, signed URLs, sessions, CSRF, HMAC and secrets.</p></div>

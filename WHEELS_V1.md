@@ -1,4 +1,16 @@
-# Third Railify Wheels V1.1
+# Third Railify Wheels V1.8
+
+## V1.8 segment fills, generated sound profiles, and selector instrument
+
+Each palette slot and participant override now uses one bounded style: `{ mode: "solid", color }`, `{ mode: "pattern", color, pattern, patternColor }`, or `{ mode: "image", color, imageAssetId }`. Legacy `colour` and palette arrays normalize to solid styles without a data rewrite. Complete styles cycle by display order; participant Reset restores the complete active palette slot. Built-in procedural Canvas geometry provides diagonal/reverse stripes, zigzag, dots, checkers, triangles, chevrons, waves, and the normalized first-party `assets/icons/trzap-0.svg` bolt silhouette. High Voltage Hazard, Rail Strike, GOATED Circuit, and Night Signal demonstrate mixed patterned/solid palettes.
+
+Segment images are wheel-owned opaque assets delivered only through the safe same-origin media route. Canvas clips each image to its wedge, rotates image-up toward the rim, and applies uniform cover scaling with centred cropping. SVG is capped at 512 KiB, static PNG/JPEG/BMP/WebP at 1.5 MiB, GIF at 2 MiB; dimensions are at most 2048×2048 / 4,194,304 pixels. A wheel may reference at most 20 unique active segment assets and 12 MiB combined. GIF bytes are not normalized; Chromium's native `ImageDecoder` advances a wheel-scoped single-frame cache on a 75 ms (13.3 fps maximum) visible-document ticker while `HTMLImageElement` remains the safe static fallback. Decoder, bitmap, interval, and image-cache cleanup occurs on dependency change or unmount.
+
+Spin presets are Classic Tick, Relay Click, Arc Pulse, Mechanical Ratchet, Soft Tick, and Silent. Winner presets are Gold Rise, Broadcast Hit, Voltage Chime, Crimson Impact, Synth Fanfare, Short Burst, and Silent. All are finite local Web Audio graphs and obey the established global/toggle unlock rules. The pointer retains the exact top target angle while replacing the white-washed triangle with a graphite housing and an accent-only dark/base/light/glow blade derived deterministically from validated hex input.
+
+## V1.8 staging acceptance — 30 August 2026
+
+Public deployment `d5920f63` serves `/wheels`, real detail, `/present`, and list/detail APIs from both immutable and stable Pages origins. The supported stable origin passed the deployed read-only browser flow with gallery navigation, sharing, presentation mode, a local demo spin, responsive-fit checks, zero API writes, and no console errors. Immutable preview routes remain directly usable, but their auth-config bootstrap is intentionally rejected by Admin CORS because only the configured stable Public origin is trusted.
 
 ## V1.7 custom appearance and celebration
 

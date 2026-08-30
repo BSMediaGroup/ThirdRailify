@@ -63,15 +63,19 @@ test("Wheels V1.7 custom appearance, fixed preview, fireworks and intensity prof
       .count(),
     1,
   );
-  assert.equal(
-    await appearance.getByLabel("Custom palette color 1 hex").inputValue(),
-    "#F3C928",
-  );
-  await appearance.getByLabel("Remove custom palette color 4").click();
-  await appearance.getByLabel("Custom palette color 1 hex").fill("#112233");
-  await appearance.getByLabel("Custom palette color 2 hex").fill("#445566");
-  await appearance.getByLabel("Custom palette color 3 hex").fill("#778899");
-  await appearance.getByLabel("Move custom palette color 3 left").click();
+  await appearance.locator(".custom-palette-card .segment-style-action").first().click();
+  let segmentStyle = page.getByRole("dialog", { name: "Segment style" });
+  assert.equal(await segmentStyle.getByLabel("Base colour hex for Custom palette style 1").inputValue(), "#F3C928");
+  await segmentStyle.getByLabel("Base colour hex for Custom palette style 1").fill("#112233");
+  await segmentStyle.getByRole("radio", { name: "pattern", exact: true }).check();
+  await segmentStyle.getByLabel("Pattern for Custom palette style 1").selectOption("dots");
+  await segmentStyle.getByLabel("Pattern colour hex for Custom palette style 1").fill("#ABCDEF");
+  await segmentStyle.getByRole("button", { name: "Apply style" }).click();
+  await appearance.locator(".custom-palette-card .segment-style-action").nth(1).click();
+  segmentStyle = page.getByRole("dialog", { name: "Segment style" });
+  await segmentStyle.getByLabel("Base colour hex for Custom palette style 2").fill("#445566");
+  await segmentStyle.getByRole("button", { name: "Apply style" }).click();
+  await appearance.getByLabel("Move custom palette color 2 left").click();
   await appearance.getByLabel("Custom palette accent hex").fill("#ABCDEF");
   assert.equal(
     await preview
@@ -88,36 +92,22 @@ test("Wheels V1.7 custom appearance, fixed preview, fireworks and intensity prof
   await appearance
     .getByRole("button", { name: "Apply custom palette" })
     .click();
-  const expected = [
-    "#112233",
-    "#778899",
-    "#445566",
-    "#112233",
-    "#778899",
-    "#445566",
-    "#112233",
-  ];
-  for (let index = 0; index < expected.length; index += 1)
-    assert.equal(
-      await appearance
-        .getByLabel(`Entrant ${index + 1} hex colour`)
-        .inputValue(),
-      expected[index],
-    );
-  await appearance.getByLabel("Entrant 2 hex colour").fill("#FFFFFF");
-  assert.equal(
-    await appearance.getByLabel("Entrant 2 hex colour").inputValue(),
-    "#FFFFFF",
-  );
+  const entrantPreviews = appearance.locator(".entrant-colours .segment-style-preview");
+  assert.equal(await entrantPreviews.nth(0).evaluate((node) => getComputedStyle(node).getPropertyValue("--segment-base").trim()), "#445566");
+  assert.equal(await entrantPreviews.nth(1).evaluate((node) => getComputedStyle(node).getPropertyValue("--segment-base").trim()), "#112233");
+  assert.equal(await entrantPreviews.nth(1).evaluate((node) => node.classList.contains("is-pattern")), true);
+  await appearance.locator(".entrant-colours article .segment-style-action").first().click();
+  segmentStyle = page.getByRole("dialog", { name: "Segment style" });
+  await segmentStyle.getByRole("radio", { name: "solid", exact: true }).check();
+  await segmentStyle.getByLabel("Base colour hex for Entrant 1").fill("#FFFFFF");
+  await segmentStyle.getByRole("button", { name: "Apply style" }).click();
+  assert.equal(await entrantPreviews.nth(0).evaluate((node) => getComputedStyle(node).getPropertyValue("--segment-base").trim()), "#FFFFFF");
   await appearance
     .locator(".entrant-colours article")
-    .nth(1)
+    .first()
     .getByRole("button", { name: "Reset" })
     .click();
-  assert.equal(
-    await appearance.getByLabel("Entrant 2 hex colour").inputValue(),
-    "#778899",
-  );
+  assert.equal(await entrantPreviews.nth(0).evaluate((node) => getComputedStyle(node).getPropertyValue("--segment-base").trim()), "#445566");
   await page.screenshot({
     path: `${artifacts}/custom-palette-applied-1440.png`,
     fullPage: false,

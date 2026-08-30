@@ -48,7 +48,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
   const session = await resolveSession(env, request);
   if (!session) throw failure(401, "authentication_required", "Sign in to manage or officially spin a wheel.");
   await requireCsrf(request, session);
-  const media = path.match(/^([a-z0-9][a-z0-9-]{1,78}[a-z0-9])\/media\/(background|centre)$/i);
+  const media = path.match(/^([a-z0-9][a-z0-9-]{1,78}[a-z0-9])\/media\/(background|centre|segment-fill)$/i);
   if (media && request.method === "POST") return proxyMediaUpload(request, env, fetchImpl, path, session.accountId);
   const raw = await readBody(request);
   let input;
@@ -67,7 +67,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
 async function proxyMediaUpload(request, env, fetchImpl, path, accountId) {
   const declared = Number(request.headers.get("content-length") || 0); if (Number.isFinite(declared) && declared > MAX_MEDIA_BYTES) throw failure(413, "wheel_media_too_large", "Choose an image no larger than 8 MB.");
   const bytes = new Uint8Array(await request.arrayBuffer()); if (!bytes.byteLength) throw failure(400, "wheel_media_empty", "Choose a non-empty image."); if (bytes.byteLength > MAX_MEDIA_BYTES) throw failure(413, "wheel_media_too_large", "Choose an image no larger than 8 MB.");
-  const pathname = `/api/wheels/internal/${path}`; const headers = await signedHeaders(env, "POST", pathname, bytes, { Accept: "application/json", "Content-Type": String(request.headers.get("content-type") || "application/octet-stream").slice(0, 100), "X-ThirdRailify-Account-Id": accountId });
+  const pathname = `/api/wheels/internal/${path}`; const headers = await signedHeaders(env, "POST", pathname, bytes, { Accept: "application/json", "Content-Type": String(request.headers.get("content-type") || "application/octet-stream").slice(0, 100), "X-ThirdRailify-Account-Id": accountId, "X-ThirdRailify-Filename": String(request.headers.get("x-thirdrailify-filename") || "").slice(0, 180) });
   const response = await boundedFetch(fetchImpl, adminUrl(env, pathname), { method: "POST", headers, body: bytes }, 25_000);
   return forwardJson(response, "no-store");
 }

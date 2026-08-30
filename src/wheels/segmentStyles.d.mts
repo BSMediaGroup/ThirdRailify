@@ -1,0 +1,17 @@
+export type SegmentFillMode = "solid" | "pattern" | "image";
+export type SegmentPatternId = "diagonal-stripes" | "reverse-stripes" | "zigzag" | "dots" | "checkers" | "triangles" | "chevrons" | "waves" | "third-rail-bolts";
+export type SegmentStyle = { mode: "solid"; color: string } | { mode: "pattern"; color: string; pattern: SegmentPatternId; patternColor: string } | { mode: "image"; color: string; imageAssetId: string };
+export const SEGMENT_PATTERN_IDS: readonly SegmentPatternId[];
+export const SEGMENT_PATTERN_LABELS: Readonly<Record<SegmentPatternId, string>>;
+export const SPIN_SOUND_PRESETS: readonly (readonly [string, string])[];
+export const WINNER_SOUND_PRESETS: readonly (readonly [string, string])[];
+export function solidSegmentStyle(color: string): SegmentStyle;
+export function normalizeSegmentStyle(value: unknown, fallbackColor?: string): SegmentStyle;
+export function normalizePaletteStyles(styles: unknown, legacyPalette: string[]): SegmentStyle[];
+export function styleForEntry(entries: Array<{ id: string; order: number }>, entryId: string, paletteStyles: SegmentStyle[]): SegmentStyle;
+export function applyPaletteStylesToEntries<T extends { id: string; order: number }>(entries: T[], paletteStyles: SegmentStyle[]): Array<T & { colour: string; style: SegmentStyle }>;
+export function resolvedEntryStyle(entry: { order: number; colour?: string | null; style?: SegmentStyle | null }, config: { palette: string[]; paletteStyles?: SegmentStyle[] }): SegmentStyle;
+export function segmentImageAssetIds(config: { palette: string[]; paletteStyles?: SegmentStyle[] }, entries: Array<{ style?: SegmentStyle | null }>): string[];
+export function normalizeSpinSoundPreset(value: unknown): string;
+export function normalizeWinnerSoundPreset(value: unknown): string;
+export function pointerAccentShades(value: string): Readonly<{ dark: string; base: string; light: string; glow: string }>;

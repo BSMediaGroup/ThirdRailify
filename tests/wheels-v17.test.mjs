@@ -98,7 +98,7 @@ test("palette cycling follows authoritative entrant order and reapply overwrites
   assert.deepEqual(movePaletteColour(palette, 2, 1), palette);
 });
 
-test("custom config survives canonical V1 portability and legacy files default fireworks on", async () => {
+test("custom config survives canonical V2 portability and legacy files default fireworks on", async () => {
   const config = {
     ...THIRD_RAIL_GOLD_CONFIG,
     themePreset: "custom",
@@ -113,12 +113,18 @@ test("custom config survives canonical V1 portability and legacy files default f
     entries,
   });
   const parsed = await parseWheelImport(serializePortableWheel(document));
-  assert.equal(document.formatVersion, 1);
+  assert.equal(document.formatVersion, 2);
   assert.equal(parsed.proposals[0].config.themePreset, "custom");
   assert.deepEqual(parsed.proposals[0].config.palette, ["#112233"]);
   assert.equal(parsed.proposals[0].config.pointerAccent, "#ABCDEF");
   assert.equal(parsed.proposals[0].config.fireworksEnabled, false);
   const legacy = structuredClone(document);
+  legacy.formatVersion = 1;
+  delete legacy.wheel.settings.paletteStyles;
+  delete legacy.wheel.settings.spinSoundPreset;
+  delete legacy.wheel.settings.winnerSoundPreset;
+  delete legacy.wheel.media.segments;
+  for (const entry of legacy.wheel.entries) delete entry.style;
   delete legacy.wheel.settings.fireworksEnabled;
   delete legacy.integrity;
   const old = await parseWheelImport(JSON.stringify(legacy));

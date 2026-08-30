@@ -6,21 +6,25 @@ import {
   saveWheel,
   uploadWheelMedia,
 } from "./client";
-import type { Wheel, WheelConfig, WheelThemePreset } from "./types";
+import type { Wheel, WheelConfig, WheelMediaAsset, WheelThemePreset } from "./types";
 import { WheelCanvas } from "./WheelCanvas";
 import { WinnerCelebration } from "./WinnerCelebration";
 import {
-  applyPaletteToEntries,
-  movePaletteColour,
-  normalizeCustomPalette,
-  paletteColourForEntry,
+  applyStylesToEntries,
+  movePaletteStyle,
+  normalizeCustomPaletteStyles,
+  paletteStyleForEntry,
 } from "./appearance.mjs";
+import { SegmentStyleDialog, SegmentStylePreview } from "./SegmentStyleDialog";
+import { SPIN_SOUND_PRESETS, WINNER_SOUND_PRESETS, normalizePaletteStyles, resolvedEntryStyle, solidSegmentStyle, type SegmentStyle } from "./segmentStyles.mjs";
+import { spinSoundProfile, winnerSoundProfile } from "./soundPresets.mjs";
 
 type PaletteOption = {
   key: string;
   label: string;
   kind: string;
   palette: string[];
+  styles?: SegmentStyle[];
   pointerAccent: string;
   themePreset: WheelThemePreset;
 };
@@ -72,6 +76,22 @@ const WHEEL_PALETTES: readonly PaletteOption[] = [
     palette: ["#D6A521", "#70452D", "#9B1B36", "#16110F"],
     pointerAccent: "#FFD65B",
     themePreset: "after-hours",
+  },
+  {
+    key: "high-voltage-hazard", label: "High Voltage Hazard", kind: "Patterned 4 tone", palette: ["#11110E", "#F3C928", "#2B2B24", "#D6A521"], pointerAccent: "#F3C928", themePreset: "high-voltage-hazard",
+    styles: [{ mode: "pattern", color: "#11110E", pattern: "diagonal-stripes", patternColor: "#F3C928" }, { mode: "pattern", color: "#F3C928", pattern: "zigzag", patternColor: "#11110E" }, { mode: "pattern", color: "#2B2B24", pattern: "third-rail-bolts", patternColor: "#F3C928" }, { mode: "solid", color: "#D6A521" }],
+  },
+  {
+    key: "rail-strike", label: "Rail Strike", kind: "Patterned 4 tone", palette: ["#B8182F", "#11110E", "#F3F0E5", "#6F0C1C"], pointerAccent: "#E13D52", themePreset: "rail-strike",
+    styles: [{ mode: "pattern", color: "#B8182F", pattern: "checkers", patternColor: "#11110E" }, { mode: "pattern", color: "#11110E", pattern: "third-rail-bolts", patternColor: "#F3C928" }, { mode: "solid", color: "#F3F0E5" }, { mode: "pattern", color: "#6F0C1C", pattern: "reverse-stripes", patternColor: "#F3F0E5" }],
+  },
+  {
+    key: "goated-circuit", label: "GOATED Circuit", kind: "Patterned 4 tone", palette: ["#5B2C83", "#F3C928", "#252329", "#8A55A8"], pointerAccent: "#C98BE5", themePreset: "goated-circuit",
+    styles: [{ mode: "pattern", color: "#5B2C83", pattern: "dots", patternColor: "#F3C928" }, { mode: "pattern", color: "#F3C928", pattern: "triangles", patternColor: "#5B2C83" }, { mode: "pattern", color: "#252329", pattern: "third-rail-bolts", patternColor: "#C98BE5" }, { mode: "solid", color: "#8A55A8" }],
+  },
+  {
+    key: "night-signal", label: "Night Signal", kind: "Patterned 4 tone", palette: ["#071B45", "#0D6F73", "#C9CBC8", "#102A3A"], pointerAccent: "#5FE5D5", themePreset: "night-signal",
+    styles: [{ mode: "pattern", color: "#071B45", pattern: "chevrons", patternColor: "#5FE5D5" }, { mode: "pattern", color: "#0D6F73", pattern: "waves", patternColor: "#C9CBC8" }, { mode: "pattern", color: "#C9CBC8", pattern: "checkers", patternColor: "#102A3A" }, { mode: "solid", color: "#102A3A" }],
   },
   {
     key: "red-gold-duo",
@@ -238,11 +258,14 @@ const WHEEL_PALETTES: readonly PaletteOption[] = [
 const DEFAULT_APPEARANCE_CONFIG: Partial<WheelConfig> = {
   themePreset: "third-rail-gold",
   palette: ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"],
+  paletteStyles: ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"].map((color) => ({ mode: "solid", color })),
   pointerAccent: "#F3C928",
   centreTreatment: "bolt",
   backgroundIntensity: "high",
   labelContrast: "light",
   winnerSoundEnabled: true,
+  spinSoundPreset: "classic-tick",
+  winnerSoundPreset: "gold-rise",
   celebrationEnabled: true,
   confettiEnabled: true,
   fireworksEnabled: true,
@@ -289,8 +312,8 @@ export function AppearanceDialog({
   const [tab, setTab] = useState<Tab>("theme");
   const [config, setConfig] = useState(initialConfig);
   const [entries, setEntries] = useState(initialEntries);
-  const [customColors, setCustomColors] = useState(() =>
-    initialConfig.palette.slice(0, 5),
+  const [customStyles, setCustomStyles] = useState(() =>
+    normalizePaletteStyles(initialConfig.paletteStyles, initialConfig.palette).slice(0, 5),
   );
   const [customAccent, setCustomAccent] = useState(initialConfig.pointerAccent);
   const [customPreviewing, setCustomPreviewing] = useState(
@@ -308,8 +331,13 @@ export function AppearanceDialog({
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [segmentEditor, setSegmentEditor] = useState<{ kind: "palette"; index: number } | { kind: "entry"; id: string } | null>(null);
+  const [stagedSegmentFiles, setStagedSegmentFiles] = useState<Map<string, File>>(() => new Map());
   const backgroundPreview = useObjectUrl(background);
   const centrePreview = useObjectUrl(centre);
+  const segmentPreviewUrls = useObjectUrlMap(stagedSegmentFiles);
+  const segmentMedia = useMemo(() => [...(wheel.media.segmentFills || []), ...[...stagedSegmentFiles].map(([id, file]) => ({ id, purpose: "segment_fill" as const, url: segmentPreviewUrls[id] || "", contentType: file.type, byteSize: file.size, width: null, height: null, sha256: "", createdAt: "", fileName: file.name }))], [segmentPreviewUrls, stagedSegmentFiles, wheel.media.segmentFills]);
+  const animatedCanvasUnavailable = segmentMedia.some((asset) => asset.contentType === "image/gif") && !("ImageDecoder" in window);
   const visibleEntries = useMemo(
     () =>
       entries
@@ -338,18 +366,20 @@ export function AppearanceDialog({
   const patchConfig = (patch: Partial<WheelConfig>) =>
     setConfig((current) => ({ ...current, ...patch }));
   const selectPalette = (option: PaletteOption) => {
+    const styles = option.styles || option.palette.map((color) => solidSegmentStyle(color));
     patchConfig({
       themePreset: option.themePreset,
       palette: option.palette,
+      paletteStyles: styles,
       pointerAccent: option.pointerAccent,
     });
-    setEntries((current) => applyPaletteToEntries(current, option.palette));
+    setEntries((current) => applyStylesToEntries(current, styles));
     setCustomPreviewing(false);
     setCustomDirty(false);
     setCustomOverrides(new Set());
   };
-  const editCustom = (colors: string[], accent = customAccent) => {
-    setCustomColors(colors);
+  const editCustom = (styles: SegmentStyle[], accent = customAccent) => {
+    setCustomStyles(styles);
     setCustomAccent(accent);
     setCustomPreviewing(true);
     setCustomDirty(true);
@@ -357,16 +387,17 @@ export function AppearanceDialog({
   };
   const applyCustom = () => {
     try {
-      const normalized = normalizeCustomPalette(customColors, customAccent);
-      setCustomColors(normalized.colors);
+      const normalized = normalizeCustomPaletteStyles(customStyles, customAccent);
+      setCustomStyles(normalized.styles);
       setCustomAccent(normalized.accent);
       patchConfig({
         themePreset: "custom",
-        palette: normalized.colors,
+        palette: normalized.styles.map((style) => style.color),
+        paletteStyles: normalized.styles,
         pointerAccent: normalized.accent,
       });
       setEntries((current) =>
-        applyPaletteToEntries(current, normalized.colors),
+        applyStylesToEntries(current, normalized.styles),
       );
       setCustomPreviewing(true);
       setCustomDirty(false);
@@ -382,37 +413,39 @@ export function AppearanceDialog({
     ? {
         ...config,
         themePreset: "custom" as const,
-        palette: customColors,
+        palette: customStyles.map((style) => style.color),
+        paletteStyles: customStyles,
         pointerAccent: customAccent,
       }
     : config;
   const previewEntries =
     customPreviewing && customDirty
-      ? applyPaletteToEntries(entries, customColors).map((entry) =>
+      ? applyStylesToEntries(entries, customStyles).map((entry) =>
           customOverrides.has(entry.id)
             ? entries.find((candidate) => candidate.id === entry.id) || entry
             : entry,
         )
       : entries;
-  const updateColour = (id: string, colour: string) => {
+  const updateStyle = (id: string, style: SegmentStyle) => {
     setEntries((current) =>
-      current.map((entry) => (entry.id === id ? { ...entry, colour } : entry)),
+      current.map((entry) => (entry.id === id ? { ...entry, colour: style.color, style } : entry)),
     );
     if (customPreviewing && customDirty)
       setCustomOverrides((current) => new Set(current).add(id));
   };
-  const resetEntrantColour = (id: string) =>
-    updateColour(id, paletteColourForEntry(entries, id, previewConfig.palette));
+  const resetEntrantStyle = (id: string) =>
+    updateStyle(id, paletteStyleForEntry(entries, id, normalizePaletteStyles(previewConfig.paletteStyles, previewConfig.palette)));
   const changeTab = (next: Tab) => {
     setTab(next);
     controls.current?.scrollTo({ top: 0 });
   };
+  const stageSegmentFile = (file: File) => { const id = crypto.randomUUID(); setStagedSegmentFiles((current) => new Map(current).set(id, file)); return id; };
   const resetAppearance = () => {
     setConfig((current) => ({ ...current, ...DEFAULT_APPEARANCE_CONFIG }));
     setEntries((current) =>
       current.map((entry) => ({ ...entry, colour: null })),
     );
-    setCustomColors([...(DEFAULT_APPEARANCE_CONFIG.palette || [])]);
+    setCustomStyles(normalizePaletteStyles(DEFAULT_APPEARANCE_CONFIG.paletteStyles, DEFAULT_APPEARANCE_CONFIG.palette || []));
     setCustomAccent(DEFAULT_APPEARANCE_CONFIG.pointerAccent || "#F3C928");
     setCustomPreviewing(false);
     setCustomDirty(false);
@@ -423,6 +456,7 @@ export function AppearanceDialog({
     setRemoveCentre(Boolean(wheel.media.centre));
     setSearch("");
     setError("");
+    setStagedSegmentFiles(new Map());
     changeTab("theme");
   };
   const save = async () => {
@@ -431,6 +465,12 @@ export function AppearanceDialog({
     setError("");
     try {
       const source = draft || wheel;
+      const replacements = new Map<string, string>();
+      const referenced = new Set([...(config.paletteStyles || []).filter((style) => style.mode === "image").map((style) => style.imageAssetId), ...entries.filter((entry) => entry.style?.mode === "image").map((entry) => (entry.style as Extract<SegmentStyle, { mode: "image" }>).imageAssetId)]);
+      for (const [localId, file] of stagedSegmentFiles) if (referenced.has(localId)) { const uploaded = await uploadWheelMedia(wheel.slug, "segment-fill", file, csrfToken, file.name); if (!uploaded.asset) throw new Error("The segment image could not be stored."); replacements.set(localId, uploaded.asset.id); }
+      const resolveStyle = (style: SegmentStyle) => style.mode === "image" && replacements.has(style.imageAssetId) ? { ...style, imageAssetId: replacements.get(style.imageAssetId)! } : style;
+      const savedConfig = { ...config, paletteStyles: (config.paletteStyles || config.palette.map((color) => solidSegmentStyle(color))).map(resolveStyle) };
+      const savedEntries = entries.map((entry) => ({ ...entry, style: entry.style ? resolveStyle(entry.style) : null, colour: entry.style ? resolveStyle(entry.style).color : entry.colour }));
       await saveWheel(
         wheel.slug,
         {
@@ -438,8 +478,8 @@ export function AppearanceDialog({
           description: source.description,
           visibility: source.visibility,
           lifecycle: source.lifecycle,
-          config,
-          entries,
+          config: savedConfig,
+          entries: savedEntries,
           revision: source.revision,
         },
         csrfToken,
@@ -482,6 +522,7 @@ export function AppearanceDialog({
       order: 0,
       weight: 1,
       colour: previewConfig.palette[0],
+      style: null,
       state: "active" as const,
     };
   return (
@@ -559,6 +600,8 @@ export function AppearanceDialog({
                   durationMs={0}
                   spinning={false}
                   compact
+                  segmentMedia={segmentMedia}
+                  segmentPreviewUrls={segmentPreviewUrls}
                   centreImageUrl={
                     removeCentre
                       ? null
@@ -576,6 +619,7 @@ export function AppearanceDialog({
                       redistributes every entrant; individual colours can then
                       be edited or reset to their active palette position.
                     </p>
+                    {animatedCanvasUnavailable ? <p className="wheel-alert">Animated preview is unavailable in this browser; the image remains usable as a static fill.</p> : null}
                     <div className="palette-grid">
                       {WHEEL_PALETTES.map((option) => {
                         const selected =
@@ -589,12 +633,7 @@ export function AppearanceDialog({
                             onClick={() => selectPalette(option)}
                           >
                             <i>
-                              {option.palette.map((colour) => (
-                                <span
-                                  key={colour}
-                                  style={{ background: colour }}
-                                />
-                              ))}
+                              {(option.styles || option.palette.map((color) => solidSegmentStyle(color))).map((style, index) => <SegmentStylePreview key={`${option.key}-${index}`} style={style} media={segmentMedia} previewUrls={segmentPreviewUrls} label={`${option.label} slot ${index + 1}`} />)}
                             </i>
                             <b>{option.label}</b>
                             <small>{option.kind}</small>
@@ -603,16 +642,19 @@ export function AppearanceDialog({
                       })}
                     </div>
                     <CustomPaletteEditor
-                      colors={customColors}
+                      styles={customStyles}
                       accent={customAccent}
                       active={customPreviewing}
                       dirty={customDirty}
-                      onColors={(colors) => editCustom(colors)}
-                      onAccent={(accent) => editCustom(customColors, accent)}
+                      media={segmentMedia}
+                      previewUrls={segmentPreviewUrls}
+                      onStyles={(styles) => editCustom(styles)}
+                      onEdit={(index) => setSegmentEditor({ kind: "palette", index })}
+                      onAccent={(accent) => editCustom(customStyles, accent)}
                       onApply={applyCustom}
                       onReset={() =>
                         editCustom(
-                          ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"],
+                          ["#F3C928", "#B8182F", "#F3F0E5", "#20201A"].map((color) => solidSegmentStyle(color)),
                           "#F3C928",
                         )
                       }
@@ -631,7 +673,7 @@ export function AppearanceDialog({
                         value={previewConfig.pointerAccent}
                         onChange={(event) => {
                           const value = event.target.value.toUpperCase();
-                          if (customPreviewing) editCustom(customColors, value);
+                          if (customPreviewing) editCustom(customStyles, value);
                           else patchConfig({ pointerAccent: value });
                         }}
                       />
@@ -643,11 +685,17 @@ export function AppearanceDialog({
                           if (/^#[0-9a-f]{6}$/i.test(event.target.value)) {
                             const value = event.target.value.toUpperCase();
                             if (customPreviewing)
-                              editCustom(customColors, value);
+                              editCustom(customStyles, value);
                             else patchConfig({ pointerAccent: value });
                           }
                         }}
                       />
+                    </div>
+                    <div className="sound-preset-control">
+                      <Toggle label="Generated wheel ticks" checked={config.tickingSoundEnabled} onChange={(value) => patchConfig({ tickingSoundEnabled: value })} />
+                      <label>Spin sound preset<select value={config.spinSoundPreset || "classic-tick"} onChange={(event) => patchConfig({ spinSoundPreset: event.target.value as WheelConfig["spinSoundPreset"] })}>{SPIN_SOUND_PRESETS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+                      <button type="button" onClick={() => void previewGeneratedSound("spin", config.spinSoundPreset || "classic-tick")} disabled={!config.tickingSoundEnabled || config.spinSoundPreset === "silent"}>Preview sound</button>
+                      <small>Generated locally with Web Audio; preview creates no wheel API request.</small>
                     </div>
                     <div className="entrant-colours">
                       <label>
@@ -663,45 +711,17 @@ export function AppearanceDialog({
                           const previewEntry = previewEntries.find(
                             (candidate) => candidate.id === entry.id,
                           );
-                          const fallback =
-                            previewConfig.palette[
-                              entry.order % previewConfig.palette.length
-                            ];
-                          const value = previewEntry?.colour || fallback;
+                          const value = resolvedEntryStyle(previewEntry || entry, previewConfig);
                           return (
                             <article key={entry.id}>
                               <span>
-                                <i style={{ background: value }} />
+                                <SegmentStylePreview style={value} media={segmentMedia} previewUrls={segmentPreviewUrls} label={`${entry.label} fill`} />
                                 {entry.label}
                               </span>
-                              <input
-                                aria-label={`${entry.label} colour picker`}
-                                type="color"
-                                value={value}
-                                onChange={(event) =>
-                                  updateColour(
-                                    entry.id,
-                                    event.target.value.toUpperCase(),
-                                  )
-                                }
-                              />
-                              <input
-                                aria-label={`${entry.label} hex colour`}
-                                value={value}
-                                pattern="#[0-9A-Fa-f]{6}"
-                                onChange={(event) => {
-                                  if (
-                                    /^#[0-9a-f]{6}$/i.test(event.target.value)
-                                  )
-                                    updateColour(
-                                      entry.id,
-                                      event.target.value.toUpperCase(),
-                                    );
-                                }}
-                              />
+                              <button type="button" className="segment-style-action" onClick={() => setSegmentEditor({ kind: "entry", id: entry.id })}><span>Edit style</span></button>
                               <button
                                 type="button"
-                                onClick={() => resetEntrantColour(entry.id)}
+                                onClick={() => resetEntrantStyle(entry.id)}
                               >
                                 Reset
                               </button>
@@ -819,6 +839,10 @@ export function AppearanceDialog({
                         patchConfig({ celebrationEnabled: value })
                       }
                     />
+                    <div className="sound-preset-control">
+                      <label>Winner sound preset<select value={config.winnerSoundPreset || "gold-rise"} onChange={(event) => patchConfig({ winnerSoundPreset: event.target.value as WheelConfig["winnerSoundPreset"] })}>{WINNER_SOUND_PRESETS.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</select></label>
+                      <button type="button" onClick={() => void previewGeneratedSound("winner", config.winnerSoundPreset || "gold-rise")} disabled={!config.winnerSoundEnabled || config.winnerSoundPreset === "silent"}>Preview sound</button>
+                    </div>
                     <Toggle
                       label="Visible confetti"
                       checked={config.confettiEnabled}
@@ -935,37 +959,44 @@ export function AppearanceDialog({
           onAction={() => undefined}
         />
       ) : null}
+      {segmentEditor ? <SegmentStyleDialog
+        label={segmentEditor.kind === "palette" ? `Custom palette style ${segmentEditor.index + 1}` : entries.find((entry) => entry.id === segmentEditor.id)?.label || "Entrant"}
+        value={segmentEditor.kind === "palette" ? customStyles[segmentEditor.index] : resolvedEntryStyle(entries.find((entry) => entry.id === segmentEditor.id)!, previewConfig)}
+        media={segmentMedia}
+        previewUrls={segmentPreviewUrls}
+        onFile={stageSegmentFile}
+        onApply={(style) => { if (segmentEditor.kind === "palette") editCustom(customStyles.map((current, index) => index === segmentEditor.index ? style : current)); else updateStyle(segmentEditor.id, style); }}
+        onClose={() => setSegmentEditor(null)}
+      /> : null}
     </>
   );
 }
 
 function CustomPaletteEditor({
-  colors,
+  styles,
   accent,
   active,
   dirty,
-  onColors,
+  media,
+  previewUrls,
+  onStyles,
+  onEdit,
   onAccent,
   onApply,
   onReset,
 }: {
-  colors: string[];
+  styles: SegmentStyle[];
   accent: string;
   active: boolean;
   dirty: boolean;
-  onColors: (colors: string[]) => void;
+  media: WheelMediaAsset[];
+  previewUrls: Record<string, string>;
+  onStyles: (styles: SegmentStyle[]) => void;
+  onEdit: (index: number) => void;
   onAccent: (accent: string) => void;
   onApply: () => void;
   onReset: () => void;
 }) {
-  const update = (index: number, value: string) => {
-    if (/^#[0-9a-f]{6}$/i.test(value))
-      onColors(
-        colors.map((colour, colourIndex) =>
-          colourIndex === index ? value.toUpperCase() : colour,
-        ),
-      );
-  };
   return (
     <section
       className={`custom-palette-card${active ? " is-active" : ""}`}
@@ -976,57 +1007,41 @@ function CustomPaletteEditor({
           <p className="eyebrow">CUSTOM PALETTE</p>
           <h3>Build your own signal.</h3>
           <small>
-            Choose up to five entrant colours plus one wheel accent.
+            Choose up to five solid, patterned, or image styles plus one wheel accent.
           </small>
         </div>
         <i aria-hidden="true">
-          {colors.map((colour, index) => (
-            <span key={`${colour}-${index}`} style={{ background: colour }} />
-          ))}
+          {styles.map((style, index) => <SegmentStylePreview key={index} style={style} media={media} previewUrls={previewUrls} />)}
         </i>
       </header>
       <div className="custom-palette-swatches">
-        {colors.map((colour, index) => (
+        {styles.map((style, index) => (
           <article key={index}>
-            <label>
-              <span>Color {index + 1}</span>
-              <input
-                aria-label={`Custom palette color ${index + 1} picker`}
-                type="color"
-                value={colour}
-                onChange={(event) => update(index, event.target.value)}
-              />
-            </label>
-            <input
-              aria-label={`Custom palette color ${index + 1} hex`}
-              value={colour}
-              pattern="#[0-9A-Fa-f]{6}"
-              onChange={(event) => update(index, event.target.value)}
-            />
+            <button type="button" className="segment-style-action" onClick={() => onEdit(index)}><SegmentStylePreview style={style} media={media} previewUrls={previewUrls} label={`Custom palette style ${index + 1}`} /><span><b>Style {index + 1}</b><small>{style.mode === "pattern" ? `Pattern · ${style.pattern}` : style.mode === "image" ? "Custom image" : "Solid colour"}</small></span></button>
             <div>
               <button
                 type="button"
                 aria-label={`Move custom palette color ${index + 1} left`}
                 disabled={index === 0}
-                onClick={() => onColors(movePaletteColour(colors, index, -1))}
+                onClick={() => onStyles(movePaletteStyle(styles, index, -1))}
               >
                 ←
               </button>
               <button
                 type="button"
                 aria-label={`Move custom palette color ${index + 1} right`}
-                disabled={index === colors.length - 1}
-                onClick={() => onColors(movePaletteColour(colors, index, 1))}
+                disabled={index === styles.length - 1}
+                onClick={() => onStyles(movePaletteStyle(styles, index, 1))}
               >
                 →
               </button>
               <button
                 type="button"
                 aria-label={`Remove custom palette color ${index + 1}`}
-                disabled={colors.length === 1}
+                disabled={styles.length === 1}
                 onClick={() =>
-                  onColors(
-                    colors.filter((_, colourIndex) => colourIndex !== index),
+                  onStyles(
+                    styles.filter((_, styleIndex) => styleIndex !== index),
                   )
                 }
               >
@@ -1039,10 +1054,10 @@ function CustomPaletteEditor({
       <button
         className="custom-palette-add"
         type="button"
-        disabled={colors.length >= 5}
-        onClick={() => onColors([...colors, "#FFFFFF"])}
+        disabled={styles.length >= 5}
+        onClick={() => onStyles([...styles, solidSegmentStyle("#FFFFFF")])}
       >
-        + Add colour
+        + Add style
       </button>
       <div className="custom-palette-accent">
         <div>
@@ -1187,13 +1202,25 @@ function Toggle({
   );
 }
 function paletteMatches(config: WheelConfig, option: PaletteOption) {
+  const expectedStyles = option.styles || option.palette.map((color) => solidSegmentStyle(color));
   return (
     config.pointerAccent.toUpperCase() === option.pointerAccent &&
     config.palette.length === option.palette.length &&
     config.palette.every(
       (colour, index) => colour.toUpperCase() === option.palette[index],
-    )
+    ) && JSON.stringify(normalizePaletteStyles(config.paletteStyles, config.palette)) === JSON.stringify(expectedStyles)
   );
+}
+function useObjectUrlMap(files: Map<string, File>) {
+  const urls = useMemo(() => { const next: Record<string, string> = {}; for (const [id, file] of files) next[id] = URL.createObjectURL(file); return next; }, [files]);
+  useEffect(() => () => { for (const url of Object.values(urls)) URL.revokeObjectURL(url); }, [urls]);
+  return urls;
+}
+async function previewGeneratedSound(kind: "spin" | "winner", preset: string) {
+  const audio = new AudioContext(); await audio.resume(); const nodes: OscillatorNode[] = [];
+  if (kind === "spin") { const profile = spinSoundProfile(preset); if (profile) for (let index = 0; index < 5; index += 1) { const oscillator = audio.createOscillator(); const gain = audio.createGain(); const start = audio.currentTime + index * .13; oscillator.type = profile.waveform; oscillator.frequency.value = profile.frequency; oscillator.detune.value = profile.detune; gain.gain.setValueAtTime(.0001, start); gain.gain.exponentialRampToValueAtTime(profile.gain, start + profile.attack); gain.gain.exponentialRampToValueAtTime(.0001, start + profile.decay); oscillator.connect(gain).connect(audio.destination); oscillator.start(start); oscillator.stop(start + profile.decay + .02); nodes.push(oscillator); } }
+  else { const profile = winnerSoundProfile(preset); if (profile) profile.notes.forEach((frequency, index) => { const oscillator = audio.createOscillator(); const gain = audio.createGain(); const start = audio.currentTime + index * profile.spacing; oscillator.type = profile.waveform; oscillator.frequency.value = frequency; gain.gain.setValueAtTime(.0001, start); gain.gain.exponentialRampToValueAtTime(profile.gain, start + .018); gain.gain.exponentialRampToValueAtTime(.0001, start + profile.decay); oscillator.connect(gain).connect(audio.destination); oscillator.start(start); oscillator.stop(start + profile.decay + .03); nodes.push(oscillator); }); }
+  window.setTimeout(() => { for (const node of nodes) try { node.stop(); } catch { /* already stopped */ } void audio.close(); }, 1600);
 }
 function useObjectUrl(file: File | null) {
   const [url, setUrl] = useState("");

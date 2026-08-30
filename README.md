@@ -17,6 +17,7 @@ Production-oriented public website and storefront foundation for Third Railify. 
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
+- Wheels V1.8 adds procedural vector segment patterns, wheel-owned static/animated image fills, compact reusable style editors, generated spin/winner sound presets, a tonal graphite pointer instrument, and portable v2 TWL files while preserving v1 import and server-authoritative official draws.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
 - Dedicated `/shawn` and `/gina` editorial host profiles with distinct first-party portrait systems, topic instruments, shared-show chemistry, internal viewing paths, and reduced-motion-safe presentation.
 - Dedicated `/friends` ensemble story with an animated three-signal hero, first-party Daniel/Darnell/Davy profile cards, and keyboard-contained expanded dossiers whose supplied channel links remain hidden until a profile opens.

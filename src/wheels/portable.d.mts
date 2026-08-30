@@ -1,7 +1,8 @@
 import type { Wheel, WheelConfig, WheelEntry } from "./types";
 
 export type PortableMedia = { mode: "embedded"; fileName: string; mimeType: string; sha256: string; base64: string };
-export type PortableMediaSet = { background: PortableMedia | null; center: PortableMedia | null };
+export type PortableSegmentMedia = PortableMedia & { assetRef: string; sourceAssetId?: string; runtimeId?: string };
+export type PortableMediaSet = { background: PortableMedia | null; center: PortableMedia | null; segments?: PortableSegmentMedia[] };
 export type ImportMessage = { severity: "info" | "warning" | "error"; sourceField: string; target: string; reason: string };
 export type WheelImportProposal = {
   title: string;
@@ -16,7 +17,7 @@ export type WheelImportProposal = {
 };
 export type WheelImportResult = { detectedFormat: "thirdrailify" | "wheel-of-names" | "generic-json"; formatLabel: string; version: number | null; sourceName: string; proposals: WheelImportProposal[] };
 export const WHEEL_FILE_FORMAT_ID: "thirdrailify-wheel";
-export const WHEEL_FILE_FORMAT_VERSION: 1;
+export const WHEEL_FILE_FORMAT_VERSION: 2;
 export const WHEEL_FILE_MIME: string;
 export const WHEEL_JSON_MIME: string;
 export const WHEEL_IMPORT_ACCEPT: string;
@@ -35,4 +36,4 @@ export function decodeBase64(value: string): Uint8Array;
 export function encodeBase64(value: Uint8Array): string;
 export function normalizeMediaType(value: string): string;
 export function sha256Hex(value: string | Uint8Array): Promise<string>;
-export function validateMedia(bytes: Uint8Array, mimeType: string, purpose: "background" | "center"): void;
+export function validateMedia(bytes: Uint8Array, mimeType: string, purpose: "background" | "center" | "segment"): void;

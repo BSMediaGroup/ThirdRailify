@@ -42,7 +42,7 @@ test(".twl and ordinary JSON round-trip to fresh entry identity", async () => {
 test("canonical import rejects corrupt hashes, future/malformed versions, authority fields, and unsafe keys", async () => {
   const document = await createPortableWheel(wheel, { exportedAt: "2026-08-29T00:00:00.000Z" });
   await assert.rejects(() => parseWheelImport(JSON.stringify({ ...document, integrity: { ...document.integrity, wheelPayload: "0".repeat(64) } })), /integrity hash does not match/i);
-  await assert.rejects(() => parseWheelImport(JSON.stringify({ ...document, formatVersion: 2 })), /version 2 is not supported/i);
+  await assert.rejects(() => parseWheelImport(JSON.stringify({ ...document, formatVersion: WHEEL_FILE_FORMAT_VERSION + 1 })), new RegExp(`version ${WHEEL_FILE_FORMAT_VERSION + 1} is not supported`, "i"));
   await assert.rejects(() => parseWheelImport(JSON.stringify({ ...document, formatVersion: "1" })), /version is malformed/i);
   await assert.rejects(() => parseWheelImport(JSON.stringify({ ...document, ownerAccountId: "forbidden" })), /unsupported document field/i);
   await assert.rejects(() => parseWheelImport('{"entries":[{"label":"A","__proto__":{"polluted":true}}]}'), /unsafe JSON key/i);
@@ -98,6 +98,17 @@ test("portable media export fetches only authorized same-origin routes and verif
     const media = await embedCurrentWheelMedia(source, async (url, init) => { assert.equal(url, "/api/wheels/media/0123456789abcdef"); assert.equal(init.credentials, "include"); return new Response(png, { headers: { "Content-Type": "image/png" } }); }); assert.equal(media.background.sha256, hash); assert.equal(media.background.fileName, "background.png"); assert.equal(JSON.stringify(media).includes("/api/wheels/media"), false);
     await assert.rejects(() => embedCurrentWheelMedia({ media: { background: { ...source.media.background, url: "https://evil.example/image.png" }, centre: null } }, async () => new Response(png)), /authorized same-origin/i);
     await assert.rejects(() => embedCurrentWheelMedia({ media: { background: { ...source.media.background, sha256: "0".repeat(64) }, centre: null } }, async () => new Response(png, { headers: { "Content-Type": "image/png" } })), /hash did not match/i);
+  } finally { globalThis.window = priorWindow; }
+});
+
+test("V2 embeds one GIF for reused palette and participant image styles and imports logical references", async () => {
+  const priorWindow = globalThis.window; globalThis.window = { location: { origin: "https://public.example" } };
+  try {
+    const gif = Uint8Array.from([0x47,0x49,0x46,0x38,0x39,0x61,0x02,0x00,0x02,0x00,0x80,0,0,0,0,0,255,255,255,0x2c,0,0,0,0,2,0,2,0,0,2,2,0x44,1,0,0x3b]); const hash = await sha256Hex(gif); const assetId = "01234567-89ab-4cde-8fab-0123456789ab";
+    const source = { ...wheel, config: { ...wheel.config, themePreset: "custom", palette: ["#112233"], paletteStyles: [{ mode: "image", color: "#112233", imageAssetId: assetId }] }, entries: wheel.entries.map((entry) => ({ ...entry, style: { mode: "image", color: "#112233", imageAssetId: assetId } })), media: { background: null, centre: null, segmentFills: [{ id: assetId, url: `/api/wheels/media/${assetId}`, contentType: "image/gif", byteSize: gif.length, width: 2, height: 2, sha256: hash, fileName: "two-frame.gif", createdAt: "2026-08-30T00:00:00Z", purpose: "segment_fill" }] } };
+    let requests = 0; const media = await embedCurrentWheelMedia(source, async () => { requests += 1; return new Response(gif, { headers: { "Content-Type": "image/gif" } }); }); assert.equal(requests, 1); assert.equal(media.segments.length, 1);
+    const document = await createPortableWheel(source, { media }); const text = serializePortableWheel(document); assert.equal(text.includes(assetId), false); assert.equal(document.wheel.media.segments.length, 1);
+    const parsed = await parseWheelImport(text); const proposal = parsed.proposals[0]; assert.match(proposal.config.paletteStyles[0].imageAssetId, /^[a-f0-9-]{16,80}$/i); assert.equal(proposal.entries[0].style.imageAssetId, proposal.config.paletteStyles[0].imageAssetId); assert.equal(proposal.media.segments[0].runtimeId, proposal.config.paletteStyles[0].imageAssetId);
   } finally { globalThis.window = priorWindow; }
 });
 

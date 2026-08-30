@@ -49,7 +49,7 @@ test("Wheels V1.6 refinement exposes expanded palettes, reset, presentation navi
     readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
   ]);
   const library = appearance.slice(appearance.indexOf("const WHEEL_PALETTES"), appearance.indexOf("];", appearance.indexOf("const WHEEL_PALETTES")) + 2);
-  assert.equal([...library.matchAll(/\{\s+key:/g)].length, 26);
+  assert.equal([...library.matchAll(/\{\s+key:/g)].length, 30);
   for (const label of ["Electric Blue / White", "Midnight Blue / White", "Cobalt / Black", "Ice Blue / Navy / White", "Royal Blue Gradient", "Purple / White", "Pink / Black", "Gold / Purple", "Green / Black", "Sky / White / Navy"]) assert.ok(library.includes(label), `${label} is available`);
   assert.match(appearance, /DEFAULT_APPEARANCE_CONFIG/);
   assert.match(appearance, /Reset to default/);

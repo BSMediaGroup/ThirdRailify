@@ -1,9 +1,12 @@
+import type { SegmentStyle } from "./segmentStyles.mjs";
+
 export type WheelEntry = {
   id: string;
   label: string;
   order: number;
   weight: number;
   colour: string | null;
+  style?: SegmentStyle | null;
   state: "active" | "hidden";
 };
 export type WheelThemePreset =
@@ -13,17 +16,24 @@ export type WheelThemePreset =
   | "high-voltage-mono"
   | "signal-teal"
   | "after-hours"
+  | "high-voltage-hazard"
+  | "rail-strike"
+  | "goated-circuit"
+  | "night-signal"
   | "custom";
 export type WheelConfig = {
   themePreset: WheelThemePreset;
   palette: string[];
+  paletteStyles?: SegmentStyle[];
   pointerAccent: string;
   centreTreatment: "bolt" | "signal" | "ring";
   backgroundIntensity: "low" | "medium" | "high";
   labelContrast: "light" | "dark";
   spinDurationMs: number;
   tickingSoundEnabled: boolean;
+  spinSoundPreset?: "classic-tick" | "relay-click" | "arc-pulse" | "mechanical-ratchet" | "soft-tick" | "silent";
   winnerSoundEnabled: boolean;
+  winnerSoundPreset?: "gold-rise" | "broadcast-hit" | "voltage-chime" | "crimson-impact" | "synth-fanfare" | "short-burst" | "silent";
   celebrationEnabled: boolean;
   confettiEnabled: boolean;
   fireworksEnabled: boolean;
@@ -39,7 +49,7 @@ export type WheelConfig = {
 };
 export type WheelMediaAsset = {
   id: string;
-  purpose: "background" | "centre";
+  purpose: "background" | "centre" | "segment_fill";
   url: string;
   contentType: string;
   byteSize: number;
@@ -47,6 +57,8 @@ export type WheelMediaAsset = {
   height: number | null;
   sha256: string;
   createdAt: string;
+  fileName?: string;
+  animationCapable?: boolean;
 };
 export type OfficialResult = {
   id: string;
@@ -78,7 +90,7 @@ export type Wheel = {
   weighted: boolean;
   entries: WheelEntry[];
   config: WheelConfig;
-  media: { background: WheelMediaAsset | null; centre: WheelMediaAsset | null };
+  media: { background: WheelMediaAsset | null; centre: WheelMediaAsset | null; segmentFills?: WheelMediaAsset[] };
   demoEnabled: boolean;
   officialEnabled: boolean;
   latestOfficialResult: OfficialResult | null;

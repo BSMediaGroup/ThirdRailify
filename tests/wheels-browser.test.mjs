@@ -547,8 +547,7 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
       browser,
       viewport,
       async (page) => {
-        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw`);
-        await page.getByRole("button", { name: "Manage participants" }).click();
+        await page.goto(`${ORIGIN}/wheels/third-railify-demo-draw?dialog=participants`);
         const participants = page.getByRole("dialog", {
           name: "Manage participants",
         });
@@ -888,7 +887,7 @@ test("Wheels reserve visual-effect clearance and expose the expanded palette lib
         }
         assert.equal(
           await appearance.locator(".palette-grid button").count(),
-          26,
+          30,
           "Appearance exposes all curated palettes",
         );
         if (viewport.width === 1440) {
@@ -1228,6 +1227,7 @@ function wheelPayload(overrides = {}) {
         winnerMessageTemplate: "Signal locked: {winner}",
         publicHistoryVisible: true,
       },
+      media: { background: null, centre: null, segmentFills: [] },
       demoEnabled: true,
       officialEnabled: true,
       latestOfficialResult: null,
