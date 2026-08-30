@@ -79,7 +79,7 @@
     background-color .2s ease;
 }
 
-.wheel-owner--identity .wheel-owner__avatar {
+.wheel-owner--identity > .wheel-owner__trigger > .wheel-owner__avatar {
   width: 28px;
   height: 28px;
   flex: 0 0 28px;

@@ -6018,31 +6018,31 @@ h3 {
 
 /* Shared deterministic night-sky layer for premium editorial surfaces */
 .sparkling-sky { position: absolute; z-index: 0; inset: 0; overflow: hidden; pointer-events: none; --sky-star: #fff7d1; --sky-accent: #ffd34b; --sky-secondary: #7fe7f2; }
-.sparkling-sky::before,.sparkling-sky::after { position: absolute; inset: -18%; content: ""; opacity: .72; filter: blur(54px); transform-origin: center; }
+.sparkling-sky::before,.sparkling-sky::after { position: absolute; z-index:0; inset: -18%; content: ""; opacity: .72; filter: blur(54px); transform-origin: center; }
 .sparkling-sky::before { background: radial-gradient(ellipse at 72% 30%, color-mix(in srgb,var(--sky-secondary) 21%,transparent),transparent 42%),radial-gradient(ellipse at 24% 76%,color-mix(in srgb,var(--sky-accent) 13%,transparent),transparent 38%); }
 .sparkling-sky::after { background: conic-gradient(from 210deg at 65% 48%,transparent 0 24%,color-mix(in srgb,var(--sky-secondary) 9%,transparent) 31%,transparent 40% 72%,color-mix(in srgb,var(--sky-accent) 8%,transparent) 79%,transparent 88%); }
 .sparkling-sky--watch { --sky-star:#f7f5ff; --sky-accent:#ffd84e; --sky-secondary:#9268ff; background:radial-gradient(ellipse at 72% 22%,rgba(104,66,187,.32),transparent 35%),radial-gradient(ellipse at 44% 76%,rgba(51,153,171,.13),transparent 38%),linear-gradient(132deg,#05070f,#0a1023 47%,#140a23 78%,#050609); }
-.sparkling-sky--about { --sky-star:#fff8d8; --sky-accent:#ffd12f; --sky-secondary:#65ddf5; background:radial-gradient(ellipse at 77% 31%,rgba(255,190,28,.065),transparent 27%),radial-gradient(ellipse at 20% 84%,rgba(28,119,116,.055),transparent 30%),radial-gradient(ellipse at 53% 51%,rgba(13,37,40,.22),transparent 43%),linear-gradient(132deg,#010203,#030706 52%,#060501 82%,#010202); }
+.sparkling-sky--about { --sky-star:#fff8d8; --sky-accent:#ffd12f; --sky-secondary:#65ddf5; background:linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)),radial-gradient(ellipse at 77% 31%,rgba(255,190,28,.065),transparent 27%),radial-gradient(ellipse at 20% 84%,rgba(28,119,116,.055),transparent 30%),radial-gradient(ellipse at 53% 51%,rgba(13,37,40,.22),transparent 43%),linear-gradient(132deg,#010203,#030706 52%,#060501 82%,#010202); }
 .sparkling-sky--about::before { opacity:.36;filter:blur(72px); }
 .sparkling-sky--about::after { opacity:.24;filter:blur(76px); }
 .sparkling-sky--about .sparkling-sky__veil i { opacity:.3;filter:blur(76px); }
 .sparkling-sky__veil,.sparkling-sky__starfield,.sparkling-sky__meteors { position:absolute;inset:0; }
+.sparkling-sky__veil { z-index:0; }.sparkling-sky__starfield { z-index:1; }.sparkling-sky__meteors { z-index:2; }
 .sparkling-sky__veil i { position:absolute;width:54%;height:28%;border-radius:50%;background:color-mix(in srgb,var(--sky-secondary) 8%,transparent);filter:blur(56px);opacity:.52;transform:rotate(-10deg); }
 .sparkling-sky__veil i:nth-child(1){top:5%;right:-7%}.sparkling-sky__veil i:nth-child(2){right:18%;bottom:2%;background:color-mix(in srgb,var(--sky-accent) 7%,transparent);transform:rotate(9deg)}.sparkling-sky__veil i:nth-child(3){top:42%;left:-18%;width:44%;background:color-mix(in srgb,var(--sky-secondary) 6%,transparent);transform:rotate(16deg)}
 .sparkling-sky__starfield { inset:-3%; transform-origin:50% 20%; will-change:transform; }
-.sparkling-sky__star { position:absolute;top:var(--sky-y);left:var(--sky-x);display:block;width:var(--sky-size);height:var(--sky-size);color:var(--sky-star);opacity:var(--sky-opacity);transform:rotate(var(--sky-rotation));filter:drop-shadow(0 0 var(--sky-glow) currentColor); }
+.sparkling-sky__star { position:absolute;top:var(--sky-y);left:var(--sky-x);display:block;width:var(--sky-size);height:var(--sky-size);color:var(--sky-color,var(--sky-star));opacity:calc(var(--sky-opacity) * .4);transform:rotate(var(--sky-rotation)) scale(.78);transform-origin:center; }
 .sparkling-sky__star--dot { border-radius:50%;background:currentColor;box-shadow:0 0 calc(var(--sky-glow) * .6) currentColor; }
 .sparkling-sky__star--cross { background:transparent; }
-.sparkling-sky__star--cross::before,.sparkling-sky__star--cross::after { position:absolute;top:50%;left:50%;content:"";background:linear-gradient(90deg,transparent,currentColor 34%,#fff 50%,currentColor 66%,transparent);transform:translate(-50%,-50%); }
+.sparkling-sky__star--cross::before,.sparkling-sky__star--cross::after { position:absolute;top:50%;left:50%;border-radius:99px;content:"";background:linear-gradient(90deg,transparent,currentColor 34%,#fff 50%,currentColor 66%,transparent);box-shadow:0 0 var(--sky-glow) currentColor;transform:translate(-50%,-50%); }
 .sparkling-sky__star--cross::before { width:100%;height:1px; }.sparkling-sky__star--cross::after { width:1px;height:100%;background:linear-gradient(180deg,transparent,currentColor 34%,#fff 50%,currentColor 66%,transparent); }
-.sparkling-sky__star:nth-child(7n){color:var(--sky-accent)}.sparkling-sky__star:nth-child(11n){color:var(--sky-secondary)}
-.sparkling-sky__meteors i { position:absolute;width:92px;height:1px;background:linear-gradient(90deg,transparent,var(--sky-star));opacity:0;filter:drop-shadow(0 0 5px var(--sky-secondary));transform:rotate(-24deg) translateX(-160px); }
-.sparkling-sky__meteors i:nth-child(1){top:14%;left:46%}.sparkling-sky__meteors i:nth-child(2){top:33%;left:79%;width:118px}.sparkling-sky__meteors i:nth-child(3){top:58%;left:17%;width:74px}
+.sparkling-sky__meteors i { position:absolute;width:150px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--sky-secondary) 45%,#fff),#fff);box-shadow:8px 0 11px color-mix(in srgb,var(--sky-secondary) 38%,transparent);opacity:0;transform:rotate(-24deg) translate3d(-18vw,0,0); }
+.sparkling-sky__meteors i:nth-child(1){top:12%;left:47%}.sparkling-sky__meteors i:nth-child(2){top:25%;left:73%;width:105px}.sparkling-sky__meteors i:nth-child(3){top:43%;left:16%;width:82px}
 .watch-schedule.is-active .sparkling-sky__starfield,.about-hero.is-active .sparkling-sky__starfield{animation:sparkling-sky-drift 34s ease-in-out infinite alternate}
 .watch-schedule.is-active .sparkling-sky__star,.about-hero.is-active .sparkling-sky__star{animation:sparkling-sky-twinkle var(--sky-duration) ease-in-out var(--sky-delay) infinite}
 .watch-schedule.is-active .sparkling-sky__star--cross,.about-hero.is-active .sparkling-sky__star--cross{animation-name:sparkling-sky-cross}
-.watch-schedule.is-active .sparkling-sky__meteors i,.about-hero.is-active .sparkling-sky__meteors i{animation:sparkling-sky-meteor 14s cubic-bezier(.2,.65,.25,1) infinite}
-.watch-schedule.is-active .sparkling-sky__meteors i:nth-child(2),.about-hero.is-active .sparkling-sky__meteors i:nth-child(2){animation-delay:-5.2s;animation-duration:17s}.watch-schedule.is-active .sparkling-sky__meteors i:nth-child(3),.about-hero.is-active .sparkling-sky__meteors i:nth-child(3){animation-delay:-10.1s;animation-duration:19s}
+.watch-schedule.is-active .sparkling-sky__meteors i,.about-hero.is-active .sparkling-sky__meteors i{animation:sparkling-sky-meteor 12s cubic-bezier(.2,.65,.25,1) infinite}
+.watch-schedule.is-active .sparkling-sky__meteors i:nth-child(2),.about-hero.is-active .sparkling-sky__meteors i:nth-child(2){animation-delay:-4.4s;animation-duration:15s}.watch-schedule.is-active .sparkling-sky__meteors i:nth-child(3),.about-hero.is-active .sparkling-sky__meteors i:nth-child(3){animation-delay:-9.1s;animation-duration:17s}
 .watch-schedule.is-active .sparkling-sky::after,.about-hero.is-active .sparkling-sky::after{animation:sparkling-sky-aurora 22s ease-in-out infinite alternate}
 
 .watch-schedule { position:relative;isolation:isolate;min-height:650px;padding-block:clamp(92px,9vw,145px);overflow:hidden;border-block:1px solid rgba(255,209,47,.22);background:#050609; }
@@ -6074,10 +6074,10 @@ h3 {
 .watch-platform-links a { position:relative;display:grid;min-height:88px;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:13px;padding:16px 18px;transition:background .2s ease,color .2s ease; }.watch-platform-links a:hover{background:linear-gradient(90deg,rgba(159,112,255,.09),rgba(255,216,78,.035));color:#fff8df}.watch-platform-links a+a{border-top:1px solid rgba(158,111,255,.14)}
 .watch-platform-links img{width:30px;height:30px;filter:drop-shadow(0 0 12px rgba(255,255,255,.08))}.watch-platform-links span{display:flex;min-width:0;flex-direction:column}.watch-platform-links strong{font-size:16px}.watch-platform-links small{margin-top:3px;color:#8f899d;font:700 7px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}.watch-platform-links svg{width:16px;color:#bdb5cb}
 
-@keyframes sparkling-sky-drift{to{transform:translate3d(1.2%,-.8%,0) scale(1.018)}}
-@keyframes sparkling-sky-twinkle{0%,100%{opacity:calc(var(--sky-opacity) * .55);transform:rotate(var(--sky-rotation)) scale(.72)}50%{opacity:var(--sky-opacity);transform:rotate(var(--sky-rotation)) scale(1.18)}}
-@keyframes sparkling-sky-cross{0%,100%{opacity:calc(var(--sky-opacity) * .42);transform:rotate(var(--sky-rotation)) scale(.7)}50%{opacity:1;transform:rotate(calc(var(--sky-rotation) + 8deg)) scale(1.3)}}
-@keyframes sparkling-sky-meteor{0%,72%{opacity:0;transform:rotate(-24deg) translateX(-160px)}76%{opacity:.85}88%,100%{opacity:0;transform:rotate(-24deg) translateX(260px)}}
+@keyframes sparkling-sky-drift{from{transform:translate3d(-3px,2px,0) scale(1)}to{transform:translate3d(8px,-7px,0) scale(1.008)}}
+@keyframes sparkling-sky-twinkle{0%,100%{opacity:calc(var(--sky-opacity) * .32);filter:brightness(.72);transform:rotate(var(--sky-rotation)) scale(.72)}44%{opacity:var(--sky-opacity);filter:brightness(1.75);transform:rotate(var(--sky-rotation)) scale(1.08)}62%{opacity:calc(var(--sky-opacity) * .58);filter:brightness(1.08);transform:rotate(var(--sky-rotation)) scale(.9)}}
+@keyframes sparkling-sky-cross{0%,100%{opacity:calc(var(--sky-opacity) * .28);filter:brightness(.75) drop-shadow(0 0 0 transparent);transform:rotate(var(--sky-rotation)) scale(.62)}46%{opacity:var(--sky-opacity);filter:brightness(1.8) drop-shadow(0 0 var(--sky-glow) currentColor);transform:rotate(var(--sky-rotation)) scale(1.18)}64%{opacity:calc(var(--sky-opacity) * .52);filter:brightness(1.1) drop-shadow(0 0 3px currentColor);transform:rotate(var(--sky-rotation)) scale(.86)}}
+@keyframes sparkling-sky-meteor{0%,72%{opacity:0;transform:rotate(-24deg) translate3d(-18vw,0,0)}76%{opacity:.9}91%{opacity:.38}96%,100%{opacity:0;transform:rotate(-24deg) translate3d(56vw,0,0)}}
 @keyframes sparkling-sky-aurora{to{transform:rotate(4deg) scale(1.05);opacity:.9}}
 @keyframes watch-schedule-sweep{to{transform:rotate(360deg)}}
 
@@ -7267,11 +7267,11 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   z-index: 1;
   inset: 0;
   background-image:
-    linear-gradient(rgba(0, 2, 3, .36), rgba(0, 1, 2, .36)),
     linear-gradient(rgba(255, 209, 47, .035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 209, 47, .035) 1px, transparent 1px);
-  background-size: 100% 100%, 58px 58px, 58px 58px;
-  opacity: .9;
+  background-size: 82px 82px;
+  mask-image: linear-gradient(90deg, transparent 0, rgba(0,0,0,.5) 32%, #000 100%);
+  opacity: .24;
   content: "";
 }
 

@@ -7,6 +7,7 @@ const stagePage = await readFile(new URL("../src/pages/WheelStagePage.tsx", impo
 const stageEditor = await readFile(new URL("../src/wheels/StageEditorDialog.tsx", import.meta.url), "utf8");
 const directory = await readFile(new URL("../src/pages/WheelsPage.tsx", import.meta.url), "utf8");
 const galleryOwner = await readFile(new URL("../src/wheels/GalleryOwnerInfo.tsx", import.meta.url), "utf8");
+const ownerStyles = await readFile(new URL("../src/styles/wheels-v110.css", import.meta.url), "utf8");
 const styles = await readFile(new URL("../src/styles/wheels-v111.css", import.meta.url), "utf8");
 
 test("regular Wheel detail owns its wide composition instead of inheriting the shared container", () => {
@@ -21,7 +22,10 @@ test("regular and Presentation owner identity rests as an avatar and expands for
   assert.equal((wheelPage.match(/<WheelOwnerDetails wheel=\{wheel\} access=\{access\} disabled=\{!interactive\} \/>/g) || []).length, 2);
   assert.match(styles, /\.wheel-owner--identity\s*\{[^}]*height:\s*38px;[^}]*min-height:\s*38px;/s);
   assert.match(styles, /\.wheel-owner--identity \.wheel-owner__trigger\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;/s);
-  assert.match(styles, /\.wheel-owner--identity \.wheel-owner__avatar\s*\{[^}]*width:\s*28px;[^}]*height:\s*28px;/s);
+  assert.match(styles, /\.wheel-owner--identity > \.wheel-owner__trigger > \.wheel-owner__avatar\s*\{[^}]*width:\s*28px;[^}]*height:\s*28px;/s);
+  assert.doesNotMatch(styles, /\.wheel-owner--identity \.wheel-owner__avatar\s*\{/);
+  assert.match(ownerStyles, /\.wheel-owner__avatar\{[^}]*aspect-ratio:1/);
+  assert.match(ownerStyles, /\.wheel-owner__panel>header \.wheel-owner__avatar\{width:38px;flex-basis:38px\}/);
   assert.match(styles, /\.wheel-owner--identity \.wheel-owner__trigger\s*\{[^}]*max-width:\s*38px[^}]*cubic-bezier\(\.22, 1, \.36, 1\)/s);
   assert.match(styles, /\.wheel-owner--identity:hover \.wheel-owner__trigger,[\s\S]*\.wheel-owner--identity:focus-within \.wheel-owner__trigger,[\s\S]*max-width:\s*270px/);
   assert.match(styles, /prefers-reduced-motion:\s*reduce[\s\S]*\.wheel-owner--identity \.wheel-owner__trigger/);

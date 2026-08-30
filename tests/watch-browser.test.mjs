@@ -44,8 +44,14 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         const schedule = page.locator(".watch-schedule");
         await schedule.scrollIntoViewIfNeeded();
         await page.locator(".watch-schedule.is-active").waitFor({ timeout: 8_000 });
-        assert.equal(await schedule.locator(".sparkling-sky__star").count(), 144, `Watch schedule carries the complete starfield at ${width}x${height}`);
+        assert.equal(await schedule.locator(".sparkling-sky__star").count(), 168, `Watch schedule carries the complete Friends-density starfield at ${width}x${height}`);
+        assert.equal(await schedule.locator(".sparkling-sky").getAttribute("data-star-layout"), "seeded-clustered", `Watch schedule uses the irregular clustered sky at ${width}x${height}`);
+        const starScatter = await measureStarScatter(schedule.locator(".sparkling-sky"));
+        assert.ok(starScatter.emptyCells >= 1 && starScatter.denseCell >= 12 && starScatter.variance >= 12 && starScatter.closePairs >= 40, `Watch schedule has natural gaps and constellations instead of uniform bands at ${width}x${height}: ${JSON.stringify(starScatter)}`);
+        assert.ok(starScatter.uniqueX >= 160 && starScatter.uniqueY >= 160, `Watch star coordinates do not repeat as rows or columns at ${width}x${height}: ${JSON.stringify(starScatter)}`);
         assert.notEqual(await schedule.locator(".sparkling-sky__star").first().evaluate((element) => getComputedStyle(element).animationName), "none", `Watch schedule stars twinkle at ${width}x${height}`);
+        assert.equal(await schedule.locator(".sparkling-sky__meteors i").count(), 3, `Watch schedule carries all three Friends-style shooting stars at ${width}x${height}`);
+        assert.equal(await schedule.locator(".sparkling-sky__meteors i").first().evaluate((element) => getComputedStyle(element).animationName), "sparkling-sky-meteor", `Watch shooting stars animate at ${width}x${height}`);
         assert.equal(await schedule.locator(".watch-platform-links a").count(), 2);
         const orbitalGeometry = await schedule.locator(".watch-schedule__orbit").evaluate((orbit) => { const orbitBox = orbit.getBoundingClientRect(); const coreBox = orbit.querySelector(".watch-schedule__time")?.getBoundingClientRect(); return { width: orbitBox.width, height: orbitBox.height, coreX: coreBox ? coreBox.left + coreBox.width / 2 - orbitBox.left : null, coreY: coreBox ? coreBox.top + coreBox.height / 2 - orbitBox.top : null }; });
         assert.ok(Math.abs(orbitalGeometry.width - orbitalGeometry.height) <= 1, `Watch schedule orbit remains circular at ${width}x${height}`);
@@ -242,6 +248,32 @@ async function mockApis(page, live, options = {}) {
     if (url.pathname === `/api/watch/episodes/${ID}`) return json(route, detailPayload());
     if (url.pathname.startsWith("/api/watch/episodes/")) return json(route, { error: "episode_not_found" }, 404);
     return json(route, { error: "not_found" }, 404);
+  });
+}
+
+async function measureStarScatter(sky) {
+  return sky.evaluate((element) => {
+    const stars = [...element.querySelectorAll(".sparkling-sky__star")].map((star) => ({
+      x: Number.parseFloat(star.style.getPropertyValue("--sky-x")),
+      y: Number.parseFloat(star.style.getPropertyValue("--sky-y")),
+    }));
+    const cells = Array(32).fill(0);
+    for (const star of stars) cells[Math.min(3, Math.floor(star.y / 25)) * 8 + Math.min(7, Math.floor(star.x / 12.5))] += 1;
+    let closePairs = 0;
+    for (let first = 0; first < stars.length; first += 1) {
+      for (let second = first + 1; second < stars.length; second += 1) {
+        if (Math.hypot(stars[first].x - stars[second].x, stars[first].y - stars[second].y) < 2.2) closePairs += 1;
+      }
+    }
+    const mean = stars.length / cells.length;
+    return {
+      emptyCells: cells.filter((count) => count === 0).length,
+      denseCell: Math.max(...cells),
+      variance: cells.reduce((total, count) => total + (count - mean) ** 2, 0) / cells.length,
+      closePairs,
+      uniqueX: new Set(stars.map((star) => star.x)).size,
+      uniqueY: new Set(stars.map((star) => star.y)).size,
+    };
   });
 }
 

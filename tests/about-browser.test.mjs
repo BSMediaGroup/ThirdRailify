@@ -113,8 +113,14 @@ test("About remains composed, animated, complete, and overflow-free at every req
     assert.ok(settledLayout.h1Left >= -1 && settledLayout.h1Right <= width + 1, `headline fits at ${width}px`);
     assert.ok(settledLayout.h1Top >= settledLayout.headerBottom, `headline clears the shared header at ${width}px`);
     await page.locator(".about-hero.is-active").waitFor({ timeout: 8_000 });
-    assert.equal(await page.locator(".about-hero .sparkling-sky__star").count(), 144, `About carries the complete adapted starfield at ${width}px`);
+    assert.equal(await page.locator(".about-hero .sparkling-sky__star").count(), 168, `About carries the complete Friends-density starfield at ${width}px`);
+    assert.equal(await page.locator(".about-hero .sparkling-sky").getAttribute("data-star-layout"), "seeded-clustered", `About uses the irregular clustered sky at ${width}px`);
+    const starScatter = await measureStarScatter(page.locator(".about-hero .sparkling-sky"));
+    assert.ok(starScatter.emptyCells >= 1 && starScatter.denseCell >= 12 && starScatter.variance >= 12 && starScatter.closePairs >= 40, `About has natural gaps and constellations instead of uniform bands at ${width}px: ${JSON.stringify(starScatter)}`);
+    assert.ok(starScatter.uniqueX >= 160 && starScatter.uniqueY >= 160, `About star coordinates do not repeat as rows or columns at ${width}px: ${JSON.stringify(starScatter)}`);
     assert.notEqual(await page.locator(".about-hero .sparkling-sky__star").first().evaluate((element) => getComputedStyle(element).animationName), "none", `About stars twinkle at ${width}px`);
+    assert.equal(await page.locator(".about-hero .sparkling-sky__meteors i").count(), 3, `About carries all three Friends-style shooting stars at ${width}px`);
+    assert.equal(await page.locator(".about-hero .sparkling-sky__meteors i").first().evaluate((element) => getComputedStyle(element).animationName), "sparkling-sky-meteor", `About shooting stars animate at ${width}px`);
     await page.locator(".about-network").scrollIntoViewIfNeeded();
     await page.locator(".about-network.is-active").waitFor({ timeout: 8_000 });
     const animatedNetworkTop = await page.locator(".about-network").evaluate((element) => element.getBoundingClientRect().top);
@@ -256,6 +262,32 @@ async function heroLayout(page) {
         const rect = element.getBoundingClientRect();
         return { selector: element.className || element.tagName, left: Math.round(rect.left), right: Math.round(rect.right) };
       }).filter((entry) => entry.left < -1 || entry.right > viewportWidth + 1).slice(0, 8),
+    };
+  });
+}
+
+async function measureStarScatter(sky) {
+  return sky.evaluate((element) => {
+    const stars = [...element.querySelectorAll(".sparkling-sky__star")].map((star) => ({
+      x: Number.parseFloat(star.style.getPropertyValue("--sky-x")),
+      y: Number.parseFloat(star.style.getPropertyValue("--sky-y")),
+    }));
+    const cells = Array(32).fill(0);
+    for (const star of stars) cells[Math.min(3, Math.floor(star.y / 25)) * 8 + Math.min(7, Math.floor(star.x / 12.5))] += 1;
+    let closePairs = 0;
+    for (let first = 0; first < stars.length; first += 1) {
+      for (let second = first + 1; second < stars.length; second += 1) {
+        if (Math.hypot(stars[first].x - stars[second].x, stars[first].y - stars[second].y) < 2.2) closePairs += 1;
+      }
+    }
+    const mean = stars.length / cells.length;
+    return {
+      emptyCells: cells.filter((count) => count === 0).length,
+      denseCell: Math.max(...cells),
+      variance: cells.reduce((total, count) => total + (count - mean) ** 2, 0) / cells.length,
+      closePairs,
+      uniqueX: new Set(stars.map((star) => star.x)).size,
+      uniqueY: new Set(stars.map((star) => star.y)).size,
     };
   });
 }
