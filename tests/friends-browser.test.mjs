@@ -15,9 +15,9 @@ const TEST_VIEWPORTS = LIVE_ORIGIN ? VIEWPORTS.filter(([width]) => width === 144
 const PREFIX = LIVE_ORIGIN ? "friends-stable" : "friends-local";
 
 const PROFILES = [
-  { name: "Daniel Clancy", nickname: "CUNT", location: "Sydney, Australia", flagPath: /\/assets\/flags\/au\.svg$/, trigger: /Open Daniel Clancy profile/i, required: ["Most News Hangouts", "builds and runs the website", "Very capable. Very silly."], links: ["https://rumble.com/danielclancy", "https://youtube.com/@danielclancy", "https://x.com/danielclancy"] },
-  { name: "Darnell Quiggley", nickname: "SQUIGGLE", location: "New Orleans, Louisiana", flagPath: /\/assets\/flags\/us\.svg$/, trigger: /Open Darnell Quiggley profile/i, required: ["Pop Culture Beat Downs", "ex-cop turned actor", "straight edge"], links: ["https://rumble.com/lightscameracitation", "https://x.com/darnellquiggly"] },
-  { name: "Simple Davy", nickname: "BAWLZ", location: "Kansas City, Missouri", flagPath: /\/assets\/flags\/us\.svg$/, trigger: /Open Simple Davy profile/i, required: ["Most News Hangouts", "diabolical sense of humour", "tweets that feel less like messages and more like evidence"], links: ["https://rumble.com/user/SimpleDavy", "https://youtube.com/@OffLabelPod"] },
+  { name: "Daniel Clancy", nickname: "CUNT", location: "Sydney, Australia", flagPath: /\/assets\/flags\/au\.svg$/, flagLabel: "Australia", trigger: /Open Daniel Clancy profile/i, required: ["Most News Hangouts", "builds and runs the website", "Very capable. Very silly."], links: ["https://rumble.com/danielclancy", "https://youtube.com/@danielclancy", "https://x.com/danielclancy"] },
+  { name: "Darnell Quiggley", nickname: "SQUIGGLE", location: "New Orleans, Louisiana", flagPath: /\/assets\/flags\/us\.svg$/, flagLabel: "United States", trigger: /Open Darnell Quiggley profile/i, required: ["Pop Culture Beat Downs", "ex-cop turned actor", "straight edge"], links: ["https://rumble.com/lightscameracitation", "https://x.com/darnellquiggly"] },
+  { name: "Simple Davy", nickname: "BAWLZ", location: "Kansas City, Missouri", flagPath: /\/assets\/flags\/us\.svg$/, flagLabel: "United States", trigger: /Open Simple Davy profile/i, required: ["Most News Hangouts", "diabolical sense of humour", "tweets that feel less like messages and more like evidence"], links: ["https://rumble.com/user/SimpleDavy", "https://youtube.com/@OffLabelPod"] },
 ];
 
 let browser;
@@ -71,9 +71,22 @@ test("profile cards expose no social links until their accessible dialogs open",
   const cardMicroType = await main.locator(".friend-card").first().evaluate((card) => ({ meta: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__meta")).fontSize), eyebrow: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__identity small")).fontSize), location: Number.parseFloat(getComputedStyle(card.querySelector(".friend-card__location")).fontSize) }));
   assert.ok(Math.abs(cardMicroType.meta - 6.6) <= .1, "card metadata is enlarged by no more than ten percent");
   assert.ok(Math.abs(cardMicroType.eyebrow - 8.8) <= .1, "card name eyebrows are enlarged by no more than ten percent");
-  assert.ok(Math.abs(cardMicroType.location - 7.7) <= .1, "card location tags are enlarged by no more than ten percent");
+  assert.ok(Math.abs(cardMicroType.location - 10) <= .1, "card location tags match the current readable microtype token");
   assert.equal(await main.locator('.friend-card a[href^="http"]').count(), 0, "summary cards contain no social links");
   assert.equal(await main.locator('.friend-dialog a[href^="http"]').count(), 0, "social links are absent until a dialog opens");
+
+  const hoverRatios = [];
+  for (const key of ["daniel", "darnell", "davy"]) {
+    const card = main.locator(`.friend-card--${key}`);
+    const image = card.locator(".friend-card__visual img");
+    const baseScale = await image.evaluate((node) => new DOMMatrixReadOnly(getComputedStyle(node).transform).a);
+    await card.hover();
+    const hoverScale = await image.evaluate((node) => new DOMMatrixReadOnly(getComputedStyle(node).transform).a);
+    assert.ok(hoverScale > baseScale, `${key} portrait zooms in on hover`);
+    hoverRatios.push(hoverScale / baseScale);
+    await page.mouse.move(1, 1);
+  }
+  assert.ok(Math.max(...hoverRatios) - Math.min(...hoverRatios) <= .001, `all portrait hover zoom ratios match: ${hoverRatios.join(", ")}`);
 
   for (const profile of PROFILES) {
     const trigger = main.getByRole("button", { name: profile.trigger });
@@ -85,7 +98,7 @@ test("profile cards expose no social links until their accessible dialogs open",
     const text = await dialog.innerText();
     for (const phrase of profile.required) assert.match(text, new RegExp(escapeRegExp(phrase), "i"), `${profile.name} dialog contains ${phrase}`);
     await assertLocation(dialog.locator(".friend-dialog__location"), profile, `${profile.name} dialog`);
-    assert.ok(Math.abs(await dialog.locator(".friend-dialog__location").evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize)) - 7.7) <= .1, `${profile.name} dialog location is enlarged by no more than ten percent`);
+    assert.ok(Math.abs(await dialog.locator(".friend-dialog__location").evaluate((node) => Number.parseFloat(getComputedStyle(node).fontSize)) - 14) <= .1, `${profile.name} dialog location matches the current readable dialog token`);
     const links = await dialog.locator('a[href^="http"]').evaluateAll((nodes) => nodes.map((node) => ({ href: node.href, target: node.target, rel: node.rel })));
     assert.deepEqual(links.map((link) => link.href), profile.links);
     assert.ok(links.every((link) => link.target === "_blank" && link.rel.includes("noopener") && link.rel.includes("noreferrer")));
@@ -124,10 +137,21 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
     await page.locator(".friends-signal.is-active").waitFor({ timeout: 8_000 });
     await page.locator(".friends-hero.is-active").waitFor({ timeout: 8_000 });
     const stars = page.locator(".friends-hero__star");
-    assert.equal(await stars.count(), 42, `the refined hero starfield is complete at ${width}px`);
-    const starGeometry = await stars.evaluateAll((nodes) => nodes.map((node) => { const style = getComputedStyle(node); return { width: Number.parseFloat(style.width), height: Number.parseFloat(style.height), radius: style.borderRadius }; }));
-    assert.ok(starGeometry.every((star) => star.width >= 1 && star.width <= 2 && star.height >= 1 && star.height <= 2 && star.radius !== "0px"), `all hero stars remain one or two pixels at ${width}px`);
+    assert.equal(await stars.count(), 168, `the expanded hero starfield is complete at ${width}px`);
+    const starGeometry = await stars.evaluateAll((nodes) => nodes.map((node) => { const style = getComputedStyle(node); const cross = node.classList.contains("friends-hero__star--cross"); return { cross, y: Number.parseFloat(node.style.getPropertyValue("--star-y")), width: Number.parseFloat(style.width), height: Number.parseFloat(style.height), radius: style.borderRadius, crossArm: getComputedStyle(node, "::before").backgroundImage }; }));
+    const dotStars = starGeometry.filter((star) => !star.cross);
+    const crossStars = starGeometry.filter((star) => star.cross);
+    const upperStars = starGeometry.filter((star) => star.y < 42);
+    const lowerStars = starGeometry.filter((star) => star.y > 68);
+    assert.equal(dotStars.length, 132, `the hero keeps a dense dot field at ${width}px`);
+    assert.equal(crossStars.length, 36, `the hero includes the full cruciform star set at ${width}px`);
+    assert.ok(dotStars.every((star) => star.width >= 1 && star.width <= 2.5 && star.height >= 1 && star.height <= 2.5 && star.radius !== "0px"), `dot stars stay finely scaled at ${width}px`);
+    assert.ok(crossStars.every((star) => star.width >= 8 && star.width <= 14 && star.height >= 8 && star.height <= 14 && star.crossArm !== "none"), `cruciform stars retain both luminous arms at ${width}px`);
+    assert.ok(upperStars.length >= lowerStars.length * 3, `the night sky is substantially denser at the top at ${width}px: ${upperStars.length}/${lowerStars.length}`);
     assert.notEqual(await stars.first().evaluate((node) => getComputedStyle(node).animationName), "none", `hero starlight twinkles at ${width}px`);
+    assert.equal(await page.locator(".friends-hero__meteors i").count(), 3);
+    assert.notEqual(await page.locator(".friends-hero__meteors i").first().evaluate((node) => getComputedStyle(node).animationName), "none", `meteor accents animate at ${width}px`);
+    assert.notEqual(await page.locator(".friends-signal__aura").evaluate((node) => getComputedStyle(node).animationName), "none", `signal aura breathes at ${width}px`);
     assert.notEqual(await page.locator(".friends-signal__scope i").first().evaluate((node) => getComputedStyle(node).animationName), "none");
     const heroPortraitFill = await page.locator(".friends-signal").evaluate((stage) => {
       const stageRect = stage.getBoundingClientRect();
@@ -177,6 +201,7 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
         leftGap: imageRect.left - canvas.left,
         rightGap: canvas.right - imageRect.right,
         topGap: imageRect.top - canvas.top,
+        topGapRatio: (imageRect.top - canvas.top) / canvas.height,
         centerRatio: (imageRect.left + imageRect.width / 2 - canvas.left) / canvas.width,
       };
     }));
@@ -184,12 +209,13 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
       assert.equal(portrait.objectFit, "cover", `${portrait.key} uses fill geometry at ${width}px`);
       assert.match(portrait.objectPosition, /(?:50%|center)\s+(?:0%|0px|top)/, `${portrait.key} preserves the portrait top at ${width}px`);
       assert.ok(portrait.leftGap <= 0 && portrait.rightGap <= 0, `${portrait.key} reaches both canvas sides at ${width}px: ${JSON.stringify(portrait)}`);
-      assert.ok(Math.abs(portrait.topGap) <= 1, `${portrait.key} starts at the canvas top at ${width}px`);
+      if (portrait.key === "friend-card--daniel") assert.ok(portrait.topGapRatio <= -.05 && portrait.topGapRatio >= -.2, `${portrait.key} retains its intentional high crop at ${width}px`);
+      else assert.ok(Math.abs(portrait.topGap) <= 1, `${portrait.key} starts at the canvas top at ${width}px`);
     }
     const danielCardPortrait = cardPortraits.find((portrait) => portrait.key === "friend-card--daniel");
     assert.ok(danielCardPortrait && danielCardPortrait.centerRatio <= .46, `Daniel stays left-shifted inside his card at ${width}px`);
 
-    if (process.env.FRIENDS_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
+    if (process.env.FRIENDS_SCREENSHOTS === "1" && (width === 1920 || width === 1440 || width === 390)) {
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); window.scrollTo(0, 0); });
       await page.waitForFunction(() => window.scrollY === 0);
       await page.waitForTimeout(100);
@@ -222,7 +248,7 @@ test("reduced motion keeps the full Friends experience static and operable", asy
   assert.equal(await page.locator(".friends-hero").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-roster").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-close").getAttribute("data-motion"), "static");
-  for (const selector of [".friends-hero__starfield", ".friends-hero__star", ".friends-signal__grid", ".friends-signal__scope i", ".friend-card__scan i"]) assert.equal(await page.locator(selector).first().evaluate((node) => getComputedStyle(node).animationName), "none");
+  for (const selector of [".friends-hero__starfield", ".friends-hero__star", ".friends-hero__meteors i", ".friends-signal__aura", ".friends-signal__grid", ".friends-signal__scope i", ".friend-card__scan i"]) assert.equal(await page.locator(selector).first().evaluate((node) => getComputedStyle(node).animationName), "none");
   assert.equal(await page.locator(".friend-card").count(), 3);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
   await page.getByRole("button", { name: /Open Simple Davy profile/i }).click();
@@ -265,7 +291,9 @@ async function assertLocation(locator, profile, label) {
   assert.equal((await locator.innerText()).trim(), profile.location.toUpperCase(), `${label} shows the supplied location`);
   const flag = locator.locator("img");
   assert.equal(await flag.getAttribute("alt"), "", `${label} flag remains decorative`);
-  assert.match(new URL(await flag.getAttribute("src"), ORIGIN).pathname, profile.flagPath, `${label} uses the correct flag SVG`);
+  const flagSource = await flag.getAttribute("src");
+  if (flagSource.startsWith("data:image/svg+xml")) assert.match(decodeURIComponent(flagSource), new RegExp(`aria-label=['"]${escapeRegExp(profile.flagLabel)}['"]`), `${label} embeds the correct flag SVG`);
+  else assert.match(new URL(flagSource, ORIGIN).pathname, profile.flagPath, `${label} uses the correct flag SVG`);
   assert.ok(await flag.evaluate((image) => image.complete && image.naturalWidth > 0), `${label} flag loads`);
   assert.ok(await locator.evaluate((node) => Math.abs(node.querySelector("img").getBoundingClientRect().height - Number.parseFloat(getComputedStyle(node).fontSize)) <= 1), `${label} flag matches the location text height`);
 }

@@ -91,13 +91,29 @@ const friends: FriendProfile[] = [
   },
 ];
 
-const friendsHeroStars = Array.from({ length: 42 }, (_, index) => ({
-  x: 2 + ((index * 37 + (index % 6) * 9) % 96),
-  y: 4 + ((index * 53 + (index % 5) * 7) % 90),
-  size: index % 6 === 0 || index % 11 === 0 ? 2 : 1,
-  delay: -((index * 17) % 83) / 10,
-  duration: 3.6 + ((index * 11) % 34) / 10,
-  color: ["#fff8d9", "#ffd12f", "#b889ff", "#d8fbff"][index % 4],
+const friendsHeroStarBands = [
+  { count: 92, top: 1, depth: 35, offset: 17 },
+  { count: 50, top: 27, depth: 40, offset: 211 },
+  { count: 26, top: 61, depth: 34, offset: 503 },
+] as const;
+
+const friendsHeroStars = friendsHeroStarBands.flatMap((band, bandIndex) => Array.from({ length: band.count }, (_, index) => {
+  const sequence = band.offset + index;
+  const globalIndex = friendsHeroStarBands.slice(0, bandIndex).reduce((total, item) => total + item.count, 0) + index;
+  const shape = globalIndex % 6 === 0 || globalIndex % 17 === 0 ? "cross" : "dot";
+  return {
+    key: `${bandIndex}-${index}`,
+    shape,
+    x: 1 + ((sequence * 73 + index * 29 + bandIndex * 113) % 983) / 983 * 98,
+    y: band.top + ((sequence * 193 + index * 47 + bandIndex * 61) % 977) / 977 * band.depth,
+    size: shape === "cross" ? 8 + (sequence % 4) * 2 : sequence % 13 === 0 ? 2.5 : 1 + (sequence % 3) * .35,
+    opacity: .48 + (sequence % 6) * .09,
+    glow: shape === "cross" ? 9 + (sequence % 5) * 3 : 3 + (sequence % 4) * 2,
+    rotation: -12 + (sequence % 7) * 4,
+    delay: -((sequence * 17) % 113) / 10,
+    duration: 3.2 + ((sequence * 11) % 43) / 10,
+    color: ["#fff9df", "#ffd85c", "#c39cff", "#dcfbff", "#ffffff"][sequence % 5],
+  };
 }));
 
 export function FriendsPage() {
@@ -113,8 +129,9 @@ export function FriendsPage() {
       <section className={`friends-hero${hero.active ? " is-active" : ""}`} aria-labelledby="friends-title" data-motion={hero.active ? "active" : "static"}>
         <div className="friends-hero__starlight" aria-hidden="true">
           <span className="friends-hero__starfield">
-            {friendsHeroStars.map((star, index) => <i key={index} className="friends-hero__star" style={{ "--star-x": `${star.x}%`, "--star-y": `${star.y}%`, "--star-size": `${star.size}px`, "--star-delay": `${star.delay}s`, "--star-duration": `${star.duration}s`, "--star-color": star.color } as CSSProperties} />)}
+            {friendsHeroStars.map((star) => <i key={star.key} className={`friends-hero__star friends-hero__star--${star.shape}`} style={{ "--star-x": `${star.x}%`, "--star-y": `${star.y}%`, "--star-size": `${star.size}px`, "--star-opacity": star.opacity, "--star-glow": `${star.glow}px`, "--star-rotation": `${star.rotation}deg`, "--star-delay": `${star.delay}s`, "--star-duration": `${star.duration}s`, "--star-color": star.color } as CSSProperties} />)}
           </span>
+          <span className="friends-hero__meteors"><i /><i /><i /></span>
         </div>
         <div className="container friends-hero__layout">
           <div className="friends-hero__copy">
@@ -198,6 +215,7 @@ function FriendsSignalStage({ motion }: { motion: ReturnType<typeof useMotionGat
   return (
     <div ref={motion.ref} className={`friends-signal${motion.active ? " is-active" : ""}`} data-motion={motion.active ? "active" : "static"} aria-hidden="true">
       <div className="friends-signal__meta"><span>TR / OPEN MIC ARRAY</span><strong>3 SIGNALS ACQUIRED</strong></div>
+      <div className="friends-signal__aura" />
       <div className="friends-signal__grid" />
       <div className="friends-signal__rings"><i /><i /><i /></div>
       <div className="friends-signal__portrait friends-signal__portrait--daniel"><img src={danielPortrait} alt="" width="900" height="1000" decoding="async" /><span>01 / DANIEL</span></div>

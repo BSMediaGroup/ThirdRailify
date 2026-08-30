@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-08-30 - Friends hero night-sky polish
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Rebuilt the Public Friends hero around a 168-star deterministic night sky with a strongly top-weighted density falloff, fine dot stars, 36 luminous cruciform flares, layered violet/cyan atmospheric depth, and restrained meteor accents.
+- Polished the hero headline, primary action, signal portrait stage, facts rail, and ticker while preserving all Friends copy, portraits, profile dialogs, routes, and lower-page behavior.
+- Corrected Daniel's card portrait hover transform so its existing close crop now zooms inward by the same ratio as Darnell and Davy instead of resetting to a smaller scale.
+- Extended browser coverage for star density and shape geometry, meteor/aura animation, reduced-motion shutdown, responsive overflow, and 1920/1440/390 visual proof. No API, account, commerce, schema, D1/R2, provider, Wix, DNS, or domain behavior changed.
+- Deployed the final hero and matched-hover release as `bb43f8cc-d0a1-4b80-91cc-fdfab0622651` (`https://bb43f8cc.thirdrailify.pages.dev`); stable and immutable `/friends` serve the same release assets. The earlier hero-only deployment was superseded before final acceptance.
+
 ## 2026-08-30 - PayPal store checkout and one-time donations
 
 - Added route-scoped PayPal React SDK v6 UI backed by server-owned CAD totals, Orders v2 creation, protected capture, and local status reconciliation.

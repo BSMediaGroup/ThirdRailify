@@ -8687,10 +8687,11 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   overflow: hidden;
   border-bottom: 1px solid rgba(255, 209, 47, .22);
   background:
-    radial-gradient(ellipse 52% 72% at 84% 22%, rgba(var(--friends-violet-rgb), .13), transparent 68%),
-    radial-gradient(ellipse 42% 56% at 59% 100%, rgba(92, 229, 243, .065), transparent 72%),
-    radial-gradient(ellipse 35% 44% at 24% 30%, rgba(255, 209, 47, .035), transparent 76%),
-    #060704;
+    radial-gradient(ellipse 72% 58% at 78% -4%, rgba(var(--friends-violet-rgb), .24), transparent 64%),
+    radial-gradient(ellipse 46% 42% at 30% 2%, rgba(53, 103, 184, .15), transparent 69%),
+    radial-gradient(ellipse 45% 65% at 96% 42%, rgba(100, 45, 160, .16), transparent 72%),
+    radial-gradient(ellipse 45% 48% at 59% 100%, rgba(92, 229, 243, .075), transparent 74%),
+    linear-gradient(180deg, #080916 0%, #08070f 38%, #060805 100%);
   isolation: isolate;
 }
 
@@ -8704,25 +8705,25 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friends-hero::before {
   inset: 0;
   z-index: 0;
-  opacity: .34;
+  opacity: .24;
   background:
-    linear-gradient(rgba(255, 255, 255, .032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .032) 1px, transparent 1px),
-    repeating-linear-gradient(109deg, transparent 0 118px, rgba(255, 209, 47, .085) 119px, transparent 120px 237px);
-  background-size: 42px 42px, 42px 42px, auto;
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, .5), #000 74%, rgba(0, 0, 0, .72));
+    linear-gradient(rgba(255, 255, 255, .026) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .026) 1px, transparent 1px),
+    repeating-linear-gradient(109deg, transparent 0 118px, rgba(255, 209, 47, .06) 119px, transparent 120px 237px);
+  background-size: 52px 52px, 52px 52px, auto;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, .3), rgba(0, 0, 0, .92) 55%, #000);
 }
 
 .friends-hero::after {
   z-index: 0;
-  width: 760px;
-  height: 1px;
-  top: 37%;
-  right: -180px;
-  opacity: .68;
-  background: linear-gradient(90deg, transparent, rgba(184, 137, 255, .18) 18%, var(--friends-violet) 54%, rgba(92, 229, 243, .2) 78%, transparent);
-  box-shadow: 0 0 16px rgba(var(--friends-violet-rgb), .38);
-  transform: rotate(-7deg) translateX(0);
+  top: 29%;
+  right: -12%;
+  width: 74%;
+  height: 2px;
+  opacity: .62;
+  background: linear-gradient(90deg, transparent, rgba(184, 137, 255, .16) 16%, #ba8cff 48%, rgba(92, 229, 243, .35) 72%, transparent);
+  box-shadow: 0 0 18px rgba(var(--friends-violet-rgb), .42), 0 0 46px rgba(92, 229, 243, .13);
+  transform: rotate(-6deg) translateX(0);
 }
 
 .friends-hero__starlight {
@@ -8731,7 +8732,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, .86), #000 72%, rgba(0, 0, 0, .72));
+  mask-image: linear-gradient(180deg, #000 0%, #000 62%, rgba(0, 0, 0, .74) 86%, rgba(0, 0, 0, .42));
 }
 
 .friends-hero__starlight::before,
@@ -8742,42 +8743,88 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 }
 
 .friends-hero__starlight::before {
-  top: -46%;
-  right: -10%;
-  width: 73%;
-  aspect-ratio: 1.5;
-  border: 1px solid rgba(var(--friends-violet-rgb), .085);
-  border-radius: 50%;
-  box-shadow: inset 0 0 90px rgba(var(--friends-violet-rgb), .025), 0 0 90px rgba(92, 229, 243, .018);
-  transform: rotate(-9deg);
+  top: -38%;
+  right: -8%;
+  left: -8%;
+  height: 74%;
+  opacity: .88;
+  background:
+    radial-gradient(ellipse 20% 42% at 76% 59%, rgba(255, 255, 255, .12), transparent 69%),
+    radial-gradient(ellipse 31% 47% at 65% 56%, rgba(155, 92, 255, .19), transparent 70%),
+    radial-gradient(ellipse 28% 36% at 43% 67%, rgba(92, 229, 243, .11), transparent 72%),
+    linear-gradient(106deg, transparent 23%, rgba(122, 91, 220, .06) 44%, rgba(218, 239, 255, .09) 55%, transparent 77%);
+  filter: blur(30px);
+  transform: rotate(-5deg);
 }
 
 .friends-hero__starlight::after {
-  top: 8%;
-  right: 6%;
-  width: 38%;
-  height: 62%;
-  opacity: .35;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, .055), transparent 67%);
-  filter: blur(24px);
+  top: -23%;
+  left: 19%;
+  width: 72%;
+  height: 76%;
+  opacity: .47;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(222, 233, 255, .1), rgba(155, 92, 255, .045) 34%, transparent 70%);
+  filter: blur(22px);
+  transform: rotate(13deg);
 }
 
-.friends-hero__starfield { position: absolute; inset: -2%; will-change: transform; }
+.friends-hero__starfield { position: absolute; inset: -2%; transform-origin: 50% 20%; will-change: transform; }
 .friends-hero__star {
   position: absolute;
   top: var(--star-y);
   left: var(--star-x);
   width: var(--star-size);
   height: var(--star-size);
-  border-radius: 50%;
-  background: var(--star-color);
-  box-shadow: 0 0 4px var(--star-color);
-  opacity: .2;
+  color: var(--star-color);
+  opacity: calc(var(--star-opacity) * .4);
+  transform: rotate(var(--star-rotation)) scale(.78);
+  transform-origin: center;
 }
 
-.friends-hero.is-active::after { animation: friends-hero-sweep 12s ease-in-out infinite; }
-.friends-hero.is-active .friends-hero__starfield { animation: friends-starfield-drift 26s ease-in-out infinite alternate; }
+.friends-hero__star--dot {
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 var(--star-glow) currentColor;
+}
+
+.friends-hero__star--cross { background: transparent; }
+.friends-hero__star--cross::before,
+.friends-hero__star--cross::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, currentColor 34%, #fff 50%, currentColor 66%, transparent);
+  box-shadow: 0 0 var(--star-glow) currentColor;
+  content: "";
+  transform: translate(-50%, -50%);
+}
+
+.friends-hero__star--cross::before { width: 100%; height: 1px; }
+.friends-hero__star--cross::after { width: 1px; height: 100%; background: linear-gradient(180deg, transparent, currentColor 34%, #fff 50%, currentColor 66%, transparent); }
+
+.friends-hero__meteors { position: absolute; inset: 0; }
+.friends-hero__meteors i {
+  position: absolute;
+  width: 150px;
+  height: 1px;
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(220, 251, 255, .32), #fff);
+  box-shadow: 8px 0 11px rgba(92, 229, 243, .28);
+  transform: rotate(-24deg) translate3d(-18vw, 0, 0);
+}
+.friends-hero__meteors i:nth-child(1) { top: 12%; left: 47%; }
+.friends-hero__meteors i:nth-child(2) { top: 25%; left: 73%; width: 105px; }
+.friends-hero__meteors i:nth-child(3) { top: 43%; left: 16%; width: 82px; }
+
+.friends-hero.is-active::after { animation: friends-hero-sweep 13s ease-in-out infinite; }
+.friends-hero.is-active .friends-hero__starfield { animation: friends-starfield-drift 30s ease-in-out infinite alternate; }
 .friends-hero.is-active .friends-hero__star { animation: friends-star-twinkle var(--star-duration) ease-in-out var(--star-delay) infinite; }
+.friends-hero.is-active .friends-hero__star--cross { animation-name: friends-cross-twinkle; }
+.friends-hero.is-active .friends-hero__meteors i { animation: friends-meteor 12s cubic-bezier(.2, .65, .25, 1) infinite; }
+.friends-hero.is-active .friends-hero__meteors i:nth-child(2) { animation-delay: -4.4s; animation-duration: 15s; }
+.friends-hero.is-active .friends-hero__meteors i:nth-child(3) { animation-delay: -9.1s; animation-duration: 17s; }
 
 .friends-hero__layout {
   position: relative;
@@ -8791,6 +8838,16 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 }
 
 .friends-hero__copy { position: relative; z-index: 3; }
+.friends-hero__copy::before {
+  position: absolute;
+  z-index: -1;
+  inset: -55px -70px -45px -80px;
+  opacity: .72;
+  background: radial-gradient(ellipse at 38% 45%, rgba(4, 6, 12, .88), rgba(4, 6, 9, .54) 48%, transparent 75%);
+  filter: blur(18px);
+  content: "";
+  pointer-events: none;
+}
 
 .friends-hero .eyebrow,
 .friends-roster .eyebrow,
@@ -8824,9 +8881,14 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   display: block;
   margin-top: 20px;
   color: var(--friends-violet);
+  background: linear-gradient(104deg, #8f4dff 2%, #c780ff 47%, #75e7f5 103%);
+  background-clip: text;
+  filter: drop-shadow(0 0 24px rgba(var(--friends-violet-rgb), .16));
   font-size: .61em;
   letter-spacing: -.012em;
   line-height: .87;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .friends-hero__lede {
@@ -8838,15 +8900,19 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 }
 
 .friends-hero__copy .button-row { margin: 0; }
-.friends-hero__copy .button--primary { background: var(--friends-violet); color: #0d0618; border-color: var(--friends-violet); }
-.friends-hero__copy .button--primary:hover { background: #b47cff; }
+.friends-hero__copy .button--primary { border-color: #c18aff; color: #100719; background: linear-gradient(120deg, #a260ff, #c482ff 54%, #79e9f4 130%); box-shadow: 0 11px 34px rgba(var(--friends-violet-rgb), .24), inset 0 1px rgba(255, 255, 255, .36); }
+.friends-hero__copy .button--primary:hover { background: linear-gradient(120deg, #b477ff, #d59aff 54%, #8ef2fb 130%); box-shadow: 0 14px 42px rgba(var(--friends-violet-rgb), .34); }
 
 .friends-hero__facts {
   display: grid;
   max-width: 660px;
   margin-top: 37px;
   grid-template-columns: repeat(3, 1fr);
-  border-block: 1px solid rgba(244, 240, 229, .12);
+  border: 1px solid rgba(205, 185, 255, .12);
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(155, 92, 255, .055), rgba(8, 10, 18, .48) 48%, rgba(92, 229, 243, .035));
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025), 0 18px 50px rgba(0, 0, 0, .14);
+  backdrop-filter: blur(7px);
 }
 
 .friends-hero__facts > span {
@@ -8858,7 +8924,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   border-right: 1px solid rgba(244, 240, 229, .12);
 }
 
-.friends-hero__facts > span:first-child { padding-left: 0; }
+.friends-hero__facts > span:first-child { padding-left: 16px; }
 .friends-hero__facts > span:last-child { border-right: 0; }
 .friends-hero__facts b { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; }
 .friends-hero__facts small { margin-top: 5px; color: var(--muted); font-family: var(--mono); font-size: 6px; letter-spacing: .15em; text-transform: uppercase; }
@@ -8868,11 +8934,24 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   width: 100%;
   min-height: 560px;
   overflow: hidden;
-  border: 1px solid rgba(255, 209, 47, .3);
+  border: 1px solid rgba(255, 218, 87, .42);
   border-radius: 25px;
-  background: radial-gradient(circle at 50% 46%, rgba(255, 209, 47, .1), transparent 35%), rgba(9, 10, 7, .94);
-  box-shadow: 0 35px 100px rgba(0, 0, 0, .52), inset 0 0 90px rgba(255, 209, 47, .035);
+  background: radial-gradient(circle at 50% 42%, rgba(255, 209, 47, .12), transparent 37%), linear-gradient(145deg, rgba(16, 11, 26, .97), rgba(8, 10, 8, .96) 48%, rgba(7, 16, 18, .95));
+  box-shadow: 0 42px 120px rgba(0, 0, 0, .62), 0 0 0 1px rgba(var(--friends-violet-rgb), .08), 0 0 75px rgba(var(--friends-violet-rgb), .12), inset 0 0 100px rgba(255, 209, 47, .045);
   isolation: isolate;
+}
+
+.friends-signal__aura {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  opacity: .62;
+  background:
+    radial-gradient(ellipse 35% 62% at 16% 48%, rgba(255, 209, 47, .13), transparent 71%),
+    radial-gradient(ellipse 34% 58% at 82% 42%, rgba(var(--friends-violet-rgb), .16), transparent 72%),
+    radial-gradient(circle at 51% 45%, rgba(92, 229, 243, .08), transparent 42%);
+  mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .friends-signal__meta,
@@ -8984,6 +9063,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friends-signal__scope i:nth-child(3n) { height: 100%; }
 
 .friends-signal.is-active .friends-signal__grid { animation: friends-grid 13s linear infinite; }
+.friends-signal.is-active .friends-signal__aura { animation: friends-signal-aura 6.8s ease-in-out infinite; }
 .friends-signal.is-active .friends-signal__rings { animation: friends-rings 20s linear infinite; }
 .friends-signal.is-active .friends-signal__portrait--daniel { animation: friends-center-idle 4.7s ease-in-out infinite; }
 .friends-signal.is-active .friends-signal__portrait--darnell { animation: friends-left-idle 5.3s ease-in-out infinite; }
@@ -9005,7 +9085,9 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   justify-content: center;
   gap: 18px;
   border-top: 1px solid rgba(255, 209, 47, .18);
-  background: rgba(255, 209, 47, .035);
+  background: linear-gradient(90deg, rgba(6, 7, 12, .86), rgba(var(--friends-violet-rgb), .075) 48%, rgba(6, 10, 11, .88));
+  box-shadow: 0 -16px 50px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(10px);
   font-family: var(--mono);
   font-size: 9px;
   font-weight: 800;
@@ -9113,9 +9195,9 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friend-card__grid { position: absolute; inset: 0; opacity: .5; background: linear-gradient(rgba(var(--friend-rgb), .06) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--friend-rgb), .06) 1px, transparent 1px); background-size: 29px 29px; }
 .friend-card__visual::before { position: absolute; z-index: 1; top: 13%; left: 50%; width: 67%; aspect-ratio: 1; border: 1px dashed rgba(var(--friend-rgb), .24); border-radius: 50%; content: ""; transform: translateX(-50%); }
 .friend-card__visual::after { position: absolute; z-index: 3; right: 0; bottom: 0; left: 0; height: 32%; content: ""; background: linear-gradient(transparent, #0c0d0a); }
-.friend-card__visual img { position: absolute; z-index: 2; top: 0; left: -6%; width: 112%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 0; filter: saturate(.88) contrast(1.06); transform: scale(1); transform-origin: 50% 0; transition: transform .42s ease, filter .42s ease; }
-.friend-card--daniel .friend-card__visual img { left: -13%; width: 116%; object-position: 50% 0; transform: scale(1.2); top: -10%; }
-.friend-card:hover .friend-card__visual img { transform: scale(1.03); filter: saturate(1) contrast(1.04); }
+.friend-card__visual img { --friend-card-image-scale: 1; --friend-card-image-hover-scale: 1.03; position: absolute; z-index: 2; top: 0; left: -6%; width: 112%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 0; filter: saturate(.88) contrast(1.06); transform: scale(var(--friend-card-image-scale)); transform-origin: 50% 0; transition: transform .42s ease, filter .42s ease; }
+.friend-card--daniel .friend-card__visual img { --friend-card-image-scale: 1.2; --friend-card-image-hover-scale: 1.236; left: -13%; width: 116%; object-position: 50% 0; top: -10%; }
+.friend-card:hover .friend-card__visual img { transform: scale(var(--friend-card-image-hover-scale)); filter: saturate(1) contrast(1.04); }
 .friend-card__scan { position: absolute; z-index: 4; right: 14px; bottom: 18px; display: flex; height: 31px; align-items: center; gap: 3px; }
 .friend-card__scan i { width: 2px; height: 20%; background: var(--friend-accent); }
 .friend-card__scan i:nth-child(2n) { height: 62%; }
@@ -9233,9 +9315,12 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .friend-dialog__links a svg { width: 16px; flex: 0 0 auto; }
 
 @keyframes friends-grid { to { background-position: 31px 31px, 31px 31px; } }
-@keyframes friends-star-twinkle { 0%, 100% { opacity: .14; filter: brightness(.72); } 42% { opacity: .95; filter: brightness(1.4); } 58% { opacity: .48; filter: brightness(1); } }
-@keyframes friends-starfield-drift { from { transform: translate3d(-2px, 1px, 0); } to { transform: translate3d(5px, -4px, 0); } }
-@keyframes friends-hero-sweep { 0%, 100% { opacity: .24; transform: rotate(-7deg) translateX(-8%); } 48%, 62% { opacity: .72; } 75% { transform: rotate(-7deg) translateX(8%); } }
+@keyframes friends-star-twinkle { 0%, 100% { opacity: calc(var(--star-opacity) * .32); filter: brightness(.72); transform: rotate(var(--star-rotation)) scale(.72); } 44% { opacity: var(--star-opacity); filter: brightness(1.75); transform: rotate(var(--star-rotation)) scale(1.08); } 62% { opacity: calc(var(--star-opacity) * .58); filter: brightness(1.08); transform: rotate(var(--star-rotation)) scale(.9); } }
+@keyframes friends-cross-twinkle { 0%, 100% { opacity: calc(var(--star-opacity) * .28); filter: brightness(.75) drop-shadow(0 0 0 transparent); transform: rotate(var(--star-rotation)) scale(.62); } 46% { opacity: var(--star-opacity); filter: brightness(1.8) drop-shadow(0 0 var(--star-glow) currentColor); transform: rotate(var(--star-rotation)) scale(1.18); } 64% { opacity: calc(var(--star-opacity) * .52); filter: brightness(1.1) drop-shadow(0 0 3px currentColor); transform: rotate(var(--star-rotation)) scale(.86); } }
+@keyframes friends-starfield-drift { from { transform: translate3d(-3px, 2px, 0) scale(1); } to { transform: translate3d(8px, -7px, 0) scale(1.008); } }
+@keyframes friends-meteor { 0%, 72% { opacity: 0; transform: rotate(-24deg) translate3d(-18vw, 0, 0); } 76% { opacity: .9; } 91% { opacity: .38; } 96%, 100% { opacity: 0; transform: rotate(-24deg) translate3d(56vw, 0, 0); } }
+@keyframes friends-hero-sweep { 0%, 100% { opacity: .2; transform: rotate(-6deg) translateX(-8%); } 48%, 62% { opacity: .66; } 75% { transform: rotate(-6deg) translateX(8%); } }
+@keyframes friends-signal-aura { 0%, 100% { opacity: .5; filter: saturate(.9); } 50% { opacity: .76; filter: saturate(1.18); } }
 @keyframes friends-rings { to { transform: rotate(360deg); } }
 @keyframes friends-left-idle { 0%, 100% { transform: rotate(-3deg) scale(.92); } 50% { transform: rotate(-2deg) scale(.93); } }
 @keyframes friends-center-idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.01); } }
@@ -9343,6 +9428,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   .friends-signal,
   .friend-card,
   .friend-dialog { border: 1px solid CanvasText; }
+  .friends-hero h1 span { color: Highlight; background: none; filter: none; -webkit-text-fill-color: currentColor; }
   .friend-card:focus-visible,
   .friend-dialog__close:focus-visible,
   .friend-dialog__links a:focus-visible { outline-color: Highlight; }
