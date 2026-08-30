@@ -108,4 +108,13 @@ export type WheelSummary = {
   demoEnabled: boolean;
   officialEnabled: boolean;
   latestOfficialAt: string | null;
+  updatedAt?: string | null;
+  directoryOrder?: number;
 };
+export type StageWheelCapability = "Demo" | "Official" | "Edit";
+export type AccessibleWheelSummary = WheelSummary & { visibility: "public" | "private"; capability: StageWheelCapability; canEdit: boolean; canSpinOfficially: boolean };
+export type StageWheel = { position: number; reference?: string; unavailable: boolean; wheel: Wheel | null; access: WheelAccess | null };
+export type Stage = { slug: string; title: string; description: string | null; visibility: "public" | "private"; lifecycle: "active" | "archived"; revision?: number; updatedAt: string; wheels: StageWheel[] };
+export type StageAccess = { isOwner: boolean; isMasterAdmin: boolean; canEdit: boolean; revision?: number };
+export type StageSummary = { type: "stage"; slug: string; title: string; description: string | null; wheelCount: number; visibility: "public"; wheels: Array<WheelSummary & { position: number }>; updatedAt: string };
+export type OwnedStageSummary = { slug: string; title: string; description: string | null; visibility: "public" | "private"; lifecycle: "active" | "archived"; wheelCount: number; revision: number; updatedAt: string };

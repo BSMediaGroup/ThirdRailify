@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { Miniflare } from "miniflare";
 import { createElement } from "react";
@@ -73,6 +74,28 @@ test("public auth consumes a one-time handoff, issues a host session, and enforc
   const session = await callAuth("session", { method: "GET", origin: PUBLIC_ORIGIN, cookie }, env);
   assert.equal(session.status, 200);
   assert.equal((await session.json()).authenticated, true);
+
+  const noCsrfTransfer = await callAuth("transfer", { origin: PUBLIC_ORIGIN, body: { returnTo: "/" }, cookie }, env);
+  assert.equal(noCsrfTransfer.status, 403);
+  let transferProxyCalls = 0;
+  const transfer = await callAuth(
+    "transfer",
+    { origin: PUBLIC_ORIGIN, body: { returnTo: "/access" }, cookie, csrfToken: payload.csrfToken },
+    env,
+    async (input, init) => {
+      transferProxyCalls += 1;
+      assert.equal(String(input), "https://thirdrailify-admin.pages.dev/api/auth/transfer");
+      const headers = new Headers(init.headers);
+      assert.equal(headers.get("origin"), PUBLIC_ORIGIN);
+      assert.equal(headers.get("x-csrf-token"), payload.csrfToken);
+      assert.match(headers.get("cookie"), /^thirdrailify_session=/);
+      assert.deepEqual(JSON.parse(init.body), { returnTo: "/access" });
+      return Response.json({ ok: true, handoffUrl: "https://thirdrailify-admin.pages.dev/?handoff=transfer-code&return_to=%2Faccess", returnTo: "/access" });
+    },
+  );
+  assert.equal(transfer.status, 200);
+  assert.equal((await transfer.json()).returnTo, "/access");
+  assert.equal(transferProxyCalls, 1);
 
   let avatarProxyCalls = 0;
   const avatar = await callAuth(
@@ -181,6 +204,24 @@ test("Public sign-in and sign-up render server-disabled Google as a non-activata
     if (initialMode === "signin") assert.doesNotMatch(passwordInput, /minlength="12"/i, "sign-in accepts existing credentials without applying the new-password policy");
     else assert.match(passwordInput, /minlength="12"/i, "new passwords retain the 12-character minimum");
   }
+});
+
+test("Public account menu exposes the secure Admin dashboard handoff", async () => {
+  const [widget, provider, styles] = await Promise.all([
+    readFile(new URL("../src/auth/AccountWidget.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/auth/AuthProvider.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/styles/global.css", import.meta.url), "utf8"),
+  ]);
+  assert.match(widget, /Admin dashboard/);
+  assert.match(widget, /openAdminSite/);
+  assert.match(widget, /target="_blank"/);
+  assert.match(widget, /rel="noopener noreferrer"/);
+  assert.match(widget, /AccountMenuIcon name="shield"/);
+  assert.doesNotMatch(widget, /AccountMenuIcon name="admin"/);
+  assert.match(provider, /createAdminTransfer/);
+  assert.match(provider, /window\.open\("about:blank", "_blank"\)/);
+  assert.match(styles, /\.account-menu__actions button \{[^}]*font-size: 1rem/);
+  assert.match(styles, /\.account-menu__identity span \{[^}]*font: \.62rem var\(--mono\)/);
 });
 
 async function callAuth(path, { method = "POST", origin, body, cookie, csrfToken } = {}, env, authFetch) {

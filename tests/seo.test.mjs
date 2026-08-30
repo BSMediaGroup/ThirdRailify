@@ -33,6 +33,8 @@ test("every Public route has deliberate SEO or a canonical edge redirect", async
     ["/wheels/:slug", "/wheels/demo-wheel"],
     ["/wheels/:slug/edit", "/wheels/demo-wheel/edit"],
     ["/wheels/:slug/present", "/wheels/demo-wheel/present"],
+    ["/wheels/stages/:slug", "/wheels/stages/demo-stage"],
+    ["/wheels/stages/:slug/edit", "/wheels/stages/demo-stage/edit"],
     ["/account/orders/:orderId", "/account/orders/ord_test"],
   ]);
   for (const declared of paths) {

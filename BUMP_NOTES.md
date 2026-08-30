@@ -1,5 +1,14 @@
 # Bump notes
 
+## 2026-08-30 - Wheels Stage V1 and portable multi-wheel imports
+
+- Added Admin-authoritative one-to-six-Wheel Stages with public/private lifecycle, revision checks, independent member reauthorization, mixed public discovery, responsive overview/focus/D-pad presentation, and one-active-spin isolation while preserving every Wheel and official result.
+- Added multi-configuration Wheel of Names preview/import with exact six-Wheel splitting, preflight allowances, recoverable sequential creation, and V1 `.tws` canonical JSON with deduplicated optional media, strict integrity and authority exclusion.
+- Polished the Stage import modal so its empty drop tray becomes a responsive, palette-derived Wheel manifest after parsing, with filename/replace controls, entry and weight summaries, media state, and synchronized include/exclude controls while preserving the zero-write preview boundary.
+- Added Wheels-only 1720px detail, 1920px Presentation, and bounded 3320px Stage shells; the ordinary Public 1240px container is unchanged.
+- Validated preview `24c490bc-b447-443d-8ce4-c30faa6ad186` (`https://24c490bc.thirdrailify.pages.dev`) across 1/3/6-Wheel, ultrawide, mobile, focus, regular detail, Presentation, and desktop/mobile multi-Wheel manifest fixtures, then deployed the fresh Node 22.16.0 build to production as `a3ecee79-4550-4ebb-a931-4f8054b9786d` (`https://a3ecee79.thirdrailify.pages.dev`, source `5ced9d2`, root JS SHA-256 `8b5dfe32a406bb261ba27ce0a3527f0c0dc795ee005bb1f4a4f8e3437f95877a`). Live custom-domain acceptance preserved the 1240px ordinary container and returned zero application-owned page, console, network, mutation, or overflow errors; Cloudflare's pre-existing injected Web Analytics SRI/opaque-HEAD noise remains provider-owned.
+- Backed up Commerce D1 before applying only `0023_wheels_stages_v1.sql`; the final Stage tables are empty, all pre-existing Wheel/Commerce counts and official results are unchanged, foreign-key validation is clean, and no synthetic production Stage was created.
+
 ## 2026-08-30 - Post-cutover CDN and integration repair
 
 - Switched trusted product, avatar, GOATS, and Wheel projections to `https://cdn.thirdrailify.com`, retained external provider avatars, added CDN CSP/connect support, and made Wheel image loading/export explicitly cross-origin-safe.

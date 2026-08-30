@@ -29,7 +29,7 @@ export function normalizePublicBanner(input) {
   if (Object.keys(input).some((key) => !expected.has(key))) throw new Error("banner_fields_invalid");
   return {
     ...input,
-    normal: { ...input.normal, dismissible: input.normal.dismissible ?? false },
+    normal: { ...input.normal, dismissible: input.normal.dismissible ?? false, glyph: input.normal.glyph ?? "zap", glyphSize: input.normal.glyphSize ?? "medium" },
     homeRail: { ...(input.homeRail || { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"], mode: "marquee", speed: "normal", easing: "linear", glyph: "zap" }), glyphSize: input.homeRail?.glyphSize ?? "medium" },
   };
 }

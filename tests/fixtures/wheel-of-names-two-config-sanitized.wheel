@@ -1,0 +1,34 @@
+{
+  "title": "Wheel-June 3",
+  "wheelConfigs": [
+    {
+      "title": "Wheel-aug29",
+      "customPictureName": "sanitized-centre.webp",
+      "customPictureDataUri": "data:image/webp;base64,UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEALmk0mk0iIiIiIgBoSygABc6zbAAA",
+      "entries": [
+        { "text": "Sanitized 01", "weight": 830 },
+        { "text": "Sanitized 02" }, { "text": "Sanitized 03" }, { "text": "Sanitized 04" }, { "text": "Sanitized 05" },
+        { "text": "Sanitized 06" }, { "text": "Sanitized 07" }, { "text": "Sanitized 08" }, { "text": "Sanitized 09" }, { "text": "Sanitized 10" },
+        { "text": "Sanitized 11" }, { "text": "Sanitized 12" }, { "text": "Sanitized 13" }, { "text": "Sanitized 14" }, { "text": "Sanitized 15" },
+        { "text": "Sanitized 16" }, { "text": "Sanitized 17" }, { "text": "Sanitized 18" }, { "text": "Sanitized 19" }, { "text": "Sanitized 20" },
+        { "text": "Sanitized 21" }, { "text": "Sanitized 22" }, { "text": "Sanitized 23" }, { "text": "Sanitized 24" }, { "text": "Sanitized 25" },
+        { "text": "Sanitized 26" }, { "text": "Sanitized 27" }, { "text": "Sanitized 28" }, { "text": "Sanitized 29" }, { "text": "Sanitized 30" },
+        { "text": "Sanitized 31" }, { "text": "Sanitized 32" }, { "text": "Sanitized 33" }, { "text": "Sanitized 34" }, { "text": "Sanitized 35" },
+        { "text": "Sanitized 36" }, { "text": "Sanitized 37" }, { "text": "Sanitized 38" }, { "text": "Sanitized 39" }, { "text": "Sanitized 40" },
+        { "text": "Sanitized 41" }
+      ]
+    },
+    {
+      "entries": [
+        { "text": "Sanitized B01", "weight": 28 },
+        { "text": "Sanitized B02" }, { "text": "Sanitized B03" }, { "text": "Sanitized B04" }, { "text": "Sanitized B05" },
+        { "text": "Sanitized B06" }, { "text": "Sanitized B07" }, { "text": "Sanitized B08" }, { "text": "Sanitized B09" }, { "text": "Sanitized B10" },
+        { "text": "Sanitized B11" }, { "text": "Sanitized B12" }, { "text": "Sanitized B13" }, { "text": "Sanitized B14" }, { "text": "Sanitized B15" },
+        { "text": "Sanitized B16" }, { "text": "Sanitized B17" }, { "text": "Sanitized B18" }, { "text": "Sanitized B19" }, { "text": "Sanitized B20" },
+        { "text": "Sanitized B21" }, { "text": "Sanitized B22" }, { "text": "Sanitized B23" }, { "text": "Sanitized B24" }, { "text": "Sanitized B25" },
+        { "text": "Sanitized B26" }, { "text": "Sanitized B27" }, { "text": "Sanitized B28" }, { "text": "Sanitized B29" }, { "text": "Sanitized B30" },
+        { "text": "Sanitized B31" }, { "text": "Sanitized B32" }, { "text": "Sanitized B33" }, { "text": "Sanitized B34" }
+      ]
+    }
+  ]
+}

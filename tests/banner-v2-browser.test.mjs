@@ -29,20 +29,35 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     await normal.waitFor();
     assert.equal(await page.locator(".site-rail").count(), 0, "the permanent yellow strip is removed");
     assert.equal(Math.round((await normal.boundingBox()).height), 31, `${width}px announcement banner is slimline`);
-    assert.equal(await page.locator(".promo-banner__ticker .promo-banner__message").count(), 2, "a one-message ticker is duplicated into a seamless moving track");
-    const tickerMotion = await page.locator(".promo-banner__ticker > div").evaluate((element) => {
-      const animation = element.getAnimations()[0];
-      return { name: getComputedStyle(element).animationName, duration: animation?.effect?.getTiming().duration };
-    });
-    assert.deepEqual(tickerMotion, { name: "promo-ticker", duration: 30000 });
+    const dismissBox = await page.getByRole("button", { name: "Dismiss announcement" }).boundingBox();
+    const normalBox = await normal.boundingBox();
+    assert.ok(dismissBox && normalBox); assert.ok(Math.abs(normalBox.x + normalBox.width - dismissBox.x - dismissBox.width - 6) <= 1, `${width}px dismiss control is pinned to the banner's viewport edge`);
+    const tickerSegments = page.locator(".promo-banner__ticker-track > .promo-banner__ticker-segment");
+    assert.equal(await tickerSegments.count(), 2, "ticker renders two identical contiguous segments");
+    await page.waitForFunction(() => { const ticker = document.querySelector(".promo-banner__ticker"); const segment = document.querySelector(".promo-banner__ticker-track > .promo-banner__ticker-segment"); return ticker && segment && segment.getBoundingClientRect().width > ticker.getBoundingClientRect().width; });
+    const tickerGeometry = await page.locator(".promo-banner__ticker-track").evaluate((element) => { const segments = [...element.children]; const items = [...segments[0].querySelectorAll(":scope > .promo-banner__ticker-item")]; const messagesPerSet = new Set(items.map((item) => item.querySelector(".promo-banner__message > b")?.textContent)).size; const repetitions = items.length / messagesPerSet; const duration = element.getAnimations()[0]?.effect?.getTiming().duration; const finalDivider = segments[0].querySelector(":scope > .promo-banner__ticker-item:last-child .promo-banner__divider").getBoundingClientRect(); const followingMessage = segments[1].querySelector(":scope > .promo-banner__ticker-item:first-child .promo-banner__message").getBoundingClientRect(); return { name: getComputedStyle(element).animationName, cycleDuration: duration / repetitions, dividerToNextMessage: followingMessage.left - finalDivider.right, segmentWidths: segments.map((segment) => segment.getBoundingClientRect().width), trackWidth: element.getBoundingClientRect().width }; });
+    assert.equal(tickerGeometry.name, "promo-ticker"); assert.equal(tickerGeometry.cycleDuration, 30000); assert.ok(Math.abs(tickerGeometry.segmentWidths[0] - tickerGeometry.segmentWidths[1]) < 1); assert.ok(Math.abs(tickerGeometry.trackWidth - tickerGeometry.segmentWidths[0] * 2) < 1); assert.ok(tickerGeometry.dividerToNextMessage >= (width <= 520 ? 17 : 25) && tickerGeometry.dividerToNextMessage <= (width <= 520 ? 19 : 27), "the final divider is immediately followed by the next repeated message set");
+    assert.equal(await tickerSegments.first().locator(".promo-banner__ticker-item").count(), await tickerSegments.first().locator(".promo-banner__divider").count(), "every ticker divider sits between a message and its repeated successor");
+    assert.equal(Math.round((await tickerSegments.first().locator(".promo-banner__divider").first().boundingBox()).width), 14);
+    const announcementCta = page.locator('.promo-banner__ticker-track .promo-banner__message-link:not([tabindex="-1"])');
+    assert.equal(await announcementCta.count(), 1, "only the first logical CTA remains keyboard-focusable");
+    assert.deepEqual(await announcementCta.evaluate((element) => ({ border: getComputedStyle(element).borderStyle, decoration: getComputedStyle(element).textDecorationLine, height: Math.round(element.getBoundingClientRect().height) })), { border: "solid", decoration: "none", height: 22 });
     if (process.env.BANNER_V2_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-banner-v2-normal-${width}.png`), fullPage: false });
     if (width === 1440) {
       announcementMode = "crossfade";
       await page.reload();
-      const crossfade = page.locator(".promo-banner--normal.is-crossfade .promo-banner__message");
+      const crossfade = page.locator(".promo-banner--normal.is-crossfade .promo-banner__message.is-active");
       await crossfade.waitFor();
-      assert.equal(await crossfade.evaluate((element) => getComputedStyle(element).animationName), "promo-crossfade-in");
+      assert.equal(await page.locator(".promo-banner--normal.is-crossfade .promo-banner__divider").count(), 0, "crossfade mode never renders divider icons");
+      assert.deepEqual(await crossfade.evaluate((element) => ({ duration: getComputedStyle(element).transitionDuration, easing: getComputedStyle(element).transitionTimingFunction })), { duration: "1.25s, 0s", easing: "cubic-bezier(0.4, 0, 0.2, 1), linear" });
       await page.getByText("SECOND CROSSFADE ANNOUNCEMENT").waitFor({ timeout: 6_000 });
+      await page.waitForTimeout(300);
+      const crossfadeOpacities = await page.locator(".promo-banner__crossfade .promo-banner__message").evaluateAll((elements) => elements.map((element) => Number(getComputedStyle(element).opacity)));
+      assert.equal(crossfadeOpacities.every((opacity) => opacity > 0 && opacity < 1), true, "outgoing and incoming messages overlap during the eased crossfade");
+      announcementMode = "static";
+      await page.reload();
+      await page.locator(".promo-banner--normal.is-static").waitFor();
+      assert.equal(await page.locator(".promo-banner--normal.is-static .promo-banner__divider").count(), 0, "static mode never renders divider icons");
       announcementMode = "ticker";
       await page.reload();
       await normal.waitFor();
@@ -63,6 +78,11 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
       pulse: getComputedStyle(element.querySelector(".promo-banner__live-mark > i")).animationName,
     }));
     assert.deepEqual(motion, { sweep: "live-banner-sweep", energy: "live-banner-energy", pulse: "live-banner-pulse" });
+    const liveReadability = await takeover.evaluate((element) => {
+      const mark = element.querySelector(".promo-banner__live-mark"); const signal = mark.querySelector("svg"); const cta = element.querySelector(".promo-banner__cta");
+      return { markWrap: getComputedStyle(mark).whiteSpace, markFits: mark.scrollWidth <= mark.clientWidth, signalWidth: Math.round(signal.getBoundingClientRect().width), ctaFont: getComputedStyle(cta).fontSize };
+    });
+    assert.deepEqual(liveReadability, { markWrap: "nowrap", markFits: true, signalWidth: width <= 780 ? 0 : 12, ctaFont: width <= 520 ? "7.5px" : "9px" });
     assert.equal(await takeover.getByRole("button", { name: "Dismiss announcement" }).count(), 0, "the live takeover remains non-dismissible");
 
     const [headerLive, cart] = await Promise.all([page.locator(".header-watch").boundingBox(), page.locator(".cart-button").boundingBox()]);
@@ -80,6 +100,15 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     if (process.env.BANNER_V2_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-banner-v2-${width}.png`), fullPage: false });
     await context.close();
   }
+
+  const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const reducedPage = await reducedContext.newPage();
+  await mockApis(reducedPage, () => false, () => "ticker");
+  await reducedPage.goto(ORIGIN);
+  await reducedPage.locator(".promo-banner--normal").waitFor();
+  assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__message:visible").count(), 1, "reduced motion exposes one stable announcement");
+  assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__divider:visible").count(), 0, "reduced motion leaves no orphan divider");
+  await reducedContext.close();
 });
 
 async function mockApis(page, isLive, mode) {
@@ -100,7 +129,7 @@ function bannerPayload(mode = "ticker") {
   return {
     ok: true,
     schema: "thirdrailify-banner-v1",
-    normal: { enabled: true, dismissible: true, messages: mode === "crossfade" ? [{ text: "FIRST CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }, { text: "SECOND CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }] : [{ text: "ONE MOVING ANNOUNCEMENT", ctaLabel: "WATCH", href: "/watch", newTab: false }], mode, speed: mode === "crossfade" ? "fast" : "normal" },
+    normal: { enabled: true, dismissible: true, messages: mode === "crossfade" ? [{ text: "FIRST CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }, { text: "SECOND CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }] : [{ text: "ONE MOVING ANNOUNCEMENT", ctaLabel: "WATCH", href: "/watch", newTab: false }, { text: "SECOND MOVING ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }], mode, speed: mode === "crossfade" ? "fast" : "normal", glyph: "zap", glyphSize: "large" },
     live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: "Confirmed by Watch", ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" },
     homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT"], mode: "marquee", speed: "normal", easing: "linear", glyph: "zap", glyphSize: "medium" },
     updatedAt: "2026-08-30T00:00:00.000Z",

@@ -11,7 +11,13 @@ export function convertWheelOfNames(document, options) {
 function convertConfig(source, document, options, configIndex) {
   if (!source || typeof source !== "object" || Array.isArray(source)) throw new Error(`Wheel configuration ${configIndex + 1} is invalid.`);
   const messages = [];
-  const title = cleanText(source.title, options.maxTitle) || cleanText(document.title, options.maxTitle) || options.sourceTitle || "Imported wheel";
+  const number = String(configIndex + 1).padStart(2, "0");
+  const topLevelTitle = cleanText(document.title, options.maxTitle);
+  const fileTitle = cleanText(options.sourceTitle, options.maxTitle);
+  const title = cleanText(source.title, options.maxTitle)
+    || cleanText(topLevelTitle ? `${topLevelTitle} — Wheel ${number}` : "", options.maxTitle)
+    || cleanText(fileTitle ? `${fileTitle} — Wheel ${number}` : "", options.maxTitle)
+    || `Imported Wheel ${number}`;
   const description = cleanText(source.description, options.maxDescription) || cleanText(document.description, options.maxDescription);
   const palette = enabledPalette(source.colorSettings, options, messages);
   if (!Array.isArray(source.entries) || !source.entries.length) throw new Error(`Wheel configuration ${configIndex + 1} has no valid entries.`);

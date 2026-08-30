@@ -40,7 +40,7 @@ export async function parseWheelImport(input, options = {}) {
   if (isRecord(parsed) && Array.isArray(parsed.wheelConfigs)) {
     const proposals = convertWheelOfNames(parsed, converterOptions(defaults, sourceName));
     for (const proposal of proposals) await fillMediaHashes(proposal.media);
-    return { detectedFormat: "wheel-of-names", formatLabel: "Wheel of Names", version: null, sourceName, proposals: proposals.map((proposal) => finalizeProposal(proposal, "absent")) };
+    return { detectedFormat: "wheel-of-names", formatLabel: "Wheel of Names", version: null, sourceName, topLevelTitle: cleanOptionalTitle(parsed.title), configCount: parsed.wheelConfigs.length, proposals: proposals.map((proposal) => finalizeProposal(proposal, "absent")) };
   }
   return { detectedFormat: "generic-json", formatLabel: "Generic participant JSON", version: null, sourceName, proposals: [finalizeProposal(convertGeneric(parsed, defaults, sourceName), "absent")] };
 }

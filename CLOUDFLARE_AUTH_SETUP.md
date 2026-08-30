@@ -8,4 +8,6 @@ For production, keep `THIRDRAILIFY_AUTH_COOKIE_DOMAIN` empty, use `https://third
 
 The Admin project must deploy first because it owns configuration, credential/OAuth initiation, provider callbacks, and handoff creation. The Public `/api/auth/handoff` endpoint consumes the bounded one-time code and issues its own host session cookie.
 
+Production OAuth exposes Discord, Google, GitHub, and X from that single Admin-owned flow. Google is enabled only in the production Admin environment; preview remains disabled unless its own client, secret, and callback allowlist are deliberately configured. The canonical Google callback is `https://admin.thirdrailify.com/api/auth/oauth/google/callback`; the legacy Pages callback remains transitional compatibility only.
+
 See `../ThirdRailify-Admin/CLOUDFLARE_AUTH_SETUP.md` and `../ThirdRailify-Admin/docs/DOMAIN_CUTOVER.md` for preview separation, exact production callback URLs, Cloudflare Access caveats, and rollback.

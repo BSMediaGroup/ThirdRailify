@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
 export function AccountWidget() {
-  const { account, loading, openAuth, signOut } = useAuth();
+  const { account, loading, openAuth, signOut, openAdminSite } = useAuth();
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
@@ -55,6 +55,7 @@ export function AccountWidget() {
             <Link to="/shop" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="shop" /><span>Shop</span></Link>
             <Link to="/community" role="menuitem" onClick={() => setOpen(false)}><AccountMenuIcon name="community" /><span>Community</span></Link>
             <span className="account-menu__divider" role="separator" />
+            <a href="https://admin.thirdrailify.com" target="_blank" rel="noopener noreferrer" role="menuitem" onClick={(event) => { event.preventDefault(); setOpen(false); void openAdminSite("/", true); }}><AccountMenuIcon name="shield" /><span>Admin dashboard</span></a>
             <button className="account-menu__logout" type="button" role="menuitem" onClick={() => { setOpen(false); void signOut(); }}><AccountMenuIcon name="logout" /><span>Sign out</span></button>
           </div>
         </div>
@@ -63,12 +64,13 @@ export function AccountWidget() {
   );
 }
 
-function AccountMenuIcon({ name }: { name: "profile" | "watch" | "shop" | "community" | "logout" }) {
+function AccountMenuIcon({ name }: { name: "profile" | "watch" | "shop" | "community" | "shield" | "logout" }) {
   const paths: Record<typeof name, ReactNode> = {
     profile: <><circle cx="12" cy="8" r="3"/><path d="M5 21c.6-4.7 3-7 7-7s6.4 2.3 7 7"/></>,
     watch: <><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3V9Z"/></>,
     shop: <><path d="M6 8h12l1 13H5L6 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></>,
     community: <><circle cx="9" cy="8" r="3"/><path d="M3 20c.5-4 2.5-6 6-6s5.5 2 6 6M16 7a3 3 0 0 1 0 5M16 15c3 0 4.5 1.7 5 5"/></>,
+    shield: <><path d="M12 3 20 6v5c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-3Z"/><path d="m9.5 12 1.7 1.7 3.6-3.8"/></>,
     logout: <><path d="M10 5H5v14h5M14 8l4 4-4 4M8 12h10"/></>,
   };
   return <svg className="account-menu__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>;

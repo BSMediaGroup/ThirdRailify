@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { consumePublicHandoff, endSession, fetchAuthConfig, fetchSession } from "./client";
+import { consumePublicHandoff, createAdminTransfer, endSession, fetchAuthConfig, fetchSession, validatedAdminTransferUrl } from "./client";
 import { AuthDialog } from "./AuthDialog";
 import type { AuthAccount, AuthConfig, AuthMode, SessionPayload } from "./types";
 
@@ -14,6 +14,7 @@ type AuthContextValue = {
   applySession: (payload: SessionPayload) => Promise<void>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
+  openAdminSite: (returnTo?: string, newTab?: boolean) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -91,6 +92,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(session);
   }, [csrfToken, setSession]);
 
+  const openAdminSite = useCallback(async (returnTo = "/", newTab = false) => {
+    if (!csrfToken) return;
+    const destination = newTab ? window.open("about:blank", "_blank") : null;
+    if (newTab && !destination) {
+      setError("Allow pop-ups to open the Admin dashboard in a new tab.");
+      return;
+    }
+    if (destination) destination.opener = null;
+    try {
+      const transfer = await createAdminTransfer(csrfToken, returnTo);
+      const url = validatedAdminTransferUrl(transfer.handoffUrl);
+      if (destination) destination.location.replace(url);
+      else window.location.assign(url);
+    } catch (reason: unknown) {
+      destination?.close();
+      setError(reason instanceof Error ? reason.message : "The Admin handoff failed.");
+    }
+  }, [csrfToken]);
+
   const value = useMemo<AuthContextValue>(() => ({
     loading,
     account,
@@ -102,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     applySession,
     signOut,
     refresh,
-  }), [account, applySession, config, csrfToken, error, loading, refresh, signOut]);
+    openAdminSite,
+  }), [account, applySession, config, csrfToken, error, loading, openAdminSite, refresh, signOut]);
 
   return (
     <AuthContext.Provider value={value}>

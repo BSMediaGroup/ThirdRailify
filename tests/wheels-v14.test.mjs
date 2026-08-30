@@ -17,11 +17,11 @@ test("Wheels V1.4 uses the Public semantic button hierarchy", async () => {
     ]);
   assert.match(
     landing,
-    /className="button button--primary"[^>]*>[\s\S]*Build a wheel/,
+    /className="button button--primary"[^>]*>[\s\S]*Build a wheel/i,
   );
   assert.match(
     landing,
-    /className="button button--ghost button--text"[^>]*>[\s\S]*Explore public wheels/,
+    /className="button button--ghost button--text"[^>]*>[\s\S]*Explore public (?:wheels|draws)/,
   );
   for (const expected of [
     "Import wheel",

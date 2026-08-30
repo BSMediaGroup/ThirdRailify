@@ -55,6 +55,23 @@ export async function endSession(csrfToken: string) {
   });
 }
 
+export async function createAdminTransfer(csrfToken: string, returnTo = "/") {
+  return fetchJson<{ ok: true; handoffUrl: string; returnTo: string }>("/api/auth/transfer", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+    body: JSON.stringify({ returnTo }),
+  });
+}
+
+export function validatedAdminTransferUrl(value: string) {
+  const url = new URL(value);
+  if (url.protocol !== "https:" || url.origin !== adminAuthOrigin() || !url.searchParams.get("handoff")) {
+    throw new AuthClientError(502, "handoff_url_invalid", "The account service returned an invalid Admin handoff.");
+  }
+  return url.toString();
+}
+
 export async function updateDisplayName(csrfToken: string, displayName: string) {
   return fetchJson<SessionPayload>("/api/auth/profile", {
     method: "POST",

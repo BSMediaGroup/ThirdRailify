@@ -81,6 +81,13 @@ async function seoResolutionForRequest(context, pathname, origin) {
       if (response.status === 404) return { document: staticSeoForPath("/not-found", origin), status: 404 };
       if (response.ok) return { document: goatSeo((await response.json())?.item, origin) || base };
     }
+    const stageMatch = pathname.match(/^\/wheels\/stages\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/edit)?\/?$/);
+    if (stageMatch && stageMatch[1] !== "new") {
+      const detailRequest = new Request(new URL(`/api/wheels/stages/${encodeURIComponent(stageMatch[1])}`, context.request.url), { headers: context.request.headers });
+      const response = await proxyWheelsRead(detailRequest, context.env, `stages/${stageMatch[1]}`, context.data?.wheelsFetch || fetch);
+      if (response.status === 404) return { document: staticSeoForPath("/not-found", origin), status: 404 };
+      return { document: base };
+    }
     const wheelMatch = pathname.match(/^\/wheels\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|present))?\/?$/);
     if (wheelMatch && wheelMatch[1] !== "new") {
       const slug = wheelMatch[1];

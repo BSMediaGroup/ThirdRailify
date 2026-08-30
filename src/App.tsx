@@ -29,11 +29,15 @@ import { VipPage } from "./pages/VipPage";
 const WheelsPage = lazy(() => import("./pages/WheelsPage").then((module) => ({ default: module.WheelsPage })));
 const WheelPage = lazy(() => import("./pages/WheelPage").then((module) => ({ default: module.WheelPage })));
 const WheelEditorPage = lazy(() => import("./pages/WheelEditorPage").then((module) => ({ default: module.WheelEditorPage })));
+const WheelStagePage = lazy(() => import("./pages/WheelStagePage").then((module) => ({ default: module.WheelStagePage })));
 
 export function App() {
   return (
     <Suspense fallback={<div className="route-loading" role="status">Loading Third Railify control…</div>}><Routes>
       <Route path="/wheels/:slug/present" element={<WheelPage presentation />} />
+      <Route path="/wheels/stages/new" element={<WheelStagePage create />} />
+      <Route path="/wheels/stages/:slug/edit" element={<WheelStagePage editorRequested />} />
+      <Route path="/wheels/stages/:slug" element={<WheelStagePage />} />
       <Route element={<SiteShell />}>
         <Route index element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />

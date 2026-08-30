@@ -17,6 +17,7 @@ export async function onRequest(context) {
     ...(dynamic.goats || []).map((goat) => ({ path: `/goats/${goat.slug}`, lastmod: goat.publishedAt, image: goat.media?.main?.url || goat.media?.profile?.url || goat.product?.image, imageTitle: `${goat.displayName} · GOATS in the Wild` })),
   ];
   entries.push(...(dynamic.wheels || []).map((wheel) => ({ path: `/wheels/${wheel.slug}` })));
+  entries.push(...(dynamic.stages || []).map((stage) => ({ path: `/wheels/stages/${stage.slug}`, lastmod: stage.updatedAt })));
   const xml = renderSitemap(origin, entries);
   return new Response(context.request.method === "HEAD" ? null : xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=300, s-maxage=1800, stale-while-revalidate=3600", "X-Content-Type-Options": "nosniff" } });
 }
@@ -45,11 +46,12 @@ export function renderSitemap(originValue, entries) {
 }
 
 async function loadDynamicEntries(context) {
-  const [commerce, episodes, goats, wheels] = await Promise.allSettled([
+  const [commerce, episodes, goats, wheels, stages] = await Promise.allSettled([
     loadCommerce(context),
     loadEpisodes(context),
     loadGoats(context),
     loadWheels(context),
+    loadStages(context),
   ]);
   return {
     collections: commerce.status === "fulfilled" ? commerce.value.collections : [],
@@ -57,6 +59,7 @@ async function loadDynamicEntries(context) {
     episodes: episodes.status === "fulfilled" ? episodes.value : [],
     goats: goats.status === "fulfilled" ? goats.value : [],
     wheels: wheels.status === "fulfilled" ? wheels.value : [],
+    stages: stages.status === "fulfilled" ? stages.value : [],
   };
 }
 
@@ -89,6 +92,14 @@ async function loadWheels(context) {
   const request = new Request(new URL("/api/wheels?sort=recent", context.request.url), { headers: { Accept: "application/json" } });
   const response = await proxyWheelsRead(request, context.env, "", context.data?.wheelsFetch || fetch);
   if (!response.ok) throw new Error("wheels_unavailable");
+  const payload = await response.json();
+  return Array.isArray(payload.items) ? payload.items : [];
+}
+
+async function loadStages(context) {
+  const request = new Request(new URL("/api/wheels/stages?view=public&sort=recent", context.request.url), { headers: { Accept: "application/json" } });
+  const response = await proxyWheelsRead(request, context.env, "stages", context.data?.wheelsFetch || fetch);
+  if (!response.ok) throw new Error("stages_unavailable");
   const payload = await response.json();
   return Array.isArray(payload.items) ? payload.items : [];
 }

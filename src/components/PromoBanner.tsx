@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
+import tripleZapMark from "../../assets/icons/trzap-0.svg";
 import type { BroadcastCandidate, BroadcastData } from "../lib/broadcast";
 import type { BannerConfig, BannerMessage } from "../lib/banner";
 import { effectiveLiveCandidate } from "../lib/liveBanner";
 import { ArrowIcon, CloseIcon, PlayIcon, RadioIcon } from "./Icons";
 
 const DISMISSED_ANNOUNCEMENT_KEY = "thirdrailify.dismissed-announcement.v1";
+const tripleZapMask = { "--triple-zap-mask": `url("${tripleZapMark}")` } as CSSProperties;
 
 export function PromoBanner({ config, broadcast }: { config: BannerConfig | null; broadcast: BroadcastData | null }) {
   const [dismissedSignature, setDismissedSignature] = useState(() => readDismissedAnnouncement());
@@ -33,8 +35,11 @@ function LiveBanner({ config, candidate }: { config: BannerConfig; candidate: Br
 }
 
 function NormalBanner({ config, onDismiss }: { config: BannerConfig; onDismiss?: () => void }) {
-  const { messages, mode, speed } = config.normal;
+  const { messages, mode, speed, glyph, glyphSize } = config.normal;
   const [active, setActive] = useState(0);
+  const [repetitions, setRepetitions] = useState(2);
+  const tickerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (mode !== "crossfade" || messages.length < 2) return;
     const durations = { slow: 10_000, normal: 7_000, fast: 5_000 };
@@ -49,10 +54,30 @@ function NormalBanner({ config, onDismiss }: { config: BannerConfig; onDismiss?:
     reduced.addEventListener("change", schedule);
     return () => { document.removeEventListener("visibilitychange", schedule); reduced.removeEventListener("change", schedule); if (timer !== null) window.clearInterval(timer); };
   }, [messages.length, mode, speed]);
+  useLayoutEffect(() => {
+    if (mode !== "ticker" || !tickerRef.current || !measureRef.current) return;
+    const update = () => {
+      const cycleWidth = measureRef.current?.scrollWidth || 1;
+      const viewportWidth = tickerRef.current?.clientWidth || 1;
+      setRepetitions((current) => {
+        const next = Math.max(2, Math.ceil(viewportWidth / cycleWidth) + 1);
+        return current === next ? current : next;
+      });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(tickerRef.current);
+    observer.observe(measureRef.current);
+    return () => observer.disconnect();
+  }, [glyph, glyphSize, messages, mode]);
   if (mode === "ticker") {
-    return <aside className={`promo-banner promo-banner--normal is-ticker is-${speed}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcements"><div className="promo-banner__ticker"><div>{[...messages, ...messages].map((message, index) => <NormalMessage key={`${message.text}-${index}`} message={message} duplicate={index >= messages.length} />)}</div></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
+    const cycleSeconds = speed === "slow" ? 44 : speed === "fast" ? 22 : 30;
+    return <aside className={`promo-banner promo-banner--normal is-ticker is-${speed} is-glyph-${glyphSize}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcements"><div ref={tickerRef} className="promo-banner__ticker"><div ref={measureRef} className="promo-banner__ticker-measure" aria-hidden="true"><BannerTickerSegment messages={messages} glyph={glyph} duplicate /></div><div className="promo-banner__ticker-track" style={{ animationDuration: `${cycleSeconds * repetitions}s` }}><BannerTickerSegment messages={messages} glyph={glyph} repetitions={repetitions} /><BannerTickerSegment messages={messages} glyph={glyph} repetitions={repetitions} duplicate /></div></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
   }
-  const message = messages[mode === "crossfade" ? active : 0] ?? messages[0];
+  if (mode === "crossfade") {
+    return <aside className={`promo-banner promo-banner--normal is-crossfade is-${speed}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcements"><div className="container promo-banner__inner"><div className="promo-banner__crossfade">{messages.map((message, index) => <NormalMessage key={`${index}-${message.text}`} message={message} active={index === active} />)}</div></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
+  }
+  const message = messages[0];
   return <aside className={`promo-banner promo-banner--normal is-${mode} is-${speed}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcement"><div className="container promo-banner__inner"><NormalMessage key={`${active}-${message.text}`} message={message} /></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
 }
 
@@ -60,14 +85,23 @@ function DismissButton({ onDismiss }: { onDismiss: () => void }) {
   return <button className="promo-banner__dismiss" type="button" onClick={onDismiss} aria-label="Dismiss announcement"><CloseIcon /></button>;
 }
 
-function NormalMessage({ message, duplicate = false }: { message: BannerMessage; duplicate?: boolean }) {
-  return <span className="promo-banner__message" aria-hidden={duplicate || undefined}><b>{message.text}</b>{message.ctaLabel && message.href ? <BannerLink message={message} /> : null}<i aria-hidden="true" /></span>;
+function NormalMessage({ message, duplicate = false, active = false }: { message: BannerMessage; duplicate?: boolean; active?: boolean }) {
+  return <span className={`promo-banner__message${active ? " is-active" : ""}`} aria-hidden={duplicate || undefined}><b>{message.text}</b>{message.ctaLabel && message.href ? <BannerLink message={message} duplicate={duplicate} /> : null}</span>;
 }
 
-function BannerLink({ message }: { message: BannerMessage }) {
+function BannerTickerSegment({ messages, glyph, repetitions = 1, duplicate = false }: { messages: BannerMessage[]; glyph: BannerConfig["normal"]["glyph"]; repetitions?: number; duplicate?: boolean }) {
+  return <div className="promo-banner__ticker-segment" aria-hidden={duplicate || undefined}>{Array.from({ length: repetitions }, (_, cycle) => messages.map((message, index) => <span className={`promo-banner__ticker-item${duplicate || cycle > 0 ? " is-duplicate" : ""}`} key={`${cycle}-${message.text}-${index}`}><NormalMessage message={message} duplicate={duplicate || cycle > 0} /><BannerDivider glyph={glyph} /></span>))}</div>;
+}
+
+function BannerDivider({ glyph }: { glyph: BannerConfig["normal"]["glyph"] }) {
+  if (glyph === "zap") return <i className="promo-banner__divider promo-banner__divider--zap" style={tripleZapMask} aria-hidden="true" />;
+  return <i className={`promo-banner__divider promo-banner__divider--${glyph}`} aria-hidden="true">{glyph === "arrow" ? "↯" : glyph === "diamond" ? "◆" : "•"}</i>;
+}
+
+function BannerLink({ message, duplicate = false }: { message: BannerMessage; duplicate?: boolean }) {
   if (!message.href || !message.ctaLabel) return null;
-  if (message.href.startsWith("/")) return <Link className="promo-banner__message-link" to={message.href}>{message.ctaLabel}<ArrowIcon /></Link>;
-  return <a className="promo-banner__message-link" href={message.href} target={message.newTab ? "_blank" : undefined} rel={message.newTab ? "noopener noreferrer" : undefined}>{message.ctaLabel}<ArrowIcon /></a>;
+  if (message.href.startsWith("/")) return <Link className="promo-banner__message-link" to={message.href} tabIndex={duplicate ? -1 : undefined}>{message.ctaLabel}<ArrowIcon /></Link>;
+  return <a className="promo-banner__message-link" href={message.href} target={message.newTab ? "_blank" : undefined} rel={message.newTab ? "noopener noreferrer" : undefined} tabIndex={duplicate ? -1 : undefined}>{message.ctaLabel}<ArrowIcon /></a>;
 }
 
 function readDismissedAnnouncement() {

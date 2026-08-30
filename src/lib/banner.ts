@@ -15,6 +15,8 @@ export type BannerConfig = {
     messages: BannerMessage[];
     mode: "static" | "ticker" | "crossfade";
     speed: "slow" | "normal" | "fast";
+    glyph: "zap" | "arrow" | "diamond" | "dot";
+    glyphSize: "small" | "medium" | "large";
   };
   live: {
     enabled: boolean;
@@ -62,7 +64,7 @@ export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   const normal = value.normal;
   const live = value.live;
   const homeRail = record(value.homeRail) ? value.homeRail : DEFAULT_HOME_RAIL;
-  if (typeof normal.enabled !== "boolean" || (normal.dismissible !== undefined && typeof normal.dismissible !== "boolean") || !Array.isArray(normal.messages) || normal.messages.length > 5 || !MODES.has(String(normal.mode)) || !SPEEDS.has(String(normal.speed))) return null;
+  if (typeof normal.enabled !== "boolean" || (normal.dismissible !== undefined && typeof normal.dismissible !== "boolean") || !Array.isArray(normal.messages) || normal.messages.length > 5 || !MODES.has(String(normal.mode)) || !SPEEDS.has(String(normal.speed)) || (normal.glyph !== undefined && !HOME_RAIL_GLYPHS.has(String(normal.glyph))) || (normal.glyphSize !== undefined && !HOME_RAIL_GLYPH_SIZES.has(String(normal.glyphSize)))) return null;
   const messages = normal.messages.map(normalizeMessage);
   if (messages.some((message) => message === null)) return null;
   const label = boundedText(live.label, 32);
@@ -80,7 +82,7 @@ export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   if (railItems.some((item) => !item)) return null;
   return {
     schema: "thirdrailify-banner-v1",
-    normal: { enabled: normal.enabled, dismissible: typeof normal.dismissible === "boolean" ? normal.dismissible : false, messages: messages as BannerMessage[], mode: normal.mode as BannerConfig["normal"]["mode"], speed: normal.speed as BannerConfig["normal"]["speed"] },
+    normal: { enabled: normal.enabled, dismissible: typeof normal.dismissible === "boolean" ? normal.dismissible : false, messages: messages as BannerMessage[], mode: normal.mode as BannerConfig["normal"]["mode"], speed: normal.speed as BannerConfig["normal"]["speed"], glyph: (normal.glyph ?? "zap") as BannerConfig["normal"]["glyph"], glyphSize: (normal.glyphSize ?? "medium") as BannerConfig["normal"]["glyphSize"] },
     live: { enabled: live.enabled, label, showTitle: live.showTitle, supportingText, ctaLabel, ctaPath: "/watch/live", animation: live.animation as BannerConfig["live"]["animation"], intensity: live.intensity as BannerConfig["live"]["intensity"] },
     homeRail: { enabled: homeRail.enabled, items: railItems as string[], mode: homeRail.mode as BannerConfig["homeRail"]["mode"], speed: homeRail.speed as BannerConfig["homeRail"]["speed"], easing: homeRail.easing as BannerConfig["homeRail"]["easing"], glyph: homeRail.glyph as BannerConfig["homeRail"]["glyph"], glyphSize: (homeRail.glyphSize ?? "medium") as BannerConfig["homeRail"]["glyphSize"] },
     updatedAt,

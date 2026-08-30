@@ -15,7 +15,7 @@ export type WheelImportProposal = {
   integrityStatus: "verified" | "absent";
   summary: { participantCount: number; activeCount: number; hiddenCount: number; duplicateLabelCount: number; weightedEntryCount: number; totalWeight: number; colourCount: number; mediaDetected: boolean };
 };
-export type WheelImportResult = { detectedFormat: "thirdrailify" | "wheel-of-names" | "generic-json"; formatLabel: string; version: number | null; sourceName: string; proposals: WheelImportProposal[] };
+export type WheelImportResult = { detectedFormat: "thirdrailify" | "wheel-of-names" | "generic-json"; formatLabel: string; version: number | null; sourceName: string; topLevelTitle?: string; configCount?: number; proposals: WheelImportProposal[] };
 export const WHEEL_FILE_FORMAT_ID: "thirdrailify-wheel";
 export const WHEEL_FILE_FORMAT_VERSION: 2;
 export const WHEEL_FILE_MIME: string;

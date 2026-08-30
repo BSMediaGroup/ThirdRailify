@@ -1,12 +1,27 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { proxyMediaUpload, proxyRead } from "../functions/api/wheels/[[path]].js";
+import { onRequest, proxyMediaUpload, proxyRead } from "../functions/api/wheels/[[path]].js";
 
 test("anonymous wheel reads proxy only to the Admin authority and preserve the public projection", async () => {
   let seen; const fetchImpl = async (input, init) => { seen = { input: String(input), init }; return Response.json({ ok: true, items: [], count: 0 }, { headers: { "Cache-Control": "public, max-age=30" } }); };
   const response = await proxyRead(new Request("https://thirdrailify.pages.dev/api/wheels?sort=title"), { THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" }, "", fetchImpl);
   assert.equal(response.status, 200); assert.equal(seen.input, "https://thirdrailify-admin.pages.dev/api/wheels?sort=title"); assert.equal(seen.init.method, "GET"); assert.deepEqual(await response.json(), { ok: true, items: [], count: 0 });
+});
+
+test("public Stage discovery stays a read-only Admin projection with segment-safe paths", async () => {
+  const seen = []; const fetchImpl = async (input, init) => { seen.push({ input: String(input), init }); return Response.json({ ok: true, items: [], count: 0 }); };
+  const env = { THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" };
+  await proxyRead(new Request("https://thirdrailify.pages.dev/api/wheels/stages?view=public&search=raid"), env, "stages", fetchImpl);
+  await proxyRead(new Request("https://thirdrailify.pages.dev/api/wheels/stages/night-show"), env, "stages/night-show", fetchImpl);
+  assert.equal(seen[0].input, "https://thirdrailify-admin.pages.dev/api/wheels/stages?view=public&search=raid");
+  assert.equal(seen[1].input, "https://thirdrailify-admin.pages.dev/api/wheels/stages/night-show");
+  assert.equal(seen.every((item) => item.init.method === "GET"), true);
+});
+
+test("unauthenticated Stage writes fail as bounded JSON instead of an unhandled edge exception", async () => {
+  const response = await onRequest({ request: new Request("http://127.0.0.1/api/wheels/stages", { method: "POST", headers: { Origin: "http://127.0.0.1", "Content-Type": "application/json" }, body: "{}" }), env: { THIRDRAILIFY_PUBLIC_ORIGIN: "http://127.0.0.1" }, data: {} });
+  assert.equal(response.status, 401); assert.deepEqual(await response.json(), { ok: false, error: "authentication_required", message: "Sign in to manage or officially spin a wheel." });
 });
 
 test("Public has no commerce or Wheels D1 binding and the wheel gateway never trusts browser account fields", async () => {

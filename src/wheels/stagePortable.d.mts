@@ -1,0 +1,11 @@
+import type { Wheel, WheelConfig } from "./types";
+import type { PortableMediaSet, WheelImportProposal } from "./portable.mjs";
+export const STAGE_FILE_FORMAT_ID: "thirdrailify-stage";
+export const STAGE_FILE_FORMAT_VERSION: 1;
+export const STAGE_FILE_MIME: string;
+export const STAGE_FILE_MAX_BYTES: number;
+export const STAGE_FILE_MEDIA_MAX_BYTES: number;
+export function createPortableStage(input: { title: string; description?: string; wheels: Array<{ wheel: Pick<Wheel, "title" | "description" | "config" | "entries">; media?: PortableMediaSet }> }, options?: { exportedAt?: string; generatorVersion?: string }): Promise<Record<string, unknown>>;
+export function serializePortableStage(document: Record<string, unknown>): string;
+export function parsePortableStage(input: string | Uint8Array | ArrayBuffer, options?: { sourceName?: string; defaultConfig?: WheelConfig }): Promise<{ formatLabel: string; version: 1; sourceName: string; title: string; description: string; visibility: "private"; integrityStatus: "verified"; proposals: Array<{ key: string; proposal: WheelImportProposal }>; mediaAssetCount: number; mediaBytes: number; mappings: Array<{ wheelKey: string; mode: "create" | "map"; existingSlug: string }> }>;
+export function safeStageFilename(value: string, extension?: "tws" | "json"): string;

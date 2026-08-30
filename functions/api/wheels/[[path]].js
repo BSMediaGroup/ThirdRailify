@@ -16,9 +16,9 @@ export async function onRequest(context) {
   const { request, env } = context;
   try {
     const path = new URL(request.url).pathname.slice(PREFIX.length).replace(/^\/+|\/+$/g, "");
-    if (request.method === "GET" || request.method === "HEAD") return proxyRead(request, env, path, context.data?.wheelsFetch || fetch);
+    if (request.method === "GET" || request.method === "HEAD") return await proxyRead(request, env, path, context.data?.wheelsFetch || fetch);
     if (!new Set(["POST", "PUT", "DELETE"]).has(request.method)) throw failure(405, "method_not_allowed", "This wheel method is not allowed.");
-    return proxyWrite(request, env, path, context.data?.wheelsFetch || fetch);
+    return await proxyWrite(request, env, path, context.data?.wheelsFetch || fetch);
   } catch (error) {
     return publicError(error);
   }
@@ -26,6 +26,7 @@ export async function onRequest(context) {
 
 async function proxyRead(request, env, path, fetchImpl) {
   const session = await resolveSession(env, request).catch(() => null);
+  const requestUrl = new URL(request.url);
   if (/^media\/[a-f0-9-]{16,80}$/i.test(path)) {
     const pathname = `/api/wheels/${path}`; const headers = new Headers({ Accept: request.headers.get("accept") || "image/*" });
     if (session?.accountId) { const signed = await signedHeaders(env, request.method, pathname, new Uint8Array(), { "X-ThirdRailify-Account-Id": session.accountId }); for (const [name, value] of signed) headers.set(name, value); }
@@ -37,8 +38,18 @@ async function proxyRead(request, env, path, fetchImpl) {
     const internal = path === "access" ? "access" : `${path.slice(0, -"/access".length)}/access`;
     return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${internal}`, { accountId: session.accountId });
   }
+  if (path === "stages/lookup") {
+    if (!session) throw failure(401, "authentication_required", "Sign in to choose Stage wheels.");
+    const url = new URL(request.url);
+    return signedProxy(env, fetchImpl, "POST", "/api/wheels/internal/stages/lookup", { accountId: session.accountId, input: { search: url.searchParams.get("search"), scope: url.searchParams.get("scope") } });
+  }
+  if (path === "stages" && requestUrl.searchParams.get("view") === "public") {
+    const targetPath = `/api/wheels/stages${requestUrl.search}`;
+    const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
+    return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
+  }
   if (path && session) return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId });
-  const targetPath = `/api/wheels${path ? `/${encodeURIComponent(path)}` : ""}${new URL(request.url).search}`;
+  const targetPath = `/api/wheels${path ? `/${encodePath(path)}` : ""}${new URL(request.url).search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
   return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
 }
@@ -56,6 +67,9 @@ async function proxyWrite(request, env, path, fetchImpl) {
   if (!input || typeof input !== "object" || Array.isArray(input)) throw failure(400, "invalid_json", "The wheel request is invalid.");
   let internal;
   if (!path && request.method === "POST") internal = "create";
+  else if (path === "stages" && request.method === "POST") internal = "stages/create";
+  else if (request.method === "PUT" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
+  else if (request.method === "POST" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/lifecycle$/i.test(path)) internal = path;
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
   else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/spins$/i.test(path)) internal = path;
   else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/(?:winner-action|lifecycle)$/i.test(path)) internal = path;
@@ -100,6 +114,7 @@ function requirePublicRequestOrigin(request, env) {
   if (!origin || (!local && origin !== expected)) throw failure(403, "origin_not_allowed", "This request origin is not allowed.");
 }
 function adminUrl(env, pathname) { const origin = normalizeOrigin(env?.THIRDRAILIFY_ADMIN_ORIGIN); if (!origin) throw failure(503, "wheels_api_not_configured", "The wheel authority is not configured."); return `${origin}${pathname}`; }
+function encodePath(path) { return String(path).split("/").map((segment) => encodeURIComponent(segment)).join("/"); }
 async function boundedFetch(fetchImpl, input, init, timeoutMs) { const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), timeoutMs); try { return await fetchImpl(input, { ...init, signal: controller.signal }); } catch { throw failure(503, "wheels_unavailable", "The wheel authority is temporarily unavailable."); } finally { clearTimeout(timeout); } }
 async function forwardJson(response, cacheControl) { const payload = await response.json().catch(() => null); if (!payload) return jsonResponse({ ok: false, error: "wheels_unavailable", message: "The wheel authority returned an invalid response." }, { status: 502 }); return jsonResponse(payload, { status: response.status, headers: { "Cache-Control": cacheControl, "X-Content-Type-Options": "nosniff" } }); }
 function forwardMedia(response, head) { const headers = new Headers({ "Cache-Control": response.headers.get("cache-control") || "no-store", "X-Content-Type-Options": "nosniff" }); for (const name of ["content-type", "content-length", "etag", "content-security-policy", "cross-origin-resource-policy"]) { const value = response.headers.get(name); if (value) headers.set(name, value); } return new Response(head ? null : response.body, { status: response.status, headers }); }

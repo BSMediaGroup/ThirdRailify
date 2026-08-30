@@ -32,6 +32,7 @@ export async function onRequest(context) {
       throw new PublicAuthFailure(405, "method_not_allowed", "This method is not allowed.", { Allow: path === "session" ? "GET, OPTIONS" : "POST, OPTIONS" });
     }
     if (path === "handoff") return await handleHandoff(request, env);
+    if (path === "transfer") return await handleTransferProxy(request, env, fetchImpl);
     if (path === "logout") return await handleLogout(request, env);
     if (path === "profile") return await handleProfileProxy(request, env, fetchImpl);
     if (path === "avatar") return await handleAvatarProxy(request, env, fetchImpl);
@@ -138,6 +139,40 @@ async function handleHandoff(request, env) {
     { ...(await sessionEnvelope(created.session)), returnTo: created.returnTo },
     { headers: { ...corsHeaders(request, env), "Set-Cookie": created.cookie } },
   );
+}
+
+async function handleTransferProxy(request, env, fetchImpl) {
+  const origin = requirePublicOrigin(request, env);
+  const session = await resolveSession(env, request);
+  if (!session) throw new PublicAuthFailure(401, "unauthenticated", "A signed-in account is required.");
+  await requireCsrf(request, session);
+  const adminOrigin = normalizeOrigin(env?.THIRDRAILIFY_ADMIN_ORIGIN);
+  if (!adminOrigin) throw new PublicAuthFailure(503, "auth_origin_not_configured", "The account service origin is not configured.");
+  const body = await readJsonBody(request);
+  const upstream = await fetchImpl(`${adminOrigin}/api/auth/transfer`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Cookie": `${AUTH_COOKIE_NAME}=${encodeURIComponent(session.token)}`,
+      "Origin": origin,
+      "X-CSRF-Token": session.csrfToken,
+    },
+    body: JSON.stringify({ returnTo: body.returnTo }),
+    redirect: "manual",
+  });
+  const responseType = String(upstream.headers.get("content-type") || "").toLowerCase();
+  if (!responseType.startsWith("application/json")) {
+    throw new PublicAuthFailure(502, "auth_unavailable", "The account service returned an invalid response.");
+  }
+  return new Response(await upstream.text(), {
+    status: upstream.status,
+    headers: {
+      ...corsHeaders(request, env),
+      "Cache-Control": "no-store",
+      "Content-Type": "application/json; charset=utf-8",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }
 
 async function handleLogout(request, env) {

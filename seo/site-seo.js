@@ -63,6 +63,11 @@ const STATIC_ROUTES = [
     parent: ["Wheels", "/wheels"],
     index: false,
   }),
+  route("/wheels/stages/new", "wheels:stage:new", "Build a Multi-Wheel Stage | Third Railify", "Compose up to six accessible Third Railify Wheels into a private-by-default responsive Stage.", {
+    label: "Build a Stage",
+    parent: ["Wheels", "/wheels"],
+    index: false,
+  }),
   route("/live", "watch:live-alias", "Finding the Current Third Railify Broadcast", "Check the verified Third Railify broadcast state and continue to the current live player or the main Watch page.", {
     label: "Current broadcast",
     canonicalPath: "/watch",
@@ -228,6 +233,14 @@ export function staticSeoForPath(pathname, origin) {
     imagePath: "/social/farm1.webp",
     imageAlt: "GOATS in the Wild community story",
   }), origin);
+
+  const stage = path.match(/^\/wheels\/stages\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit))?$/);
+  if (stage) {
+    const editing = stage[2] === "edit"; const canonicalPath = `/wheels/stages/${stage[1]}`;
+    return createSeoDocument(route(path, `wheel-stage:${stage[1]}:${editing ? "edit" : "view"}`, editing ? "Edit a Multi-Wheel Stage | Third Railify" : "Multi-Wheel Stage | Third Railify", editing ? "Manage this protected Third Railify multi-Wheel Stage, its visibility, ordered Wheels, portability, and explicit save state." : "Open a responsive Third Railify multi-Wheel Stage for public practice and authorized official draws.", {
+      label: editing ? "Edit Stage" : "Multi-Wheel Stage", parent: ["Wheels", "/wheels"], canonicalPath, index: false, schemaType: "WebApplication", imageAlt: "Third Railify multi-Wheel Stage",
+    }), origin);
+  }
 
   const wheel = path.match(/^\/wheels\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|present))?$/);
   if (wheel) {
