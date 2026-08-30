@@ -1,0 +1,58 @@
+.palette-repair-actions,
+.wheel-import-palette-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wheel-modal-backdrop[hidden] {
+  display: none !important;
+}
+
+.palette-repair-actions {
+  margin: 0 0 16px;
+}
+
+.palette-repair-actions svg {
+  width: 16px;
+  height: 16px;
+}
+
+.palette-repair-actions small,
+.wheel-import-palette-choice small {
+  color: var(--muted, #a8a79f);
+  line-height: 1.45;
+}
+
+.wheel-import-palette-choice {
+  border: 1px solid rgba(243, 201, 40, 0.35);
+  padding: 12px;
+  margin: 12px 0;
+}
+
+.wheel-import-palette-choice legend {
+  padding: 0 6px;
+  font-weight: 700;
+}
+
+.wheel-import-palette-choice label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-import-wheel-gallery article > .wheel-import-palette-choice {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 8px 0 0;
+  padding-right: 84px;
+}
+
+@media (max-width: 620px) {
+  .palette-repair-actions,
+  .wheel-import-palette-choice {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

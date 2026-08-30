@@ -1,5 +1,27 @@
 # Bump notes
 
+## 2026-08-31 - Wheels import and form-focus hotfix
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added a shared import-boundary palette normalizer for canonical TWL V1/V2, Wheel of Names, generic Wheel JSON, and embedded Stage Wheels. Recoverable colour/style drift now produces canonical parallel arrays plus conversion warnings; legacy colours synthesize solid styles, unsupported pattern/image styles fall back safely, and server save validation remains unchanged and strict.
+- Added explicit import-time `Use normalized imported palette` / `Reset palette to Third Rail Gold` choices and an Appearance reset control. These choices remain local until the existing Create/Save action.
+- Corrected shared dialog focus ownership so dirty-state and preview rerenders no longer reactivate the trap or steal focus after the first character. Nested Wheel, Stage, Appearance, Participant, Segment Style, and import dialogs now suspend and resume without remounting their parent editor.
+- Added normalization, TWL/TWS round-trip, same-node continuous real-key typing, dialog lifecycle, responsive overflow, warning/choice, and zero-Wheel-write browser coverage. No schema, migration, D1/R2, official-result, payment/provider, DNS, or custom-domain configuration changed.
+- Preview `3b3d3466-c1d3-46ad-9796-3ca0302883ba` and production `80d0caef-0f52-4b4c-a914-05850cceca4d` serve the identical 47-file artifact (manifest SHA-256 `22e691fa4cc6ccc293fcad98456047b342774d62e801797b7fbfabcafc0df0d3`). Stable-origin acceptance passed Wheel/Stage continuous typing, Wheel of Names and TWL V1/V2 repair previews, per-Wheel Stage choices, responsive bounds, and zero Wheel writes; the only console diagnostic was Cloudflare's injected Web Analytics beacon being blocked for an external SRI mismatch.
+
+## 2026-08-31 - Master Admin public-account regression coverage
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Confirmed Public already relays the canonical server-resolved session Account ID for overview, orders, addresses, and inbox requests without role filtering, browser-supplied recipient authority, or automatic 4xx/429 retries. The runtime defect and correction are Admin-side.
+- Expanded `/account/messages` browser acceptance to 1920, 1440, tablet 768, and 390 widths with explicit absence of false Commerce/Inbox error panels while preserving the current Messages UI.
+- Production rollout requires the paired Admin hotfix deployment and stable-origin authenticated acceptance for Regular, Full Admin, and environment Master sessions. No Public runtime code, deployment, purchase, donation, payment, provider, DNS, secret, migration, or Cloudflare resource was changed locally.
+
 ## 2026-08-31 - Wheels V1.11 wide layout and Stage control polish
 
 CURRENT VER=0.1.0-alpha.0

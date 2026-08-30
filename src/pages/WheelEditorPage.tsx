@@ -11,6 +11,7 @@ import { WheelCanvas } from "../wheels/WheelCanvas";
 import { WheelsBrandMark } from "../wheels/WheelsBrandMark";
 import { ImportExportDialog, type ImportedWheelContent } from "../wheels/ImportExportDialog";
 import { embeddedMediaBlob, type PortableMediaSet } from "../wheels/portable.mjs";
+import { normalizeImportedPalette, THIRD_RAIL_GOLD_PALETTE } from "../wheels/paletteNormalization.mjs";
 import { BackIcon, ImportIcon, PaletteIcon, TrashIcon } from "../components/Icons";
 import "../styles/wheels.css";
 
@@ -22,7 +23,7 @@ const PRESETS: Record<string, Pick<WheelConfig, "palette" | "pointerAccent">> = 
   "signal-teal": { palette: ["#27C9B8", "#0D6F73", "#F3C928", "#172725"], pointerAccent: "#5FE5D5" },
   "after-hours": { palette: ["#D6A521", "#70452D", "#9B1B36", "#16110F"], pointerAccent: "#FFD65B" },
 };
-const DEFAULT_CONFIG: WheelConfig = { themePreset: "third-rail-gold", ...PRESETS["third-rail-gold"], centreTreatment: "bolt", backgroundIntensity: "high", labelContrast: "light", spinDurationMs: 6500, tickingSoundEnabled: true, winnerSoundEnabled: true, celebrationEnabled: true, confettiEnabled: true, fireworksEnabled: true, winnerLightingEnabled: true, celebrationIntensity: "normal", backgroundEnabled: true, backgroundFocalX: 50, backgroundFocalY: 50, backgroundImageOpacity: 72, backgroundOverlayIntensity: 58, winnerMessageTemplate: "Signal locked: {winner}", publicHistoryVisible: true };
+const DEFAULT_CONFIG: WheelConfig = { themePreset: "third-rail-gold", ...PRESETS["third-rail-gold"], paletteStyles: THIRD_RAIL_GOLD_PALETTE.map((color) => ({ mode: "solid", color })), centreTreatment: "bolt", backgroundIntensity: "high", labelContrast: "light", spinDurationMs: 6500, tickingSoundEnabled: true, winnerSoundEnabled: true, celebrationEnabled: true, confettiEnabled: true, fireworksEnabled: true, winnerLightingEnabled: true, celebrationIntensity: "normal", backgroundEnabled: true, backgroundFocalX: 50, backgroundFocalY: 50, backgroundImageOpacity: 72, backgroundOverlayIntensity: 58, winnerMessageTemplate: "Signal locked: {winner}", publicHistoryVisible: true };
 type EditorState = { title: string; description: string; visibility: "public" | "hidden"; entries: WheelEntry[]; config: WheelConfig; revision?: number; lifecycle: "draft" | "active" | "archived" };
 const EMPTY: EditorState = { title: "", description: "", visibility: "public", entries: [], config: DEFAULT_CONFIG, lifecycle: "active" };
 
@@ -81,7 +82,7 @@ export function WheelEditorPage({ create = false }: { create?: boolean }) {
 }
 
 function EditorGate({ title, message, action }: { title: string; message?: string; action?: React.ReactNode }) { return <div className="wheel-editor-gate"><WheelsBrandMark /><p className="eyebrow">WHEEL CONTROL</p><h1>{title}</h1>{message ? <p>{message}</p> : null}{action}<Link to="/wheels">Return to Wheels</Link></div>; }
-function stateFrom(wheel: { title: string; description: string | null; visibility: "public" | "hidden"; entries: WheelEntry[]; config: WheelConfig; revision?: number; lifecycle: "draft" | "active" | "archived" }): EditorState { return { title: wheel.title, description: wheel.description || "", visibility: wheel.visibility, entries: wheel.entries, config: wheel.config, revision: wheel.revision, lifecycle: wheel.lifecycle }; }
+function stateFrom(wheel: Wheel): EditorState { const availableImageAssetIds = new Set((wheel.media?.segmentFills || []).map((asset) => asset.id)); const normalized = normalizeImportedPalette(wheel.config.palette, wheel.config.paletteStyles, { defaultPalette: THIRD_RAIL_GOLD_PALETTE, maxPalette: wheel.config.themePreset === "custom" ? 5 : 12, availableImageAssetIds }); return { title: wheel.title, description: wheel.description || "", visibility: wheel.visibility, entries: wheel.entries, config: { ...wheel.config, themePreset: normalized.palette.length === 1 ? "custom" : wheel.config.themePreset, palette: normalized.palette, paletteStyles: normalized.paletteStyles }, revision: wheel.revision, lifecycle: wheel.lifecycle }; }
 function message(reason: unknown) { return reason instanceof Error ? reason.message : "The wheel editor is unavailable."; }
 function editorInput(state: EditorState) { return { title: state.title, description: state.description, visibility: state.visibility, lifecycle: state.lifecycle, config: state.config, entries: state.entries, ...(state.revision ? { revision: state.revision } : {}) }; }
 function stripPortableImages(state: EditorState): EditorState { const solid = (style: NonNullable<WheelEntry["style"]>) => style.mode === "image" ? { mode: "solid" as const, color: style.color } : style; return { ...state, config: { ...state.config, paletteStyles: state.config.paletteStyles?.map(solid) }, entries: state.entries.map((entry) => ({ ...entry, style: entry.style ? solid(entry.style) : null })) }; }

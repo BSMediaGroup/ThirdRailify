@@ -78,26 +78,32 @@ export function secureUnitFraction(randomValues = (values) => globalThis.crypto.
   return (values[0] + .5) / 0x100000000;
 }
 
-export function constantDecelerationProgress(elapsedMs, durationMs) {
+export function suspenseDecayProgress(elapsedMs, durationMs) {
   if (!Number.isFinite(durationMs) || durationMs <= 0) return 1;
   const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
-  return 2 * u - u * u;
+  // Integral of 2(1-u)^2(1+2u): the launch and midpoint speeds match the
+  // previous motion, while the final quarter falls away much more gently.
+  return 2 * u - 2 * u ** 3 + u ** 4;
 }
 
-export function constantDecelerationVelocity(elapsedMs, durationMs, totalTravel = 1) {
+export function suspenseDecayVelocity(elapsedMs, durationMs, totalTravel = 1) {
   if (!Number.isFinite(durationMs) || durationMs <= 0 || !Number.isFinite(totalTravel)) return 0;
   const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
-  return totalTravel * 2 * (1 - u) / durationMs;
+  return totalTravel * 2 * (1 - u) ** 2 * (1 + 2 * u) / durationMs;
 }
+
+// Compatibility exports for older consumers of the Wheels engine module.
+export const constantDecelerationProgress = suspenseDecayProgress;
+export const constantDecelerationVelocity = suspenseDecayVelocity;
 
 export function fullTurnsForDuration(durationMs, turnRandom) {
   const duration = Math.min(60000, Math.max(2000, Number(durationMs) || 2000));
   const random = turnRandom ?? secureUnitFraction();
   if (!Number.isFinite(random) || random <= 0 || random >= 1) throw new Error("The turn variance must be strictly between zero and one.");
   const seconds = duration / 1000;
-  // Constant deceleration averages half of the launch speed. Budget enough
-  // travel to make the first frame decisive, then let velocity fall linearly
-  // to zero without changing the configured duration or landing authority.
+  // The normalized motion still averages half of the launch speed. Budget
+  // enough travel to make the first frame decisive, then let the suspense
+  // curve taper to zero without changing duration or landing authority.
   const launchRotationsPerSecond = Math.max(2.5, 3.6 - Math.max(0, seconds - 2) * .02);
   const minimum = Math.max(4, Math.ceil(launchRotationsPerSecond * seconds / 2));
   const spread = Math.max(2, Math.ceil(Math.min(8, seconds * .18)));

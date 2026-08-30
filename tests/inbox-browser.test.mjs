@@ -14,7 +14,7 @@ test("Public account messages open full details and support individual and bulk 
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   t.after(() => browser.close());
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport, reducedMotion: "reduce" });
     const page = await context.newPage();
     const actions = [];
@@ -37,6 +37,8 @@ test("Public account messages open full details and support individual and bulk 
 
     await page.goto(`${ORIGIN}/account/messages`);
     await page.getByRole("heading", { level: 1, name: "Messages" }).waitFor();
+    assert.equal(await page.getByText("Commerce details unavailable").count(), 0);
+    assert.equal(await page.getByText("Inbox unavailable").count(), 0);
     assert.equal(await page.title(), "Messages | Third Railify Account");
     const messageFilters = page.locator('.account-inbox__filters');
     for (const name of ["All", "Unread"]) {

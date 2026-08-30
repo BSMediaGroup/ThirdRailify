@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   getWheel,
@@ -18,6 +18,9 @@ import {
 import { SegmentStyleDialog, SegmentStylePreview } from "./SegmentStyleDialog";
 import { SPIN_SOUND_PRESETS, WINNER_SOUND_PRESETS, normalizePaletteStyles, resolvedEntryStyle, solidSegmentStyle, type SegmentStyle } from "./segmentStyles.mjs";
 import { spinSoundProfile, winnerSoundProfile } from "./soundPresets.mjs";
+import { useModalDialog } from "./dialog";
+import { RefreshIcon } from "../components/Icons";
+import "../styles/wheels-hotfix.css";
 
 type PaletteOption = {
   key: string;
@@ -347,22 +350,8 @@ export function AppearanceDialog({
         .slice(0, 100),
     [entries, search],
   );
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    const priorOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    close.current?.focus();
-    const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !busy) onClose();
-      if (event.key === "Tab" && root.current) trapFocus(event, root.current);
-    };
-    document.addEventListener("keydown", key);
-    return () => {
-      document.removeEventListener("keydown", key);
-      document.body.style.overflow = priorOverflow;
-      previous?.focus();
-    };
-  }, [busy, onClose]);
+  const requestClose = useCallback(() => { if (!busy) onClose(); }, [busy, onClose]);
+  useModalDialog(root, close, requestClose, !segmentEditor && !celebrationPreview);
   const patchConfig = (patch: Partial<WheelConfig>) =>
     setConfig((current) => ({ ...current, ...patch }));
   const selectPalette = (option: PaletteOption) => {
@@ -440,6 +429,18 @@ export function AppearanceDialog({
     controls.current?.scrollTo({ top: 0 });
   };
   const stageSegmentFile = (file: File) => { const id = crypto.randomUUID(); setStagedSegmentFiles((current) => new Map(current).set(id, file)); return id; };
+  const resetPalette = () => {
+    if (entries.some((entry) => entry.style || entry.colour) && !window.confirm("Reset the palette and overwrite participant manual style overrides? Labels and weights will be preserved.")) return;
+    const styles = (DEFAULT_APPEARANCE_CONFIG.paletteStyles || []).map((style) => ({ ...style }));
+    setConfig((current) => ({ ...current, themePreset: "third-rail-gold", palette: [...(DEFAULT_APPEARANCE_CONFIG.palette || [])], paletteStyles: styles, pointerAccent: DEFAULT_APPEARANCE_CONFIG.pointerAccent || "#F3C928" }));
+    setEntries((current) => applyStylesToEntries(current, styles));
+    setCustomStyles(styles);
+    setCustomAccent(DEFAULT_APPEARANCE_CONFIG.pointerAccent || "#F3C928");
+    setCustomPreviewing(false);
+    setCustomDirty(false);
+    setCustomOverrides(new Set());
+    setError("");
+  };
   const resetAppearance = () => {
     setConfig((current) => ({ ...current, ...DEFAULT_APPEARANCE_CONFIG }));
     setEntries((current) =>
@@ -532,7 +533,7 @@ export function AppearanceDialog({
           className="appearance-backdrop"
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget && !busy) onClose();
+            if (event.target === event.currentTarget) requestClose();
           }}
         >
           <div
@@ -550,7 +551,7 @@ export function AppearanceDialog({
               <button
                 ref={close}
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 disabled={busy}
                 aria-label="Close appearance without saving"
               >
@@ -620,6 +621,7 @@ export function AppearanceDialog({
                       be edited or reset to their active palette position.
                     </p>
                     {animatedCanvasUnavailable ? <p className="wheel-alert">Animated preview is unavailable in this browser; the image remains usable as a static fill.</p> : null}
+                    <div className="palette-repair-actions"><button className="button button--secondary button--compact" type="button" onClick={resetPalette} aria-label="Reset all palette colours"><RefreshIcon /> Reset palette to Third Rail Gold</button><small>Replaces palette colours and complete segment styles locally; Save appearance remains required.</small></div>
                     <div className="palette-grid">
                       {WHEEL_PALETTES.map((option) => {
                         const selected =
@@ -677,19 +679,7 @@ export function AppearanceDialog({
                           else patchConfig({ pointerAccent: value });
                         }}
                       />
-                      <input
-                        aria-label="Wheel accent hex colour"
-                        value={previewConfig.pointerAccent}
-                        pattern="#[0-9A-Fa-f]{6}"
-                        onChange={(event) => {
-                          if (/^#[0-9a-f]{6}$/i.test(event.target.value)) {
-                            const value = event.target.value.toUpperCase();
-                            if (customPreviewing)
-                              editCustom(customStyles, value);
-                            else patchConfig({ pointerAccent: value });
-                          }
-                        }}
-                      />
+                      <HexTextInput label="Wheel accent hex colour" value={previewConfig.pointerAccent} onValid={(value) => { if (customPreviewing) editCustom(customStyles, value); else patchConfig({ pointerAccent: value }); }} />
                     </div>
                     <div className="sound-preset-control">
                       <Toggle label="Generated wheel ticks" checked={config.tickingSoundEnabled} onChange={(value) => patchConfig({ tickingSoundEnabled: value })} />
@@ -923,7 +913,7 @@ export function AppearanceDialog({
               <button
                 className="button button--secondary"
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 disabled={busy}
               >
                 Discard
@@ -1070,15 +1060,7 @@ function CustomPaletteEditor({
           value={accent}
           onChange={(event) => onAccent(event.target.value.toUpperCase())}
         />
-        <input
-          aria-label="Custom palette accent hex"
-          value={accent}
-          pattern="#[0-9A-Fa-f]{6}"
-          onChange={(event) => {
-            if (/^#[0-9a-f]{6}$/i.test(event.target.value))
-              onAccent(event.target.value.toUpperCase());
-          }}
-        />
+        <HexTextInput label="Custom palette accent hex" value={accent} onValid={onAccent} />
       </div>
       <footer>
         <button type="button" onClick={onReset}>
@@ -1201,6 +1183,11 @@ function Toggle({
     </label>
   );
 }
+function HexTextInput({ label, value, onValid }: { label: string; value: string; onValid: (value: string) => void }) {
+  const [text, setText] = useState(value);
+  useEffect(() => setText(value), [value]);
+  return <input aria-label={label} value={text} pattern="#[0-9A-Fa-f]{6}" onChange={(event) => { const next = event.target.value; setText(next); if (/^#[0-9a-f]{6}$/i.test(next)) onValid(next.toUpperCase()); }} onBlur={() => setText(value)} />;
+}
 function paletteMatches(config: WheelConfig, option: PaletteOption) {
   const expectedStyles = option.styles || option.palette.map((color) => solidSegmentStyle(color));
   return (
@@ -1256,21 +1243,4 @@ async function normalizeImage(file: File, purpose: "background" | "centre") {
     canvas.toBlob(resolve, type, 0.9),
   );
   return blob || file;
-}
-function trapFocus(event: KeyboardEvent, root: HTMLElement) {
-  const items = [
-    ...root.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])',
-    ),
-  ];
-  if (!items.length) return;
-  const first = items[0];
-  const last = items[items.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
 }

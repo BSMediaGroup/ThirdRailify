@@ -15,5 +15,7 @@ export function formatProbability(probability: number): string;
 export function secureUnitFraction(randomValues?: RandomValues): number;
 export function constantDecelerationProgress(elapsedMs: number, durationMs: number): number;
 export function constantDecelerationVelocity(elapsedMs: number, durationMs: number, totalTravel?: number): number;
+export function suspenseDecayProgress(elapsedMs: number, durationMs: number): number;
+export function suspenseDecayVelocity(elapsedMs: number, durationMs: number, totalTravel?: number): number;
 export function fullTurnsForDuration(durationMs: number, turnRandom?: number): number;
 export function spinPlan(entries: WheelEntry[], winnerId: string, durationMs: number, currentRotation?: number, options?: number | SpinPlanOptions): WheelSpinPlan;

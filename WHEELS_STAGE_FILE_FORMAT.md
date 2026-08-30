@@ -7,3 +7,5 @@ The document contains Stage identity/layout, one to six ordered portable Wheels,
 Limits are 28 MB per file and 24 MB decoded embedded media. Custom media is excluded by default. The parser rejects unknown fields, unsafe prototype keys, unsupported versions, malformed ordering, duplicate mappings, missing assets, corrupt asset hashes, and corrupt payload integrity before any server write.
 
 The Stage file does not transfer ownership or official results. Official selection continues to use the existing per-Wheel server endpoint after import.
+
+Each embedded Wheel is palette-normalized locally before the Stage import plan is shown. Recoverable repairs are reported per Wheel and can either keep the normalized palette or reset that Wheel to Third Rail Gold. Export/reimport preserves the resulting canonical one-style-per-colour arrays; no Wheel or Stage record is created until the existing explicit import action.

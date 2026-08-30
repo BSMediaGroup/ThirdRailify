@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import { constantDecelerationProgress, entryAtPointer, hitTestWheel } from "./engine.mjs";
+import { entryAtPointer, hitTestWheel, suspenseDecayProgress } from "./engine.mjs";
 import type { WheelSpinPlan } from "./engine.mjs";
 import type { WheelConfig, WheelEntry, WheelMediaAsset } from "./types";
 import { WheelsBrandMark } from "./WheelsBrandMark";
@@ -110,8 +110,8 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     const sample = (now: number) => {
       if (stopped) return;
       if (now < startAt) { frame = requestAnimationFrame(sample); return; }
-      metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const progress = constantDecelerationProgress(elapsed, duration); const nextRotation = animation.startRotation + animation.totalTravel * progress;
-      if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - constantDecelerationProgress(previousElapsed, duration)); finish(now, expectedDelta); return; }
+      metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const progress = suspenseDecayProgress(elapsed, duration); const nextRotation = animation.startRotation + animation.totalTravel * progress;
+      if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - suspenseDecayProgress(previousElapsed, duration)); finish(now, expectedDelta); return; }
       rotorElement.style.transform = `rotate(${nextRotation}deg)`; metrics.frameCount += 1; metrics.lastFrameAt = now; metrics.lastFrameRotation = nextRotation; frame = requestAnimationFrame(sample);
     };
     frame = requestAnimationFrame(sample);

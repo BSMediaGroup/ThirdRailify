@@ -14,6 +14,8 @@ Public now emits privacy-minimized `page_view` events from initial loads and gen
 
 Authenticated accounts now have `/account/messages`. Messages remain Admin Commerce D1-owned and travel through the existing signed account-commerce relay. The page supports individual and bulk read/unread/delete controls, whole-card detail lightboxes, full safe details, and preserved CTA buttons. Delete is recipient-scoped soft deletion; it does not erase an authoritative source record.
 
+Public account eligibility is independent of Admin privilege: Regular, Full Admin, and environment Master Admin sessions use the same canonical internal Account ID for their own profile, Commerce, orders, addresses, donations, and recipient-scoped Messages. Public sends only the server-resolved session Account ID across the signed relay; role never suppresses ordinary account features or widens message scope. Normal account reads do not automatically retry permanent 4xx or 429 responses and remain isolated by panel.
+
 Local/production configuration introduced by this milestone:
 
 - Cloudflare encrypted secret `THIRDRAILIFY_ANALYTICS_INGEST_SECRET`, with the same high-entropy value configured independently on Public and Admin Pages.

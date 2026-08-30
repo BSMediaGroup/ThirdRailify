@@ -1,0 +1,2726 @@
+[
+  {
+    "label": "new wheel title",
+    "expected": "Competition Wheel August 2026",
+    "steps": [
+      {
+        "character": "C",
+        "active": true,
+        "sameNode": true,
+        "value": "C"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Co"
+      },
+      {
+        "character": "m",
+        "active": true,
+        "sameNode": true,
+        "value": "Com"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Comp"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Compe"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Compet"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Competi"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Competit"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Competiti"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Competitio"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition "
+      },
+      {
+        "character": "W",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition W"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel "
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel A"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Au"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Aug"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Augu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Augus"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August "
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 2"
+      },
+      {
+        "character": "0",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 20"
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 202"
+      },
+      {
+        "character": "6",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 2026"
+      }
+    ]
+  },
+  {
+    "label": "new wheel description",
+    "expected": "Wheel description typed continuously without losing focus.",
+    "steps": [
+      {
+        "character": "W",
+        "active": true,
+        "sameNode": true,
+        "value": "W"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel "
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel d"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel de"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel des"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel desc"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descri"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descrip"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descript"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descripti"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel descriptio"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description "
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description t"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description ty"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typ"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description type"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed "
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed c"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed co"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed con"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed cont"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed conti"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed contin"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continu"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuo"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuou"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuous"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuousl"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously "
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously w"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously wi"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously wit"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously with"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously witho"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously withou"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without "
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without l"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without lo"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without los"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losi"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losin"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing "
+      },
+      {
+        "character": "f",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing f"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing fo"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing foc"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing focu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing focus"
+      },
+      {
+        "character": ".",
+        "active": true,
+        "sameNode": true,
+        "value": "Wheel description typed continuously without losing focus."
+      }
+    ]
+  },
+  {
+    "label": "new wheel quick add",
+    "expected": "Participant Quick Add",
+    "steps": [
+      {
+        "character": "P",
+        "active": true,
+        "sameNode": true,
+        "value": "P"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Pa"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Par"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Part"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Parti"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Partic"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Partici"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Particip"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Participa"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Participan"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant "
+      },
+      {
+        "character": "Q",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Q"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Qu"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Qui"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quic"
+      },
+      {
+        "character": "k",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick "
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick A"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick Ad"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick Add"
+      }
+    ]
+  },
+  {
+    "label": "new wheel participant search",
+    "expected": "Search Wheel",
+    "steps": [
+      {
+        "character": "S",
+        "active": true,
+        "sameNode": true,
+        "value": "S"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Se"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Sea"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Sear"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Searc"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Search"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Search "
+      },
+      {
+        "character": "W",
+        "active": true,
+        "sameNode": true,
+        "value": "Search W"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Wheel"
+      }
+    ]
+  },
+  {
+    "label": "new wheel bulk participants",
+    "expected": "Alice\nBob",
+    "steps": [
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "A"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Al"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Ali"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Alic"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Alice"
+      },
+      {
+        "character": "\n",
+        "active": true,
+        "sameNode": true,
+        "value": "Alice\n"
+      },
+      {
+        "character": "B",
+        "active": true,
+        "sameNode": true,
+        "value": "Alice\nB"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Alice\nBo"
+      },
+      {
+        "character": "b",
+        "active": true,
+        "sameNode": true,
+        "value": "Alice\nBob"
+      }
+    ]
+  },
+  {
+    "label": "pasted JSON",
+    "expected": "{\"entries\":[\"Alice\",\"Bob\"]}",
+    "steps": [
+      {
+        "character": "{",
+        "active": true,
+        "sameNode": true,
+        "value": "{"
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\""
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"e"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"en"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"ent"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entri"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entrie"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries"
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\""
+      },
+      {
+        "character": ":",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":"
+      },
+      {
+        "character": "[",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":["
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\""
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"A"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Al"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Ali"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alic"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice"
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\""
+      },
+      {
+        "character": ",",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\","
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\""
+      },
+      {
+        "character": "B",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"B"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"Bo"
+      },
+      {
+        "character": "b",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"Bob"
+      },
+      {
+        "character": "\"",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"Bob\""
+      },
+      {
+        "character": "]",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"Bob\"]"
+      },
+      {
+        "character": "}",
+        "active": true,
+        "sameNode": true,
+        "value": "{\"entries\":[\"Alice\",\"Bob\"]}"
+      }
+    ]
+  },
+  {
+    "label": "saved wheel title",
+    "expected": "Competition Wheel August 2026",
+    "steps": [
+      {
+        "character": "C",
+        "active": true,
+        "sameNode": true,
+        "value": "C"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Co"
+      },
+      {
+        "character": "m",
+        "active": true,
+        "sameNode": true,
+        "value": "Com"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Comp"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Compe"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Compet"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Competi"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Competit"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Competiti"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "Competitio"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition "
+      },
+      {
+        "character": "W",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition W"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel "
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel A"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Au"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Aug"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Augu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel Augus"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August "
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 2"
+      },
+      {
+        "character": "0",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 20"
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 202"
+      },
+      {
+        "character": "6",
+        "active": true,
+        "sameNode": true,
+        "value": "Competition Wheel August 2026"
+      }
+    ]
+  },
+  {
+    "label": "saved wheel description",
+    "expected": "This wheel description types continuously without refocus.",
+    "steps": [
+      {
+        "character": "T",
+        "active": true,
+        "sameNode": true,
+        "value": "T"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Th"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Thi"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This "
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "This w"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "This wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel "
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel d"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel de"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel des"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel desc"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descri"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descrip"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descript"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descripti"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel descriptio"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description "
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description t"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description ty"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description typ"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description type"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types "
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types c"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types co"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types con"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types cont"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types conti"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types contin"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continu"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuo"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuou"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuous"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuousl"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously "
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously w"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously wi"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously wit"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously with"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously witho"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously withou"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without "
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without r"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without re"
+      },
+      {
+        "character": "f",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without ref"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without refo"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without refoc"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without refocu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without refocus"
+      },
+      {
+        "character": ".",
+        "active": true,
+        "sameNode": true,
+        "value": "This wheel description types continuously without refocus."
+      }
+    ]
+  },
+  {
+    "label": "appearance hex",
+    "expected": "#A1B2C3",
+    "steps": [
+      {
+        "character": "#",
+        "active": true,
+        "sameNode": true,
+        "value": "#"
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "#A"
+      },
+      {
+        "character": "1",
+        "active": true,
+        "sameNode": true,
+        "value": "#A1"
+      },
+      {
+        "character": "B",
+        "active": true,
+        "sameNode": true,
+        "value": "#A1B"
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "#A1B2"
+      },
+      {
+        "character": "C",
+        "active": true,
+        "sameNode": true,
+        "value": "#A1B2C"
+      },
+      {
+        "character": "3",
+        "active": true,
+        "sameNode": true,
+        "value": "#A1B2C3"
+      }
+    ]
+  },
+  {
+    "label": "participant quick add",
+    "expected": "Participant Quick Add",
+    "steps": [
+      {
+        "character": "P",
+        "active": true,
+        "sameNode": true,
+        "value": "P"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Pa"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Par"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Part"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Parti"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Partic"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Partici"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Particip"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Participa"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Participan"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant "
+      },
+      {
+        "character": "Q",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Q"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Qu"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Qui"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quic"
+      },
+      {
+        "character": "k",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick "
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick A"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick Ad"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Quick Add"
+      }
+    ]
+  },
+  {
+    "label": "participant search",
+    "expected": "Participant Search",
+    "steps": [
+      {
+        "character": "P",
+        "active": true,
+        "sameNode": true,
+        "value": "P"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Pa"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Par"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Part"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Parti"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Partic"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Partici"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "Particip"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Participa"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "Participan"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant "
+      },
+      {
+        "character": "S",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant S"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Se"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Sea"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Sear"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Searc"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Participant Search"
+      }
+    ]
+  },
+  {
+    "label": "participant bulk",
+    "expected": "Charlie\nDelta",
+    "steps": [
+      {
+        "character": "C",
+        "active": true,
+        "sameNode": true,
+        "value": "C"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Ch"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Cha"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Char"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Charl"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Charli"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie"
+      },
+      {
+        "character": "\n",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\n"
+      },
+      {
+        "character": "D",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\nD"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\nDe"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\nDel"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\nDelt"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Charlie\nDelta"
+      }
+    ]
+  },
+  {
+    "label": "segment style hex",
+    "expected": "#1A2B3C",
+    "steps": [
+      {
+        "character": "#",
+        "active": true,
+        "sameNode": true,
+        "value": "#"
+      },
+      {
+        "character": "1",
+        "active": true,
+        "sameNode": true,
+        "value": "#1"
+      },
+      {
+        "character": "A",
+        "active": true,
+        "sameNode": true,
+        "value": "#1A"
+      },
+      {
+        "character": "2",
+        "active": true,
+        "sameNode": true,
+        "value": "#1A2"
+      },
+      {
+        "character": "B",
+        "active": true,
+        "sameNode": true,
+        "value": "#1A2B"
+      },
+      {
+        "character": "3",
+        "active": true,
+        "sameNode": true,
+        "value": "#1A2B3"
+      },
+      {
+        "character": "C",
+        "active": true,
+        "sameNode": true,
+        "value": "#1A2B3C"
+      }
+    ]
+  },
+  {
+    "label": "stage title",
+    "expected": "Friday Night Prize Draw Stage",
+    "steps": [
+      {
+        "character": "F",
+        "active": true,
+        "sameNode": true,
+        "value": "F"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Fr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Fri"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Frid"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Frida"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday "
+      },
+      {
+        "character": "N",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday N"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Ni"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Nig"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Nigh"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night "
+      },
+      {
+        "character": "P",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night P"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Pr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Pri"
+      },
+      {
+        "character": "z",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Priz"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize "
+      },
+      {
+        "character": "D",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize D"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Dr"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Dra"
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw "
+      },
+      {
+        "character": "S",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw S"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw St"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Sta"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Stag"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Stage"
+      }
+    ]
+  },
+  {
+    "label": "stage description",
+    "expected": "This sentence must type continuously without losing focus.",
+    "steps": [
+      {
+        "character": "T",
+        "active": true,
+        "sameNode": true,
+        "value": "T"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Th"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Thi"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This "
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This s"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This se"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This sen"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sent"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This sente"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This senten"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentenc"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence "
+      },
+      {
+        "character": "m",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence m"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence mu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence mus"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must "
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must t"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must ty"
+      },
+      {
+        "character": "p",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must typ"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type "
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type c"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type co"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type con"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type cont"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type conti"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type contin"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continu"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuo"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuou"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuous"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuousl"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously "
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously w"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously wi"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously wit"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously with"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously witho"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously withou"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without "
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without l"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without lo"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without los"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losi"
+      },
+      {
+        "character": "n",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losin"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing "
+      },
+      {
+        "character": "f",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing f"
+      },
+      {
+        "character": "o",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing fo"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing foc"
+      },
+      {
+        "character": "u",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing focu"
+      },
+      {
+        "character": "s",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing focus"
+      },
+      {
+        "character": ".",
+        "active": true,
+        "sameNode": true,
+        "value": "This sentence must type continuously without losing focus."
+      }
+    ]
+  },
+  {
+    "label": "stage wheel lookup",
+    "expected": "Search Wheel",
+    "steps": [
+      {
+        "character": "S",
+        "active": true,
+        "sameNode": true,
+        "value": "S"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Se"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Sea"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Sear"
+      },
+      {
+        "character": "c",
+        "active": true,
+        "sameNode": true,
+        "value": "Searc"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Search"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Search "
+      },
+      {
+        "character": "W",
+        "active": true,
+        "sameNode": true,
+        "value": "Search W"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Wh"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Whe"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Whee"
+      },
+      {
+        "character": "l",
+        "active": true,
+        "sameNode": true,
+        "value": "Search Wheel"
+      }
+    ]
+  },
+  {
+    "label": "mobile stage title",
+    "expected": "Friday Night Prize Draw Stage",
+    "steps": [
+      {
+        "character": "F",
+        "active": true,
+        "sameNode": true,
+        "value": "F"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Fr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Fri"
+      },
+      {
+        "character": "d",
+        "active": true,
+        "sameNode": true,
+        "value": "Frid"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Frida"
+      },
+      {
+        "character": "y",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday "
+      },
+      {
+        "character": "N",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday N"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Ni"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Nig"
+      },
+      {
+        "character": "h",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Nigh"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night "
+      },
+      {
+        "character": "P",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night P"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Pr"
+      },
+      {
+        "character": "i",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Pri"
+      },
+      {
+        "character": "z",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Priz"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize "
+      },
+      {
+        "character": "D",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize D"
+      },
+      {
+        "character": "r",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Dr"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Dra"
+      },
+      {
+        "character": "w",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw"
+      },
+      {
+        "character": " ",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw "
+      },
+      {
+        "character": "S",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw S"
+      },
+      {
+        "character": "t",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw St"
+      },
+      {
+        "character": "a",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Sta"
+      },
+      {
+        "character": "g",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Stag"
+      },
+      {
+        "character": "e",
+        "active": true,
+        "sameNode": true,
+        "value": "Friday Night Prize Draw Stage"
+      }
+    ]
+  }
+]

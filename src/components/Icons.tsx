@@ -68,6 +68,10 @@ export function CopyIcon(props: IconProps) {
   return <svg {...base} {...props}><rect x="8" y="8" width="11" height="11" rx="1.5" /><path d="M16 8V6.5A1.5 1.5 0 0 0 14.5 5h-9A1.5 1.5 0 0 0 4 6.5v9A1.5 1.5 0 0 0 5.5 17H8" /></svg>;
 }
 
+export function RefreshIcon(props: IconProps) {
+  return <svg {...base} {...props}><path d="M20 7v5h-5M4 17v-5h5" /><path d="M18.2 10A7 7 0 0 0 6.1 7.1L4 10M5.8 14A7 7 0 0 0 17.9 16.9L20 14" /></svg>;
+}
+
 export function MailIcon(props: IconProps) {
   return <svg {...base} {...props}><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m4 7 8 6 8-6" /></svg>;
 }

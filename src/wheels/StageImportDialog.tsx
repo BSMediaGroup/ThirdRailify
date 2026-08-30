@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { createStage, getCreatorAccess, getWheel } from "./client";
 import {
@@ -22,6 +22,9 @@ import type { AccessibleWheelSummary, Stage } from "./types";
 import { useModalDialog } from "./dialog";
 import { CloseIcon } from "../components/Icons";
 import { WheelsBrandMark } from "./WheelsBrandMark";
+import { applyPaletteStylesToEntries } from "./segmentStyles.mjs";
+import { hasPaletteRepairs } from "./paletteNormalization.mjs";
+import "../styles/wheels-hotfix.css";
 
 type TwsResult = Awaited<ReturnType<typeof parsePortableStage>>;
 type Props = {
@@ -50,6 +53,7 @@ export function StageImportDialog({
   );
   const [twsResult, setTwsResult] = useState<TwsResult | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [resetPalettes, setResetPalettes] = useState<Set<number>>(new Set());
   const [mode, setMode] = useState<"individual" | "stages">("individual");
   const [baseTitle, setBaseTitle] = useState("");
   const [mappings, setMappings] = useState<Record<string, string>>({});
@@ -58,7 +62,8 @@ export function StageImportDialog({
   const [notice, setNotice] = useState("");
   const root = useRef<HTMLDivElement>(null);
   const close = useRef<HTMLButtonElement>(null);
-  useModalDialog(root, close, onClose, !busy);
+  const requestClose = useCallback(() => { if (!busy) onClose(); }, [busy, onClose]);
+  useModalDialog(root, close, requestClose);
   const created = useRef(
     new Map<number, { slug: string; mediaReady: boolean }>(),
   );
@@ -98,6 +103,7 @@ export function StageImportDialog({
             parsed.proposals.map((item) => [item.key, "create"]),
           ),
         );
+        setResetPalettes(new Set());
         setNotice(
           "Stage integrity verified. Map or create each embedded Wheel before loading.",
         );
@@ -109,6 +115,7 @@ export function StageImportDialog({
         setWheelResult(parsed);
         setTwsResult(null);
         setSelected(new Set(parsed.proposals.map((_, index) => index)));
+        setResetPalettes(new Set());
         setBaseTitle(
           parsed.topLevelTitle ||
             file.name.replace(/\.(?:wheel|json|twl)$/i, ""),
@@ -127,6 +134,7 @@ export function StageImportDialog({
     proposal: WheelImportProposal,
     index: number,
   ) => {
+    proposal = resetPalettes.has(index) ? resetProposalPalette(proposal) : proposal;
     const existing = created.current.get(index);
     if (existing) {
       if (!existing.mediaReady) {
@@ -293,7 +301,7 @@ export function StageImportDialog({
             ref={close}
             type="button"
             disabled={busy}
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Close Stage import"
           >
             <CloseIcon />
@@ -369,6 +377,7 @@ export function StageImportDialog({
                     ) : (
                       <span className="stage-import-wheel-state">Embedded</span>
                     )}
+                    {hasPaletteRepairs(item.proposal.messages) ? <fieldset className="wheel-import-palette-choice"><legend>Palette repaired</legend><label><input type="radio" name={`stage-import-palette-${item.index}`} checked={!resetPalettes.has(item.index)} onChange={() => setResetPalettes((current) => { const next = new Set(current); next.delete(item.index); return next; })} /> Use normalized palette</label><label><input type="radio" name={`stage-import-palette-${item.index}`} checked={resetPalettes.has(item.index)} onChange={() => setResetPalettes((current) => new Set(current).add(item.index))} /> Reset to Third Rail Gold</label></fieldset> : <span className="stage-import-wheel-state">Palette canonical</span>}
                   </article>
                 ))}
               </div>
@@ -544,7 +553,7 @@ export function StageImportDialog({
             className="button button--secondary"
             type="button"
             disabled={busy}
-            onClick={onClose}
+            onClick={requestClose}
           >
             Return to Stage editor
           </button>
@@ -559,6 +568,11 @@ function message(reason: unknown) {
   return reason instanceof Error
     ? reason.message
     : "The import could not be completed.";
+}
+
+function resetProposalPalette(proposal: WheelImportProposal): WheelImportProposal {
+  const styles = THIRD_RAIL_GOLD_CONFIG.paletteStyles!.map((style) => ({ ...style }));
+  return { ...proposal, config: { ...proposal.config, themePreset: "third-rail-gold", palette: [...THIRD_RAIL_GOLD_CONFIG.palette], paletteStyles: styles, pointerAccent: THIRD_RAIL_GOLD_CONFIG.pointerAccent }, entries: applyPaletteStylesToEntries(proposal.entries, styles) };
 }
 function wheelGradient(proposal: WheelImportProposal) {
   const palette = proposal.config.palette?.length

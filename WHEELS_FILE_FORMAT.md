@@ -24,6 +24,8 @@ A style is exactly one of:
 
 Pattern IDs are `diagonal-stripes`, `reverse-stripes`, `zigzag`, `dots`, `checkers`, `triangles`, `chevrons`, `waves`, and `third-rail-bolts`. Entries carry optional complete `style` metadata in addition to the legacy nullable `color`. On v1 import, missing styles normalize from palette/entry colours as solid and missing sound presets normalize to Classic Tick and Gold Rise.
 
+Import is deliberately more tolerant than canonical save validation. Recoverable palette/style count drift is normalized in browser memory before preview: legacy colours synthesize matching solid styles, missing styles are filled, extra styles are ignored, and a valid richer style colour becomes the parallel palette colour. Unsupported pattern metadata or unavailable image references fall back to their safe solid colour and are reported in the conversion log. A missing usable palette falls back to Third Rail Gold. The reviewer can keep the normalized imported palette (the default) or explicitly reset it to Third Rail Gold; neither choice writes until Create/Save. Canonical server validation remains strict.
+
 ## Media
 
 Custom media is excluded by default. With **Include custom media** enabled, background, centre, and only referenced segment images are fetched through authorized same-origin `/api/wheels/media/:assetId` routes. The file embeds MIME, safe filename, SHA-256, and base64 bytes—never URLs, R2 keys, signed URLs, uploaders, account IDs, or server asset IDs.

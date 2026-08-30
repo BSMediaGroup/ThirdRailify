@@ -70,7 +70,7 @@ export function WheelOwnerDetails({ wheel, access, variant = "identity", disable
   </div>;
 }
 
-function OwnerAvatar({ owner }: { owner: WheelOwner }) {
+export function OwnerAvatar({ owner }: { owner: WheelOwner }) {
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
   useEffect(() => setFailedUrl(null), [owner.avatarUrl]);
   const showImage = Boolean(owner.avatarUrl && failedUrl !== owner.avatarUrl);

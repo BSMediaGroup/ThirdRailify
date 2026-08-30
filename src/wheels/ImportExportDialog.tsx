@@ -17,10 +17,14 @@ import {
   parseWheelImport,
   safeWheelFilename,
   serializePortableWheel,
+  THIRD_RAIL_GOLD_CONFIG,
   type PortableMediaSet,
   type WheelImportProposal,
   type WheelImportResult,
 } from "./portable.mjs";
+import { applyPaletteStylesToEntries } from "./segmentStyles.mjs";
+import { hasPaletteRepairs } from "./paletteNormalization.mjs";
+import "../styles/wheels-hotfix.css";
 
 export type ImportedWheelContent = { title: string; description: string; config: WheelConfig; entries: WheelEntry[]; media: PortableMediaSet; sourceFormat: string };
 
@@ -37,7 +41,7 @@ type Props = {
 export function ImportExportDialog({ source, mode, canExport = true, currentMedia, onClose, onApply }: Props) {
   const root = useRef<HTMLDivElement>(null); const close = useRef<HTMLButtonElement>(null); const fileInput = useRef<HTMLInputElement>(null);
   const exportBusy = useRef(false);
-  const [tab, setTab] = useState<"import" | "export">("import"); const [pasteOpen, setPasteOpen] = useState(false); const [paste, setPaste] = useState(""); const [result, setResult] = useState<WheelImportResult | null>(null); const [selected, setSelected] = useState(0); const [confirming, setConfirming] = useState(false); const [includeMedia, setIncludeMedia] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [dragging, setDragging] = useState(false);
+  const [tab, setTab] = useState<"import" | "export">("import"); const [pasteOpen, setPasteOpen] = useState(false); const [paste, setPaste] = useState(""); const [result, setResult] = useState<WheelImportResult | null>(null); const [selected, setSelected] = useState(0); const [paletteChoice, setPaletteChoice] = useState<"normalized" | "reset">("normalized"); const [confirming, setConfirming] = useState(false); const [includeMedia, setIncludeMedia] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [dragging, setDragging] = useState(false);
   const requestClose = useCallback(() => { if (!busy) onClose(); }, [busy, onClose]); useModalDialog(root, close, requestClose);
   const proposal = result?.proposals[selected] || null;
   const estimatedBaseBytes = useMemo(() => Math.max(500, JSON.stringify({ title: source.title, description: source.description, config: source.config, entries: source.entries }).length * 1.2), [source]);
@@ -45,7 +49,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
 
   const parseInput = async (input: string | Uint8Array, sourceName: string) => {
     setBusy(true); setError(""); setNotice(""); setConfirming(false);
-    try { const parsed = await parseWheelImport(input, { sourceName, defaultConfig: source.config }); setResult(parsed); setSelected(0); setNotice(`${parsed.formatLabel} detected. Review the conversion before loading it.`); }
+    try { const parsed = await parseWheelImport(input, { sourceName, defaultConfig: source.config }); setResult(parsed); setSelected(0); setPaletteChoice("normalized"); setNotice(`${parsed.formatLabel} detected. Review the conversion before loading it.`); }
     catch (reason) { setResult(null); setError(message(reason)); }
     finally { setBusy(false); if (fileInput.current) fileInput.current.value = ""; }
   };
@@ -54,7 +58,8 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
   const apply = () => {
     if (!proposal) return;
     if (mode === "existing" && !confirming) { setConfirming(true); return; }
-    onApply({ title: proposal.title, description: proposal.description, config: proposal.config, entries: proposal.entries, media: proposal.media, sourceFormat: result?.formatLabel || "Imported JSON" });
+    const chosen = paletteChoice === "reset" ? resetProposalPalette(proposal) : proposal;
+    onApply({ title: chosen.title, description: chosen.description, config: chosen.config, entries: chosen.entries, media: chosen.media, sourceFormat: result?.formatLabel || "Imported JSON" });
   };
   const exportWheel = async (kind: "twl" | "json" | "copy") => {
     if (exportBusy.current) return; exportBusy.current = true; setBusy(true); setError(""); setNotice("");
@@ -75,7 +80,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
         {tab === "import" || !canExport ? <section className="wheel-transfer-import" aria-label="Import wheel content">
           <div className={`wheel-drop-zone${dragging ? " is-dragging" : ""}`} onDragEnter={(event) => { event.preventDefault(); setDragging(true); }} onDragOver={(event) => event.preventDefault()} onDragLeave={() => setDragging(false)} onDrop={drop}><strong>Drop a wheel file here</strong><span>.twl, .json or Wheel of Names .wheel · detected from content</span><label className="button button--secondary">Choose file<input ref={fileInput} type="file" accept={WHEEL_IMPORT_ACCEPT} onChange={(event) => { const file = event.target.files?.[0]; if (file) void readFile(file); }} /></label><button className="button button--ghost button--compact" type="button" onClick={() => setPasteOpen((value) => !value)}>{pasteOpen ? "Close JSON paste" : "Paste JSON"}</button></div>
           {pasteOpen ? <div className="wheel-json-paste"><label htmlFor="wheel-json-paste">Canonical or supported participant JSON</label><textarea id="wheel-json-paste" value={paste} maxLength={WHEEL_FILE_LIMITS.textCharacters} rows={8} spellCheck={false} onChange={(event) => setPaste(event.target.value)} placeholder='{"entries":["Alice","Bob"]}' /><button type="button" className="button button--secondary" disabled={!paste.trim() || busy} onClick={() => void parseInput(paste, "Pasted JSON")}>Review pasted JSON</button></div> : null}
-          {result ? <ImportPreview result={result} selected={selected} onSelect={(index) => { setSelected(index); setConfirming(false); }} proposal={proposal} /> : null}
+          {result ? <ImportPreview result={result} selected={selected} onSelect={(index) => { setSelected(index); setPaletteChoice("normalized"); setConfirming(false); }} proposal={proposal} paletteChoice={paletteChoice} onPaletteChoice={setPaletteChoice} /> : null}
           {proposal && confirming ? <div className="wheel-replace-confirm" role="alert"><strong>Load imported content into this editor?</strong><dl><div><dt>Title</dt><dd>{source.title} → {proposal.title}</dd></div><div><dt>Participants</dt><dd>{source.entries.length} → {proposal.entries.length}</dd></div><div><dt>Custom media</dt><dd>{mediaChange(currentMedia || source.media, proposal.media)}</dd></div></dl><p>Wheel identity, owner, grants, locks and official result history remain unchanged. Nothing is persisted until you press the editor’s existing Save action.</p><div><button type="button" className="button button--secondary" onClick={() => setConfirming(false)}>Back to review</button><button type="button" className="button button--primary" onClick={apply}>Load import into editor</button></div></div> : null}
         </section> : <section className="wheel-transfer-export" aria-label="Export wheel content">
           <div className="wheel-format-card"><p className="eyebrow">THIRD RAILIFY PORTABLE WHEEL</p><h3>.twl format v{WHEEL_FILE_FORMAT_VERSION}</h3><p>UTF-8 JSON with canonical creator-editable settings, entries, ordering and a SHA-256 corruption-detection hash.</p><dl><div><dt>Estimated file</dt><dd>{formatBytes(estimatedBaseBytes + estimatedMediaBytes * 1.34)}</dd></div><div><dt>Media</dt><dd>{includeMedia ? formatBytes(estimatedMediaBytes) : "Not included"}</dd></div></dl></div>
@@ -92,11 +97,12 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
   </div>, document.body);
 }
 
-function ImportPreview({ result, selected, onSelect, proposal }: { result: WheelImportResult; selected: number; onSelect: (index: number) => void; proposal: WheelImportProposal | null }) {
+function ImportPreview({ result, selected, onSelect, proposal, paletteChoice, onPaletteChoice }: { result: WheelImportResult; selected: number; onSelect: (index: number) => void; proposal: WheelImportProposal | null; paletteChoice: "normalized" | "reset"; onPaletteChoice: (value: "normalized" | "reset") => void }) {
   if (!proposal) return null;
   return <div className="wheel-import-preview"><header><div><p className="eyebrow">DETECTED SOURCE</p><h3>{result.formatLabel}{result.version ? ` v${result.version}` : ""}</h3><span>{result.sourceName}</span></div><b>{proposal.integrityStatus === "verified" ? "Integrity verified" : "No integrity hash"}</b></header>
     {result.proposals.length > 1 ? <label className="wheel-config-picker">Select one wheel configuration<select value={selected} onChange={(event) => onSelect(Number(event.target.value))}>{result.proposals.map((item, index) => <option key={item.sourceIndex} value={index}>{item.title} · {item.entries.length} entries</option>)}</select><small>One configuration loads at a time; the parsed file stays available in this dialog.</small></label> : null}
-    <div className="wheel-import-summary"><Summary label="Title" value={proposal.title} /><Summary label="Participants" value={String(proposal.summary.participantCount)} /><Summary label="Active / hidden" value={`${proposal.summary.activeCount} / ${proposal.summary.hiddenCount}`} /><Summary label="Duplicates" value={String(proposal.summary.duplicateLabelCount)} /><Summary label="Weighted" value={`${proposal.summary.weightedEntryCount} · total ${proposal.summary.totalWeight}`} /><Summary label="Colours" value={String(proposal.summary.colourCount)} /><Summary label="Media" value={proposal.summary.mediaDetected ? "Embedded proposal" : "None"} /><Summary label="Description" value={proposal.description ? "Present" : "Empty"} /></div>
+    <div className="wheel-import-summary"><Summary label="Title" value={proposal.title} /><Summary label="Participants" value={String(proposal.summary.participantCount)} /><Summary label="Active / hidden" value={`${proposal.summary.activeCount} / ${proposal.summary.hiddenCount}`} /><Summary label="Duplicates" value={String(proposal.summary.duplicateLabelCount)} /><Summary label="Weighted" value={`${proposal.summary.weightedEntryCount} · total ${proposal.summary.totalWeight}`} /><Summary label="Colours" value={String(proposal.config.palette.length)} /><Summary label="Media" value={proposal.summary.mediaDetected ? "Embedded proposal" : "None"} /><Summary label="Description" value={proposal.description ? "Present" : "Empty"} /></div>
+    {hasPaletteRepairs(proposal.messages) ? <fieldset className="wheel-import-palette-choice"><legend>Palette repair choice</legend><label><input type="radio" name="wheel-import-palette" checked={paletteChoice === "normalized"} onChange={() => onPaletteChoice("normalized")} /> Use normalized imported palette</label><label><input type="radio" name="wheel-import-palette" checked={paletteChoice === "reset"} onChange={() => onPaletteChoice("reset")} /> Reset palette to Third Rail Gold</label><small>The normalized imported palette is selected by default. Both choices remain local until Save or Create.</small></fieldset> : null}
     <div className="wheel-conversion-report"><h4>Conversion report</h4><ol>{proposal.messages.map((item, index) => <li className={`is-${item.severity}`} key={`${item.sourceField}-${index}`}><b>{item.severity.toUpperCase()}</b><span><strong>{item.sourceField}</strong> → {item.target}<small>{item.reason}</small></span></li>)}</ol></div>
   </div>;
 }
@@ -104,3 +110,4 @@ function Summary({ label, value }: { label: string; value: string }) { return <d
 function mediaChange(current: Wheel["media"], incoming: PortableMediaSet) { const currentCount = Number(Boolean(current?.background)) + Number(Boolean(current?.centre)); const incomingCount = Number(Boolean(incoming.background)) + Number(Boolean(incoming.center)); if (!currentCount && !incomingCount) return "No custom media"; if (currentCount && !incomingCount) return "Current custom media will be removed on Save"; return `${incomingCount} imported image${incomingCount === 1 ? "" : "s"} will replace current media on Save`; }
 function formatBytes(value: number) { if (value < 1024) return `${Math.ceil(value)} B`; if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`; return `${(value / 1024 / 1024).toFixed(1)} MB`; }
 function message(reason: unknown) { return reason instanceof Error ? reason.message : "The wheel file could not be processed."; }
+function resetProposalPalette(proposal: WheelImportProposal): WheelImportProposal { const styles = THIRD_RAIL_GOLD_CONFIG.paletteStyles!.map((style) => ({ ...style })); return { ...proposal, config: { ...proposal.config, themePreset: "third-rail-gold", palette: [...THIRD_RAIL_GOLD_CONFIG.palette], paletteStyles: styles, pointerAccent: THIRD_RAIL_GOLD_CONFIG.pointerAccent }, entries: applyPaletteStylesToEntries(proposal.entries, styles) }; }

@@ -23,7 +23,7 @@ function convertConfig(source, document, options, configIndex) {
   if (!Array.isArray(source.entries) || !source.entries.length) throw new Error(`Wheel configuration ${configIndex + 1} has no valid entries.`);
   if (source.entries.length > options.maxEntries) throw new Error(`Wheel configuration ${configIndex + 1} exceeds the ${options.maxEntries}-entry limit.`);
   const entries = source.entries.map((entry, index) => convertEntry(entry, index, palette, options, messages));
-  const config = { ...options.defaultConfig, palette, themePreset: "third-rail-gold" };
+  const config = { ...options.defaultConfig, palette, paletteStyles: undefined, themePreset: "third-rail-gold" };
 
   if (source.spinTime != null && source.spinTime !== "") {
     const seconds = Number(source.spinTime);
@@ -93,8 +93,8 @@ function convertEntry(value, index, palette, options, messages) {
 
 function enabledPalette(value, options, messages) {
   const colours = Array.isArray(value) ? value.filter((row) => row && typeof row === "object" && row.enabled === true && HEX.test(String(row.color || ""))).map((row) => String(row.color).toUpperCase()).slice(0, options.maxPalette) : [];
-  if (colours.length >= 2) { messages.push(message("info", "colorSettings", "palette", `Mapped ${colours.length} enabled colours as a custom palette.`)); return colours; }
-  messages.push(message("warning", "colorSettings", "Third Rail Gold palette", "Fewer than two enabled valid colours were available."));
+  if (colours.length >= 1) { messages.push(message("info", "colorSettings", "palette", `Mapped ${colours.length} enabled colour${colours.length === 1 ? "" : "s"} as a custom palette.`)); return colours; }
+  messages.push(message("warning", "colorSettings", "Third Rail Gold palette", "No enabled valid colours were available."));
   return [...options.defaultConfig.palette];
 }
 

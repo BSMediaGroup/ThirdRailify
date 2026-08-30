@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { constantDecelerationProgress, constantDecelerationVelocity, entryAngles, entryAtPointer, formatProbability, fullTurnsForDuration, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, secureUnitFraction, selectWeightedEntry, spinPlan } from "../src/wheels/engine.mjs";
+import { entryAngles, entryAtPointer, formatProbability, fullTurnsForDuration, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, secureUnitFraction, selectWeightedEntry, spinPlan, suspenseDecayProgress, suspenseDecayVelocity } from "../src/wheels/engine.mjs";
 
 const entries = [
   { id: "a", label: "Duplicate", order: 0, weight: 1, colour: "#F3C928", state: "active" },
@@ -39,10 +39,10 @@ test("secure landing fractions are strictly inside the segment and deterministic
   assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 0 })); assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 1 }));
 });
 
-test("constant-deceleration motion preserves duration, is monotonic, reaches zero velocity, and never overshoots", () => {
-  const duration = 60_000; const samples = Array.from({ length: 101 }, (_, index) => constantDecelerationProgress(duration * index / 100, duration));
+test("suspense-decay motion preserves duration, is monotonic, reaches zero velocity, and never overshoots", () => {
+  const duration = 60_000; const samples = Array.from({ length: 101 }, (_, index) => suspenseDecayProgress(duration * index / 100, duration));
   assert.equal(samples[0], 0); assert.equal(samples.at(-1), 1); assert.ok(samples.every((value, index) => index === 0 || value >= samples[index - 1])); assert.ok(samples.every((value) => value >= 0 && value <= 1));
-  assert.equal(constantDecelerationVelocity(duration, duration, 20_000), 0); assert.ok(constantDecelerationVelocity(0, duration, 20_000) > constantDecelerationVelocity(duration / 2, duration, 20_000));
+  assert.equal(suspenseDecayVelocity(duration, duration, 20_000), 0); assert.ok(suspenseDecayVelocity(0, duration, 20_000) > suspenseDecayVelocity(duration / 2, duration, 20_000));
   const plan = spinPlan(entries, "b", duration, 12, { landingFraction: .84, turnRandom: .51 }); assert.equal(plan.durationMs, duration); assert.equal(plan.finalRotation, plan.startRotation + plan.totalTravel); assert.ok(plan.turns >= 1);
 });
 
@@ -51,16 +51,18 @@ test("bounded full-turn variance scales with duration without changing configure
   assert.ok(short[0] >= 1 && short[1] > short[0]); assert.ok(normal[0] > short[0]); assert.ok(long[0] > normal[0]); assert.ok(long[1] / 60 < short[1] / 2, "long-duration RPM remains bounded");
 });
 
-test("normal spins launch quickly and preserve a natural constant-deceleration stop", () => {
+test("normal spins preserve their fast launch while tapering deeply through the suspense finish", () => {
   const duration = 6500; const plan = spinPlan(entries, "b", duration, 0, { landingFraction: .51, turnRandom: .51 });
-  const launchRps = constantDecelerationVelocity(0, duration, plan.totalTravel) * 1000 / 360;
-  const midpointRps = constantDecelerationVelocity(duration / 2, duration, plan.totalTravel) * 1000 / 360;
-  const lateRps = constantDecelerationVelocity(duration * .9, duration, plan.totalTravel) * 1000 / 360;
+  const launchRps = suspenseDecayVelocity(0, duration, plan.totalTravel) * 1000 / 360;
+  const midpointRps = suspenseDecayVelocity(duration / 2, duration, plan.totalTravel) * 1000 / 360;
+  const lateRps = suspenseDecayVelocity(duration * .9, duration, plan.totalTravel) * 1000 / 360;
+  const finalApproachRps = suspenseDecayVelocity(duration * .95, duration, plan.totalTravel) * 1000 / 360;
   assert.ok(plan.turns >= 12 && plan.turns <= 14, `expected 12-14 turns, received ${plan.turns}`);
   assert.ok(launchRps >= 3.6 && launchRps <= 4.6, `launch speed ${launchRps.toFixed(2)} rps is outside the intended range`);
   assert.ok(Math.abs(midpointRps - launchRps / 2) < 1e-12);
-  assert.ok(Math.abs(lateRps - launchRps * .1) < 1e-12);
-  assert.equal(constantDecelerationVelocity(duration, duration, plan.totalTravel), 0);
+  assert.ok(Math.abs(lateRps - launchRps * .028) < 1e-12);
+  assert.ok(Math.abs(finalApproachRps - launchRps * .00725) < 1e-12);
+  assert.equal(suspenseDecayVelocity(duration, duration, plan.totalTravel), 0);
   assert.equal(entryAtPointer(entries, plan.finalRotation).id, "b", "faster travel must not change the authoritative winner");
 });
 
