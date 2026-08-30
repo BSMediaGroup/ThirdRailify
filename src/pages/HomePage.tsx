@@ -236,10 +236,10 @@ function HomeContentRail({ config }: { config: BannerConfig["homeRail"] }) {
     observer.observe(railRef.current);
     observer.observe(measureRef.current);
     return () => observer.disconnect();
-  }, [config.glyph, itemsKey, mode]);
+  }, [config.glyph, config.glyphSize, itemsKey, mode]);
   if (!config.enabled || !config.items.length) return null;
   const cycleSeconds = config.speed === "slow" ? 42 : config.speed === "fast" ? 18 : 28;
-  return <aside ref={railRef} className={`hero-ticker hero-ticker--${mode} is-${config.speed} is-${config.easing}`} aria-label="Homepage topics">
+  return <aside ref={railRef} className={`hero-ticker hero-ticker--${mode} is-${config.speed} is-${config.easing} is-glyph-${config.glyphSize}`} aria-label="Homepage topics">
     {mode === "marquee" ? <><div ref={measureRef} className="hero-ticker__measure" aria-hidden="true"><RailSegment items={config.items} glyph={config.glyph} /></div><div className="hero-ticker__track" style={{ animationDuration: `${cycleSeconds * repetitions}s` }}><RailSegment items={config.items} glyph={config.glyph} repetitions={repetitions} /><RailSegment items={config.items} glyph={config.glyph} repetitions={repetitions} duplicate /></div></>
       : mode === "crossfade" ? <div className="hero-ticker__crossfade" key={`${active}-${config.items[active]}`}>{config.items[active]}</div>
       : <RailSegment items={config.items} glyph={config.glyph} />}

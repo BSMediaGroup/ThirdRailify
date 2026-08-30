@@ -6,9 +6,9 @@ import { normalizePublicBanner, onRequestGet } from "../functions/api/catalogue/
 const payload = {
   ok: true,
   schema: "thirdrailify-banner-v1",
-  normal: { enabled: true, messages: [{ text: "Site announcement", ctaLabel: "Watch", href: "/watch", newTab: false }], mode: "static", speed: "normal" },
+  normal: { enabled: true, dismissible: true, messages: [{ text: "Site announcement", ctaLabel: "Watch", href: "/watch", newTab: false }], mode: "static", speed: "normal" },
   live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: null, ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" },
-  homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT"], mode: "marquee", speed: "fast", easing: "ease-in-out", glyph: "zap" },
+  homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT"], mode: "marquee", speed: "fast", easing: "ease-in-out", glyph: "zap", glyphSize: "large" },
   updatedAt: "2026-08-28T00:00:00.000Z",
 };
 
@@ -45,5 +45,15 @@ test("Public banner projection supplies the managed rail default during a stagge
     speed: "normal",
     easing: "linear",
     glyph: "zap",
+    glyphSize: "medium",
   });
+});
+
+test("Public banner projection supplies safe option defaults during staggered releases", () => {
+  const legacyPayload = { ...payload, normal: { ...payload.normal }, homeRail: { ...payload.homeRail } };
+  delete legacyPayload.normal.dismissible;
+  delete legacyPayload.homeRail.glyphSize;
+  const normalized = normalizePublicBanner(legacyPayload);
+  assert.equal(normalized.normal.dismissible, false);
+  assert.equal(normalized.homeRail.glyphSize, "medium");
 });

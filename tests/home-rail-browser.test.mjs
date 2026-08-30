@@ -35,7 +35,7 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
     const ticker = page.getByRole("complementary", { name: "Homepage topics" });
     await ticker.waitFor();
     if (!LIVE) await page.waitForFunction(() => document.querySelector(".hero-ticker")?.classList.contains("is-fast"));
-    assert.equal(await ticker.getAttribute("class"), `hero-ticker hero-ticker--marquee is-${LIVE ? "normal is-linear" : "fast is-ease-in-out"}`);
+    assert.equal(await ticker.getAttribute("class"), `hero-ticker hero-ticker--marquee is-${LIVE ? "normal is-linear is-glyph-medium" : "fast is-ease-in-out is-glyph-large"}`);
     const visibleSegments = ticker.locator(".hero-ticker__track > .hero-ticker__segment");
     assert.equal(await visibleSegments.count(), 2);
     await page.waitForFunction(() => { const rail = document.querySelector(".hero-ticker"); const segment = document.querySelector(".hero-ticker__track > .hero-ticker__segment"); return rail && segment && segment.getBoundingClientRect().width > rail.getBoundingClientRect().width; });
@@ -69,9 +69,10 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
       const widths = segments.map((segment) => segment.getBoundingClientRect().width);
       const spans = [...segments[0].querySelectorAll(":scope > span")];
       const first = spans[0].getBoundingClientRect(); const second = spans[1].getBoundingClientRect();
-      return { duration, repetitions: spans.length / 4, itemGap: second.left - first.right, justify: getComputedStyle(segments[0]).justifyContent, widths, trackWidth: track.getBoundingClientRect().width, snapshots };
+      return { duration, repetitions: spans.length / 4, itemGap: second.left - first.right, justify: getComputedStyle(segments[0]).justifyContent, fontSize: getComputedStyle(spans[0]).fontSize, glyphSize: element.querySelector("i").getBoundingClientRect().width, widths, trackWidth: track.getBoundingClientRect().width, snapshots };
     });
     assert.equal(geometry.duration / geometry.repetitions, LIVE ? 28_000 : 18_000);
+    assert.equal(geometry.fontSize, "8.8px"); assert.equal(geometry.glyphSize, LIVE ? 10 : 14);
     assert.equal(geometry.justify, "flex-start"); assert.ok(geometry.itemGap >= 29 && geometry.itemGap <= 31, `editorial items keep the intended 30px spacing, received ${geometry.itemGap}px`);
     assert.ok(Math.abs(geometry.widths[0] - geometry.widths[1]) < 1, "duplicate segments must have identical widths");
     assert.ok(Math.abs(geometry.trackWidth - geometry.widths[0] * 2) < 1, "track must be exactly two identical segments");
@@ -91,7 +92,7 @@ async function mockApis(page) {
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1, USD: .73 } });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], updatedAt: null });
-    if (pathname === "/api/catalogue/banner") return json(route, { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: false, messages: [], mode: "static", speed: "normal" }, live: { enabled: false, label: "LIVE NOW", showTitle: true, supportingText: null, ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "static", intensity: "subtle" }, homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"], mode: "marquee", speed: "fast", easing: "ease-in-out", glyph: "zap" }, updatedAt: "2026-08-29T00:00:00.000Z" });
+    if (pathname === "/api/catalogue/banner") return json(route, { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: false, dismissible: false, messages: [], mode: "static", speed: "normal" }, live: { enabled: false, label: "LIVE NOW", showTitle: true, supportingText: null, ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "static", intensity: "subtle" }, homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"], mode: "marquee", speed: "fast", easing: "ease-in-out", glyph: "zap", glyphSize: "large" }, updatedAt: "2026-08-29T00:00:00.000Z" });
     if (pathname === "/api/community/discord") return json(route, { available: true, schema: "thirdrailify-discord-community-v1", freshness: "fresh", generatedAt: "2026-08-29T00:00:00.000Z", ageSeconds: 0, guild: { id: "1114717958573396008", name: "Third Railify", inviteUrl: "https://discord.com/invite/Bd8hU5aFxA" }, counts: { onlineMembers: 0 }, channels: [], voiceSpaces: [], members: [] });
     return json(route, { error: "not_found" }, 404);
   });

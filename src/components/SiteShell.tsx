@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import boltMark from "../../assets/logos/boltv2straight.svg";
 import { useCart } from "../store/cart";
-import { ArrowIcon, BagIcon, BoltIcon, CloseIcon, MenuIcon } from "./Icons";
+import { ArrowIcon, BagIcon, CloseIcon, MenuIcon } from "./Icons";
 import { CartDrawer } from "./CartDrawer";
 import { LiveNowIndicator } from "./BroadcastComponents";
 import { useBroadcast } from "../hooks/useBroadcast";
@@ -71,7 +71,6 @@ export function SiteShell() {
   return (
     <div className="site-frame" data-site-shell="mounted">
       <a className="skip-link" href="#main-content">Skip to content</a>
-      <div className="site-rail"><span><BoltIcon /> Third Railify</span><strong>Independent Canadian media</strong></div>
       <PromoBanner config={bannerConfig} broadcast={data} />
       <header className="site-header">
         <div className="container site-header__inner">

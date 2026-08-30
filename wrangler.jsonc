@@ -7,13 +7,47 @@
     "AUTH_ENVIRONMENT": "staging",
     "THIRDRAILIFY_PUBLIC_ORIGIN": "https://thirdrailify.com",
     "THIRDRAILIFY_ADMIN_ORIGIN": "https://admin.thirdrailify.com",
-    "THIRDRAILIFY_PROFILE_MEDIA_ORIGIN": "https://admin.thirdrailify.com",
+    "THIRDRAILIFY_MEDIA_PUBLIC_ORIGIN": "https://cdn.thirdrailify.com",
+    "THIRDRAILIFY_PROFILE_MEDIA_ORIGIN": "https://cdn.thirdrailify.com",
     "THIRDRAILIFY_AUTH_COOKIE_DOMAIN": "",
     "VITE_THIRDRAILIFY_ADMIN_ORIGIN": "https://admin.thirdrailify.com",
     "THIRDRAILIFY_DOMAIN_CUTOVER_ACTIVE": "true",
     "THIRDRAILIFY_TURNSTILE_SITE_KEY": "0x4AAAAAAEctN9Bb4evywXmW",
     "CURRENCY_RATES_API_URL": "https://api.frankfurter.dev/v1/latest?base=CAD",
     "VITE_GOATS_MAP_STYLE_URL": "https://tiles.openfreemap.org/styles/dark"
+  },
+  "env": {
+    "preview": {
+      "d1_databases": [
+        {
+          "binding": "THIRDRAILIFY_AUTH_DB",
+          "database_name": "thirdrailify-accounts",
+          "database_id": "b8be3879-7aa1-4d70-af3f-617abce7a929"
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "name": "THIRDRAILIFY_PUBLIC_STATE",
+            "class_name": "ThirdRailifyPublicState",
+            "script_name": "thirdrailify-public-state"
+          }
+        ]
+      },
+      "vars": {
+        "AUTH_ENVIRONMENT": "staging",
+        "THIRDRAILIFY_PUBLIC_ORIGIN": "https://thirdrailify.pages.dev",
+        "THIRDRAILIFY_ADMIN_ORIGIN": "https://thirdrailify-admin.pages.dev",
+        "THIRDRAILIFY_MEDIA_PUBLIC_ORIGIN": "https://cdn.thirdrailify.com",
+        "THIRDRAILIFY_PROFILE_MEDIA_ORIGIN": "https://cdn.thirdrailify.com",
+        "THIRDRAILIFY_AUTH_COOKIE_DOMAIN": "",
+        "VITE_THIRDRAILIFY_ADMIN_ORIGIN": "https://thirdrailify-admin.pages.dev",
+        "THIRDRAILIFY_DOMAIN_CUTOVER_ACTIVE": "false",
+        "THIRDRAILIFY_TURNSTILE_SITE_KEY": "0x4AAAAAAEctN9Bb4evywXmW",
+        "CURRENCY_RATES_API_URL": "https://api.frankfurter.dev/v1/latest?base=CAD",
+        "VITE_GOATS_MAP_STYLE_URL": "https://tiles.openfreemap.org/styles/dark"
+      }
+    }
   },
   "d1_databases": [
     {

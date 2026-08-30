@@ -1,10 +1,27 @@
 # Bump notes
 
+## 2026-08-30 - Post-cutover CDN and integration repair
+
+- Switched trusted product, avatar, GOATS, and Wheel projections to `https://cdn.thirdrailify.com`, retained external provider avatars, added CDN CSP/connect support, and made Wheel image loading/export explicitly cross-origin-safe.
+- Production Shop browser acceptance loaded all 153 current image references from the canonical CDN at 1440, 768, and 390 without broken product images, Wix requests, relevant console errors, or horizontal overflow. Checkout/payment/fulfillment gates remain unchanged.
+
 ## 2026-08-30 - Canonical production domain cutover
 
 - Activated Cloudflare Pages custom domains for `thirdrailify.com`, `www.thirdrailify.com`, and `admin.thirdrailify.com`; enabled the host-aware production cutover switch without changing preview origins or Commerce gates.
 - Final Public deployment is `f51ffb90-d820-446d-aa14-405ba873d88b`. Apex is canonical, `www` and the stable Public Pages hostname permanently preserve path/query to apex, and Public canonical/OG/JSON-LD/robots/sitemap authority is `https://thirdrailify.com`.
 - Removed obsolete migration/cutover wording while keeping checkout truthfully disabled, and allowlisted only Cloudflare Web Analytics' script and collection origins in CSP. No payment, order, email, document, fulfillment, or provider write occurred.
+
+## 2026-08-30 - Wheels V1.9 rigid spin rendering
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Removed the renderer feedback loop in which pointer-HUD rerenders restarted face layout and `getBoundingClientRect()` measured the currently rotated Canvas, changing its backing bitmap, font geometry, pattern scale, and image cover during a spin.
+- Added a rotation-free wheel-local render plan plus cached static underlay/foreground layers. Spin is now one rigid CSS rotation; GIF ticks only decode due frames and re-composite the animated wedge at the existing 75 ms / 13.3 fps maximum.
+- Added exact rotation-invariance, font-fit, pattern, image-cover, transform/reset, GIF, performance, repeated-spin, hit-test, pointer/HUD, responsive detail/presentation, 1×/2× DPR, and Appearance-preview coverage. The local inspected frame sequence held every static metric and backing dimension constant with zero API writes.
+- Released from an isolated `79b3a2d` snapshot that excluded concurrent auth/header/media/CDN work. Preview `6283f851-aaf5-4115-ae14-682b45b3bb36` (`https://6283f851.thirdrailify.pages.dev`) passed the full weighted label/pattern/static-image/GIF matrix with zero API writes and console errors; production `82779c3b-cc4a-4f42-951b-5622cd0e0ec8` (`https://82779c3b.thirdrailify.pages.dev`) serves root asset `index-CFrijals.js` (SHA-256 `d55894c2bcad1795f8bfa67f4628c6298490f3e593718adeffea929928a16744`).
+- Stable production acceptance on the real 14-entry `standard-wheel-test` held the Canvas and CSS face at 639×639 with exactly 2 plan/static builds, 56 text measurements, and 22 pattern constructions at idle, early, quarter, mid, late, near-settle, and settled; the CSS transform scale stayed within 0.00000041 of 1, pointer HUD matched the demo winner, mobile/presentation fit passed, and no API write or page exception occurred. Cloudflare's injected Web Analytics beacon still emits its pre-existing SRI mismatch and one aborted opaque HEAD telemetry request; neither originates in the application bundle.
 
 ## 2026-08-30 - Wheels V1.8 segment patterns, image fills, sound presets, and pointer
 

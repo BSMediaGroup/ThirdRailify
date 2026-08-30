@@ -15,7 +15,7 @@ test("Wheels V1.5 keeps rim markers size-relative and clipped inside every wheel
 
 test("Wheels V1.5 gives extra-light white, silver, and yellow slices dark labels without changing darker configured labels", async () => {
   const canvas = await read("src/wheels/WheelCanvas.tsx");
-  assert.match(canvas, /config\.labelContrast === "dark" \|\| isExtraLight\(segmentColour\)/);
+  assert.match(canvas, /config\.labelContrast === "dark" \|\| isExtraLight\(segment\.style\.color\)/);
   assert.match(canvas, /useDarkLabel \? "#171712" : "#fffdf3"/);
   assert.match(canvas, />= \.72/);
   assert.ok((243 * .2126 + 201 * .7152 + 40 * .0722) / 255 >= .72, "Third Rail Gold selects dark text");

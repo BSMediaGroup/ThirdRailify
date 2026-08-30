@@ -32,5 +32,5 @@ test("generated spin and winner presets have distinct bounded audio profiles", (
 test("Canvas image fills use radial cover and the GIF ticker is bounded and cleaned", async () => {
   const [patterns, canvas] = await Promise.all([readFile(new URL("../src/wheels/segmentPatterns.ts", import.meta.url), "utf8"), readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8")]);
   for (const span of [.08, Math.PI / 2, 2.7]) { const geometry = coverImageGeometry(80, 120, 300, span); assert.ok(geometry.height >= 300); assert.ok(geometry.width >= geometry.tangent); assert.ok(Math.abs(geometry.width / geometry.height - 2 / 3) < 1e-12); assert.equal(geometry.imageRotation, Math.PI / 2); }
-  assert.match(patterns, /coverImageGeometry/); assert.match(canvas, /context\.clip/); assert.match(canvas, /setInterval[\s\S]*75/); assert.match(canvas, /document\.visibilityState === "visible"/); assert.match(canvas, /clearInterval\(ticker\)/); assert.match(canvas, /cache\.clear\(\)/);
+  assert.match(patterns, /coverImageGeometry/); assert.match(canvas, /context\.clip/); assert.match(canvas, /setInterval[\s\S]*75/); assert.match(canvas, /document\.visibilityState === "visible"/); assert.match(canvas, /clearInterval\(ticker\)/); assert.match(canvas, /images\.clear\(\)/);
 });

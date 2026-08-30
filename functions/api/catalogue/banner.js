@@ -27,5 +27,9 @@ export function normalizePublicBanner(input) {
   if (!input || input.ok !== true || input.schema !== "thirdrailify-banner-v1" || !input.normal || !input.live) throw new Error("banner_invalid");
   const expected = new Set(["ok", "schema", "normal", "live", "homeRail", "updatedAt"]);
   if (Object.keys(input).some((key) => !expected.has(key))) throw new Error("banner_fields_invalid");
-  return { ...input, homeRail: input.homeRail || { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"], mode: "marquee", speed: "normal", easing: "linear", glyph: "zap" } };
+  return {
+    ...input,
+    normal: { ...input.normal, dismissible: input.normal.dismissible ?? false },
+    homeRail: { ...(input.homeRail || { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT", "ABOOT NOTHING", "POP CULTURE BEAT DOWN"], mode: "marquee", speed: "normal", easing: "linear", glyph: "zap" }), glyphSize: input.homeRail?.glyphSize ?? "medium" },
+  };
 }

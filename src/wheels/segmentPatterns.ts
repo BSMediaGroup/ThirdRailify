@@ -1,13 +1,14 @@
 import type { SegmentStyle } from "./segmentStyles.mjs";
 import { coverImageGeometry, patternDefinition, THIRD_RAIL_BOLT_POINTS } from "./segmentPatternGeometry.mjs";
+import type { WheelImageRenderPlan, WheelPatternRenderPlan } from "./wheelRenderPlan.mjs";
 
 export function patternTileSize(pattern: string, radius: number) {
   return patternDefinition(pattern, radius).tile;
 }
 
-export function drawSegmentPattern(context: CanvasRenderingContext2D, style: Extract<SegmentStyle, { mode: "pattern" }>, radialAngle: number, radius: number) {
-  const tile = patternTileSize(style.pattern, radius); const extent = radius * 1.45;
-  context.save(); context.rotate(radialAngle); context.strokeStyle = style.patternColor; context.fillStyle = style.patternColor; context.lineWidth = Math.max(1.5, tile * .16); context.globalAlpha = .58;
+export function drawSegmentPattern(context: CanvasRenderingContext2D, style: Extract<SegmentStyle, { mode: "pattern" }>, radialAngle: number, radius: number, planned?: WheelPatternRenderPlan | null) {
+  const tile = planned?.tileWidth || patternTileSize(style.pattern, radius); const extent = planned?.extent || radius * 1.45;
+  context.save(); context.rotate(radialAngle); context.strokeStyle = style.patternColor; context.fillStyle = style.patternColor; context.lineWidth = planned?.lineWidth || Math.max(1.5, tile * .16); context.globalAlpha = .58;
   if (style.pattern === "dots") {
     for (let x = -extent; x <= extent; x += tile) for (let y = -extent; y <= extent; y += tile) { context.beginPath(); context.arc(x + ((Math.round(y / tile) & 1) ? tile / 2 : 0), y, tile * .18, 0, Math.PI * 2); context.fill(); }
   } else if (style.pattern === "checkers") {
@@ -29,8 +30,8 @@ export function drawSegmentPattern(context: CanvasRenderingContext2D, style: Ext
   context.restore();
 }
 
-export function drawCoverImage(context: CanvasRenderingContext2D, image: CanvasImageSource, imageWidth: number, imageHeight: number, radialAngle: number, radius: number, span: number) {
-  const geometry = coverImageGeometry(imageWidth, imageHeight, radius, span);
+export function drawCoverImage(context: CanvasRenderingContext2D, image: CanvasImageSource, imageWidth: number, imageHeight: number, radialAngle: number, radius: number, span: number, planned?: WheelImageRenderPlan | null) {
+  const geometry = planned || coverImageGeometry(imageWidth, imageHeight, radius, span);
   context.save(); context.rotate(radialAngle); context.translate(geometry.centreX, geometry.centreY); context.rotate(geometry.imageRotation); context.drawImage(image, -geometry.width / 2, -geometry.height / 2, geometry.width, geometry.height); context.restore();
 }
 

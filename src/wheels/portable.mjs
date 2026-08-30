@@ -144,8 +144,8 @@ export async function embedCurrentWheelMedia(wheel, fetchImpl = globalThis.fetch
   for (const [portablePurpose, runtimePurpose] of [["background", "background"], ["center", "centre"]]) {
     const asset = wheel.media?.[runtimePurpose]; if (!asset) continue;
     const url = new globalThis.URL(asset.url, globalThis.window.location.origin);
-    if (url.origin !== globalThis.window.location.origin || !/^\/api\/wheels\/media\/[a-f0-9-]{16,80}$/i.test(url.pathname)) throw new Error(`The ${portablePurpose} image is not available through an authorized same-origin wheel route.`);
-    const response = await fetchImpl(url.pathname, { credentials: "include", cache: "no-store", headers: { Accept: "image/*" } });
+    if (!authorizedWheelMediaUrl(url)) throw new Error(`The ${portablePurpose} image is not available through an authorized same-origin or public CDN wheel route.`);
+    const response = await fetchImpl(url.origin === globalThis.window.location.origin ? url.pathname : url.href, { credentials: url.origin === globalThis.window.location.origin ? "include" : "omit", cache: "no-store", headers: { Accept: "image/*" } });
     if (!response.ok) throw new Error(`The ${portablePurpose} image could not be included.`);
     const bytes = new Uint8Array(await response.arrayBuffer()); const mimeType = normalizeMediaType(response.headers.get("content-type") || asset.contentType);
     validateMedia(bytes, mimeType, portablePurpose);
@@ -155,8 +155,8 @@ export async function embedCurrentWheelMedia(wheel, fetchImpl = globalThis.fetch
   const referenced = new Set(); if (wheel.config?.palette && wheel.entries) for (const style of [...normalizePaletteStyles(wheel.config.paletteStyles, wheel.config.palette), ...wheel.entries.map((entry) => entry.style).filter(Boolean)]) if (style.mode === "image") referenced.add(style.imageAssetId);
   for (const asset of wheel.media?.segmentFills || []) {
     if (!referenced.has(asset.id)) continue;
-    const url = new globalThis.URL(asset.url, globalThis.window.location.origin); if (url.origin !== globalThis.window.location.origin || !/^\/api\/wheels\/media\/[a-f0-9-]{16,80}$/i.test(url.pathname)) throw new Error("A segment image is not available through an authorized same-origin wheel route.");
-    const response = await fetchImpl(url.pathname, { credentials: "include", cache: "no-store", headers: { Accept: "image/*" } }); if (!response.ok) throw new Error("A referenced segment image could not be included.");
+    const url = new globalThis.URL(asset.url, globalThis.window.location.origin); if (!authorizedWheelMediaUrl(url)) throw new Error("A segment image is not available through an authorized same-origin or public CDN wheel route.");
+    const response = await fetchImpl(url.origin === globalThis.window.location.origin ? url.pathname : url.href, { credentials: url.origin === globalThis.window.location.origin ? "include" : "omit", cache: "no-store", headers: { Accept: "image/*" } }); if (!response.ok) throw new Error("A referenced segment image could not be included.");
     const bytes = new Uint8Array(await response.arrayBuffer()); const mimeType = normalizeMediaType(response.headers.get("content-type") || asset.contentType); validateMedia(bytes, mimeType, "segment"); const sha256 = await sha256Hex(bytes); if (asset.sha256 && sha256 !== String(asset.sha256).toLowerCase()) throw new Error("A segment image hash did not match its authoritative projection.");
     const existing = result.segments.find((item) => item.sha256 === sha256); if (existing) { result.segments.push({ ...existing, sourceAssetId: asset.id }); continue; }
     result.segments.push({ mode: "embedded", assetRef: `segment-${sha256.slice(0, 20)}`, sourceAssetId: asset.id, fileName: safeMediaName(asset.fileName || "segment-fill", "segment", mimeType), mimeType, sha256, base64: encodeBase64(bytes) });
@@ -165,6 +165,8 @@ export async function embedCurrentWheelMedia(wheel, fetchImpl = globalThis.fetch
   if (total > WHEEL_FILE_LIMITS.embeddedMediaBytes) throw new Error("Embedded wheel media exceeds the 12 MB total limit.");
   return result;
 }
+
+function authorizedWheelMediaUrl(url) { return (url.origin === globalThis.window.location.origin && /^\/api\/wheels\/media\/[a-f0-9-]{16,80}$/i.test(url.pathname)) || (url.origin === "https://cdn.thirdrailify.com" && /^\/wheel-media\/[a-f0-9-]{16,80}$/i.test(url.pathname)); }
 
 export function embeddedMediaBlob(item) { if (!item) return null; const bytes = decodeBase64(item.base64); return new globalThis.File([bytes], item.fileName, { type: item.mimeType }); }
 export function safeWheelFilename(value, extension = "twl") { const base = String(value || "wheel").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[\u0000-\u001f\u007f<>:"/\\|?*]+/g, "-").replace(/[^a-zA-Z0-9._ -]+/g, "-").trim().replace(/[. ]+$/g, "").replace(/[\s_.-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80).replace(/-+$/g, "") || "wheel"; const ext = extension === "json" ? "json" : "twl"; return `${base}.${ext}`; }

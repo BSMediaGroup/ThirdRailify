@@ -3,14 +3,19 @@ import { Link } from "react-router-dom";
 import type { BroadcastCandidate, BroadcastData } from "../lib/broadcast";
 import type { BannerConfig, BannerMessage } from "../lib/banner";
 import { effectiveLiveCandidate } from "../lib/liveBanner";
-import { ArrowIcon, PlayIcon, RadioIcon } from "./Icons";
+import { ArrowIcon, CloseIcon, PlayIcon, RadioIcon } from "./Icons";
+
+const DISMISSED_ANNOUNCEMENT_KEY = "thirdrailify.dismissed-announcement.v1";
 
 export function PromoBanner({ config, broadcast }: { config: BannerConfig | null; broadcast: BroadcastData | null }) {
+  const [dismissedSignature, setDismissedSignature] = useState(() => readDismissedAnnouncement());
   if (!config) return null;
   const live = effectiveLiveCandidate(broadcast);
   if (live && config.live.enabled) return <LiveBanner config={config} candidate={live} />;
   if (!config.normal.enabled || config.normal.messages.length === 0) return null;
-  return <NormalBanner config={config} />;
+  const signature = JSON.stringify(config.normal);
+  if (config.normal.dismissible && dismissedSignature === signature) return null;
+  return <NormalBanner config={config} onDismiss={config.normal.dismissible ? () => { writeDismissedAnnouncement(signature); setDismissedSignature(signature); } : undefined} />;
 }
 
 function LiveBanner({ config, candidate }: { config: BannerConfig; candidate: BroadcastCandidate }) {
@@ -27,7 +32,7 @@ function LiveBanner({ config, candidate }: { config: BannerConfig; candidate: Br
   );
 }
 
-function NormalBanner({ config }: { config: BannerConfig }) {
+function NormalBanner({ config, onDismiss }: { config: BannerConfig; onDismiss?: () => void }) {
   const { messages, mode, speed } = config.normal;
   const [active, setActive] = useState(0);
   useEffect(() => {
@@ -44,11 +49,15 @@ function NormalBanner({ config }: { config: BannerConfig }) {
     reduced.addEventListener("change", schedule);
     return () => { document.removeEventListener("visibilitychange", schedule); reduced.removeEventListener("change", schedule); if (timer !== null) window.clearInterval(timer); };
   }, [messages.length, mode, speed]);
-  if (mode === "ticker" && messages.length > 1) {
-    return <aside className={`promo-banner promo-banner--normal is-ticker is-${speed}`} aria-label="Site announcements"><div className="promo-banner__ticker"><div>{[...messages, ...messages].map((message, index) => <NormalMessage key={`${message.text}-${index}`} message={message} duplicate={index >= messages.length} />)}</div></div></aside>;
+  if (mode === "ticker") {
+    return <aside className={`promo-banner promo-banner--normal is-ticker is-${speed}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcements"><div className="promo-banner__ticker"><div>{[...messages, ...messages].map((message, index) => <NormalMessage key={`${message.text}-${index}`} message={message} duplicate={index >= messages.length} />)}</div></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
   }
   const message = messages[mode === "crossfade" ? active : 0] ?? messages[0];
-  return <aside className={`promo-banner promo-banner--normal is-${mode} is-${speed}`} aria-label="Site announcement"><div className="container promo-banner__inner"><NormalMessage key={`${active}-${message.text}`} message={message} /></div></aside>;
+  return <aside className={`promo-banner promo-banner--normal is-${mode} is-${speed}${onDismiss ? " is-dismissible" : ""}`} aria-label="Site announcement"><div className="container promo-banner__inner"><NormalMessage key={`${active}-${message.text}`} message={message} /></div>{onDismiss && <DismissButton onDismiss={onDismiss} />}</aside>;
+}
+
+function DismissButton({ onDismiss }: { onDismiss: () => void }) {
+  return <button className="promo-banner__dismiss" type="button" onClick={onDismiss} aria-label="Dismiss announcement"><CloseIcon /></button>;
 }
 
 function NormalMessage({ message, duplicate = false }: { message: BannerMessage; duplicate?: boolean }) {
@@ -59,4 +68,12 @@ function BannerLink({ message }: { message: BannerMessage }) {
   if (!message.href || !message.ctaLabel) return null;
   if (message.href.startsWith("/")) return <Link className="promo-banner__message-link" to={message.href}>{message.ctaLabel}<ArrowIcon /></Link>;
   return <a className="promo-banner__message-link" href={message.href} target={message.newTab ? "_blank" : undefined} rel={message.newTab ? "noopener noreferrer" : undefined}>{message.ctaLabel}<ArrowIcon /></a>;
+}
+
+function readDismissedAnnouncement() {
+  try { return window.localStorage.getItem(DISMISSED_ANNOUNCEMENT_KEY) || ""; } catch { return ""; }
+}
+
+function writeDismissedAnnouncement(signature: string) {
+  try { window.localStorage.setItem(DISMISSED_ANNOUNCEMENT_KEY, signature); } catch { /* dismissal still applies for this page view */ }
 }

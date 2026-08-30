@@ -17,5 +17,6 @@ export function coverImageGeometry(imageWidth, imageHeight, radius, span) {
   const safeWidth = Math.max(1, Number(imageWidth) || 1); const safeHeight = Math.max(1, Number(imageHeight) || 1); const safeRadius = Math.max(1, Number(radius) || 1);
   const tangent = Math.max(safeRadius * .2, Math.min(safeRadius * 2, safeRadius * 2 * Math.sin(Math.min(Math.PI, Math.max(0, Number(span) || 0)) / 2)));
   const scale = Math.max(safeRadius / safeHeight, tangent / safeWidth);
-  return Object.freeze({ tangent, scale, width: safeWidth * scale, height: safeHeight * scale, centreX: safeRadius / 2, centreY: 0, imageRotation: Math.PI / 2 });
+  const cropWidth = tangent / scale; const cropHeight = safeRadius / scale;
+  return Object.freeze({ tangent, scale, width: safeWidth * scale, height: safeHeight * scale, centreX: safeRadius / 2, centreY: 0, imageRotation: Math.PI / 2, cropWidth, cropHeight, cropX: (safeWidth - cropWidth) / 2, cropY: (safeHeight - cropHeight) / 2 });
 }

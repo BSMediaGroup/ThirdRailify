@@ -11,6 +11,7 @@ export type BannerConfig = {
   schema: "thirdrailify-banner-v1";
   normal: {
     enabled: boolean;
+    dismissible: boolean;
     messages: BannerMessage[];
     mode: "static" | "ticker" | "crossfade";
     speed: "slow" | "normal" | "fast";
@@ -32,6 +33,7 @@ export type BannerConfig = {
     speed: "slow" | "normal" | "fast";
     easing: "linear" | "ease-in-out";
     glyph: "zap" | "arrow" | "diamond" | "dot";
+    glyphSize: "small" | "medium" | "large";
   };
   updatedAt: string | null;
 };
@@ -43,6 +45,7 @@ export const DEFAULT_HOME_RAIL: BannerConfig["homeRail"] = {
   speed: "normal",
   easing: "linear",
   glyph: "zap",
+  glyphSize: "medium",
 };
 
 const MODES = new Set(["static", "ticker", "crossfade"]);
@@ -52,13 +55,14 @@ const INTENSITIES = new Set(["subtle", "normal", "strong"]);
 const HOME_RAIL_MODES = new Set(["marquee", "crossfade", "static"]);
 const HOME_RAIL_EASINGS = new Set(["linear", "ease-in-out"]);
 const HOME_RAIL_GLYPHS = new Set(["zap", "arrow", "diamond", "dot"]);
+const HOME_RAIL_GLYPH_SIZES = new Set(["small", "medium", "large"]);
 
 export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   if (!record(value) || value.ok !== true || value.schema !== "thirdrailify-banner-v1" || !record(value.normal) || !record(value.live)) return null;
   const normal = value.normal;
   const live = value.live;
   const homeRail = record(value.homeRail) ? value.homeRail : DEFAULT_HOME_RAIL;
-  if (typeof normal.enabled !== "boolean" || !Array.isArray(normal.messages) || normal.messages.length > 5 || !MODES.has(String(normal.mode)) || !SPEEDS.has(String(normal.speed))) return null;
+  if (typeof normal.enabled !== "boolean" || (normal.dismissible !== undefined && typeof normal.dismissible !== "boolean") || !Array.isArray(normal.messages) || normal.messages.length > 5 || !MODES.has(String(normal.mode)) || !SPEEDS.has(String(normal.speed))) return null;
   const messages = normal.messages.map(normalizeMessage);
   if (messages.some((message) => message === null)) return null;
   const label = boundedText(live.label, 32);
@@ -71,14 +75,14 @@ export function normalizeBannerConfig(value: unknown): BannerConfig | null {
   ) return null;
   const updatedAt = liveDate(value.updatedAt);
   if (value.updatedAt !== null && !updatedAt) return null;
-  if (typeof homeRail.enabled !== "boolean" || !Array.isArray(homeRail.items) || homeRail.items.length < 1 || homeRail.items.length > 8 || !HOME_RAIL_MODES.has(String(homeRail.mode)) || !SPEEDS.has(String(homeRail.speed)) || !HOME_RAIL_EASINGS.has(String(homeRail.easing)) || !HOME_RAIL_GLYPHS.has(String(homeRail.glyph))) return null;
+  if (typeof homeRail.enabled !== "boolean" || !Array.isArray(homeRail.items) || homeRail.items.length < 1 || homeRail.items.length > 8 || !HOME_RAIL_MODES.has(String(homeRail.mode)) || !SPEEDS.has(String(homeRail.speed)) || !HOME_RAIL_EASINGS.has(String(homeRail.easing)) || !HOME_RAIL_GLYPHS.has(String(homeRail.glyph)) || (homeRail.glyphSize !== undefined && !HOME_RAIL_GLYPH_SIZES.has(String(homeRail.glyphSize)))) return null;
   const railItems = homeRail.items.map((item) => boundedText(item, 80));
   if (railItems.some((item) => !item)) return null;
   return {
     schema: "thirdrailify-banner-v1",
-    normal: { enabled: normal.enabled, messages: messages as BannerMessage[], mode: normal.mode as BannerConfig["normal"]["mode"], speed: normal.speed as BannerConfig["normal"]["speed"] },
+    normal: { enabled: normal.enabled, dismissible: typeof normal.dismissible === "boolean" ? normal.dismissible : false, messages: messages as BannerMessage[], mode: normal.mode as BannerConfig["normal"]["mode"], speed: normal.speed as BannerConfig["normal"]["speed"] },
     live: { enabled: live.enabled, label, showTitle: live.showTitle, supportingText, ctaLabel, ctaPath: "/watch/live", animation: live.animation as BannerConfig["live"]["animation"], intensity: live.intensity as BannerConfig["live"]["intensity"] },
-    homeRail: { enabled: homeRail.enabled, items: railItems as string[], mode: homeRail.mode as BannerConfig["homeRail"]["mode"], speed: homeRail.speed as BannerConfig["homeRail"]["speed"], easing: homeRail.easing as BannerConfig["homeRail"]["easing"], glyph: homeRail.glyph as BannerConfig["homeRail"]["glyph"] },
+    homeRail: { enabled: homeRail.enabled, items: railItems as string[], mode: homeRail.mode as BannerConfig["homeRail"]["mode"], speed: homeRail.speed as BannerConfig["homeRail"]["speed"], easing: homeRail.easing as BannerConfig["homeRail"]["easing"], glyph: homeRail.glyph as BannerConfig["homeRail"]["glyph"], glyphSize: (homeRail.glyphSize ?? "medium") as BannerConfig["homeRail"]["glyphSize"] },
     updatedAt,
   };
 }

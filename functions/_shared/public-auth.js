@@ -169,8 +169,13 @@ function safeAvatarUrl(value, env = null) {
   try {
     const url = new URL(String(value));
     const hosts = new Set(["cdn.discordapp.com", "media.discordapp.net", "lh3.googleusercontent.com", "avatars.githubusercontent.com", "pbs.twimg.com"]);
-    const origins = new Set([env?.THIRDRAILIFY_ADMIN_ORIGIN, env?.THIRDRAILIFY_PROFILE_MEDIA_ORIGIN].map(normalizeOrigin).filter(Boolean));
-    return url.protocol === "https:" && (hosts.has(url.hostname) || origins.has(url.origin)) ? url.toString().slice(0, 1024) : null;
+    const origins = new Set([env?.THIRDRAILIFY_ADMIN_ORIGIN, env?.THIRDRAILIFY_PROFILE_MEDIA_ORIGIN, env?.THIRDRAILIFY_MEDIA_PUBLIC_ORIGIN, "https://thirdrailify-admin.pages.dev"].map(normalizeOrigin).filter(Boolean));
+    if (url.protocol !== "https:" || (!hosts.has(url.hostname) && !origins.has(url.origin))) return null;
+    if (new Set(["admin.thirdrailify.com", "thirdrailify-admin.pages.dev", "cdn.thirdrailify.com"]).has(url.hostname) && /^\/u\/[a-f0-9]{20}\/avatar\/[a-f0-9]{64}\.(?:jpg|png|webp)$/.test(url.pathname)) {
+      const mediaOrigin = normalizeOrigin(env?.THIRDRAILIFY_MEDIA_PUBLIC_ORIGIN) || normalizeOrigin(env?.THIRDRAILIFY_PROFILE_MEDIA_ORIGIN);
+      if (mediaOrigin) return `${mediaOrigin}${url.pathname}`;
+    }
+    return url.toString().slice(0, 1024);
   } catch {
     return null;
   }
