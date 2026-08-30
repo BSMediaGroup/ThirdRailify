@@ -80,7 +80,7 @@ test("supplied Wheel of Names sample maps eight entries, four colours, sounds, s
 
 test("Wheel of Names multiple configs remain selectable one at a time and clamp spin duration", async () => {
   const source = { wheelConfigs: [{ title: "One", entries: [{ text: "A" }], colorSettings: [], spinTime: 1 }, { title: "Two", entries: [{ text: "B" }, { text: "B" }], colorSettings: [], spinTime: 99 }] };
-  const parsed = await parseWheelImport(JSON.stringify(source), { sourceName: "many.wheel" }); assert.equal(parsed.proposals.length, 2); assert.equal(parsed.proposals[0].config.spinDurationMs, 2000); assert.equal(parsed.proposals[1].config.spinDurationMs, 20000); assert.equal(parsed.proposals[1].summary.duplicateLabelCount, 2); assert.ok(parsed.proposals[0].messages.some((item) => item.sourceField === "spinTime" && item.severity === "warning"));
+  const parsed = await parseWheelImport(JSON.stringify(source), { sourceName: "many.wheel" }); assert.equal(parsed.proposals.length, 2); assert.equal(parsed.proposals[0].config.spinDurationMs, 2000); assert.equal(parsed.proposals[1].config.spinDurationMs, 60000); assert.equal(parsed.proposals[1].summary.duplicateLabelCount, 2); assert.ok(parsed.proposals[0].messages.some((item) => item.sourceField === "spinTime" && item.severity === "warning"));
 });
 
 test("Wheel of Names media stays local, validates data URIs, rejects unsafe SVG, and reports lossy settings", async () => {

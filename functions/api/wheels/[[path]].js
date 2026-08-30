@@ -70,6 +70,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
   else if (path === "stages" && request.method === "POST") internal = "stages/create";
   else if (request.method === "PUT" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
   else if (request.method === "POST" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/lifecycle$/i.test(path)) internal = path;
+  else if (request.method === "POST" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/spin-all$/i.test(path)) internal = path;
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
   else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/spins$/i.test(path)) internal = path;
   else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/(?:winner-action|lifecycle)$/i.test(path)) internal = path;

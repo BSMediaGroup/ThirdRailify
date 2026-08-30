@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { chromium } from "playwright-core";
+import { entryAtPointer, spinPlan } from "../src/wheels/engine.mjs";
 
 const ORIGIN = process.env.WHEELS_STAGE_ORIGIN || "http://127.0.0.1:4198";
 const LOCAL = !process.env.WHEELS_STAGE_ORIGIN;
@@ -42,7 +43,11 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
     { count: 1, width: 1920, height: 1080 },
     { count: 3, width: 1920, height: 1080 },
     { count: 6, width: 1920, height: 1080 },
+    { count: 6, width: 2560, height: 1440 },
     { count: 6, width: 3440, height: 1440 },
+    { count: 6, width: 1440, height: 900 },
+    { count: 6, width: 1365, height: 768 },
+    { count: 6, width: 768, height: 1024 },
     { count: 6, width: 390, height: 844 },
   ]) {
     const context = await browser.newContext({
@@ -397,13 +402,182 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   );
 });
 
+test("V1.10 natural landings and Stage Spin All coordinate, settle, celebrate, and restore focus", async (t) => {
+  await mkdir(ARTIFACTS, { recursive: true });
+  let server;
+  if (LOCAL) {
+    server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
+    t.after(() => server.kill());
+    await waitForPreview();
+  }
+  const browser = await chromium.launch({ executablePath: CHROME, headless: true });
+  t.after(() => browser.close());
+
+  const landingContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  await consent(landingContext);
+  const landingPage = await landingContext.newPage();
+  await routes(landingPage);
+  await landingPage.goto(`${ORIGIN}/wheels/fixture-wheel-1`, { waitUntil: "networkidle" });
+  const fixture = wheel(0);
+  const winner = fixture.entries[2];
+  const landingProof = [];
+  for (const fraction of [.02, .25, .51, .75, .98]) {
+    const plan = spinPlan(fixture.entries, winner.id, 3000, 0, { landingFraction: fraction, turnRandom: .4 });
+    assert.equal(entryAtPointer(fixture.entries, plan.finalRotation)?.id, winner.id);
+    await landingPage.evaluate(({ landingValue }) => {
+      const cryptoObject = window.crypto;
+      window.__wheelV110OriginalRandomValues ||= cryptoObject.getRandomValues.bind(cryptoObject);
+      const values = [2, landingValue, Math.floor(.4 * 0x100000000)];
+      Object.defineProperty(cryptoObject, "getRandomValues", { configurable: true, value(array) { if (array instanceof Uint32Array && values.length) { array[0] = values.shift(); return array; } return window.__wheelV110OriginalRandomValues(array); } });
+    }, { landingValue: Math.floor(fraction * 0x100000000) });
+    await landingPage.getByRole("button", { name: "Start demo spin" }).click();
+    const winnerDialog = landingPage.getByRole("dialog");
+    await winnerDialog.waitFor();
+    if (fraction === .51)
+      await winnerDialog.screenshot({ path: join(ARTIFACTS, "natural-single-winner-dialog.png") });
+    await winnerDialog.getByRole("button", { name: "Close result" }).click();
+    await winnerDialog.waitFor({ state: "detached" });
+    await landingPage.locator(".pointer-target-hud strong").getByText(winner.label, { exact: true }).waitFor();
+    await landingPage.locator(".wheel-visual-wrap").scrollIntoViewIfNeeded();
+    const name = `natural-same-winner-${String(Math.round(fraction * 100)).padStart(2, "0")}.png`;
+    await landingPage.locator(".wheel-control-layout").screenshot({ path: join(ARTIFACTS, name) });
+    const metrics = await landingPage.locator(".wheel-stage canvas").evaluate((canvas) => canvas.__wheelSpinV110);
+    assert.equal(metrics.completed, true);
+    assert.ok(Math.abs(metrics.actualFinalFrameDelta - metrics.expectedFinalFrameDelta) < .001);
+    landingProof.push({ fraction, winnerId: winner.id, rotation: metrics.finalRotation, artifact: name });
+  }
+  await landingContext.close();
+
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  await consent(context);
+  const page = await context.newPage();
+  const errors = [];
+  const practiceSpinAllRequests = [];
+  page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); });
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("request", (request) => { if (request.url().includes("/spin-all")) practiceSpinAllRequests.push(request.url()); });
+  await routes(page);
+  await page.goto(`${ORIGIN}/wheels/stages/stage-6`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /Fullscreen/ }).click();
+  await page.waitForFunction(() => document.fullscreenElement?.classList.contains("wheel-stage-page"));
+  await page.getByRole("button", { name: "SPIN ALL", exact: true }).click();
+  await page.locator('[data-stage-spin-phase="spinning_all"]').waitFor();
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: join(ARTIFACTS, "spin-all-6-early-1920x1080.png") });
+  await page.waitForTimeout(1050);
+  await page.screenshot({ path: join(ARTIFACTS, "spin-all-6-mid-1920x1080.png") });
+  await page.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length > 0 && document.querySelectorAll('[data-spin-substate="spinning"]').length > 0);
+  await page.screenshot({ path: join(ARTIFACTS, "spin-all-6-partial-settlement-1920x1080.png") });
+  await page.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length === 6);
+  await page.screenshot({ path: join(ARTIFACTS, "spin-all-6-all-settled-before-modal-1920x1080.png") });
+  const dialog = page.getByRole("dialog", { name: "WINNERS LOCKED." });
+  await dialog.waitFor();
+  assert.equal(await dialog.locator(".stage-results-grid article").count(), 6);
+  assert.equal(await page.locator(".winner-dialog").count(), 1, "Spin All opens one combined dialog");
+  assert.equal(await dialog.getByText("PRACTICE · NOT RECORDED", { exact: true }).count(), 6);
+  const portalAndEffects = await page.evaluate(() => {
+    const root = document.querySelector(".wheel-stage-page");
+    const modal = document.querySelector(".stage-results-backdrop");
+    return {
+      portalInsideRoot: Boolean(root && modal && root.contains(modal)),
+      fullscreenContainsModal: Boolean(document.fullscreenElement?.contains(modal)),
+      confetti: Boolean(modal?.querySelector(".winner-confetti")),
+      fireworks: Boolean(modal?.querySelector("canvas")),
+      lighting: Boolean(modal?.querySelector(".winner-lightshow")),
+    };
+  });
+  assert.deepEqual(portalAndEffects, { portalInsideRoot: true, fullscreenContainsModal: true, confetti: true, fireworks: true, lighting: true });
+  const metrics = await page.locator(".stage-wheel-tile canvas").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
+  assert.equal(metrics.length, 6);
+  assert.ok(Math.max(...metrics.map((item) => item.firstFrameAt)) - Math.min(...metrics.map((item) => item.firstFrameAt)) <= 32, JSON.stringify(metrics));
+  assert.deepEqual(metrics.map((item) => item.durationMs), [2000, 2500, 3000, 3500, 4000, 4500]);
+  assert.ok(metrics.every((item) => item.completed && item.frameCount > 10 && Math.abs(item.actualFinalFrameDelta - item.expectedFinalFrameDelta) < .001), JSON.stringify(metrics));
+  assert.deepEqual(practiceSpinAllRequests, [], "Practice Spin All performs no server mutation");
+  assert.ok(await dialog.getByText("Shared Winner", { exact: true }).count() >= 2, "duplicate labels remain separate Wheel results");
+  await page.screenshot({ path: join(ARTIFACTS, "spin-all-6-combined-fullscreen-1920x1080.png") });
+  await page.keyboard.press("Escape");
+  await page.waitForFunction(() => !document.querySelector(".stage-results-dialog"));
+  await page.waitForFunction(() => document.activeElement?.classList.contains("stage-spin-all-trigger"));
+  assert.deepEqual(errors, []);
+  await context.close();
+
+  const durationContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await consent(durationContext);
+  const durationPage = await durationContext.newPage();
+  await routes(durationPage);
+  await durationPage.goto(`${ORIGIN}/wheels/stages/stage-3`, { waitUntil: "networkidle" });
+  await durationPage.getByRole("button", { name: "SPIN ALL", exact: true }).click();
+  await durationPage.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length === 1);
+  assert.equal(await durationPage.locator('[data-spin-substate="spinning"]').count(), 2);
+  await durationPage.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length === 2);
+  assert.equal(await durationPage.locator('[data-spin-substate="spinning"]').count(), 1);
+  await durationPage.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length === 3);
+  await durationPage.getByRole("dialog", { name: "WINNERS LOCKED." }).waitFor();
+  const durationMetrics = await durationPage.locator(".stage-wheel-tile canvas").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
+  assert.deepEqual(durationMetrics.map((item) => item.durationMs), [3000, 5000, 7000]);
+  assert.ok(durationMetrics[0].settledAt < durationMetrics[1].settledAt && durationMetrics[1].settledAt < durationMetrics[2].settledAt);
+  await durationContext.close();
+
+  for (const resultSurface of [
+    { count: 1, width: 2560, height: 1440 },
+    { count: 2, width: 1365, height: 768 },
+    { count: 6, width: 768, height: 1024 },
+  ]) {
+    const resultContext = await browser.newContext({ viewport: { width: resultSurface.width, height: resultSurface.height }, reducedMotion: "reduce" });
+    await consent(resultContext);
+    const resultPage = await resultContext.newPage();
+    await routes(resultPage);
+    await resultPage.goto(`${ORIGIN}/wheels/stages/stage-${resultSurface.count}`, { waitUntil: "networkidle" });
+    await resultPage.getByRole("button", { name: "SPIN ALL", exact: true }).click();
+    const resultDialog = resultPage.getByRole("dialog", { name: "WINNERS LOCKED." });
+    await resultDialog.waitFor();
+    assert.equal(await resultDialog.locator(".stage-results-grid article").count(), resultSurface.count);
+    assert.ok(await resultPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1));
+    await resultPage.screenshot({ path: join(ARTIFACTS, `spin-all-${resultSurface.count}-combined-${resultSurface.width}x${resultSurface.height}.png`) });
+    await resultContext.close();
+  }
+
+  const mobileContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await consent(mobileContext);
+  const mobilePage = await mobileContext.newPage();
+  await routes(mobilePage);
+  await mobilePage.goto(`${ORIGIN}/wheels/stages/stage-6`, { waitUntil: "networkidle" });
+  await mobilePage.getByRole("button", { name: "SPIN ALL", exact: true }).click();
+  const mobileDialog = mobilePage.getByRole("dialog", { name: "WINNERS LOCKED." });
+  await mobileDialog.waitFor();
+  assert.equal(await mobileDialog.locator(".stage-results-grid article").count(), 6);
+  assert.equal(await mobilePage.locator(".winner-confetti, .stage-results-backdrop canvas, .winner-lightshow i, .winner-lightshow span").count(), 0, "reduced motion removes travelling effects");
+  assert.ok(await mobilePage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1));
+  await mobilePage.screenshot({ path: join(ARTIFACTS, "spin-all-6-combined-mobile-390x844.png") });
+  await mobileDialog.getByRole("button", { name: "Close Stage results" }).click();
+  await mobileContext.close();
+
+  const officialRequests = [];
+  const officialContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
+  await consent(officialContext);
+  const officialPage = await officialContext.newPage();
+  officialPage.on("request", (request) => { if (request.url().includes("/spin-all")) officialRequests.push(request.postDataJSON()); });
+  await routes(officialPage, { official: true });
+  await officialPage.goto(`${ORIGIN}/wheels/stages/stage-6`, { waitUntil: "networkidle" });
+  await officialPage.getByRole("button", { name: "OFFICIAL ALL", exact: true }).click();
+  await officialPage.getByRole("button", { name: "SPIN ALL", exact: true }).click();
+  const officialDialog = officialPage.getByRole("dialog", { name: "WINNERS LOCKED." });
+  await officialDialog.waitFor();
+  assert.equal(officialRequests.length, 1);
+  assert.equal(await officialDialog.getByText("OFFICIAL · RECORDED", { exact: true }).count(), 6);
+  await officialPage.screenshot({ path: join(ARTIFACTS, "spin-all-6-combined-official-1440x900.png") });
+  await officialContext.close();
+
+  await writeFile(join(ARTIFACTS, "wheels-v110-acceptance.json"), JSON.stringify({ origin: ORIGIN, landingProof, metrics, durationMetrics, portalAndEffects }, null, 2));
+});
+
 function overlap(a, b) {
   return (
     Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 &&
     Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1
   );
 }
-async function routes(page) {
+async function routes(page, options = {}) {
   if (!LOCAL) {
     await page.route("**/wheels/stages/stage-*", async (route) => {
       if (route.request().resourceType() !== "document")
@@ -416,9 +590,9 @@ async function routes(page) {
       });
     });
   }
-  await page.route("**/api/**", (route) => respond(route));
+  await page.route("**/api/**", (route) => respond(route, options));
 }
-async function respond(route) {
+async function respond(route, options = {}) {
   const url = new URL(route.request().url());
   if (url.pathname === "/api/auth/config")
     return json(route, {
@@ -478,8 +652,13 @@ async function respond(route) {
       })),
       count: 6,
     });
+  const batchMatch = url.pathname.match(/^\/api\/wheels\/stages\/stage-([1-6])\/spin-all$/);
+  if (batchMatch && options.official) {
+    const count = Number(batchMatch[1]);
+    return json(route, { ok: true, mode: "official", idempotent: false, results: Array.from({ length: count }, (_, position) => { const selected = wheel(position, stageDuration(count, position), true); const entry = selected.entries[position % selected.entries.length]; return { position, wheelSlug: selected.slug, wheelTitle: selected.title, spin: { id: `10000000-0000-4000-8000-${String(position + 1).padStart(12, "0")}`, winningEntryId: entry.id, winningLabel: entry.label, winningWeight: entry.weight, wheelRevision: 1, snapshotHash: `snapshot-${position}`, createdAt: "2026-08-31T00:00:00Z", animationPlan: { version: "spin-plan-v1", landingFraction: [.02, .17, .51, .84, .98, .36][position], turnRandom: [.11, .23, .35, .47, .59, .71][position] } } }; }) });
+  }
   const match = url.pathname.match(/^\/api\/wheels\/stages\/stage-([1-6])$/);
-  if (match) return json(route, stagePayload(Number(match[1])));
+  if (match) return json(route, stagePayload(Number(match[1]), options));
   if (url.pathname === "/api/wheels/fixture-wheel-1")
     return json(route, {
       ok: true,
@@ -517,7 +696,7 @@ async function respond(route) {
     return json(route, { ok: true, items: [], count: 0 });
   return json(route, { ok: true });
 }
-function stagePayload(count) {
+function stagePayload(count, options = {}) {
   return {
     ok: true,
     stage: {
@@ -531,12 +710,12 @@ function stagePayload(count) {
       wheels: Array.from({ length: count }, (_, position) => ({
         position,
         unavailable: false,
-        wheel: wheel(position),
+        wheel: wheel(position, stageDuration(count, position), options.official),
         access: {
           role: "editor",
           isMasterAdmin: false,
           canEdit: true,
-          canSpinOfficially: false,
+          canSpinOfficially: Boolean(options.official),
           editingLocked: false,
           officialSpinLocked: false,
           revision: 1,
@@ -546,7 +725,12 @@ function stagePayload(count) {
     access: { isOwner: true, isMasterAdmin: false, canEdit: true, revision: 1 },
   };
 }
-function wheel(index) {
+function stageDuration(count, position) {
+  if (count === 3) return [3000, 5000, 7000][position];
+  if (count === 6) return 2000 + position * 500;
+  return 3000;
+}
+function wheel(index, duration = 3000, official = false) {
   const palette = [
     ["#f3c928", "#b8182f", "#f3f0e5"],
     ["#0d6f73", "#f3c928", "#171712"],
@@ -554,7 +738,7 @@ function wheel(index) {
   ][index % 3];
   return {
     slug: `fixture-wheel-${index + 1}`,
-    title: `Fixture Wheel ${index + 1}`,
+    title: index === 5 ? "Fixture Wheel 6 With A Deliberately Long Broadcast Title" : `Fixture Wheel ${index + 1}`,
     description: "Stage fixture",
     lifecycle: "active",
     visibility: "public",
@@ -562,7 +746,11 @@ function wheel(index) {
     weighted: false,
     entries: Array.from({ length: 8 }, (_, order) => ({
       id: `00000000-0000-4000-8${String(index).padStart(3, "0")}-${String(order + 1).padStart(12, "0")}`,
-      label: `Entry ${order + 1}`,
+      label: index === 3 || index === 4
+        ? "Shared Winner"
+        : index === 5
+          ? `A Deliberately Long Winner Label Number ${order + 1} For Broadcast`
+          : `Entry ${order + 1}`,
       order,
       weight: 1,
       colour: null,
@@ -577,7 +765,7 @@ function wheel(index) {
       centreTreatment: "bolt",
       backgroundIntensity: "medium",
       labelContrast: "auto",
-      spinDurationMs: 3000,
+      spinDurationMs: duration,
       tickingSoundEnabled: false,
       spinSoundPreset: "silent",
       winnerSoundEnabled: false,
@@ -597,7 +785,7 @@ function wheel(index) {
     },
     media: { background: null, centre: null, segmentFills: [] },
     demoEnabled: true,
-    officialEnabled: false,
+    officialEnabled: official,
     latestOfficialResult: null,
     recentOfficialResults: [],
     revision: 1,

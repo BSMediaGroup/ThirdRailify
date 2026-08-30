@@ -34,8 +34,8 @@ Production Public website and storefront foundation for Third Railify. The canon
 ## Current state
 
 - Vite 5, React 18, TypeScript, and React Router.
-- Wheels V1.9 renders a measured wheel-local face with cached pattern/static-media and label layers, rigid spin rotation, bounded GIF-only recompositing, stable image cover/crop geometry, and exact rotation-invariance instrumentation while preserving V1.8 segment styles, portable v1/v2 files, and server-authoritative official draws.
-- Wheels Stage V1 composes one to six existing Wheels in responsive overview and focus modes, adds multi-config Wheel of Names import and authority-free `.tws` portability, and gives Wheel detail/Presentation/Stage routes dedicated wide shells without changing ordinary Public containers. See `WHEELS_STAGE_V1.md` and `WHEELS_STAGE_FILE_FORMAT.md`.
+- Wheels V1.10 adds secure random within-wedge landings and exact constant-deceleration RAF motion without changing weighted winner authority, while retaining the V1.9 cached rigid renderer and runtime-only TWL semantics.
+- Wheels Stage V1.1 adds coordinated Demo/Practice/Official Spin All, shared-start individual-duration animation, compact per-tile locks, normalized Stage audio, and one responsive fullscreen-root combined celebration. New implementation modules include `StageWinnerCelebration.tsx`, `stageSpinAll.mjs`, `focusTrap.ts`, and `wheels-stage-v11.css`; see `WHEELS_STAGE_V1.md` and `WHEELS_STAGE_FILE_FORMAT.md`.
 - Substantial `/` landing page with a joined Shawn/Gina hero composition, Third Railify branding, current verified schedule copy, merch preview, a compact enriched/fallback Discord community module, and clear donation navigation.
 - Dedicated `/shawn` and `/gina` editorial host profiles with distinct first-party portrait systems, topic instruments, shared-show chemistry, internal viewing paths, and reduced-motion-safe presentation.
 - Dedicated `/friends` ensemble story with an animated three-signal hero, first-party Daniel/Darnell/Davy profile cards, and keyboard-contained expanded dossiers whose supplied channel links remain hidden until a profile opens.

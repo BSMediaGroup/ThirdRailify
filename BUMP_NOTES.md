@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-08-31 - Wheels V1.10 and Stage V1.1
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced fixed winning-wedge midpoint stops and generic CSS easing with secure within-wedge landing, bounded duration-scaled turn variance, and exact `2u-u²` RAF deceleration through the configured 2–60 second duration. Official result selection/persistence remains server-first and deterministic retries derive identical landing plans from immutable result evidence.
+- Added Overview-only Demo/Practice/Official Spin All with all-plan preflight, one shared start timestamp, per-Wheel durations, explicit coordinator/tile states, compact settlement locks, and one Stage-ordered combined modal after the final settle.
+- Added signed Official All authority with every-Wheel permission/revision/lock/cooldown validation, deterministic per-Wheel idempotency, and one atomic D1 batch of ordinary Wheel result/audit rows. No Stage result table, migration, or portable-file runtime state was added.
+- Reused and deterministically aggregated existing celebration/audio systems, including one winner stinger, square-root spin gain normalization, fullscreen-root portal, responsive 3/2/1-column results, focus restoration, and reduced-motion-safe static results.
+- Added deterministic boundary, fairness, duration, no-snap, Official retry/atomicity, 3/5/7-second, six-Wheel shared-start, combined modal/effect/fullscreen/mobile, and visual fixture coverage.
+
 ## 2026-08-31 - Analytics V1 collection and public account inbox
 
 CURRENT VER=0.1.0-alpha.0

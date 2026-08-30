@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { entryAngles, entryAtPointer, formatProbability, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, selectWeightedEntry, spinPlan } from "../src/wheels/engine.mjs";
+import { constantDecelerationProgress, constantDecelerationVelocity, entryAngles, entryAtPointer, formatProbability, fullTurnsForDuration, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, secureUnitFraction, selectWeightedEntry, spinPlan } from "../src/wheels/engine.mjs";
 
 const entries = [
   { id: "a", label: "Duplicate", order: 0, weight: 1, colour: "#F3C928", state: "active" },
@@ -24,10 +24,36 @@ test("rejection sampling rejects the modulo-bias tail and validates invalid boun
 });
 
 test("deterministic spin plans land the selected segment beneath the top pointer with bounded motion", () => {
-  const plan = spinPlan(entries, "b", 50_000, 17, 7); assert.equal(plan.turns, 7); assert.equal(plan.durationMs, 20_000);
-  const segment = entryAngles(entries).find((item) => item.entry.id === "b"); const rotation = plan.finalRotation * Math.PI / 180;
-  const worldCentre = normalize(segment.centre - Math.PI / 2 + rotation); assert.ok(Math.abs(normalize(worldCentre - (-Math.PI / 2))) < 1e-9);
-  const single = [{ ...entries[0], weight: 1 }]; assert.equal(spinPlan(single, "a", 100, 0, 6).durationMs, 2000);
+  const plan = spinPlan(entries, "b", 50_000, 17, { extraTurns: 7, landingFraction: .17 }); assert.equal(plan.turns, 7); assert.equal(plan.durationMs, 50_000);
+  assert.ok(Math.abs(normalize(plan.landingLocalAngle + plan.finalRotation * Math.PI / 180)) < 1e-9);
+  const single = [{ ...entries[0], weight: 1 }]; assert.equal(spinPlan(single, "a", 100, 0, { extraTurns: 6, landingFraction: .25 }).durationMs, 2000);
+});
+
+test("secure landing fractions are strictly inside the segment and deterministic boundary fixtures are not midpoint-biased", () => {
+  assert.equal(secureUnitFraction((array) => { array[0] = 0; return array; }), .5 / 0x100000000);
+  assert.equal(secureUnitFraction((array) => { array[0] = 0xffffffff; return array; }), (0xffffffff + .5) / 0x100000000);
+  for (const landingFraction of [.02, .17, .51, .84, .98]) {
+    const plan = spinPlan(entries, "b", 6500, -27, { extraTurns: 6, landingFraction }); const segment = entryAngles(entries).find((item) => item.entry.id === "b");
+    assert.equal(plan.landingFraction, landingFraction); assert.ok(plan.landingLocalAngle > segment.start && plan.landingLocalAngle < segment.end); assert.equal(entryAtPointer(entries, plan.finalRotation).id, "b");
+  }
+  assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 0 })); assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 1 }));
+});
+
+test("constant-deceleration motion preserves duration, is monotonic, reaches zero velocity, and never overshoots", () => {
+  const duration = 60_000; const samples = Array.from({ length: 101 }, (_, index) => constantDecelerationProgress(duration * index / 100, duration));
+  assert.equal(samples[0], 0); assert.equal(samples.at(-1), 1); assert.ok(samples.every((value, index) => index === 0 || value >= samples[index - 1])); assert.ok(samples.every((value) => value >= 0 && value <= 1));
+  assert.equal(constantDecelerationVelocity(duration, duration, 20_000), 0); assert.ok(constantDecelerationVelocity(0, duration, 20_000) > constantDecelerationVelocity(duration / 2, duration, 20_000));
+  const plan = spinPlan(entries, "b", duration, 12, { landingFraction: .84, turnRandom: .51 }); assert.equal(plan.durationMs, duration); assert.equal(plan.finalRotation, plan.startRotation + plan.totalTravel); assert.ok(plan.turns >= 1);
+});
+
+test("bounded full-turn variance scales with duration without changing configured time", () => {
+  const short = [fullTurnsForDuration(2000, .02), fullTurnsForDuration(2000, .98)]; const normal = [fullTurnsForDuration(6500, .02), fullTurnsForDuration(6500, .98)]; const long = [fullTurnsForDuration(60_000, .02), fullTurnsForDuration(60_000, .98)];
+  assert.ok(short[0] >= 1 && short[1] > short[0]); assert.ok(normal[0] > short[0]); assert.ok(long[0] > normal[0]); assert.ok(long[1] / 60 < short[1] / 2, "long-duration RPM remains bounded");
+});
+
+test("weighted winner probability times uniform within-wedge position produces uniform angular density", () => {
+  const segments = entryAngles(entries); const total = entries.filter((entry) => entry.state === "active").reduce((sum, entry) => sum + entry.weight, 0);
+  for (const segment of segments) { const winnerProbability = segment.entry.weight / total; const densityWithinSegment = 1 / segment.span; assert.ok(Math.abs(winnerProbability * densityWithinSegment - 1 / (Math.PI * 2)) < 1e-12); }
 });
 
 test("secure shuffle is deterministic with injected Web Crypto values and supports 1000 entries", () => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
-import { entryAtPointer, hitTestWheel } from "./engine.mjs";
+import { constantDecelerationProgress, entryAtPointer, hitTestWheel } from "./engine.mjs";
+import type { WheelSpinPlan } from "./engine.mjs";
 import type { WheelConfig, WheelEntry, WheelMediaAsset } from "./types";
 import { WheelsBrandMark } from "./WheelsBrandMark";
 import { pointerAccentShades } from "./segmentStyles.mjs";
@@ -7,26 +8,29 @@ import { drawCoverImage, drawSegmentPattern } from "./segmentPatterns";
 import { createWheelRenderPlan, WHEEL_LABEL_FONT_FAMILY, WHEEL_LABEL_FONT_WEIGHT } from "./wheelRenderPlan.mjs";
 import type { WheelRenderPlan, WheelSegmentRenderPlan } from "./wheelRenderPlan.mjs";
 
-type Props = { entries: WheelEntry[]; config: WheelConfig; rotation: number; durationMs: number; spinning: boolean; onSpinEnd?: () => void; onPointerTargetChange?: (entry: WheelEntry | null) => void; onSegmentSelect?: (entry: WheelEntry, trigger: HTMLCanvasElement) => void; onCentreSpin?: () => void; centreSpinDisabled?: boolean; centreSpinLabel?: string; compact?: boolean; centreImageUrl?: string | null; segmentMedia?: WheelMediaAsset[]; segmentPreviewUrls?: Record<string, string>; winner?: boolean };
+type Props = { entries: WheelEntry[]; config: WheelConfig; rotation: number; durationMs: number; spinning: boolean; animation?: WheelSpinPlan | null; reducedMotion?: boolean; onSpinEnd?: () => void; onPointerTargetChange?: (entry: WheelEntry | null) => void; onSegmentSelect?: (entry: WheelEntry, trigger: HTMLCanvasElement) => void; onCentreSpin?: () => void; centreSpinDisabled?: boolean; centreSpinLabel?: string; compact?: boolean; centreImageUrl?: string | null; segmentMedia?: WheelMediaAsset[]; segmentPreviewUrls?: Record<string, string>; winner?: boolean };
 type SegmentCanvasImage = { source: CanvasImageSource; width: number; height: number };
 type DecodedGifFrame = CanvasImageSource & { close: () => void; displayWidth: number; displayHeight: number; duration?: number | null };
 type GifDecoder = { tracks: { ready: Promise<void>; selectedTrack?: { frameCount: number } | null }; decode: (options: { frameIndex: number }) => Promise<{ image: DecodedGifFrame }>; close: () => void };
 type GifDecoderConstructor = new (options: { data: ArrayBuffer; type: string }) => GifDecoder;
 type GifState = { decoder: GifDecoder; frameCount: number; frameIndex: number; nextAt: number; busy: boolean; bitmap: ImageBitmap | null };
 type RendererMetrics = { version: "wheel-renderer-v19"; size: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; lastReason: string; plan: WheelRenderPlan | null };
-type InstrumentedCanvas = HTMLCanvasElement & { __wheelRendererV19?: RendererMetrics };
+type SpinMetrics = { version: "wheel-spin-v110"; id: string; startAt: number; firstFrameAt: number | null; durationMs: number; startRotation: number; finalRotation: number; frameCount: number; lastFrameAt: number; lastFrameRotation: number; finalFrameRotation: number | null; expectedFinalFrameDelta: number | null; actualFinalFrameDelta: number | null; settledAt: number | null; completed: boolean; reducedMotion: boolean };
+type InstrumentedCanvas = HTMLCanvasElement & { __wheelRendererV19?: RendererMetrics; __wheelSpinV110?: SpinMetrics };
 type FaceCache = { size: number; ratio: number; pixels: number; plan: WheelRenderPlan; underlay: HTMLCanvasElement; foreground: HTMLCanvasElement };
 
 const EMPTY_MEDIA: WheelMediaAsset[] = [];
 const EMPTY_PREVIEWS: Record<string, string> = {};
 
-export function WheelCanvas({ entries, config, rotation, durationMs, spinning, onSpinEnd, onPointerTargetChange, onSegmentSelect, onCentreSpin, centreSpinDisabled = false, centreSpinLabel = "Spin wheel from centre", compact = false, centreImageUrl, segmentMedia = EMPTY_MEDIA, segmentPreviewUrls = EMPTY_PREVIEWS, winner = false }: Props) {
+export function WheelCanvas({ entries, config, rotation, durationMs, spinning, animation = null, reducedMotion = false, onSpinEnd, onPointerTargetChange, onSegmentSelect, onCentreSpin, centreSpinDisabled = false, centreSpinLabel = "Spin wheel from centre", compact = false, centreImageUrl, segmentMedia = EMPTY_MEDIA, segmentPreviewUrls = EMPTY_PREVIEWS, winner = false }: Props) {
   const canvas = useRef<InstrumentedCanvas>(null); const rotor = useRef<HTMLDivElement>(null); const lastTarget = useRef<string | null>(null); const targetCallback = useRef(onPointerTargetChange);
+  const spinEndCallback = useRef(onSpinEnd);
   const active = useMemo(() => entries.filter((entry) => entry.state === "active"), [entries]);
   const shades = useMemo(() => pointerAccentShades(config.pointerAccent), [config.pointerAccent]);
   const imageCache = useRef(new Map<string, SegmentCanvasImage>()); const gifCache = useRef(new Map<string, GifState>());
 
   targetCallback.current = onPointerTargetChange;
+  spinEndCallback.current = onSpinEnd;
 
   useEffect(() => {
     const element = canvas.current; const rotorElement = rotor.current; if (!element || !rotorElement) return;
@@ -88,6 +92,32 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, o
     return () => { stopped = true; cancelAnimationFrame(frame); };
   }, [active, rotation, spinning]);
 
+  useEffect(() => {
+    const element = canvas.current; const rotorElement = rotor.current;
+    if (!element || !rotorElement || !spinning || !animation) { if (rotorElement && !spinning) rotorElement.style.transform = `rotate(${rotation}deg)`; return; }
+    let frame = 0; let stopped = false; let completed = false;
+    const startAt = Number.isFinite(animation.startAt) ? Number(animation.startAt) : performance.now();
+    const duration = Math.max(0, animation.durationMs); const id = animation.id || `${animation.winnerId}:${startAt}`;
+    const metrics: SpinMetrics = { version: "wheel-spin-v110", id, startAt, firstFrameAt: null, durationMs: duration, startRotation: animation.startRotation, finalRotation: animation.finalRotation, frameCount: 0, lastFrameAt: startAt, lastFrameRotation: animation.startRotation, finalFrameRotation: null, expectedFinalFrameDelta: null, actualFinalFrameDelta: null, settledAt: null, completed: false, reducedMotion };
+    element.__wheelSpinV110 = metrics; rotorElement.style.transform = `rotate(${animation.startRotation}deg)`;
+    const finish = (now: number, expectedDelta: number) => {
+      if (completed || stopped) return; completed = true;
+      const before = metrics.lastFrameRotation; rotorElement.style.transform = `rotate(${animation.finalRotation}deg)`;
+      metrics.finalFrameRotation = animation.finalRotation; metrics.expectedFinalFrameDelta = expectedDelta; metrics.actualFinalFrameDelta = animation.finalRotation - before; metrics.lastFrameAt = now; metrics.settledAt = now; metrics.completed = true;
+      spinEndCallback.current?.();
+    };
+    if (reducedMotion || duration === 0) { frame = requestAnimationFrame((now) => finish(now, animation.finalRotation - animation.startRotation)); return () => { stopped = true; cancelAnimationFrame(frame); }; }
+    const sample = (now: number) => {
+      if (stopped) return;
+      if (now < startAt) { frame = requestAnimationFrame(sample); return; }
+      metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const progress = constantDecelerationProgress(elapsed, duration); const nextRotation = animation.startRotation + animation.totalTravel * progress;
+      if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - constantDecelerationProgress(previousElapsed, duration)); finish(now, expectedDelta); return; }
+      rotorElement.style.transform = `rotate(${nextRotation}deg)`; metrics.frameCount += 1; metrics.lastFrameAt = now; metrics.lastFrameRotation = nextRotation; frame = requestAnimationFrame(sample);
+    };
+    frame = requestAnimationFrame(sample);
+    return () => { stopped = true; cancelAnimationFrame(frame); };
+  }, [animation, reducedMotion, rotation, spinning]);
+
   const alternative = active.length ? `Wheel with ${active.length} active participants: ${active.slice(0, 12).map((entry) => entry.label).join(", ")}${active.length > 12 ? ", and more" : ""}.` : "Wheel with no active participants.";
   return (
     <div className={`wheel-stage${compact ? " wheel-stage--compact" : ""}${spinning ? " is-spinning" : ""}${winner ? " is-winner" : ""}`} style={{ "--pointer": shades.base, "--pointer-dark": shades.dark, "--pointer-light": shades.light, "--pointer-glow": shades.glow } as React.CSSProperties}>
@@ -96,7 +126,7 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, o
       <div className="wheel-stage__rim wheel-stage__rim--inner" aria-hidden="true" />
       <div className="wheel-stage__energy" aria-hidden="true" />
       <div className="wheel-stage__pointer" aria-hidden="true"><span className="wheel-stage__pointer-housing"><i className="wheel-stage__pointer-blade" /><i className="wheel-stage__pointer-groove" /></span></div>
-      <div ref={rotor} className="wheel-stage__rotor" style={{ transform: `rotate(${rotation}deg)`, transitionDuration: spinning ? `${durationMs}ms` : "0ms" }} onTransitionEnd={(event) => { if (event.propertyName === "transform" && spinning) onSpinEnd?.(); }}>
+      <div ref={rotor} className="wheel-stage__rotor" style={{ transform: `rotate(${spinning && animation ? animation.startRotation : rotation}deg)`, transitionDuration: "0ms" }} data-spin-duration-ms={spinning && animation ? animation.durationMs : durationMs}>
         <canvas ref={canvas} role="img" aria-label={alternative} className={onSegmentSelect && !spinning ? "is-interactive" : undefined} onClick={(event) => { if (spinning || !onSegmentSelect) return; const parent = event.currentTarget.parentElement; const stage = event.currentTarget.closest<HTMLElement>(".wheel-stage"); if (!parent || !stage) return; const stageRect = stage.getBoundingClientRect(); const size = Math.min(parent.clientWidth, parent.clientHeight); const selected = hitTestWheel(active, { x: event.clientX - stageRect.left - parent.offsetLeft, y: event.clientY - stageRect.top - parent.offsetTop }, size, rotation); if (selected) onSegmentSelect(selected, event.currentTarget); }} />
       </div>
       {onCentreSpin ? <button type="button" className={`wheel-stage__hub is-spin-control${centreImageUrl ? " is-custom" : " is-default"}`} onClick={onCentreSpin} disabled={centreSpinDisabled} aria-label={centreSpinLabel}>{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</button> : <div className={`wheel-stage__hub${centreImageUrl ? " is-custom" : " is-default"}`} aria-hidden="true">{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</div>}

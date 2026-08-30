@@ -30,7 +30,7 @@ export function secureShuffle(items, randomValues) {
 
 export function entryAngles(entries) {
   const active = entries.filter((entry) => entry.state === "active"); const total = active.reduce((sum, entry) => sum + entry.weight, 0); let cursor = 0;
-  return active.map((entry) => { const start = cursor / total * Math.PI * 2; cursor += entry.weight; const end = cursor / total * Math.PI * 2; return { entry, start, end, centre: (start + end) / 2 }; });
+  return active.map((entry) => { const start = cursor / total * Math.PI * 2; cursor += entry.weight; const end = cursor / total * Math.PI * 2; return { entry, start, end, span: end - start, centre: (start + end) / 2 }; });
 }
 
 export function normalizeTurn(value) {
@@ -73,9 +73,56 @@ export function formatProbability(probability) {
   return `${percent.toFixed(digits).replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, "")}%`;
 }
 
-export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, extraTurns) {
+export function secureUnitFraction(randomValues = (values) => globalThis.crypto.getRandomValues(values)) {
+  const values = new Uint32Array(1); randomValues(values);
+  return (values[0] + .5) / 0x100000000;
+}
+
+export function constantDecelerationProgress(elapsedMs, durationMs) {
+  if (!Number.isFinite(durationMs) || durationMs <= 0) return 1;
+  const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
+  return 2 * u - u * u;
+}
+
+export function constantDecelerationVelocity(elapsedMs, durationMs, totalTravel = 1) {
+  if (!Number.isFinite(durationMs) || durationMs <= 0 || !Number.isFinite(totalTravel)) return 0;
+  const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
+  return totalTravel * 2 * (1 - u) / durationMs;
+}
+
+export function fullTurnsForDuration(durationMs, turnRandom) {
+  const duration = Math.min(60000, Math.max(2000, Number(durationMs) || 2000));
+  const random = turnRandom ?? secureUnitFraction();
+  if (!Number.isFinite(random) || random <= 0 || random >= 1) throw new Error("The turn variance must be strictly between zero and one.");
+  const seconds = duration / 1000;
+  const minimum = Math.max(3, Math.ceil(2 + seconds * .5));
+  const spread = Math.max(2, Math.ceil(seconds * .15));
+  return minimum + Math.floor(random * (spread + 1));
+}
+
+export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, options = {}) {
   const segment = entryAngles(entries).find((value) => value.entry.id === winnerId); if (!segment) throw new Error("The winning entry is not active.");
-  const turns = extraTurns ?? 6 + secureBoundedInteger(4); const targetRadians = -segment.centre; const currentRadians = currentRotation * Math.PI / 180;
-  let delta = targetRadians - (currentRadians % (Math.PI * 2)); while (delta <= 0) delta += Math.PI * 2;
-  return { winnerId, durationMs: Math.min(20000, Math.max(2000, durationMs)), turns, finalRotation: currentRotation + turns * 360 + delta * 180 / Math.PI };
+  const legacyTurns = typeof options === "number" ? options : undefined;
+  const settings = typeof options === "number" ? {} : options;
+  const landingFraction = settings.landingFraction ?? secureUnitFraction(settings.randomValues);
+  if (!Number.isFinite(landingFraction) || landingFraction <= 0 || landingFraction >= 1) throw new Error("The landing fraction must be strictly inside the winning segment.");
+  const duration = Math.min(60000, Math.max(2000, Number(durationMs) || 2000));
+  const turns = legacyTurns ?? settings.extraTurns ?? fullTurnsForDuration(duration, settings.turnRandom ?? secureUnitFraction(settings.randomValues));
+  if (!Number.isSafeInteger(turns) || turns < 1) throw new Error("The full-turn count is invalid.");
+  const landingLocalAngle = segment.start + segment.span * landingFraction;
+  const targetRadians = normalizeTurn(-landingLocalAngle); const currentRadians = currentRotation * Math.PI / 180;
+  let positiveTargetDelta = normalizeTurn(targetRadians - normalizeTurn(currentRadians)); if (positiveTargetDelta <= Number.EPSILON) positiveTargetDelta = Math.PI * 2;
+  const totalTravel = turns * Math.PI * 2 + positiveTargetDelta;
+  return {
+    winnerId,
+    durationMs: duration,
+    turns,
+    landingFraction,
+    landingLocalAngle,
+    targetModuloRotation: targetRadians * 180 / Math.PI,
+    positiveTargetDelta: positiveTargetDelta * 180 / Math.PI,
+    startRotation: currentRotation,
+    totalTravel: totalTravel * 180 / Math.PI,
+    finalRotation: currentRotation + totalTravel * 180 / Math.PI,
+  };
 }

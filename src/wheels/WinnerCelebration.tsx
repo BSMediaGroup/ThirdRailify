@@ -7,6 +7,7 @@ import {
   type CelebrationProfile,
 } from "./celebrationProfiles.mjs";
 import { WheelsBrandMark } from "./WheelsBrandMark";
+import { trapFocus } from "./focusTrap";
 import { CheckIcon, EyeOffIcon, TrashIcon } from "../components/Icons";
 
 type Props = {
@@ -239,7 +240,7 @@ export function WinnerCelebration({
   );
 }
 
-function Lightshow({
+export function Lightshow({
   profile,
   reduced,
 }: {
@@ -288,7 +289,7 @@ function Lightshow({
   );
 }
 
-function FireworksCanvas({
+export function FireworksCanvas({
   profile,
   colours,
 }: {
@@ -430,21 +431,4 @@ function hexAlpha(colour: string, alpha: number) {
   const green = Number.parseInt(hex.slice(2, 4), 16);
   const blue = Number.parseInt(hex.slice(4, 6), 16);
   return `rgba(${red},${green},${blue},${alpha})`;
-}
-function trapFocus(event: KeyboardEvent, root: HTMLElement) {
-  const focusable = [
-    ...root.querySelectorAll<HTMLElement>(
-      'button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',
-    ),
-  ];
-  if (!focusable.length) return;
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
 }

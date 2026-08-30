@@ -1,4 +1,12 @@
-# Third Railify Wheels V1.9
+# Third Railify Wheels V1.10
+
+## V1.10 natural landing physics
+
+Winner selection is unchanged: demo/practice still uses browser Web Crypto rejection sampling and Official still selects and persists the authoritative weighted result in Admin before animation. This order is deliberate—the Canvas is presentation and cannot choose, change, or undo an Official winner.
+
+After the winner is known, a separate secure landing value maps one unsigned 32-bit integer as `(value + 0.5) / 2^32`, so it is strictly inside the winning wedge but can be arbitrarily close to either boundary. The local target is `segmentStart + segmentSpan * landingFraction`; there is no midpoint default or centre band. Official responses derive stable landing and turn values with SHA-256 over the secure result ID, Wheel ID, and immutable participant snapshot hash, so an idempotent retry returns the same visual plan without a schema column. Demo/practice generates winner, landing, and turn variance with browser Web Crypto and writes nothing.
+
+Motion is one explicit rigid-body RAF: for `u = clamp(t / T, 0, 1)`, angular displacement progress is `2u - u²`. Velocity decreases continuously to exactly zero at configured duration `T`; the last frame reaches the calculated target with no CSS transition, overshoot, rebound, or post-animation correction. A bounded secure full-turn count scales with the configured 2–60 second duration while duration itself is never randomized. Since winner probability is wedge width divided by total circumference and landing is uniform within that wedge, their product gives constant angular density around the complete weighted Wheel; weighted fairness is unchanged and midpoint bias is removed.
 
 ## V1.9 rigid wheel-face rendering
 
@@ -67,7 +75,7 @@ Voiding is a Master-only Admin annotation. The winner ID, winner label/weight sn
 
 The in-house renderer uses one high-DPI Canvas for static weighted segments and a CSS transform for motion. It redraws only for data/size changes, uses no permanent animation loop, caps device pixel ratio, abbreviates dense labels, and keeps the full participant list in semantic HTML. The tested authority limit is 1,000 entries; label readability intentionally reduces as density rises.
 
-The editor supports quick add, newline/CSV-like bulk input, search, A–Z sort, reverse, Web Crypto shuffle, ordering, duplicate labels with distinct IDs, hide/unhide, weights, colours, and confirmed clear/remove-all actions. It provides four in-house presets, validated palette/pointer colours, background and label treatments, 2–20 second duration, independent generated tick/stinger toggles, celebration intensity, winner message template, and public-history visibility. No arbitrary CSS, remote images, uploaded media, or uploaded sound exists in V1.
+The editor supports quick add, newline/CSV-like bulk input, search, A–Z sort, reverse, Web Crypto shuffle, ordering, duplicate labels with distinct IDs, hide/unhide, weights, colours, and confirmed clear/remove-all actions. It provides four in-house presets, validated palette/pointer colours, background and label treatments, 2–60 second duration, independent generated tick/stinger toggles, celebration intensity, winner message template, and public-history visibility. No arbitrary CSS, remote images, uploaded media, or uploaded sound exists in V1.
 
 V1.2 separates existing-wheel control into two in-context, revision-protected dialogs. The general editor owns identity, visibility, lifecycle, spin/result settings, preview, and the sibling Appearance handoff. The participant manager owns quick/bulk add, search/sort/order, secure shuffle, reverse, hide/unhide, remove/confirmed clear, weights, colours, duplicates, the 1,000-entry bound, and explicit Save/Discard. Dirty close, Escape, browser navigation, and unload do not silently discard; failed/conflicting saves retain the local draft. Only one editor/manager modal is active at a time, with focus trap/restoration, body scroll lock, internal scrolling, and reachable mobile actions.
 
