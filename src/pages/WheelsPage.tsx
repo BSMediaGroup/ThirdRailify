@@ -6,14 +6,18 @@ import type { StageSummary, WheelSummary } from "../wheels/types";
 import { WheelsBrandMark } from "../wheels/WheelsBrandMark";
 import { GalleryOwnerInfo } from "../wheels/GalleryOwnerInfo";
 import { ArrowIcon, BoltIcon } from "../components/Icons";
+import { GalleryHeroAtmosphere } from "../components/GalleryHeroVisuals";
+import { useMotionGate } from "../hooks/useMotionGate";
 import "../styles/wheels.css";
 import "../styles/wheels-stage.css";
 import "../styles/wheels-v111.css";
+import "../styles/gallery-heroes.css";
 
 type DirectoryItem = { type: "wheel"; item: WheelSummary } | { type: "stage"; item: StageSummary };
 
 export function WheelsPage() {
   const { account, openAuth } = useAuth();
+  const hero = useMotionGate<HTMLElement>();
   const [wheels, setWheels] = useState<WheelSummary[]>([]);
   const [stages, setStages] = useState<StageSummary[]>([]);
   const [search, setSearch] = useState("");
@@ -46,7 +50,7 @@ export function WheelsPage() {
   }, [stages, wheels, sort]);
 
   return <div className="wheels-page">
-    <section className="wheels-hero"><div className="container wheels-hero__grid"><div><p className="eyebrow">THIRD RAILIFY DRAW CONTROL</p><h1>SPIN THE <em>RAIL.</em></h1><p className="wheels-hero__lede">Public competition Wheels and multi-wheel Stages built for raid calls, giveaways, games, and live show segments—with a clean line between practice and recorded official draws.</p><div className="wheels-hero__actions">{canCreate ? <><Link className="button button--primary" to="/wheels/new"><BoltIcon /> Build a Wheel</Link><Link className="button button--ghost" to="/wheels/stages/new">Build a Stage</Link></> : account ? <span className="wheels-access-note">Creator access is granted by Admin.</span> : <button className="button button--primary" type="button" onClick={() => openAuth("signin")}><BoltIcon /> Log in for creator access</button>}<a className="button button--ghost button--text" href="#wheel-directory">Explore public draws <ArrowIcon /></a></div></div><HeroWheel /></div><div className="wheels-trust-rail"><span><b>PUBLIC</b> View and demo-spin</span><span><b>APPROVED</b> Create Wheels and Stages</span><span><b>OFFICIAL</b> Server-selected and recorded</span></div></section>
+    <section ref={hero.ref} className={`wheels-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}><GalleryHeroAtmosphere variant="wheels" /><div className="container wheels-hero__grid"><div className="wheels-hero__copy"><p className="eyebrow">THIRD RAILIFY DRAW CONTROL</p><h1>SPIN THE <em>RAIL.</em></h1><p className="wheels-hero__lede">Public competition Wheels and multi-wheel Stages built for raid calls, giveaways, games, and live show segments—with a clean line between practice and recorded official draws.</p><div className="wheels-hero__actions">{canCreate ? <><Link className="button button--primary" to="/wheels/new"><BoltIcon /> Build a Wheel</Link><Link className="button button--ghost" to="/wheels/stages/new">Build a Stage</Link></> : account ? <span className="wheels-access-note">Creator access is granted by Admin.</span> : <button className="button button--primary" type="button" onClick={() => openAuth("signin")}><BoltIcon /> Log in for creator access</button>}<a className="button button--ghost button--text" href="#wheel-directory">Explore public draws <ArrowIcon /></a></div></div><HeroWheel /></div><div className="wheels-trust-rail"><span><i aria-hidden="true" /><b>PUBLIC</b> View and demo-spin</span><span><i aria-hidden="true" /><b>APPROVED</b> Create Wheels and Stages</span><span><i aria-hidden="true" /><b>OFFICIAL</b> Server-selected and recorded</span></div></section>
     <section id="wheel-directory" className="container wheels-directory"><header><div><p className="eyebrow">PUBLIC SIGNALS</p><h2>Wheels and Stages</h2><p>Every listed item is active and public. Hidden, private, and archived work never appears here.</p></div><div className="wheels-directory__filters"><label><span>Search draws</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search title or description" /></label><label><span>Sort</span><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="recent">Recently updated</option><option value="title">Title A–Z</option><option value="participants">Most participants</option></select></label></div></header>
       {error ? <div className="wheel-alert" role="alert">{error}</div> : loading ? <div className="wheels-empty wheels-empty--loading"><WheelsBrandMark /><span>Tuning the draw signal…</span></div> : !items.length ? <div className="wheels-empty"><WheelsBrandMark /><h3>No public Wheels or Stages are live yet.</h3><p>That is an authoritative empty state. Approved creators can publish the first one.</p></div> : <div className="wheel-card-grid">{items.map((entry) => entry.type === "wheel" ? <WheelCard key={`wheel:${entry.item.slug}`} wheel={entry.item} /> : <StageCard key={`stage:${entry.item.slug}`} stage={entry.item} />)}</div>}
     </section>
@@ -71,5 +75,5 @@ function stageCardPalettes(stage: StageSummary): Array<[string, string]> {
 
 function participantTotal(entry: DirectoryItem) { return entry.type === "wheel" ? entry.item.participantCount : entry.item.wheels.reduce((total, wheel) => total + wheel.participantCount, 0); }
 function directoryOrder(entry: DirectoryItem) { return entry.type === "wheel" ? Number(entry.item.directoryOrder || 0) : 0; }
-function HeroWheel() { return <div className="hero-wheel" aria-hidden="true"><div className="hero-wheel__rails" /><div className="hero-wheel__ring"><i /><i /><i /><i /><i /><i /><i /><i /></div><div className="hero-wheel__hub"><WheelsBrandMark /></div><div className="hero-wheel__pointer" /></div>; }
+function HeroWheel() { return <div className="hero-wheel" aria-hidden="true"><div className="hero-wheel__aura" /><div className="hero-wheel__rails"><i /><i /><i /></div><div className="hero-wheel__telemetry hero-wheel__telemetry--top"><span>DRAW ENGINE</span><b>ARMED / 08</b></div><div className="hero-wheel__telemetry hero-wheel__telemetry--bottom"><span>RESULT AUTHORITY</span><b>SERVER LOCK</b></div><div className="hero-wheel__bezel">{Array.from({ length: 24 }, (_, index) => <i key={index} />)}</div><div className="hero-wheel__ring"><i /><i /><i /><i /><i /><i /><i /><i /></div><div className="hero-wheel__inner-orbit"><i /><i /><i /></div><div className="hero-wheel__lens" /><div className="hero-wheel__hub"><WheelsBrandMark /></div><div className="hero-wheel__pointer" /><div className="hero-wheel__readout"><span>DEMO READY</span><i /><b>OFFICIAL SAFE</b></div></div>; }
 function message(reason: unknown) { return reason instanceof Error ? reason.message : "The Wheels directory is unavailable."; }

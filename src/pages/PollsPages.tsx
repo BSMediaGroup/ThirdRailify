@@ -23,10 +23,14 @@ import type { Poll } from "../polls/types";
 import { useCoordinatedPollRefresh } from "../polls/live";
 import { usePageSeo } from "../seo/SeoProvider";
 import type { SeoDocument } from "../../seo/site-seo.js";
+import { GalleryHeroAtmosphere, PollSignalDiagram } from "../components/GalleryHeroVisuals";
+import { useMotionGate } from "../hooks/useMotionGate";
 import "../styles/polls.css";
+import "../styles/gallery-heroes.css";
 
 export function PollsPage() {
   const { account, openAuth } = useAuth();
+  const hero = useMotionGate<HTMLElement>();
   const [view, setView] = useState("open");
   const [search, setSearch] = useState("");
   const [items, setItems] = useState<Poll[]>([]);
@@ -71,37 +75,42 @@ export function PollsPage() {
   );
   return (
     <div className="polls-page">
-      <section className="polls-hero">
-        <div className="container">
-          <p className="eyebrow">THIRD RAILIFY LIVE CHOICE</p>
-          <h1>
-            READ THE <em>ROOM.</em>
-          </h1>
-          <p>
-            Audience Polls built for the web and the live Rumble signal, with
-            one authoritative current vote per source and visible result
-            freshness.
-          </p>
-          <div>
-            {canCreate ? (
-              <Link className="button button--primary" to="/polls/new">
-                Create a Poll
-              </Link>
-            ) : account ? (
-              <span>Creator access is granted by Admin.</span>
-            ) : (
-              <button
-                className="button button--primary"
-                onClick={() => openAuth("signin")}
-              >
-                Log in for creator access
-              </button>
-            )}
-            <a className="button button--ghost" href="#poll-directory">
-              Explore Polls
-            </a>
+      <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
+        <GalleryHeroAtmosphere variant="polls" />
+        <div className="container polls-hero__grid">
+          <div className="polls-hero__copy">
+            <p className="eyebrow">THIRD RAILIFY LIVE CHOICE</p>
+            <h1>
+              READ THE <em>ROOM.</em>
+            </h1>
+            <p>
+              Audience Polls built for the web and the live Rumble signal, with
+              one authoritative current vote per source and visible result
+              freshness.
+            </p>
+            <div className="polls-hero__actions">
+              {canCreate ? (
+                <Link className="button button--primary" to="/polls/new">
+                  Create a Poll
+                </Link>
+              ) : account ? (
+                <span className="polls-access-note">Creator access is granted by Admin.</span>
+              ) : (
+                <button
+                  className="button button--primary"
+                  onClick={() => openAuth("signin")}
+                >
+                  Log in for creator access
+                </button>
+              )}
+              <a className="button button--ghost" href="#poll-directory">
+                Explore Polls
+              </a>
+            </div>
           </div>
+          <PollSignalDiagram />
         </div>
+        <div className="polls-trust-rail"><span><i aria-hidden="true" /><b>WEB</b> Direct audience choice</span><span><i aria-hidden="true" /><b>RUMBLE</b> Live chat signal</span><span><i aria-hidden="true" /><b>AUTHORITATIVE</b> One current vote per source</span></div>
       </section>
       <section id="poll-directory" className="container poll-directory">
         <header>
