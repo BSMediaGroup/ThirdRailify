@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-09-01 - Third Railify Gaming public experience
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added a first-class responsive `/gaming` route with a scoped green sub-brand theme, signal/routing instruments, reduced-motion completion, Monday/Tuesday/Thursday/Friday `2 PM` schedule, exact four-title rotation, direct Gaming Rumble actions, route SEO, and header/mobile/footer discovery.
+- Verified only the exact Luminary Steam app `1648360`; WITCHER, SUPER MARIO WORLD, and PARTY ANIMAL retain the supplied programming labels with branded fallback art and no guessed store mapping. A manual Search Steam helper is available for requests without adding a Steam API or credential.
+- Added a Turnstile-protected suggestion form and same-origin signed relay. Authenticated attribution comes only from the server-resolved session with CSRF, and Admin stores the full request in its existing durable Inbox under `gaming`; no new database migration is needed.
+- Kept the existing global Live Now banner and broadcast state completely unchanged. No separate Gaming live-state path was added.
+- Added focused content, URL-safety, signed Function, Admin persistence/security, SEO, responsive browser, form success/error, root-theme cleanup, overflow, accessibility, and reduced-motion coverage. No deployment, remote write, provider mutation, migration, secret, DNS, or live-status change was performed.
+
 ## 2026-09-01 - Public Polls V1.1 creator UX, media, and owner close
 
 CURRENT VER=0.1.0-alpha.0

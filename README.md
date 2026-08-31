@@ -1,5 +1,15 @@
 # Third Railify V2 public site
 
+## Third Railify Gaming (local implementation)
+
+`/gaming` is a first-class green-accented sub-brand route with the supplied Monday, Tuesday, Thursday, and Friday `2 PM` schedule, direct `https://rumble.com/thirdrailifygaming` viewing actions, and the exact four-title rotation: WITCHER, LUMINARY, SUPER MARIO WORLD, and PARTY ANIMAL. Luminary is the only exact verified Steam match and uses app `1648360`; the other labels deliberately use branded fallback art and no guessed store links. The page includes a manual Steam-search helper, responsive/reduced-motion-safe signal artwork, scoped scrollbar theming that cleans up on navigation, route SEO, and semantic header/mobile/footer discovery.
+
+Suggestions post through same-origin `POST /api/gaming/suggestions`. Public resolves an existing account session server-side, requires its CSRF proof when authenticated, applies Turnstile and a honeypot, and signs a bounded relay to Admin with the existing `THIRDRAILIFY_COMMUNITY_API_SECRET`; the browser supplies no account or Inbox authority. Admin persists the complete request in its existing durable Inbox with category `gaming`, so no new migration, provider key, or Steam API credential is required. The existing global Live Now banner remains unchanged and continues to cover the site's channels.
+
+Focused gates are `npm run test:gaming` and `npm run test:browser:gaming`. No deployment, remote write, migration, provider mutation, secret, DNS, or live-status change was performed.
+
+Gaming tree additions are `functions/api/gaming/suggestions.js`, `src/gaming/client.ts`, `src/gaming/rotation.ts`, `src/pages/GamingPage.tsx`, `src/styles/gaming.css`, and the focused `tests/gaming-*.test.mjs` suites. Existing route, shell, SEO, CSP, package-script, README, and bump-note files are extended in place; no file was removed.
+
 ## Public Polls V1.1 (local implementation)
 
 Poll creation now discovers the signed-in creator's current Rumble source from the bot heartbeat instead of asking for an opaque source ID. Healthy discovery shows the creator name and detected live streams, supports automatic or explicit stream selection, and keeps a clearly separated advanced/custom source path. Stale or offline bot state is shown honestly and never manufactures a source from the provider `now` timestamp or grants Poll automation access.
@@ -135,7 +145,7 @@ The production output is `dist/`.
 
 ## Route architecture
 
-- Implemented: `/`, `/about`, `/shawn`, `/gina`, `/friends`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/checkout`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
+- Implemented: `/`, `/about`, `/shawn`, `/gina`, `/friends`, `/gaming`, `/watch`, `/watch/live`, `/watch/episodes`, `/watch/v/:episodeId`, `/shop`, `/shop/:slug`, `/products/all`, `/products/:category`, `/products/:category/:slug`, `/cart`, `/checkout`, `/community`, `/goats`, `/goats/submit`, `/goats/:slug`, `/donate`, `/account`, `/account/login`, `/policies`, `/terms`, `/privacy`, `/refunds`, `/accessibility`.
 - Migration shells: `/vip`, `/gift-cards`.
 - Preserved aliases: `/live` redirects at the edge to the dedicated player only for an effective current live signal and otherwise to `/watch`, preserving its query; `/goatgate` redirects to `/goats/submit` with query/hash intact; `/support` and `/donate-1` redirect to `/donate` with query/hash intact; `/cart-page` redirects to `/cart` with query/hash intact; `/gift`, `/pricing-plans/list`, `/members-home`, and `/product-page/:slug` remain preserved.
 - Static Pages aliases: `/store` and `/merch` redirect to `/shop`.

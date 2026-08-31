@@ -25,6 +25,7 @@ import { AboutPage } from "./pages/AboutPage";
 import { HostPage } from "./pages/HostPage";
 import { FriendsPage } from "./pages/FriendsPage";
 import { VipPage } from "./pages/VipPage";
+import { GamingPage } from "./pages/GamingPage";
 
 const WheelsPage = lazy(() => import("./pages/WheelsPage").then((module) => ({ default: module.WheelsPage })));
 const WheelPage = lazy(() => import("./pages/WheelPage").then((module) => ({ default: module.WheelPage })));
@@ -79,6 +80,7 @@ export function App() {
         <Route path="/gina" element={<HostPage hostKey="gina" />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/friends" element={<FriendsPage />} />
+        <Route path="/gaming" element={<GamingPage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/vip" element={<VipPage />} />
         <Route path="/donate" element={<DonatePage />} />

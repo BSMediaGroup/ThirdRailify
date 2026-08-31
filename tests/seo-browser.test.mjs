@@ -8,7 +8,7 @@ const ORIGIN = "http://127.0.0.1:4196";
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const ROUTES = [
   "/", "/about", "/shawn", "/gina", "/watch", "/watch/live", "/watch/episodes", "/shop", "/products/apparel",
-  "/cart", "/checkout", "/checkout/success", "/community", "/friends", "/vip", "/donate", "/gift-cards", "/goats", "/goats/submit",
+  "/cart", "/checkout", "/checkout/success", "/community", "/gaming", "/friends", "/vip", "/donate", "/gift-cards", "/goats", "/goats/submit",
   "/wheels", "/wheels/new",
   "/policies", "/terms", "/privacy", "/refunds", "/accessibility", "/account", "/account/login", "/missing-route",
 ];

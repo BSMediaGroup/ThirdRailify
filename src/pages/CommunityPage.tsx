@@ -11,7 +11,7 @@ const communityPaths = [
   { index: "01", label: "Friends", copy: "Meet the people and projects already connected to the show.", href: "/friends", external: false },
   { index: "02", label: "GOATs in the wild", copy: "The current community gallery path for Third Railify out in the world.", href: "/goats", external: false },
   { index: "03", label: "Competition wheels", copy: "Demo-spin public draws or open an approved creator-controlled wheel.", href: "/wheels", external: false },
-  { index: "04", label: "Discord", copy: "Join the official community server and step into the live conversation.", href: THIRD_RAILIFY_DISCORD_FALLBACK_INVITE, external: true },
+  { index: "04", label: "Live polls", copy: "Vote in audience polls and follow authoritative results across the web and live Rumble signal.", href: "/polls", external: false },
 ];
 
 function CommunityHeroSignalField() {

@@ -77,6 +77,8 @@ test("the Community hero runs its dedicated signal network responsively and resp
     await mockApis(page);
     await page.goto(`${ORIGIN}/community`, { waitUntil: "domcontentloaded" });
     await page.locator('.community-hero[data-motion="active"]').waitFor();
+    assert.equal(await page.locator('.community-paths a[href="/polls"]').getByRole("heading", { name: "Live polls" }).count(), 1);
+    assert.equal(await page.locator(".community-paths").getByRole("heading", { name: "Discord" }).count(), 0);
 
     const state = await page.locator(".community-hero").evaluate((hero) => {
       const copy = hero.querySelector(".community-hero__copy").getBoundingClientRect();

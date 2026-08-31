@@ -23,7 +23,7 @@ const navItems = [
   { to: "/community", label: "Community" },
   { to: "/vip", label: "VIP" },
 ];
-const communityItems = [{ to: "/friends", label: "Friends" }, { to: "/goats", label: "GOATS in the Wild" }, { to: "/wheels", label: "Wheels" }, { to: "/polls", label: "Polls" }];
+const communityItems = [{ to: "/gaming", label: "Gaming" }, { to: "/friends", label: "Friends" }, { to: "/goats", label: "GOATS in the Wild" }, { to: "/wheels", label: "Wheels" }, { to: "/polls", label: "Polls" }];
 
 export function SiteShell() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -120,7 +120,7 @@ function SiteFooter() {
           <p>A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.</p>
           <a href="mailto:info@thirdrailify.com">info@thirdrailify.com</a>
         </div>
-        <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/wheels">Wheels</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
+        <div><h2>Explore</h2><Link to="/watch">Watch</Link><Link to="/gaming">Gaming</Link><Link to="/wheels">Wheels</Link><Link to="/shawn">Shawn</Link><Link to="/gina">Gina</Link><Link to="/shop">Shop</Link></div>
         <div><h2>Community</h2><Link to="/friends">Friends</Link><Link to="/goats">Wild Goats</Link><Link to="/wheels">Competition wheels</Link><Link to="/polls">Live Polls</Link><Link to="/vip">VIP</Link><Link to="/donate">Donate</Link></div>
         <div><h2>Policies</h2><Link to="/terms">Terms</Link><Link to="/privacy">Privacy</Link><Link to="/refunds">Refunds</Link><Link to="/accessibility">Accessibility</Link><Link to="/policies">Policy Library</Link></div>
       </div>

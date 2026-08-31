@@ -52,6 +52,12 @@ const STATIC_ROUTES = [
     schemaType: "CollectionPage",
     imageAlt: "Third Railify episode archive",
   }),
+  route("/gaming", "gaming", "Third Railify Gaming | Third Railify", "Watch Third Railify Gaming on Rumble, check the four-session weekly schedule and current game rotation, or securely suggest the next game.", {
+    label: "Gaming",
+    parent: ["Community", "/community"],
+    schemaType: "CollectionPage",
+    imageAlt: "Third Railify Gaming green signal artwork",
+  }),
   route("/wheels", "wheels", "Competition Wheels | Third Railify", "Explore public Third Railify competition wheels for giveaways, games, raid calls, and live show segments, with practice spins kept separate from recorded official draws.", {
     label: "Wheels",
     parent: ["Community", "/community"],
