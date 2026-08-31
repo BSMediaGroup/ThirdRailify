@@ -28,6 +28,7 @@
     "test:seo": "node --test tests/seo.test.mjs",
     "test:browser:seo": "node --test --test-concurrency=1 tests/seo.test.mjs tests/seo-browser.test.mjs",
     "test:storefront": "node --test tests/storefront-commerce.test.mjs",
+    "test:featured": "node --experimental-strip-types --test tests/featured-merchandising.test.mjs tests/featured-merchandising-browser.test.mjs",
     "test:checkout-success": "node --test tests/checkout-success.test.mjs",
     "test:checkout-foundation": "node --test --test-concurrency=1 tests/checkout-foundation.test.mjs",
     "test:browser:checkout": "node --test --test-concurrency=1 tests/checkout-browser.test.mjs",

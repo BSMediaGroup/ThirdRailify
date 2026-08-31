@@ -1,5 +1,27 @@
 # Bump notes
 
+## 2026-08-31 - Authoritative Featured storefront slots
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added one canonical Featured selector and fixed-slot allocator for Home and the Shop hero. Only products with the explicit Admin-projected `featured=true` authority can enter either surface; ordering uses `featuredOrder`, then stable display order and product ID ties.
+- Removed every Featured-specific ordinary-product backfill. Home retains its designed three-card rail and Shop retains its one-primary/two-support composition: zero Featured produces three intentional placeholders, and partial inventory combines each real eligible Featured product with placeholders without duplication.
+- Added restrained Third Railify empty, loading, and catalogue-error treatments with no fake title, price, image, product link, or cart action. A valid zero-Featured response is now visually distinct from a failed catalogue load.
+- Kept surface eligibility semantics explicit: Home can use the existing product-image fallback, while the Shop hero still requires an actual image and valid non-negative CAD presentation price. The ordinary catalogue grid and checkout/readiness rules are unchanged.
+- Made only the same-origin catalogue-list relay `no-store` so an Admin Featured change is observable on a normal Public refresh; product-detail responses, media, pages, and unrelated asset caches remain unchanged. No service worker or browser catalogue cache exists.
+- Added deterministic zero/one/partial/exact/over-capacity/ineligible/non-Featured/error coverage plus rendered Home/Shop checks at 1920, 1440, tablet, and 390 widths with fixed slots, no non-Featured contamination, and no horizontal overflow. Production deployment and live-origin acceptance follow the clean scoped release.
+- Added the existing analytics-beacon fixture response to the focused Home rail and Shop browser harnesses so their catch-all API mocks remain console-clean; production analytics behavior is unchanged.
+- Focused gates are green under repository-pinned Node 22.16.0: 7 Featured unit/browser tests, 8 storefront tests, Home rail and Shop browser suites, lint, typecheck, production build, and the Pages Functions compile.
+
+## 2026-08-31 - About and host feature-art refinement
+
+- Rebuilt About's Aboot Nothing bracket and Pop Culture Beat Down visual in single responsive SVG coordinate systems so entrant joins, championship routing, rings, rails, and typography remain registered at desktop and mobile widths.
+- Upgraded all eight Shawn/Gina topic instruments with denser broadcast chrome, calibrated grids, distinct evidence, spectrum, timing, route, waveform, and independent-frequency compositions, plus motion-gated scan probes, tracers, packets, rotating scopes, and reduced-motion static states.
+- Reworked the `/about`, `/shawn`, and `/gina` closing sections into page-specific signal apertures with layered perspective grids, concentric targeting rings, live traces, edge telemetry, equalizer ticks, cross-rail energy, scanning light, and stronger type staging without changing CTA destinations or supplied copy.
+- Added browser geometry assertions for the corrected About joins/centres and all eight host canvases, plus closing-field activation, reduced motion, required responsive widths, image integrity, overflow, and page-origin console coverage. This refinement is local only; no deployment or external service mutation was performed.
+
 ## 2026-08-31 - Host signal fields and banner republish repair
 
 - Deepened Shawn's hero into a motion-gated broadcast field with transmission sweeps, frequency traces, signal nodes, and restrained gold depth; rebuilt News, Crime, Pop Culture, and The Detour as distinct responsive SVG instruments with viewport-entry trace motion.

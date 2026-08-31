@@ -8,8 +8,9 @@ export async function proxyCommerceCatalogue(env, path, fetchImpl = fetch) {
     const response = await fetchImpl(`${adminOrigin}${path}`, { headers: { Accept: "application/json" }, signal: controller.signal });
     if (response.status === 404) return Response.json({ ok: false, error: "product_not_found", message: "The product was not found." }, { status: 404, headers: noStoreHeaders() });
     if (!response.ok) throw new Error("catalogue_upstream_unavailable");
-    const normalized = path.endsWith("/catalogue") ? normalizeCatalogue(await response.json()) : normalizeProductPayload(await response.json());
-    return Response.json(normalized, { headers: publicCacheHeaders() });
+    const catalogue = path.endsWith("/catalogue");
+    const normalized = catalogue ? normalizeCatalogue(await response.json()) : normalizeProductPayload(await response.json());
+    return Response.json(normalized, { headers: catalogue ? noStoreHeaders() : publicCacheHeaders() });
   } catch {
     return Response.json({ ok: false, error: "catalogue_unavailable", message: "The shop catalogue is temporarily unavailable." }, { status: 503, headers: noStoreHeaders() });
   } finally { clearTimeout(timeout); }

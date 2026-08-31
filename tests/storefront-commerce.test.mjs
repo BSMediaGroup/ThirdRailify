@@ -50,7 +50,7 @@ test("commerce catalogue proxy preserves safe local variant identity and integer
   const normalized = normalizeCatalogue(upstream); assert.equal(normalized.products[0].price.minUnitAmount, 3050); assert.equal(normalized.products[0].variants[1].unitAmount, 3450); assert.deepEqual(Object.keys(normalized.products[0].variants[0]).sort(), ["availability", "color", "currency", "id", "label", "options", "size", "unitAmount"]);
   assert.doesNotMatch(JSON.stringify(normalized), /printful|legacy|migration|sku|provider/i);
   const response = await proxyCommerceCatalogue({ THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" }, "/api/public/commerce/catalogue", async (url) => { assert.equal(url, "https://thirdrailify-admin.pages.dev/api/public/commerce/catalogue"); return Response.json(upstream); });
-  assert.equal(response.status, 200); assert.match(response.headers.get("cache-control"), /stale-while-revalidate/); assert.equal((await response.json()).products.length, 1);
+  assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store"); assert.equal((await response.json()).products.length, 1);
   const failed = await proxyCommerceCatalogue({}, "/api/public/commerce/catalogue", async () => { throw new Error("must not fetch"); }); assert.equal(failed.status, 503); assert.equal(failed.headers.get("cache-control"), "no-store");
 });
 

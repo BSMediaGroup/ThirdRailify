@@ -15,6 +15,7 @@ import popCultureFeature from "../../assets/illustrations/universe-pop-culture-b
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ProductCard } from "../components/ProductCard";
+import { FeaturedEmptySlot, type FeaturedSlotState } from "../components/FeaturedMerchandising";
 import { DiscordCommunityWidget } from "../components/DiscordCommunityWidget";
 import { VipFeatureCard } from "../components/VipFeatureCard";
 import { SignalField } from "../components/SignalField";
@@ -24,6 +25,7 @@ import { ContactDialog } from "../contact/ContactDialog";
 import { useAuth } from "../auth/AuthProvider";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { catalogueProvider } from "../lib/catalogueProvider";
+import { allocateFeaturedSlots, HOME_FEATURED_CAPACITY, isHomeFeaturedEligible } from "../lib/featuredMerchandising";
 import type { CatalogueProduct } from "../types/catalogue";
 import { DEFAULT_HOME_RAIL, type BannerConfig } from "../lib/banner";
 import { effectiveLiveCandidates } from "../lib/liveBanner";
@@ -51,10 +53,12 @@ export function HomePage() {
   const livePlatforms: ReadonlySet<string> = new Set(confirmedLive.map((candidate) => candidate.platform));
   const liveDestinations: ReadonlyMap<string, string> = new Map(confirmedLive.map((candidate) => [candidate.platform, candidate.watchUrl]));
   const [merchProducts, setMerchProducts] = useState<CatalogueProduct[]>([]);
+  const [merchState, setMerchState] = useState<FeaturedSlotState>("loading");
   const [contactOpen, setContactOpen] = useState(false);
   const contactTrigger = useRef<HTMLButtonElement>(null);
   const closeContact = useCallback(() => { setContactOpen(false); window.requestAnimationFrame(() => contactTrigger.current?.focus()); }, []);
-  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => setMerchProducts([...snapshot.products].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || (a.featuredOrder ?? Infinity) - (b.featuredOrder ?? Infinity)).slice(0, 3))).catch(() => setMerchProducts([])); return () => controller.abort(); }, []);
+  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => { setMerchProducts(snapshot.products); setMerchState("empty"); }).catch((reason: unknown) => { if (reason instanceof DOMException && reason.name === "AbortError") return; setMerchProducts([]); setMerchState("error"); }); return () => controller.abort(); }, []);
+  const merchSlots = allocateFeaturedSlots(merchProducts, HOME_FEATURED_CAPACITY, isHomeFeaturedEligible);
   return (
     <>
       <section className="home-hero">
@@ -159,7 +163,7 @@ export function HomePage() {
           <div><p>Products, variants, images, and CAD prices come from the Commerce catalogue. Checkout remains disabled until its production gates are cleared.</p><Link className="text-link" to="/shop">Explore the catalogue <ArrowIcon /></Link></div>
         </div>
         <div className="container product-grid product-grid--featured">
-          {merchProducts.map((product, index) => <ProductCard key={product.id} product={product} index={index} />)}
+          {merchSlots.map((product, index) => product ? <ProductCard key={product.id} product={product} index={index} /> : <FeaturedEmptySlot key={`home-featured-slot-${index}`} variant="card" index={index} state={merchState} />)}
         </div>
       </section>
 

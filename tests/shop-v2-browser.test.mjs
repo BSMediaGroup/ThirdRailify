@@ -101,6 +101,7 @@ async function fixturePage(browser, width, height, reducedMotion = "reduce") {
     if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
     if (path === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (path === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1, BRL: 4.02, EUR: .63, USD: .73, AUD: 1.1 } });
+    if (path === "/api/analytics") return json(route, { ok: true, accepted: true });
     if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
     if (path === "/api/commerce/catalogue") return json(route, catalogue());
