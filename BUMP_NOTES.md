@@ -692,3 +692,9 @@ When a listed provider is live, both homepage social rails now open that confirm
 - Share now uses the Web Share API when available, falls back to clipboard copy, and always produces visible success or copyable fallback feedback. Full unit, legacy browser, V1.6 browser, desktop/mobile visual, and stable deployed acceptance passed; the genuine stable gallery produced no API writes.
 - Refined Public release: `759fd1af` (`https://759fd1af.thirdrailify.pages.dev`), with the matching bundle live at `https://thirdrailify.pages.dev`. No Admin deploy, schema, migration, D1/R2, official-spin authority, provider, Wix, DNS/domain, custom-domain, commit, or push change was made.
 - Final interaction follow-up makes the live centre medallion a native accessible spin button wired to the exact same practice/official handler and disabled-state authority as the existing Spin Wheel control; non-interactive editor and Appearance previews remain decorative. Released Public as `afec35d2` (`https://afec35d2.thirdrailify.pages.dev`), and stable deployed acceptance completed a centre-triggered local demo result with zero API writes or document reloads.
+
+## 2026-09-01 - Polls V1.1 creator alignment repair
+
+- Corrected the Poll creator's top-level error and success banners so they retain the shared centered container instead of replacing its automatic margins with viewport-edge spacing.
+- Polished the existing editor without redesigning it: balanced header/action geometry, consistent panel rhythm, clearer input focus/hover states, responsive full-width mobile actions, and aligned main/preview columns.
+- Added production-build browser coverage that forces the schema-error state, compares both banner edges to the editor layout, captures the corrected desktop state, and retains the 1920/1440/768/390 Poll matrix with console and overflow checks.
