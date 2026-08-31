@@ -433,6 +433,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   };
   const closeOwnedPoll = async () => {
     if (!poll || !access.isOwner || !csrfToken || poll.state !== "open") return;
+    if (!window.confirm(`Close “${poll.title}” and settle its final results? New votes will be rejected.`)) return;
     setBusy("close"); setError("");
     try { const result = await lifecyclePoll(poll.slug, poll.revision, "close", csrfToken); setPoll(result.poll); setNotice("Poll closed. Final results are now settled."); }
     catch (reason) { setError(message(reason)); void load(true); }

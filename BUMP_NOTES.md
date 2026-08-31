@@ -10,9 +10,9 @@ PENDING VER=0.1.0-alpha.0
 - Replaced technical-first Rumble setup with creator-scoped heartbeat discovery, friendly source and live-stream selection, explicit healthy/stale/offline states, and a separate advanced/custom path. Provider timestamps are never treated as creator IDs.
 - Rebuilt the Poll editor into six clear sections with optional banner and per-option image uploads, validated accent presets/custom colour, an in-place premium preview, and intentional create-versus-edit lifecycle states.
 - Unified gallery, quick view, detail, and popout presentation across uploaded and generated artwork, compact voting/result metadata, optional option imagery, accessible focus/keyboard behavior, responsive layouts, and reduced motion.
-- Added a revision-checked **Close Poll** button directly to an open Poll's detail page. It is rendered only when the server projection says the logged-in account is that Poll's owner and updates the detail in place after closure.
+- Added a revision-checked **Close Poll** button directly to an open Poll's detail page. It is rendered only when the server projection says the logged-in account is that Poll's owner, confirms that closure settles results and rejects new votes, and updates the detail in place after closure.
 - Expanded local Poll browser evidence across 1920, 1440, 768, and 390 widths plus discovery, mixed media, tint, modal, popout, signed-in, voting, and owner-close states under `.artifacts/polls-v11`.
-- No deployment, remote migration, D1/R2 write, provider request, secret, DNS, payment, or bot process action was performed.
+- Production rollout followed an additive Commerce D1 backup and the one-time `0027_polls_v11_media.sql` migration. The Public artifact was then rebuilt and accepted on the stable domain; no secret, DNS, payment, provider, or unrelated D1/R2 mutation was performed.
 
 ## 2026-09-01 - Wheel Mechanics V2 natural hybrid decay
 
