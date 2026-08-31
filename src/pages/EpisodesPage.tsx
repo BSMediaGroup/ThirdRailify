@@ -19,24 +19,18 @@ export function EpisodesPage() {
   const motion = useMotionGate<HTMLElement>();
   return (
     <div className="episodes-page">
-      <header ref={motion.ref} className={`episodes-hero episodes-signal-hero${motion.active ? " is-motion-active" : ""}`}>
+      <header ref={motion.ref} className={`episodes-hero episodes-signal-hero${motion.active ? " is-motion-active" : ""}`} data-motion={motion.active ? "active" : "static"}>
         <div className="episodes-signal-field" aria-hidden="true">
           <i className="episodes-signal-field__grid" />
-          <div className="episodes-signal-field__depth"><i /><i /><i /></div>
+          <div className="episodes-signal-field__depth"><i /><i /></div>
           <svg className="episodes-signal-field__frequencies" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path className="episodes-signal-field__frequency episodes-signal-field__frequency--base" d="M-8 82C18 68 32 74 47 54S72 23 108 12" />
             <path className="episodes-signal-field__frequency episodes-signal-field__frequency--base" d="M-8 92C20 84 38 88 53 67S77 42 108 36" />
             <path className="episodes-signal-field__frequency episodes-signal-field__frequency--live episodes-signal-field__frequency--one" d="M-8 82C18 68 32 74 47 54S72 23 108 12" />
             <path className="episodes-signal-field__frequency episodes-signal-field__frequency--live episodes-signal-field__frequency--two" d="M-8 92C20 84 38 88 53 67S77 42 108 36" />
           </svg>
-          <div className="episodes-signal-field__particles">{Array.from({ length: 18 }, (_, index) => <i key={index} />)}</div>
+          <div className="episodes-signal-field__particles">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
           <i className="episodes-signal-field__glow" />
-          <i className="episodes-signal-field__sweep" />
-          <i className="episodes-signal-field__orbit episodes-signal-field__orbit--one" />
-          <i className="episodes-signal-field__orbit episodes-signal-field__orbit--two" />
-          <span className="episodes-signal-field__rail episodes-signal-field__rail--one" />
-          <span className="episodes-signal-field__rail episodes-signal-field__rail--two" />
-          <span className="episodes-signal-field__rail episodes-signal-field__rail--three" />
           <div className="episodes-signal-field__beacon"><i /><i /><i /><span /></div>
         </div>
         <div className="container episodes-signal-hero__layout">

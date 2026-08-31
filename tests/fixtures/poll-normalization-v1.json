@@ -1,0 +1,20 @@
+{
+  "version": "poll-trigger-v1",
+  "vectors": [
+    { "input": "CARROT", "normalized": "carrot" },
+    { "input": "  CarRot  ", "normalized": "carrot" },
+    { "input": "\uFF12", "normalized": "2" },
+    { "input": "  two words!  ", "normalized": "two words!" },
+    { "input": "Stra\u00DFe", "normalized": "stra\u00DFe" }
+  ],
+  "matches": [
+    { "trigger": "CARROT", "message": "carrot", "match": true },
+    { "trigger": "CARROT", "message": "  CarRot  ", "match": true },
+    { "trigger": "CARROT", "message": "I vote carrot", "match": false },
+    { "trigger": "CARROT", "message": "carrot!", "match": false },
+    { "trigger": "2", "message": "  2  ", "match": true },
+    { "trigger": "2", "message": "I WENT 2 THE SHOP I'M BACK NOW", "match": false },
+    { "trigger": "2", "message": "22", "match": false },
+    { "trigger": "2", "message": "2!", "match": false }
+  ]
+}

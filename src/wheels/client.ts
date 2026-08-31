@@ -1,9 +1,14 @@
 import type { AccessibleWheelSummary, OwnedStageSummary, Stage, StageAccess, StageSummary, Wheel, WheelAccess, WheelMediaAsset, WheelSummary } from "./types";
+import { cloneDefaultWheelMechanics, normalizeWheelMechanics } from "./mechanics.mjs";
+import type { WheelMechanics } from "./mechanics.mjs";
 
 export type ApiError = Error & { code?: string; status?: number; issues?: Array<{ wheel: string; code: string; message: string }> };
 type WheelPayload = { ok: true; wheel: Wheel; access: WheelAccess };
 const wheelDetailCache = new Map<string, { expiresAt: number; promise: Promise<WheelPayload> }>();
 const WHEEL_DETAIL_CACHE_MS = 30_000;
+export type WheelMechanicsProjection = { mechanics: WheelMechanics; revision: number | null };
+let mechanicsCache: { expiresAt: number; promise: Promise<WheelMechanicsProjection> } | null = null;
+let mechanicsFallbackReported = false;
 
 export async function listWheels(search = "", sort = "recent") { return request<{ ok: true; items: WheelSummary[]; count: number }>(`/api/wheels?search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}`); }
 export function getWheel(slug: string, options: { force?: boolean } = {}) {
@@ -16,6 +21,14 @@ export function getWheel(slug: string, options: { force?: boolean } = {}) {
 export function prefetchWheel(slug: string) { return getWheel(slug); }
 export function invalidateWheel(slug: string) { wheelDetailCache.delete(slug); }
 export async function getCreatorAccess() { return request<{ ok: true; authenticated: boolean; canCreate: boolean; isMasterAdmin: boolean; maximumOwnedWheels?: number; ownedWheelCount?: number; maximumOwnedStages?: number; ownedStageCount?: number }>("/api/wheels/access"); }
+export function getWheelMechanics(options: { force?: boolean } = {}) {
+  const now = Date.now(); if (!options.force && mechanicsCache && mechanicsCache.expiresAt > now) return mechanicsCache.promise;
+  const promise = request<{ ok: true; mechanics: unknown; revision: number }>("/api/wheels/mechanics")
+    .then((payload) => ({ mechanics: normalizeWheelMechanics(payload.mechanics, { strict: true }), revision: Number.isSafeInteger(payload.revision) ? payload.revision : null }))
+    .catch(() => { if (!mechanicsFallbackReported) { mechanicsFallbackReported = true; console.warn("Wheel mechanics projection unavailable; using Broadcast Smooth defaults."); } return { mechanics: cloneDefaultWheelMechanics(), revision: null }; });
+  mechanicsCache = { expiresAt: now + 30_000, promise }; return promise;
+}
+export function invalidateWheelMechanics() { mechanicsCache = null; }
 export async function createWheel(input: Record<string, unknown>, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>("/api/wheels", { method: "POST", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
 export async function saveWheel(slug: string, input: Record<string, unknown>, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}`, { method: "PUT", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
 export type OfficialAnimationPlan = { version: "spin-plan-v1"; landingFraction: number; turnRandom: number };

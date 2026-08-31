@@ -4,8 +4,7 @@ import rumbleIcon from "../../assets/icons/rumble.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelector, broadcastCandidates, broadcastStateLabel, formatDate } from "../components/BroadcastComponents";
 import { EpisodeCard } from "../components/EpisodeComponents";
-import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
-import { SignalField } from "../components/SignalField";
+import { ArrowIcon, RadioIcon } from "../components/Icons";
 import { SparklingSky } from "../components/SparklingSky";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useEpisodes } from "../hooks/useEpisodes";
@@ -31,21 +30,18 @@ export function WatchPage() {
   return (
     <div className="watch-page watch-v2">
       <section ref={hero.ref} className={`watch-hero${live ? " is-live" : ""}${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
-        <SignalField />
         <div className="watch-hero__atmosphere" aria-hidden="true">
-          <div className="watch-hero__beams"><i /><i /><i /></div>
+          <div className="watch-hero__beams"><i /><i /></div>
           <svg className="watch-hero__routes" viewBox="0 0 100 100" preserveAspectRatio="none">
             <path className="watch-hero__route watch-hero__route--base" d="M-8 79C16 67 27 72 45 53S72 24 108 8" />
             <path className="watch-hero__route watch-hero__route--base" d="M-6 90C20 78 33 83 51 63S78 37 108 29" />
-            <path className="watch-hero__route watch-hero__route--base" d="M7 18C31 30 43 25 57 40S80 61 107 55" />
             <path className="watch-hero__route watch-hero__route--live watch-hero__route--live-one" d="M-8 79C16 67 27 72 45 53S72 24 108 8" />
             <path className="watch-hero__route watch-hero__route--live watch-hero__route--live-two" d="M-6 90C20 78 33 83 51 63S78 37 108 29" />
-            <circle cx="45" cy="53" r=".55" /><circle cx="74" cy="28" r=".55" /><circle cx="57" cy="40" r=".45" />
+            <circle cx="45" cy="53" r=".55" /><circle cx="74" cy="28" r=".55" />
           </svg>
-          <div className="watch-hero__particles">{Array.from({ length: 16 }, (_, index) => <i key={index} />)}</div>
+          <div className="watch-hero__particles">{Array.from({ length: 10 }, (_, index) => <i key={index} />)}</div>
           <div className="watch-hero__beacon"><i /><i /><i /><span /></div>
         </div>
-        <div className="watch-hero__signal" aria-hidden="true"><span /><span /><span /><BoltIcon /></div>
         <div className="container watch-hero__grid">
           <div>
             <p className="eyebrow"><i /> Third Railify broadcast network</p>

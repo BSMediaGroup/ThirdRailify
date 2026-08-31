@@ -30,6 +30,9 @@ const WheelsPage = lazy(() => import("./pages/WheelsPage").then((module) => ({ d
 const WheelPage = lazy(() => import("./pages/WheelPage").then((module) => ({ default: module.WheelPage })));
 const WheelEditorPage = lazy(() => import("./pages/WheelEditorPage").then((module) => ({ default: module.WheelEditorPage })));
 const WheelStagePage = lazy(() => import("./pages/WheelStagePage").then((module) => ({ default: module.WheelStagePage })));
+const PollsPage = lazy(() => import("./pages/PollsPages").then((module) => ({ default: module.PollsPage })));
+const PollDetailPage = lazy(() => import("./pages/PollsPages").then((module) => ({ default: module.PollDetailPage })));
+const PollEditorPage = lazy(() => import("./pages/PollsPages").then((module) => ({ default: module.PollEditorPage })));
 
 export function App() {
   return (
@@ -38,6 +41,7 @@ export function App() {
       <Route path="/wheels/stages/new" element={<WheelStagePage create />} />
       <Route path="/wheels/stages/:slug/edit" element={<WheelStagePage editorRequested />} />
       <Route path="/wheels/stages/:slug" element={<WheelStagePage />} />
+      <Route path="/polls/:slug/popout" element={<PollDetailPage popout />} />
       <Route element={<SiteShell />}>
         <Route index element={<HomePage />} />
         <Route path="/shop" element={<ShopPage />} />
@@ -58,6 +62,10 @@ export function App() {
         <Route path="/wheels/:slug/edit" element={<WheelPage editorRequested />} />
         <Route path="/wheels/:slug" element={<WheelPage />} />
         <Route path="/wheel" element={<Navigate to="/wheels" replace />} />
+        <Route path="/polls" element={<PollsPage />} />
+        <Route path="/polls/new" element={<PollEditorPage create />} />
+        <Route path="/polls/:slug/edit" element={<PollEditorPage />} />
+        <Route path="/polls/:slug" element={<PollDetailPage />} />
         <Route path="/live" element={<LiveAliasPage />} />
         <Route path="/account" element={<AccountPage />} />
         <Route path="/account/profile" element={<AccountPage />} />

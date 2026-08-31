@@ -1,3 +1,13 @@
+# Third Railify Wheels V1.12
+
+## V1.12 global spin-mechanics projection
+
+Admin owns one revisioned global mechanics policy in the existing `wheel_settings` global row. Public reads only the sanitized same-origin `/api/wheels/mechanics` projection and snapshots its revision and normalized values before a spin begins. Broadcast Smooth is the safe fallback and default; a failed read produces one bounded diagnostic without changing winner selection. Regular, Presentation, Practice/Demo, Official, focused Stage Wheels, and Stage Spin All all use the same pure mechanics module. Spin All fetches once and gives every Wheel the same start timestamp and policy snapshot.
+
+Each named/custom profile is a non-negative normalized velocity envelope with a bounded launch hold, smooth main decay, and smooth low-speed tail. Rotation completion is its analytic integral divided by total curve area, so progress is exactly zero/one at the endpoints and velocity is exactly zero at the configured duration. Full-turn count derives from sampled launch RPS, duration, and curve area, then remains within global integer bounds while final target rotation continues to come from the already-selected winner and strictly interior landing fraction. Classic Linear remains available as the explicit constant-deceleration compatibility profile.
+
+The V1.9 renderer contract is unchanged: Canvas layout is created in local, unrotated geometry and CSS applies the sole rigid-body rotation. No curve can alter participants, weights, winner, landing slice, Official persistence, or idempotency.
+
 # Third Railify Wheels V1.11
 
 ## V1.11 wide detail and premium directory polish

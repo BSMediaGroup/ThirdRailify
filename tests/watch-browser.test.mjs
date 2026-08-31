@@ -38,7 +38,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         const watchHero = page.locator(".watch-hero");
         await page.locator(".watch-hero.is-motion-active").waitFor({ timeout: 8_000 });
         assert.equal(await watchHero.locator(".watch-hero__atmosphere").count(), 1, "Watch hero has one dedicated environmental signal field");
-        assert.equal(await watchHero.locator(".watch-hero__particles i").count(), 16, "Watch hero carries the complete sparse particle field");
+        assert.equal(await watchHero.locator(":scope > .signal-field,.watch-hero__signal").count(), 0, "Watch hero removes the two legacy background systems");
+        assert.equal(await watchHero.locator(".watch-hero__beams i").count(), 2, "Watch hero keeps two restrained depth beams");
+        assert.equal(await watchHero.locator(".watch-hero__particles i").count(), 10, "Watch hero carries the consolidated sparse particle field");
         assert.equal(await watchHero.locator(".watch-hero__route--live").count(), 2, "Watch hero carries both live transmission routes");
         assert.notEqual(await watchHero.locator(".watch-hero__route--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", `Watch hero routes animate at ${width}x${height}`);
         await page.locator(".episode-featured-grid .episode-card").first().waitFor();
@@ -75,7 +77,9 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         await archiveRegister.waitFor();
         await page.locator(".episodes-signal-hero.is-motion-active").waitFor({ timeout: 8_000 });
         assert.equal(await page.locator(".episodes-signal-field__glow").count(), 1, "archive hero has a dedicated animated light field");
-        assert.equal(await page.locator(".episodes-signal-field__particles i").count(), 18, "archive hero carries the complete retained-signal particle field");
+        assert.equal(await page.locator(".episodes-signal-field__sweep,.episodes-signal-field__orbit,.episodes-signal-field__rail").count(), 0, "archive hero removes competing sweep, orbit, and rail systems");
+        assert.equal(await page.locator(".episodes-signal-field__depth > i").count(), 2, "archive hero keeps two restrained depth bands");
+        assert.equal(await page.locator(".episodes-signal-field__particles i").count(), 12, "archive hero carries the consolidated retained-signal particle field");
         assert.equal(await page.locator(".episodes-signal-field__frequency--live").count(), 2, "archive hero carries both animated frequency paths");
         assert.notEqual(await page.locator(".episodes-signal-field__frequency--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", `archive frequencies animate at ${width}x${height}`);
         assert.match(await page.locator(".archive-status__latest strong").innerText(), /Aug 27, 2026/i, "latest date remains compact, readable metadata");

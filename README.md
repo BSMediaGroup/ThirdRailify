@@ -1,5 +1,17 @@
 # Third Railify V2 public site
 
+## Public Polls V1 (local implementation)
+
+`/polls` is a first-class gallery with open/closed/recent/mine views, compact result cards, an accessible quick-view dialog, public detail stages, a lightweight noindex `/polls/:slug/popout`, and approved-creator draft/edit routes. Open views share one visibility-aware seven-second refresh coordinator; closed results do not keep polling. Exact totals and the current browser/account vote come only from the Admin authority.
+
+Public owns no Poll D1 or bot/provider credential. Same-origin `functions/api/polls/[[path]].js` resolves the existing Account session server-side and signs bounded requests to Admin with `THIRDRAILIFY_COMMUNITY_API_SECRET`. `anyone` Polls use an opaque signed `thirdrailify_poll_voter` HttpOnly, SameSite=Lax cookie backed by the separate Public-only `THIRDRAILIFY_POLL_ANONYMOUS_SECRET`; it is best-effort browser identity, not proof of one human. Authenticated writes also require the existing session CSRF proof. Browser-submitted account/voter IDs and totals are never trusted.
+
+Creator access is Admin-granted and disabled for regular accounts by default. The editor supports 2â€“12 stable options, generated numeric or custom whole-message triggers, collision warnings, a local trigger tester, audience policy, Rumble source/binding, draft save, and lifecycle controls. NFKC + outer-trim + locale-independent lowercase is the shared V1 normalization contract; internal spaces and punctuation remain significant.
+
+Tree additions: `functions/api/polls/[[path]].js`, `src/polls/`, `src/pages/PollsPages.tsx`, `src/styles/polls.css`, `tests/fixtures/poll-normalization-v1.json`, and `tests/polls-functions.test.mjs`. Local rollout requires Admin migration `0025_automations_polls_v1.sql`, the shared Public/Admin relay secret already named above, `THIRDRAILIFY_POLL_ANONYMOUS_SECRET`, and deployment in Admin â†’ bot â†’ Public order after staging acceptance. No migration or deployment was performed here.
+
+Wheels V1.12 consumes a sanitized, revisioned global spin-mechanics projection from Admin. All Wheel surfaces share the same analytic decay engine while winner selection, Official persistence, and the rotation-invariant V1.9 Canvas renderer remain separate and unchanged. See `WHEELS_V1.md` and `WHEELS_STAGE_V1.md` for the authority and Stage snapshot contracts.
+
 ## Account identity access badges (local implementation)
 
 Authenticated account widgets now use one presentation-only role visual system without changing session, Account, or authorization authority. Master Admin uses a gold lightning shield, Full Admin uses a gold check shield, and Regular User uses a muted gray check shield. The compact header places the badge immediately after the display name, while the dropdown identity is limited to display name plus badge and one email/username line. The badge stays visible when the compact trigger collapses on small screens.

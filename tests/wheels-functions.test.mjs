@@ -9,6 +9,12 @@ test("anonymous wheel reads proxy only to the Admin authority and preserve the p
   assert.equal(response.status, 200); assert.equal(seen.input, "https://thirdrailify-admin.pages.dev/api/wheels?sort=title"); assert.equal(seen.init.method, "GET"); assert.deepEqual(await response.json(), { ok: true, items: [], count: 0 });
 });
 
+test("global mechanics uses one cacheable Public-safe Admin projection", async () => {
+  let calls = 0; let seen; const mechanics = { mechanicsVersion: 1, curveProfile: "broadcast-smooth", customCurve: { holdEnd: .04, tailStart: .66, tailVelocity: .12 }, launchRpsMin: 2.8, launchRpsMax: 4.5, minimumFullTurns: 2, maximumFullTurns: 120, defaultSpinDurationMs: 6500, minimumSpinDurationMs: 2000, maximumSpinDurationMs: 60000 };
+  const response = await proxyRead(new Request("https://thirdrailify.com/api/wheels/mechanics"), { THIRDRAILIFY_ADMIN_ORIGIN: "https://admin.thirdrailify.com" }, "mechanics", async (input, init) => { calls += 1; seen = { input: String(input), init }; return Response.json({ ok: true, mechanics, revision: 9 }, { headers: { "Cache-Control": "public, max-age=30, s-maxage=120" } }); });
+  assert.equal(calls, 1); assert.equal(seen.input, "https://admin.thirdrailify.com/api/wheels/mechanics"); assert.equal(seen.init.method, "GET"); assert.match(response.headers.get("cache-control"), /s-maxage=120/); assert.deepEqual(await response.json(), { ok: true, mechanics, revision: 9 });
+});
+
 test("public Stage discovery stays a read-only Admin projection with segment-safe paths", async () => {
   const seen = []; const fetchImpl = async (input, init) => { seen.push({ input: String(input), init }); return Response.json({ ok: true, items: [], count: 0 }); };
   const env = { THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" };

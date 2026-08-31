@@ -26,9 +26,12 @@ test("Watch and Episodes heroes keep their diagrams stable while the presentatio
     await page.locator(".watch-hero.is-motion-active").waitFor({ timeout: 8_000 });
     assert.equal(await page.locator(".watch-signal-card").count(), 1, `Watch feature diagram remains present at ${width}px`);
     assert.equal(await page.locator(".watch-hero__atmosphere").count(), 1);
-    assert.equal(await page.locator(".watch-hero__particles i").count(), 16);
+    assert.equal(await page.locator(".watch-hero > .signal-field,.watch-hero__signal").count(), 0, "legacy Watch background systems stay removed");
+    assert.equal(await page.locator(".watch-hero__beams i").count(), 2);
+    assert.equal(await page.locator(".watch-hero__particles i").count(), 10);
     assert.equal(await page.locator(".watch-hero__route--live").count(), 2);
     assert.notEqual(await animationName(page, ".watch-hero__route--live"), "none", `Watch routes animate at ${width}px`);
+    if (width === 1440 || width === 390) await assertStrokeMotion(page, ".watch-hero__route--live", `Watch route motion progresses at ${width}px`);
     await assertStableHero(page, ".watch-hero", ".watch-signal-card", width);
     if (process.env.WATCH_BROWSER_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
       await page.locator(".watch-hero").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-hero-${width}.png`) });
@@ -37,9 +40,12 @@ test("Watch and Episodes heroes keep their diagrams stable while the presentatio
     await page.goto(`${ORIGIN}/watch/episodes`, { waitUntil: "domcontentloaded" });
     await page.locator(".episodes-signal-hero.is-motion-active").waitFor({ timeout: 8_000 });
     assert.equal(await page.locator(".archive-status").count(), 1, `Episodes feature diagram remains present at ${width}px`);
-    assert.equal(await page.locator(".episodes-signal-field__particles i").count(), 18);
+    assert.equal(await page.locator(".episodes-signal-field__sweep,.episodes-signal-field__orbit,.episodes-signal-field__rail").count(), 0, "competing archive background systems stay removed");
+    assert.equal(await page.locator(".episodes-signal-field__depth > i").count(), 2);
+    assert.equal(await page.locator(".episodes-signal-field__particles i").count(), 12);
     assert.equal(await page.locator(".episodes-signal-field__frequency--live").count(), 2);
     assert.notEqual(await animationName(page, ".episodes-signal-field__frequency--live"), "none", `Episodes frequencies animate at ${width}px`);
+    if (width === 1440 || width === 390) await assertStrokeMotion(page, ".episodes-signal-field__frequency--live", `Episodes route motion progresses at ${width}px`);
     await assertStableHero(page, ".episodes-signal-hero", ".archive-status", width);
     if (process.env.WATCH_BROWSER_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
       await page.waitForTimeout(1_200);
@@ -59,6 +65,7 @@ test("Watch and Episodes heroes keep their diagrams stable while the presentatio
   assert.equal(await animationName(page, ".watch-hero__beacon"), "none");
   await page.goto(`${ORIGIN}/watch/episodes`, { waitUntil: "domcontentloaded" });
   assert.equal(await page.locator(".episodes-signal-hero").getAttribute("class"), "episodes-hero episodes-signal-hero");
+  assert.equal(await page.locator(".episodes-signal-hero").getAttribute("data-motion"), "static");
   assert.equal(await animationName(page, ".episodes-signal-field__frequency--live"), "none");
   assert.equal(await animationName(page, ".episodes-signal-field__beacon"), "none");
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
@@ -83,6 +90,14 @@ async function assertStableHero(page, heroSelector, diagramSelector, width) {
 }
 
 async function animationName(page, selector) { return page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName); }
+
+async function assertStrokeMotion(page, selector, message) {
+  const route = page.locator(selector).first();
+  const before = await route.evaluate((element) => getComputedStyle(element).strokeDashoffset);
+  await page.waitForTimeout(360);
+  const after = await route.evaluate((element) => getComputedStyle(element).strokeDashoffset);
+  assert.notEqual(after, before, message);
+}
 
 function collectErrors(page) {
   const errors = [];

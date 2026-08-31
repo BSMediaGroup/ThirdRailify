@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
-import { entryAtPointer, hitTestWheel, suspenseDecayProgress } from "./engine.mjs";
+import { entryAtPointer, hitTestWheel } from "./engine.mjs";
 import type { WheelSpinPlan } from "./engine.mjs";
+import { progressAtTime, spinRotationAtTime } from "./mechanics.mjs";
 import type { WheelConfig, WheelEntry, WheelMediaAsset } from "./types";
 import { WheelsBrandMark } from "./WheelsBrandMark";
 import { pointerAccentShades } from "./segmentStyles.mjs";
@@ -15,7 +16,7 @@ type GifDecoder = { tracks: { ready: Promise<void>; selectedTrack?: { frameCount
 type GifDecoderConstructor = new (options: { data: ArrayBuffer; type: string }) => GifDecoder;
 type GifState = { decoder: GifDecoder; frameCount: number; frameIndex: number; nextAt: number; busy: boolean; bitmap: ImageBitmap | null };
 type RendererMetrics = { version: "wheel-renderer-v19"; size: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; lastReason: string; plan: WheelRenderPlan | null };
-type SpinMetrics = { version: "wheel-spin-v110"; id: string; startAt: number; firstFrameAt: number | null; durationMs: number; startRotation: number; finalRotation: number; frameCount: number; lastFrameAt: number; lastFrameRotation: number; finalFrameRotation: number | null; expectedFinalFrameDelta: number | null; actualFinalFrameDelta: number | null; settledAt: number | null; completed: boolean; reducedMotion: boolean };
+  type SpinMetrics = { version: "wheel-spin-v112"; id: string; startAt: number; firstFrameAt: number | null; durationMs: number; startRotation: number; finalRotation: number; frameCount: number; lastFrameAt: number; lastFrameRotation: number; finalFrameRotation: number | null; expectedFinalFrameDelta: number | null; actualFinalFrameDelta: number | null; settledAt: number | null; completed: boolean; reducedMotion: boolean; mechanicsVersion: number; curveProfile: string; mechanicsRevision: number | null };
 type InstrumentedCanvas = HTMLCanvasElement & { __wheelRendererV19?: RendererMetrics; __wheelSpinV110?: SpinMetrics };
 type FaceCache = { size: number; ratio: number; pixels: number; plan: WheelRenderPlan; underlay: HTMLCanvasElement; foreground: HTMLCanvasElement };
 
@@ -98,7 +99,7 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     let frame = 0; let stopped = false; let completed = false;
     const startAt = Number.isFinite(animation.startAt) ? Number(animation.startAt) : performance.now();
     const duration = Math.max(0, animation.durationMs); const id = animation.id || `${animation.winnerId}:${startAt}`;
-    const metrics: SpinMetrics = { version: "wheel-spin-v110", id, startAt, firstFrameAt: null, durationMs: duration, startRotation: animation.startRotation, finalRotation: animation.finalRotation, frameCount: 0, lastFrameAt: startAt, lastFrameRotation: animation.startRotation, finalFrameRotation: null, expectedFinalFrameDelta: null, actualFinalFrameDelta: null, settledAt: null, completed: false, reducedMotion };
+    const metrics: SpinMetrics = { version: "wheel-spin-v112", id, startAt, firstFrameAt: null, durationMs: duration, startRotation: animation.startRotation, finalRotation: animation.finalRotation, frameCount: 0, lastFrameAt: startAt, lastFrameRotation: animation.startRotation, finalFrameRotation: null, expectedFinalFrameDelta: null, actualFinalFrameDelta: null, settledAt: null, completed: false, reducedMotion, mechanicsVersion: animation.mechanics.mechanicsVersion, curveProfile: animation.mechanics.curveProfile, mechanicsRevision: animation.mechanicsRevision };
     element.__wheelSpinV110 = metrics; rotorElement.style.transform = `rotate(${animation.startRotation}deg)`;
     const finish = (now: number, expectedDelta: number) => {
       if (completed || stopped) return; completed = true;
@@ -110,8 +111,8 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     const sample = (now: number) => {
       if (stopped) return;
       if (now < startAt) { frame = requestAnimationFrame(sample); return; }
-      metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const progress = suspenseDecayProgress(elapsed, duration); const nextRotation = animation.startRotation + animation.totalTravel * progress;
-      if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - suspenseDecayProgress(previousElapsed, duration)); finish(now, expectedDelta); return; }
+      metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const nextRotation = spinRotationAtTime(animation, elapsed);
+      if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - progressAtTime(previousElapsed, duration, animation.mechanics)); finish(now, expectedDelta); return; }
       rotorElement.style.transform = `rotate(${nextRotation}deg)`; metrics.frameCount += 1; metrics.lastFrameAt = now; metrics.lastFrameRotation = nextRotation; frame = requestAnimationFrame(sample);
     };
     frame = requestAnimationFrame(sample);

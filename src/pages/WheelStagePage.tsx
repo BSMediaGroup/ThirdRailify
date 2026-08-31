@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { BackIcon, EditIcon, FullscreenIcon, OfficialIcon, PracticeIcon, SoundIcon } from "../components/Icons";
-import { getStage, officialSpin, officialSpinAll, type ApiError } from "../wheels/client";
+import { getStage, getWheelMechanics, officialSpin, officialSpinAll, type ApiError } from "../wheels/client";
 import { selectWeightedEntry, spinPlan, type WheelSpinPlan } from "../wheels/engine.mjs";
 import { computeStageLayout, type StageDirection } from "../wheels/stageLayout.mjs";
 import { spinSoundProfile, winnerSoundProfile } from "../wheels/soundPresets.mjs";
@@ -64,7 +64,7 @@ export function WheelStagePage({ create = false, editorRequested = false }: { cr
       let entry: WheelEntry; let official = false; let officialPlan: { landingFraction: number; turnRandom: number } | null = null; let id: string = crypto.randomUUID();
       if (drawMode === "official") { if (!item.access?.canSpinOfficially || !csrfToken || !wheel.revision) throw new Error("Official spinner access is unavailable for this Wheel."); const response = await officialSpin(wheel.slug, wheel.revision, crypto.randomUUID(), csrfToken); entry = activeEntries.find((candidate) => candidate.id === response.spin.winningEntryId) || fallbackEntry(response.spin.winningEntryId, response.spin.winningLabel); official = true; officialPlan = response.spin.animationPlan; id = response.spin.id; }
       else entry = selectWeightedEntry(activeEntries);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; const current = spins[index]?.rotation || 0; const plan = { ...spinPlan(activeEntries, entry.id, wheel.config.spinDurationMs, current, officialPlan || {}), id, startAt: performance.now() + 24 };
+      const mechanics = await getWheelMechanics(); const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; const current = spins[index]?.rotation || 0; const plan = { ...spinPlan(activeEntries, entry.id, wheel.config.spinDurationMs, current, { ...(officialPlan || {}), mechanics: mechanics.mechanics, mechanicsRevision: mechanics.revision }), id, startAt: performance.now() + 24 };
       pending.current.set(index, { entry, official, mode: official ? "official" : account ? "practice" : "demo", source: "individual", wheel }); settled.current.delete(index); setActiveSpin(index); setSpins((state) => ({ ...state, [index]: { rotation: plan.finalRotation, animation: plan, spinning: true, requesting: false, result: null, substate: "spinning", source: "individual" } }));
       if (!soundMuted && wheel.config.tickingSoundEnabled && !reduced) audio.startWheel(index, plan.durationMs, wheel.config.spinSoundPreset || "classic-tick", 1);
     } catch (reason) { setError(message(reason)); setActiveSpin(null); pending.current.delete(index); setSpins((current) => ({ ...current, [index]: { ...(current[index] || emptySpin()), animation: null, spinning: false, requesting: false, substate: "failed" } })); }
@@ -76,11 +76,11 @@ export function WheelStagePage({ create = false, editorRequested = false }: { cr
     try {
       const authoritative = mode === "official" ? await requestOfficialAll(stage, available, batchKey, csrfToken!) : null;
       if (authoritative && authoritative.results.length !== available.length) throw new Error("Official All returned an incomplete result set.");
-      const startAt = performance.now() + 48; const next: Record<number, SpinState> = {}; const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const mechanics = await getWheelMechanics(); const startAt = performance.now() + 48; const next: Record<number, SpinState> = {}; const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       for (let index = 0; index < available.length; index += 1) {
         const wheel = available[index].wheel; const entries = wheel.entries.filter((entry) => entry.state === "active"); const officialResult = authoritative?.results[index];
         const entry = officialResult ? entries.find((candidate) => candidate.id === officialResult.spin.winningEntryId) || fallbackEntry(officialResult.spin.winningEntryId, officialResult.spin.winningLabel) : selectWeightedEntry(entries);
-        const plan = { ...spinPlan(entries, entry.id, wheel.config.spinDurationMs, spins[index]?.rotation || 0, officialResult?.spin.animationPlan || {}), id: officialResult?.spin.id || crypto.randomUUID(), startAt };
+        const plan = { ...spinPlan(entries, entry.id, wheel.config.spinDurationMs, spins[index]?.rotation || 0, { ...(officialResult?.spin.animationPlan || {}), mechanics: mechanics.mechanics, mechanicsRevision: mechanics.revision }), id: officialResult?.spin.id || crypto.randomUUID(), startAt };
         pending.current.set(index, { entry, official: mode === "official", mode, source: "spin-all", wheel }); next[index] = { rotation: plan.finalRotation, animation: plan, spinning: true, requesting: false, result: null, substate: "spinning", source: "spin-all" };
       }
       setSpins((current) => ({ ...current, ...next })); setPhase("spinning_all"); const soundIndexes = available.map(({ wheel }, index) => wheel.config.tickingSoundEnabled && spinSoundProfile(wheel.config.spinSoundPreset || "classic-tick") ? index : -1).filter((index) => index >= 0); const gainScale = stageAudioGain(soundIndexes.length);

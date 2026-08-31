@@ -1,5 +1,29 @@
 # Bump notes
 
+## 2026-08-31 - Public Polls V1
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added `/polls`, compact open/closed/recent/mine cards, accessible quick view, live detail, noindex popout, and approved-creator create/edit routes with deliberate empty/loading/error/closed/zero-vote states.
+- Added signed same-origin Poll Functions. Account identity is resolved from the existing session and CSRF-protected; anonymous `anyone` voting uses a server-issued signed HttpOnly cookie and never trusts a browser voter ID or total.
+- Added whole-message NFKC/outer-trim/lowercase trigger testing, stable option editing, numeric defaults, custom collision warnings, Rumble source/binding configuration, and authoritative lifecycle controls.
+- Open surfaces share one seven-second visibility-aware refresh coordinator. Result bars use server aggregates and reduced-motion-safe presentation across desktop, tablet, and mobile.
+- Added focused relay/origin/opaque-cookie tests and the canonical cross-language normalization fixture. Admin migration `0025_automations_polls_v1.sql`, secrets, and Admin â†’ bot â†’ Public rollout remain pending; no deployment or remote migration occurred.
+
+## 2026-08-31 - Wheels V1.12 global spin mechanics
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added one Public-consumed, Admin-owned mechanics projection for Broadcast Smooth, Heavy Flywheel, Quick Draw, Long Settle, Classic Linear, and a bounded Custom curve. The active mechanics and revision are snapshotted once per spin; Stage Spin All shares one fetch and start time across all six Wheels.
+- Replaced frame-integrated motion with an analytic normalized velocity integral. Every permitted curve reaches the preselected target exactly at the configured duration, with zero terminal velocity and no snap, overshoot, bounce, or change to weighted/Official winner authority.
+- Launch speed, full-turn bounds, and new-Wheel duration policy now live in the existing revisioned global settings row. Public falls back once to Broadcast Smooth if the projection is unavailable and never gains mutation authority.
+- Added pure curve/integration/snapshot tests plus focused 1920 and 3440 six-Wheel browser evidence. The V1.9 Canvas stays rotation-invariant and rigid throughout the new motion envelope.
+- This implementation is local and uncommitted. No migration, D1 write, provider action, deployment, or production mechanics mutation has been performed.
+
 ## 2026-08-31 - Authoritative Featured storefront slots
 
 CURRENT VER=0.1.0-alpha.0

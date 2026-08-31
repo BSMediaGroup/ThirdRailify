@@ -1,5 +1,9 @@
 # Wheels Stage V1.1
 
+## V1.12 shared Stage mechanics snapshot
+
+Practice/Demo All and Official All now resolve the global Public mechanics projection once per batch and snapshot the same mechanics revision, curve parameters, and start timestamp into every Wheel's local animation plan. Individual and focused Stage spins use the identical planner. A settings change during an active batch therefore affects only future spins; it cannot split the current six-Wheel presentation or change any authoritative result. Stage persistence, membership, Official atomicity, and result ownership are unchanged.
+
 Stage Mode composes one to six existing Wheels without duplicating Wheel configuration, entrants, media authority, or official results. Public owns discovery and presentation; Admin and Commerce D1 remain the source of truth.
 
 ## V1.11 presentation polish

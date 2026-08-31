@@ -1,10 +1,11 @@
 import type { WheelEntry } from "./types";
+import type { WheelMechanics } from "./mechanics.mjs";
 export type RandomValues = (values: Uint32Array) => Uint32Array;
 export function secureBoundedInteger(maxExclusive: number, randomValues?: RandomValues): number;
 export function selectWeightedEntry(entries: WheelEntry[], randomValues?: RandomValues): WheelEntry;
 export function secureShuffle<T>(items: readonly T[], randomValues?: RandomValues): T[];
-export type SpinPlanOptions = { landingFraction?: number; turnRandom?: number; extraTurns?: number; randomValues?: RandomValues };
-export type WheelSpinPlan = { winnerId: string; durationMs: number; turns: number; landingFraction: number; landingLocalAngle: number; targetModuloRotation: number; positiveTargetDelta: number; startRotation: number; totalTravel: number; finalRotation: number; startAt?: number; id?: string };
+export type SpinPlanOptions = { landingFraction?: number; turnRandom?: number; extraTurns?: number; randomValues?: RandomValues; mechanics?: WheelMechanics; mechanicsRevision?: number | null };
+export type WheelSpinPlan = { winnerId: string; durationMs: number; turns: number; landingFraction: number; landingLocalAngle: number; targetModuloRotation: number; positiveTargetDelta: number; startRotation: number; totalTravel: number; finalRotation: number; mechanics: WheelMechanics; mechanicsRevision: number | null; startAt?: number; id?: string };
 export function entryAngles(entries: WheelEntry[]): Array<{ entry: WheelEntry; start: number; end: number; span: number; centre: number }>;
 export function normalizeTurn(value: number): number;
 export function entryAtAngle(entries: WheelEntry[], angle: number): WheelEntry | null;
@@ -17,5 +18,5 @@ export function constantDecelerationProgress(elapsedMs: number, durationMs: numb
 export function constantDecelerationVelocity(elapsedMs: number, durationMs: number, totalTravel?: number): number;
 export function suspenseDecayProgress(elapsedMs: number, durationMs: number): number;
 export function suspenseDecayVelocity(elapsedMs: number, durationMs: number, totalTravel?: number): number;
-export function fullTurnsForDuration(durationMs: number, turnRandom?: number): number;
+export function fullTurnsForDuration(durationMs: number, turnRandom?: number, mechanics?: WheelMechanics, positiveTargetDeltaDegrees?: number): number;
 export function spinPlan(entries: WheelEntry[], winnerId: string, durationMs: number, currentRotation?: number, options?: number | SpinPlanOptions): WheelSpinPlan;

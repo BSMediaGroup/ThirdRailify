@@ -63,6 +63,17 @@ const STATIC_ROUTES = [
     parent: ["Wheels", "/wheels"],
     index: false,
   }),
+  route("/polls", "polls", "Live Audience Polls | Third Railify", "Vote in open Third Railify Polls and follow authoritative live results from the web and Rumble chat.", {
+    label: "Polls",
+    parent: ["Community", "/community"],
+    schemaType: "CollectionPage",
+    imageAlt: "Third Railify live audience Polls",
+  }),
+  route("/polls/new", "polls:new", "Build a Live Poll | Third Railify", "Create a versioned Third Railify audience Poll with exact whole-message chat triggers and server-owned results.", {
+    label: "Build a Poll",
+    parent: ["Polls", "/polls"],
+    index: false,
+  }),
   route("/wheels/stages/new", "wheels:stage:new", "Build a Multi-Wheel Stage | Third Railify", "Compose up to six accessible Third Railify Wheels into a private-by-default responsive Stage.", {
     label: "Build a Stage",
     parent: ["Wheels", "/wheels"],
@@ -238,6 +249,15 @@ export function staticSeoForPath(pathname, origin) {
     imagePath: "/social/farm1.webp",
     imageAlt: "GOATS in the Wild community story",
   }), origin);
+
+  const poll = path.match(/^\/polls\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|popout))?$/);
+  if (poll) {
+    const popout = poll[2] === "popout"; const canonicalPath = `/polls/${poll[1]}`;
+    const editing = poll[2] === "edit";
+    return createSeoDocument(route(path, `poll:${poll[1]}:${popout ? "popout" : editing ? "edit" : "view"}`, popout ? "Poll Results Popout | Third Railify" : editing ? "Edit an Audience Poll | Third Railify" : "Live Audience Poll | Third Railify", popout ? "Open a focused, read-only Third Railify Poll results display for a live production surface." : editing ? "Manage this protected, versioned Third Railify audience Poll through the approved creator control surface." : "Vote in a Third Railify audience Poll and follow authoritative combined web and Rumble chat results.", {
+      label: popout ? "Poll popout" : editing ? "Edit Poll" : "Audience Poll", parent: ["Polls", "/polls"], canonicalPath, index: !popout && !editing, schemaType: "WebApplication", imageAlt: "Third Railify live audience Poll",
+    }), origin);
+  }
 
   const stage = path.match(/^\/wheels\/stages\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit))?$/);
   if (stage) {

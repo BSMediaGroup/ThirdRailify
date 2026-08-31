@@ -79,49 +79,36 @@ export function secureUnitFraction(randomValues = (values) => globalThis.crypto.
 }
 
 export function suspenseDecayProgress(elapsedMs, durationMs) {
-  if (!Number.isFinite(durationMs) || durationMs <= 0) return 1;
-  const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
-  // Integral of 2(1-u)^2(1+2u): the launch and midpoint speeds match the
-  // previous motion, while the final quarter falls away much more gently.
-  return 2 * u - 2 * u ** 3 + u ** 4;
+  return progressAtTime(elapsedMs, durationMs, DEFAULT_WHEEL_MECHANICS);
 }
 
 export function suspenseDecayVelocity(elapsedMs, durationMs, totalTravel = 1) {
-  if (!Number.isFinite(durationMs) || durationMs <= 0 || !Number.isFinite(totalTravel)) return 0;
-  const u = Math.min(1, Math.max(0, Number(elapsedMs) / durationMs));
-  return totalTravel * 2 * (1 - u) ** 2 * (1 + 2 * u) / durationMs;
+  return velocityAtTime(elapsedMs, durationMs, DEFAULT_WHEEL_MECHANICS, totalTravel);
 }
 
 // Compatibility exports for older consumers of the Wheels engine module.
 export const constantDecelerationProgress = suspenseDecayProgress;
 export const constantDecelerationVelocity = suspenseDecayVelocity;
 
-export function fullTurnsForDuration(durationMs, turnRandom) {
-  const duration = Math.min(60000, Math.max(2000, Number(durationMs) || 2000));
+export function fullTurnsForDuration(durationMs, turnRandom, mechanics = DEFAULT_WHEEL_MECHANICS, positiveTargetDeltaDegrees = 0) {
   const random = turnRandom ?? secureUnitFraction();
-  if (!Number.isFinite(random) || random <= 0 || random >= 1) throw new Error("The turn variance must be strictly between zero and one.");
-  const seconds = duration / 1000;
-  // The normalized motion still averages half of the launch speed. Budget
-  // enough travel to make the first frame decisive, then let the suspense
-  // curve taper to zero without changing duration or landing authority.
-  const launchRotationsPerSecond = Math.max(2.5, 3.6 - Math.max(0, seconds - 2) * .02);
-  const minimum = Math.max(4, Math.ceil(launchRotationsPerSecond * seconds / 2));
-  const spread = Math.max(2, Math.ceil(Math.min(8, seconds * .18)));
-  return minimum + Math.floor(random * (spread + 1));
+  return fullTurnsForMechanics(durationMs, random, mechanics, positiveTargetDeltaDegrees);
 }
 
 export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, options = {}) {
   const segment = entryAngles(entries).find((value) => value.entry.id === winnerId); if (!segment) throw new Error("The winning entry is not active.");
   const legacyTurns = typeof options === "number" ? options : undefined;
   const settings = typeof options === "number" ? {} : options;
+  const mechanics = normalizeWheelMechanics(settings.mechanics || DEFAULT_WHEEL_MECHANICS);
   const landingFraction = settings.landingFraction ?? secureUnitFraction(settings.randomValues);
   if (!Number.isFinite(landingFraction) || landingFraction <= 0 || landingFraction >= 1) throw new Error("The landing fraction must be strictly inside the winning segment.");
-  const duration = Math.min(60000, Math.max(2000, Number(durationMs) || 2000));
-  const turns = legacyTurns ?? settings.extraTurns ?? fullTurnsForDuration(duration, settings.turnRandom ?? secureUnitFraction(settings.randomValues));
-  if (!Number.isSafeInteger(turns) || turns < 1) throw new Error("The full-turn count is invalid.");
+  const duration = Math.min(mechanics.maximumSpinDurationMs, Math.max(mechanics.minimumSpinDurationMs, Number(durationMs) || mechanics.defaultSpinDurationMs));
   const landingLocalAngle = segment.start + segment.span * landingFraction;
   const targetRadians = normalizeTurn(-landingLocalAngle); const currentRadians = currentRotation * Math.PI / 180;
   let positiveTargetDelta = normalizeTurn(targetRadians - normalizeTurn(currentRadians)); if (positiveTargetDelta <= Number.EPSILON) positiveTargetDelta = Math.PI * 2;
+  const positiveTargetDeltaDegrees = positiveTargetDelta * 180 / Math.PI;
+  const turns = legacyTurns ?? settings.extraTurns ?? fullTurnsForDuration(duration, settings.turnRandom ?? secureUnitFraction(settings.randomValues), mechanics, positiveTargetDeltaDegrees);
+  if (!Number.isSafeInteger(turns) || turns < mechanics.minimumFullTurns || turns > mechanics.maximumFullTurns) throw new Error("The full-turn count is outside the global mechanics bounds.");
   const totalTravel = turns * Math.PI * 2 + positiveTargetDelta;
   return {
     winnerId,
@@ -130,9 +117,18 @@ export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, opt
     landingFraction,
     landingLocalAngle,
     targetModuloRotation: targetRadians * 180 / Math.PI,
-    positiveTargetDelta: positiveTargetDelta * 180 / Math.PI,
+    positiveTargetDelta: positiveTargetDeltaDegrees,
     startRotation: currentRotation,
     totalTravel: totalTravel * 180 / Math.PI,
     finalRotation: currentRotation + totalTravel * 180 / Math.PI,
+    mechanics,
+    mechanicsRevision: Number.isSafeInteger(settings.mechanicsRevision) ? settings.mechanicsRevision : null,
   };
 }
+import {
+  DEFAULT_WHEEL_MECHANICS,
+  fullTurnsForMechanics,
+  normalizeWheelMechanics,
+  progressAtTime,
+  velocityAtTime,
+} from "./mechanics.mjs";

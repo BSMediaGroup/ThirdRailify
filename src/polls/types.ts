@@ -1,0 +1,4 @@
+export type PollState = "draft" | "open" | "closed" | "archived";
+export type PollOption = { id: string; position: number; label: string; description: string | null; trigger: string; normalizedTrigger: string; votes: number };
+export type Poll = { id: string; slug: string; title: string; description: string | null; state: PollState; public: boolean; webVotingMode: "anyone" | "signed_in"; rumbleEnabled: boolean; rumbleSourceScope: string | null; livestreamMode?: "automatic" | "exact"; livestreamId?: string | null; requestedIntervalSeconds?: number; revision: number; totalVotes: number; options: PollOption[]; owner: { id: string; displayName: string; avatarUrl: string | null; adminLevel?: string | null }; updatedAt: string; openedAt: string | null; closedAt: string | null; currentVoteOptionId?: string | null; theme?: { accent?: string; layout?: string } };
+export type PollAccess = { canManage: boolean; canManageAll: boolean; isOwner: boolean };

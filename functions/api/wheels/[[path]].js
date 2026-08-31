@@ -48,6 +48,10 @@ async function proxyRead(request, env, path, fetchImpl) {
     const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
     return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
   }
+  if (path === "mechanics") {
+    const response = await boundedFetch(fetchImpl, adminUrl(env, "/api/wheels/mechanics"), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
+    return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
+  }
   if (path && session) return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId });
   const targetPath = `/api/wheels${path ? `/${encodePath(path)}` : ""}${new URL(request.url).search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);

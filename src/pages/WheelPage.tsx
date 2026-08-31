@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { wheelSeo } from "../../seo/site-seo.js";
 import { BackIcon, CloseIcon, EditIcon, FullscreenIcon, OfficialIcon, PaletteIcon, PracticeIcon, ShareIcon, SoundIcon } from "../components/Icons";
 import { useAuth } from "../auth/AuthProvider";
-import { getCreatorAccess, getWheel, listWheels, officialSpin, prefetchWheel, winnerAction } from "../wheels/client";
+import { getCreatorAccess, getWheel, getWheelMechanics, listWheels, officialSpin, prefetchWheel, winnerAction } from "../wheels/client";
 import { formatProbability, participantOdds, selectWeightedEntry, spinPlan } from "../wheels/engine.mjs";
 import type { WheelSpinPlan } from "../wheels/engine.mjs";
 import { wheelGalleryNeighbours, wheelNavigationDirection } from "../wheels/navigation.mjs";
@@ -127,7 +127,7 @@ export function WheelPage({ presentation = false, editorRequested = false }: { p
         setSpinRequestPending(true); const response = await officialSpin(activeWheel.slug, activeWheel.revision, crypto.randomUUID(), csrfToken);
         entry = active.find((candidate) => candidate.id === response.spin.winningEntryId) || { id: response.spin.winningEntryId, label: response.spin.winningLabel, order: 0, weight: 1, colour: null, style: null, state: "active" }; official = true; officialPlan = response.spin.animationPlan; planId = response.spin.id;
       } else entry = selectWeightedEntry(active);
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; const plan = { ...spinPlan(active, entry.id, activeWheel.config.spinDurationMs, rotation, officialPlan || {}), id: planId };
+      const mechanics = await getWheelMechanics(); const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches; const plan = { ...spinPlan(active, entry.id, activeWheel.config.spinDurationMs, rotation, { ...(officialPlan || {}), mechanics: mechanics.mechanics, mechanicsRevision: mechanics.revision }), id: planId };
       pending.current = { entry, official }; setAnimation(plan); setSpinning(true); setRotation(plan.finalRotation);
       if (!soundMuted && activeWheel.config.tickingSoundEnabled && !reduced) audio.startTicks(plan.durationMs, activeWheel.config.spinSoundPreset || "classic-tick");
     } catch (reason) { setError(message(reason)); setSpinning(false); setAnimation(null); pending.current = null; audio.stopTicks(); } finally { setSpinRequestPending(false); }
