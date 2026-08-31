@@ -1,12 +1,14 @@
 import type { WheelEntry } from "./types";
-import type { WheelMechanics } from "./mechanics.mjs";
+import type { CompiledWheelMechanics, WheelMechanics } from "./mechanics.mjs";
 export type RandomValues = (values: Uint32Array) => Uint32Array;
 export function secureBoundedInteger(maxExclusive: number, randomValues?: RandomValues): number;
 export function selectWeightedEntry(entries: WheelEntry[], randomValues?: RandomValues): WheelEntry;
 export function secureShuffle<T>(items: readonly T[], randomValues?: RandomValues): T[];
 export type SpinPlanOptions = { landingFraction?: number; turnRandom?: number; extraTurns?: number; randomValues?: RandomValues; mechanics?: WheelMechanics; mechanicsRevision?: number | null };
-export type WheelSpinPlan = { winnerId: string; durationMs: number; turns: number; landingFraction: number; landingLocalAngle: number; targetModuloRotation: number; positiveTargetDelta: number; startRotation: number; totalTravel: number; finalRotation: number; mechanics: WheelMechanics; mechanicsRevision: number | null; startAt?: number; id?: string };
+export type WheelSpinPlan = { winnerId: string; durationMs: number; turns: number; landingFraction: number; landingLocalAngle: number; targetModuloRotation: number; positiveTargetDelta: number; startRotation: number; totalTravel: number; finalRotation: number; mechanics: WheelMechanics; compiledMechanics: CompiledWheelMechanics; mechanicsRevision: number | null; startAt?: number; id?: string };
 export function entryAngles(entries: WheelEntry[]): Array<{ entry: WheelEntry; start: number; end: number; span: number; centre: number }>;
+export function segmentBoundaryRotations(entries: WheelEntry[]): number[];
+export function countSegmentBoundaryCrossings(boundaries: readonly number[], fromRotation: number, toRotation: number): number;
 export function normalizeTurn(value: number): number;
 export function entryAtAngle(entries: WheelEntry[], angle: number): WheelEntry | null;
 export function entryAtPointer(entries: WheelEntry[], rotationDegrees: number, pointerAngle?: number): WheelEntry | null;

@@ -33,6 +33,22 @@ export function entryAngles(entries) {
   return active.map((entry) => { const start = cursor / total * Math.PI * 2; cursor += entry.weight; const end = cursor / total * Math.PI * 2; return { entry, start, end, span: end - start, centre: (start + end) / 2 }; });
 }
 
+export function segmentBoundaryRotations(entries) {
+  return entryAngles(entries)
+    .map((segment) => ((-segment.start * 180 / Math.PI) % 360 + 360) % 360)
+    .sort((left, right) => left - right);
+}
+
+export function countSegmentBoundaryCrossings(boundaries, fromRotation, toRotation) {
+  if (!Number.isFinite(fromRotation) || !Number.isFinite(toRotation) || toRotation <= fromRotation) return 0;
+  let count = 0;
+  for (const boundary of boundaries) {
+    if (!Number.isFinite(boundary)) continue;
+    count += Math.max(0, Math.floor((toRotation - boundary) / 360) - Math.floor((fromRotation - boundary) / 360));
+  }
+  return count;
+}
+
 export function normalizeTurn(value) {
   const turn = Math.PI * 2;
   return ((value % turn) + turn) % turn;
@@ -100,6 +116,7 @@ export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, opt
   const legacyTurns = typeof options === "number" ? options : undefined;
   const settings = typeof options === "number" ? {} : options;
   const mechanics = normalizeWheelMechanics(settings.mechanics || DEFAULT_WHEEL_MECHANICS);
+  const compiledMechanics = compileVelocityProfile(mechanics);
   const landingFraction = settings.landingFraction ?? secureUnitFraction(settings.randomValues);
   if (!Number.isFinite(landingFraction) || landingFraction <= 0 || landingFraction >= 1) throw new Error("The landing fraction must be strictly inside the winning segment.");
   const duration = Math.min(mechanics.maximumSpinDurationMs, Math.max(mechanics.minimumSpinDurationMs, Number(durationMs) || mechanics.defaultSpinDurationMs));
@@ -122,10 +139,12 @@ export function spinPlan(entries, winnerId, durationMs, currentRotation = 0, opt
     totalTravel: totalTravel * 180 / Math.PI,
     finalRotation: currentRotation + totalTravel * 180 / Math.PI,
     mechanics,
+    compiledMechanics,
     mechanicsRevision: Number.isSafeInteger(settings.mechanicsRevision) ? settings.mechanicsRevision : null,
   };
 }
 import {
+  compileVelocityProfile,
   DEFAULT_WHEEL_MECHANICS,
   fullTurnsForMechanics,
   normalizeWheelMechanics,

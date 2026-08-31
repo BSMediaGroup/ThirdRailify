@@ -51,8 +51,8 @@ test("Presentation owner clears the navigator at the mobile breakpoint only", ()
 });
 
 test("Stage overview avatars and focused info controls intentionally differ", () => {
-  assert.match(stagePage, /<WheelOwnerDetails wheel=\{wheel\} access=\{props\.item\.access\} variant="avatar"/);
-  assert.match(stagePage, /<WheelOwnerDetails wheel=\{wheel\} access=\{props\.item\.access\} variant="info"/);
+  assert.match(stagePage, /<WheelOwnerDetails\s+wheel=\{wheel\}\s+access=\{props\.item\.access\}\s+variant="avatar"/);
+  assert.match(stagePage, /<WheelOwnerDetails\s+wheel=\{wheel\}\s+access=\{props\.item\.access\}\s+variant="info"/);
   assert.match(styles, /--wheels-focus-rail:\s*286px/);
   assert.match(styles, /\.stage-focus-spin\s*\{[^}]*min-height:\s*52px/s);
   assert.match(styles, /\.stage-focus-sound\s*\{[^}]*min-height:\s*38px/s);

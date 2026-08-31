@@ -1,5 +1,15 @@
 # Third Railify Wheels V1.13
 
+## Wheel Mechanics V2 natural hybrid compiler
+
+The global mechanics projection now normalizes to `mechanicsVersion: 2` and defaults missing policy to Natural Hybrid. Its normalized speed state is compiled from `dw/ds = -(q w^2 + b w + c S((onset + blend - w) / blend))`, where `S(x) = 6x^5 - 15x^4 + 10x^3` after clamping to `[0,1]`. Final Natural Hybrid tuning is quadratic drag `0.05`, viscous drag `0.40`, clicker friction `0.02`, onset `0.18`, blend `0.12`, capture speed `0.010`, and capture window `0.080`. These normalized coefficients describe game mechanics, not measured SI values.
+
+Frame-based multiply/subtract damping was rejected because frame count would change the result and a fixed subtraction becomes a visible low-speed brake. The pure compiler instead uses bounded fixed-step Float64 RK4 at `1/2048`, stops raw integration at the tiny capture speed, joins a monotone C2 quintic Hermite capture with bounded derivative reduction, resamples 1025 points, integrates velocity with Simpson midpoint intervals, and normalizes cumulative area to exact progress `[0,1]`. RAF performs only elapsed-time lookup and rigid rotation; winner, interior landing fraction, total travel, and configured duration remain inputs frozen before motion.
+
+Built-ins are Natural Hybrid `(0.05,0.40,0.02,0.18,0.12,0.010,0.080)`, Heavy Flywheel `(0,0.25,0.05,0.10,0.12,0.008,0.020)`, Suspense Tail `(0.20,0.80,0.01,0.30,0.20,0.003,0.070)`, Quick Draw `(0.80,0.20,0.02,0.20,0.20,0.005,0.025)`, and Mechanical Clicker `(0.04,0.34,0.09,0.26,0.18,0.012,0.045)`, followed by Classic Linear, exact Legacy Broadcast Smooth, Custom Physics, and seven-point monotone-PCHIP Custom Shape. V1 built-ins normalize without a write; V1 custom intent is sampled into bounded shape points and persists as V2 only on explicit Admin Save. No schema migration is required.
+
+Pointer audio now comes from actual weighted-segment boundary crossings emitted by the rigid renderer. Skipped frames produce a bounded click burst; no independent audio cadence or pointer impulse alters angle. Regular, Presentation, Stage tile/focus, and Spin All consume the same immutable compiled snapshot, while Stage resolves the Public projection once per batch.
+
 ## V1.13 canonical responsive geometry
 
 Every runtime Wheel now has one non-rotating square frame and one scalar outer diameter. The rotor is absolutely inset by 3.9% of that square frame, remains `aspect-ratio: 1 / 1`, and receives rigid `rotate(...)` transforms only. Canvas CSS geometry fills that rotor square; its backing bitmap uses one rounded side from the rotor diameter and bounded DPR. The ResizeObserver watches the non-rotating outer frame, so rotation creates no resize invalidation or static-face rebuild.
@@ -10,7 +20,7 @@ The mobile ellipse risk came from Stage Overview combining an aspect-ratio-deriv
 
 Local browser acceptance covers detail and Presentation at desktop, 473x1024, 430x932, 412x915, 390x844, and 844x390; Presentation additionally covers 2048x1152, 2560x1080, 3440x1440, and 1280x720. Equivalent layout scales 67-200%, DPR 1/1.25/1.5/2/3, repeated desktop-tablet-phone-landscape-phone-desktop resize, orientation return, Fullscreen enter/exit, Appearance preview, patterned/static-image/GIF/weighted content, and idle/mid-spin states all held exact square geometry. Across 60 recorded conditions the frame and rotor circularity ratios were exactly `1`, face/outer stayed `0.8759`, hub/outer stayed `0.220005-0.220082`, Canvas backing stayed square, and transform X/Y scales were identical. V1.9 caching remains intact: spin changes rotation and bounded GIF composites only, with no static plan rebuild.
 
-Public preview `28c27233-34d6-4d7a-a35c-d376d3c77a0d` and production `f7a02e4c-3aa6-4f6d-a4e1-1d10f4171348` serve the same artifact-manifest SHA-256 `9cc87bc381d4a0f71a74003050caa06cdc3066bad2c8757b862c6bb277fc67d2`. Immutable preview acceptance repeated the full Wheel and Stage matrices. Live `thirdrailify.com` acceptance on the genuine `standard-wheel-test` route passed desktop and 390x844 idle/mid-spin/settled geometry with zero Wheels writes; stable and immutable entry JS/CSS hashes match byte-for-byte.
+Public preview `41bdf876-c2ce-4ea9-a441-82ac891215e1` on branch `wheels-natural-mechanics-v2` and production `f1845dff-806d-4529-a81a-9e2b945ebd6f` serve the same 50-file artifact-manifest SHA-256 `e829be958fe4a8ecfc7eb51512dc9ff7d2053eae8aa09d6a3dded55d29b1ec5b`. Genuine preview and live `thirdrailify.com` acceptance used the 10-second `wheel-of-names-test` Demo and four-Wheel `sample-stage` Spin All: each surface made one mechanics request, every plan reported Mechanics V2 and exact final rotation, Stage shared one start/revision, responsive geometry had no overflow, and no Wheel API write occurred. Stable and immutable entry JS hashes match byte-for-byte.
 
 # Third Railify Wheels V1.12
 

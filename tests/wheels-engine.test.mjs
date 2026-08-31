@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { entryAngles, entryAtPointer, formatProbability, fullTurnsForDuration, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, secureUnitFraction, selectWeightedEntry, spinPlan, suspenseDecayProgress, suspenseDecayVelocity } from "../src/wheels/engine.mjs";
+import { countSegmentBoundaryCrossings, entryAngles, entryAtPointer, formatProbability, fullTurnsForDuration, hitTestWheel, participantOdds, secureBoundedInteger, secureShuffle, secureUnitFraction, segmentBoundaryRotations, selectWeightedEntry, spinPlan, suspenseDecayProgress, suspenseDecayVelocity } from "../src/wheels/engine.mjs";
 
 const entries = [
   { id: "a", label: "Duplicate", order: 0, weight: 1, colour: "#F3C928", state: "active" },
@@ -39,7 +39,7 @@ test("secure landing fractions are strictly inside the segment and deterministic
   assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 0 })); assert.throws(() => spinPlan(entries, "b", 6500, 0, { extraTurns: 6, landingFraction: 1 }));
 });
 
-test("Broadcast Smooth motion preserves duration, is monotonic, reaches zero velocity, and never overshoots", () => {
+test("Natural Hybrid motion preserves duration, is monotonic, reaches zero velocity, and never overshoots", () => {
   const duration = 60_000; const samples = Array.from({ length: 101 }, (_, index) => suspenseDecayProgress(duration * index / 100, duration));
   assert.equal(samples[0], 0); assert.equal(samples.at(-1), 1); assert.ok(samples.every((value, index) => index === 0 || value >= samples[index - 1])); assert.ok(samples.every((value) => value >= 0 && value <= 1));
   assert.equal(suspenseDecayVelocity(duration, duration, 20_000), 0); assert.ok(suspenseDecayVelocity(0, duration, 20_000) > suspenseDecayVelocity(duration / 2, duration, 20_000));
@@ -48,7 +48,7 @@ test("Broadcast Smooth motion preserves duration, is monotonic, reaches zero vel
 
 test("bounded full-turn variance scales with duration without changing configured time", () => {
   const short = [fullTurnsForDuration(2000, .02), fullTurnsForDuration(2000, .98)]; const normal = [fullTurnsForDuration(6500, .02), fullTurnsForDuration(6500, .98)]; const long = [fullTurnsForDuration(60_000, .02), fullTurnsForDuration(60_000, .98)];
-  assert.ok(short[0] >= 1 && short[1] > short[0]); assert.ok(normal[0] > short[0]); assert.ok(long[0] > normal[0]); assert.ok(long[1] / 60 < short[1] / 2, "long-duration RPM remains bounded");
+  assert.deepEqual(short, [2, 2]); assert.ok(normal[1] > normal[0]); assert.ok(normal[0] > short[0]); assert.ok(long[0] > normal[0]); assert.ok(long[1] / 60 < normal[1] / 6.5, "long-duration RPM remains bounded");
 });
 
 test("normal spins preserve an energetic launch, rounded decay, and deep settling tail", () => {
@@ -57,11 +57,11 @@ test("normal spins preserve an energetic launch, rounded decay, and deep settlin
   const midpointRps = suspenseDecayVelocity(duration / 2, duration, plan.totalTravel) * 1000 / 360;
   const lateRps = suspenseDecayVelocity(duration * .9, duration, plan.totalTravel) * 1000 / 360;
   const finalApproachRps = suspenseDecayVelocity(duration * .95, duration, plan.totalTravel) * 1000 / 360;
-  assert.ok(plan.turns >= 8 && plan.turns <= 12, `expected 8-12 turns, received ${plan.turns}`);
+  assert.ok(plan.turns >= 5 && plan.turns <= 8, `expected 5-8 turns, received ${plan.turns}`);
   assert.ok(launchRps >= 2.8 && launchRps <= 4.5, `launch speed ${launchRps.toFixed(2)} rps is outside the intended range`);
   assert.ok(midpointRps < launchRps * .3 && midpointRps > launchRps * .15);
   assert.ok(lateRps < launchRps * .03);
-  assert.ok(finalApproachRps < lateRps * .2);
+  assert.ok(finalApproachRps < lateRps * .35);
   assert.equal(suspenseDecayVelocity(duration, duration, plan.totalTravel), 0);
   assert.equal(entryAtPointer(entries, plan.finalRotation).id, "b", "faster travel must not change the authoritative winner");
 });
@@ -101,6 +101,16 @@ test("rotation-aware wheel hit testing ignores centre and exterior clicks", () =
 test("settled spin winner and pointer target agree", () => {
   const plan = spinPlan(entries, "b", 6500, -27, 6);
   assert.equal(entryAtPointer(entries, plan.finalRotation).id, "b");
+});
+
+test("pointer clicks are emitted from exact segment-boundary crossings, including skipped-frame bursts", () => {
+  const equal = Array.from({ length: 4 }, (_, index) => ({ id: String(index), label: String(index), order: index, weight: 1, state: "active" }));
+  const boundaries = segmentBoundaryRotations(equal);
+  assert.deepEqual(boundaries, [0, 90, 180, 270]);
+  assert.equal(countSegmentBoundaryCrossings(boundaries, 1, 89), 0);
+  assert.equal(countSegmentBoundaryCrossings(boundaries, 89, 91), 1);
+  assert.equal(countSegmentBoundaryCrossings(boundaries, 89, 451), 5);
+  assert.equal(countSegmentBoundaryCrossings(boundaries, 451, 89), 0);
 });
 
 test("weighted odds exclude hidden entries and combine exact duplicate labels", () => {

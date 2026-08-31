@@ -1,5 +1,31 @@
 # Bump notes
 
+## 2026-09-01 - Wheel Mechanics V2 natural hybrid decay
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced the default authored V1.12 phase curve with a deterministic continuous-time quadratic/viscous/smooth-clicker ODE, 1025-sample Float64 compilation, integrated normalized progress, and monotone C2 terminal capture. Exact winner, in-slice landing, travel, and duration authority are unchanged.
+- Added Natural Hybrid, Heavy Flywheel, Suspense Tail, Quick Draw, Mechanical Clicker, Classic Linear, exact Legacy Broadcast Smooth, Custom Physics, and monotone-PCHIP Custom Shape compatibility through one pure runtime interface.
+- Regular, Presentation, Stage tile/focus, and Spin All freeze one compiled snapshot. Segment clicks now follow actual weighted-boundary crossings rather than a fixed timer; V1.9 face caching remains rigid.
+- Local 30/60/90/120/144 Hz parity, RK4/sample convergence, terminal derivatives, old/new handbrake metrics, full Wheels suites, exact real-time 10/20-second browser spins, and required responsive matrices are covered. Evidence is under `.artifacts/wheels-mechanics-v2-public`.
+- Deployed Admin authority first as `a563a173-8533-4038-8cde-86f0a9a624a5`, then accepted Public preview `41bdf876-c2ce-4ea9-a441-82ac891215e1` on branch `wheels-natural-mechanics-v2` before promoting the unchanged 50-file manifest SHA-256 `e829be958fe4a8ecfc7eb51512dc9ff7d2053eae8aa09d6a3dded55d29b1ec5b` as production deployment `f1845dff-806d-4529-a81a-9e2b945ebd6f`. Stable and immutable entry JS hashes match byte-for-byte.
+- Genuine 10-second Demo and four-Wheel Spin All acceptance passed on preview and production with one mechanics request per spin surface, exact final rotation, a shared Stage start/revision, no Wheel API writes, and no application-owned console errors. The existing revision 5 `custom-shape` policy was normalized to V2 but not overwritten.
+- No migration, D1/R2 mutation, Official draw, provider/payment action, secret change, DNS change, or custom-domain change was performed.
+
+## 2026-09-01 - GOATS map interaction and global field hero
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Removed the permanent Selected Signal sidecard and its reserved grid column. The full-width map now sizes naturally through its canvas, instruction footer, and shared-point chooser without the card-driven stretched row or blank lower region.
+- Kept the existing branded pins and concise hover/focus previews, while pin activation and same-coordinate choices open the already-loaded approved listing in a dark GOATS signal dialog with canonical full-story navigation, Escape/backdrop/explicit close, trapped focus, focus restoration, and a mobile full-height composition.
+- Removed selection-driven fly-to behavior so opening a signal does not override manual pan/zoom. Initial and Reset Results fitting use bounded responsive padding and max zoom; MapLibre/Leaflet resize lifecycles and expanded-map state remain intact without nested modal semantics or competing scroll locks.
+- Preserved the mountain-goat silhouette and existing radar instrument while adding a visibility-gated global field of deep grids, route traces, approximate-coordinate nodes, contours, atmospheric light, a slow scan, and edge telemetry. Continuous decorative motion pauses offscreen or with a hidden document and becomes static under reduced motion.
+- Expanded browser coverage for full-width/no-gap geometry, sidecard absence, real map readiness, hover/focus previews, dialog content/routes/close/focus behavior, multiple and coincident pins, expanded-map layering and recovery, responsive containment, reduced motion, screenshots, and horizontal overflow. This milestone is local only: no deployment, Admin change, remote migration, provider mutation, or GOATS record write occurred.
+
 ## 2026-09-01 - Current catalogue and stale-cart hardening
 
 CURRENT VER=0.1.0-alpha.0

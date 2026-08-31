@@ -1,0 +1,41 @@
+{
+  "profile": "natural-hybrid",
+  "compilerSha256": "93e6891a6fd3f9c6adbd2ab6c0ffeea8f26f9ee7ff1ff2d793941f57c76a6b67",
+  "sampleCount": 1025,
+  "coefficients": {
+    "quadraticDrag": 0.05,
+    "viscousDrag": 0.4,
+    "clickerFriction": 0.02,
+    "clickerOnsetSpeed": 0.18,
+    "clickerBlendWidth": 0.12,
+    "captureStartSpeed": 0.01,
+    "captureDurationFraction": 0.08
+  },
+  "samples": [
+    { "time": 0.1, "velocity": 0.7066267685789986, "progress": 0.30982533799254397 },
+    { "time": 0.25, "velocity": 0.4255751776548977, "progress": 0.6165893122825404 },
+    { "time": 0.5, "velocity": 0.1774240415670765, "progress": 0.8822350921299552 },
+    { "time": 0.75, "velocity": 0.052638279437002826, "progress": 0.9805384903603703 },
+    { "time": 0.9, "velocity": 0.013828473726325884, "progress": 0.9981033241734362 },
+    { "time": 0.97, "velocity": 0.0013878012945628265, "progress": 0.9999570097500184 }
+  ],
+  "diagnostics": {
+    "tailDurationFraction": 0.369140625,
+    "terminalSpeed": 0,
+    "terminalAcceleration": 0,
+    "estimatedFinalClickIntervalMs": 1347.955604219704,
+    "finalTravelPercent": 0.1916723863328751,
+    "captureSpeedRemoved": 0.010000019543941776,
+    "handbrakeRisk": false
+  },
+  "legacyComparison": {
+    "profile": "legacy-broadcast-smooth",
+    "captureSpeedRemoved": 0.12000000305175663,
+    "handbrakeRisk": true
+  },
+  "convergence": {
+    "progress1025Vs2049MaxError": "<1e-6",
+    "progress513Vs2049MaxError": "<3e-6",
+    "rk4RefinementMaxError": "<5e-9"
+  }
+}

@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import goatHeroArtwork from "../../assets/illustrations/mountain-goat-cc0.svg";
 import { ArrowIcon } from "../components/Icons";
@@ -17,6 +18,7 @@ export function GoatsPage() {
   const [mapData, setMapData] = useState(emptyMap);
   const [products, setProducts] = useState<GoatProduct[]>([]);
   const [selectedId, setSelectedId] = useState("");
+  const [dialogId, setDialogId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const mapDataRef = useRef(mapData); mapDataRef.current = mapData;
@@ -37,7 +39,7 @@ export function GoatsPage() {
     return () => controller.abort();
   }, [query]);
 
-  const selected = payload.items.find((item) => item.id === selectedId) || null;
+  const dialogItem = payload.items.find((item) => item.id === dialogId) || null;
   const select = useCallback((id: string) => {
     setSelectedId(id);
     const targetPage = Number(mapDataRef.current.features.find((feature) => feature.properties.id === id)?.properties.galleryPage || pageRef.current);
@@ -48,6 +50,10 @@ export function GoatsPage() {
   const update = (key: string, value: string) => {
     const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); next.delete("page"); setParams(next, { replace: false });
   };
+  const activate = useCallback((id: string) => {
+    select(id);
+    setDialogId(id);
+  }, [select]);
   const clear = () => setParams({}, { replace: false });
   const totalPages = Math.max(1, Math.ceil(payload.total / payload.pageSize));
   const goToPage = (page: number) => {
@@ -59,7 +65,7 @@ export function GoatsPage() {
 
   return <div className="goats-page">
     <section className="goats-hero">
-      <div className="goats-hero__grid" aria-hidden="true" />
+      <GoatsSignalField />
       <div className="goats-hero__goat-motif" aria-hidden="true" style={{ "--goats-hero-art": `url("${goatHeroArtwork}")` } as CSSProperties} />
       <div className="container goats-hero__content"><div><p className="eyebrow">Community signal · Worldwide</p><h1>GOATS <span>in the Wild</span></h1><p className="goats-hero__lead">Real people. Real merch. Approximate pins, approved stories, and the community wearing the lore beyond the rail.</p><div className="button-row"><Link className="button button--primary" to="/goats/submit">Submit your GOATED drip <ArrowIcon /></Link><a className="button button--secondary" href="#goats-map">Explore the map</a></div></div>
         <div className="goats-hero__telemetry">
@@ -95,7 +101,7 @@ export function GoatsPage() {
       {error ? <div className="goats-error" role="alert"><strong>The community signal is unavailable.</strong><p>{error}</p><button type="button" className="button button--secondary" onClick={() => window.location.reload()}>Retry</button></div> : null}
 
       {!error && <section id="goats-map" className="goats-map-stage" aria-labelledby="goats-map-title"><div className="goats-map-stage__top"><div><p className="eyebrow">Approximate by design</p><h2 id="goats-map-title">The GOATED family map.</h2></div><p>No street addresses. No device location. Just a coarse city-level signal confirmed before publication.</p></div>
-        {loading ? <div className="goats-map-loading" aria-busy="true">Loading the map projection…</div> : mapData.features.length ? <div className="goats-map-stage__grid"><Suspense fallback={<div className="goats-map-loading">Loading the map engine…</div>}><GoatsMap data={mapData} selectedId={selectedId} onSelect={select} /></Suspense><SelectedListing item={selected} /></div> : <div className="goats-empty goats-empty--map"><span>00</span><div><strong>No approved map points yet.</strong><p>The initial V2 gallery is intentionally empty. Approved submissions will appear here after moderation.</p></div></div>}
+        {loading ? <div className="goats-map-loading" aria-busy="true">Loading the map projection…</div> : mapData.features.length ? <div className="goats-map-stage__grid"><Suspense fallback={<div className="goats-map-loading">Loading the map engine…</div>}><GoatsMap data={mapData} selectedId={selectedId} onActivate={activate} detailOpen={Boolean(dialogId)} /></Suspense></div> : <div className="goats-empty goats-empty--map"><span>00</span><div><strong>No approved map points yet.</strong><p>The initial V2 gallery is intentionally empty. Approved submissions will appear here after moderation.</p></div></div>}
       </section>}
 
       <section className="goats-gallery" aria-labelledby="goats-gallery-title">
@@ -112,6 +118,48 @@ export function GoatsPage() {
               : null}
       </section>
     </main>
+    {dialogItem ? <SignalDialog item={dialogItem} onClose={() => setDialogId("")} /> : null}
+  </div>;
+}
+
+function GoatsSignalField() {
+  const field = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(true);
+  useEffect(() => {
+    const node = field.current;
+    if (!node) return;
+    const updateVisibility = () => setActive(document.visibilityState === "visible" && node.dataset.inView !== "false");
+    const observer = new IntersectionObserver(([entry]) => {
+      node.dataset.inView = entry.isIntersecting ? "true" : "false";
+      updateVisibility();
+    }, { rootMargin: "120px 0px", threshold: .04 });
+    observer.observe(node);
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => { observer.disconnect(); document.removeEventListener("visibilitychange", updateVisibility); };
+  }, []);
+  return <div ref={field} className={`goats-hero__field${active ? " is-active" : ""}`} aria-hidden="true">
+    <div className="goats-hero__grid" />
+    <div className="goats-hero__atmosphere" />
+    <div className="goats-hero__scan-field" />
+    <svg className="goats-hero__world-traces" viewBox="0 0 1600 760" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <g className="goats-hero__contours">
+        <path d="M-80 585C106 490 204 555 359 482S620 386 792 456s289 96 438 24 279-85 445 0" />
+        <path d="M-105 622C82 526 228 610 390 522s281-92 425-24 273 87 410 24 290-91 470-14" />
+        <path d="M1110 46c92 54 104 124 38 196s-54 150 34 214 117 147 71 257" />
+        <path d="M1164 28c118 67 132 151 58 226s-58 155 36 229 125 155 77 279" />
+      </g>
+      <g className="goats-hero__routes">
+        <path className="goats-hero__route goats-hero__route--one" pathLength="1" d="M130 496C360 292 575 266 794 382S1170 482 1466 178" />
+        <path className="goats-hero__route goats-hero__route--two" pathLength="1" d="M72 226C328 356 514 322 692 204s403-119 622 87" />
+        <path className="goats-hero__route goats-hero__route--three" pathLength="1" d="M364 682C494 528 662 516 845 588s346 28 522-150" />
+      </g>
+      <g className="goats-hero__field-nodes">
+        <g transform="translate(130 496)"><circle r="4"/><circle className="goats-hero__node-ring" r="16"/><text x="12" y="-10">33.86 S / SIGNAL 01</text></g>
+        <g transform="translate(692 204)"><circle r="4"/><circle className="goats-hero__node-ring" r="16"/><text x="12" y="-10">APPROX / 02</text></g>
+        <g transform="translate(1367 438)"><circle r="4"/><circle className="goats-hero__node-ring" r="16"/><text x="-126" y="-10">FIELD SIGNAL / 03</text></g>
+      </g>
+    </svg>
+    <div className="goats-hero__edge-data"><span>COARSE POSITIONING</span><span>COMMUNITY FIELD / ACTIVE</span><span>NO DEVICE LOCATION</span></div>
   </div>;
 }
 
@@ -137,6 +185,53 @@ function formatCardDate(value: string) {
   return Number.isNaN(date.getTime()) ? "Approved" : new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(date);
 }
 
-function SelectedListing({ item }: { item: GoatListing | null }) {
-  return <aside className="goats-selected" aria-live="polite">{item ? <><p className="eyebrow">Selected signal</p>{item.media.main ? <img src={item.media.main.url} alt="" width="540" height="420" /> : null}<h3>{item.displayName}</h3><p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}</p><strong>{item.product.name}</strong><p>{item.description}</p><Link className="text-link" to={`/goats/${item.slug}`}>Open the full story <ArrowIcon /></Link></> : <><p className="eyebrow">Selected signal</p><h3>No approved listing selected.</h3><p>Choose a pin or gallery card when approved records are available.</p></>}</aside>;
+function SignalDialog({ item, onClose }: { item: GoatListing; onClose: () => void }) {
+  const dialog = useRef<HTMLDivElement>(null);
+  const close = useRef<HTMLButtonElement>(null);
+  const titleId = `goats-signal-${item.id}-title`;
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    close.current?.focus({ preventScroll: true });
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onClose(); return; }
+      if (event.key !== "Tab" || !dialog.current) return;
+      const focusable = [...dialog.current.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')].filter((node) => !node.hidden && node.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0]; const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown, true);
+      document.body.style.overflow = previousOverflow;
+      previous?.focus({ preventScroll: true });
+    };
+  }, [onClose]);
+  return createPortal(<div className="goats-signal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div ref={dialog} className="goats-signal-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <button ref={close} type="button" className="goats-signal-dialog__close" onClick={onClose} aria-label={`Close ${item.displayName} signal`}>×</button>
+      <div className="goats-signal-dialog__media" data-goats-signal-media={item.media.main ? "ready" : "fallback"}>
+        <span className="goat-media-fallback">TR / GOAT</span>
+        {item.media.main ? <img src={item.media.main.url} alt={`${item.displayName}'s approved GOAT submission`} width="900" height="760" /> : null}
+        <span className="goats-signal-dialog__media-grid" aria-hidden="true" />
+        <span className="goats-signal-dialog__index">PUBLIC FIELD SIGNAL / {item.id.slice(0, 8).toUpperCase()}</span>
+      </div>
+      <div className="goats-signal-dialog__copy">
+        <p className="eyebrow"><i /> Signal acquired · Approved</p>
+        <h2 id={titleId}>{item.displayName}</h2>
+        <p className="goats-location-tag"><CountryFlag countryCode={item.location.countryCode} />{item.location.label}<small>Approximate</small></p>
+        <dl className="goats-signal-dialog__meta">
+          <div><dt>Field gear</dt><dd>{item.product.name}</dd></div>
+          <div><dt>Signal class</dt><dd>{item.rating ? `${item.rating}/5 community rating` : "Community dispatch"}</dd></div>
+          <div><dt>Logged</dt><dd>{formatCardDate(item.publishedAt)}</dd></div>
+        </dl>
+        <p className="goats-signal-dialog__story">{item.description}</p>
+        <div className="goats-signal-dialog__counts" aria-label="Signal engagement"><span>↑ {item.counts.likes} up</span><span>↓ {item.counts.dislikes} down</span><span>{item.counts.comments} comments</span></div>
+        <Link className="button button--primary goats-signal-dialog__cta" to={`/goats/${item.slug}`}>Open the full story <ArrowIcon /></Link>
+      </div>
+    </div>
+  </div>, document.body);
 }

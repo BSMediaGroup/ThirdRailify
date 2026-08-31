@@ -1,12 +1,16 @@
 # Wheels Stage V1.1
 
+## Wheel Mechanics V2 Stage parity
+
+Stage individual, Focus, and Spin All plans now freeze the same 1025-sample Mechanics V2 compiler result used by regular and Presentation Wheels. Spin All still reads one sanitized mechanics projection and shares its revision and scheduled start across all six plans; each Wheel retains its own secure winner, interior landing, duration, full turns, and target. Boundary sounds are derived from each tile's actual weighted-segment crossings with the existing square-root batch gain. Combined results still wait for every exact zero-speed settlement, and Official All authority/atomic persistence is unchanged.
+
 ## V1.13 canonical square Wheel geometry
 
 Stage's deterministic layout helper remains the sole Overview diameter authority for one through six Wheels. Each tile now assigns that one diameter to both inline and block size; the previous independent `max-height: 100%` clamp and phone-only overflow clip were removed because they could turn the shared rotor/Canvas into a rectangle inside a short tile. Focus mode continues to resolve one scalar from its available broadcast surface and inherits the same square frame, 0.8759 face/outer ratio, 0.22 hub/outer ratio, square Canvas backing, and frame-owned ResizeObserver as regular and Presentation Wheels.
 
 The existing 1, 2, 3, 4, 5, and 6-Wheel arrangements, centred 3+2 map, focus navigation, compact control rail, Stage Spin All, combined results, Fullscreen root, sounds, celebration, and Official authority remain unchanged. V1.13 browser evidence includes six-Wheel Overview, focused Stage, concurrent six-Wheel motion, Fullscreen combined results, desktop/ultrawide/tablet/phone layouts, and zero non-GET Wheel requests.
 
-The complete Stage matrix passed on immutable preview deployment `28c27233-34d6-4d7a-a35c-d376d3c77a0d` before the identical artifact was promoted as production deployment `f7a02e4c-3aa6-4f6d-a4e1-1d10f4171348`.
+The complete Stage matrix passed on immutable preview deployment `41bdf876-c2ce-4ea9-a441-82ac891215e1` before the identical artifact was promoted as production deployment `f1845dff-806d-4529-a81a-9e2b945ebd6f`. Genuine four-Wheel `sample-stage` acceptance confirmed one mechanics projection, one revision, one shared start, exact settlement, zero Wheel API writes, and no application-owned console errors on both preview and stable production.
 
 ## V1.12 shared Stage mechanics snapshot
 

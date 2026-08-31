@@ -37,7 +37,7 @@
     "test:browser:account": "node --test --test-concurrency=1 tests/account-v2-browser.test.mjs",
     "test:browser:inbox": "node --test --test-concurrency=1 tests/inbox-browser.test.mjs",
     "test:goats": "node --test tests/goats-functions.test.mjs",
-    "test:wheels": "node --test tests/wheels-engine.test.mjs tests/wheels-functions.test.mjs tests/wheels-portable.test.mjs tests/wheels-multi-import.test.mjs tests/wheels-stage-layout.test.mjs tests/wheels-stage-portable.test.mjs tests/wheels-v110.test.mjs tests/wheels-v111.test.mjs tests/wheels-v112.test.mjs tests/wheels-v113.test.mjs tests/wheels-v14.test.mjs tests/wheels-v15.test.mjs tests/wheels-v16.test.mjs tests/wheels-v17.test.mjs tests/wheels-v18.test.mjs tests/wheels-v19.test.mjs",
+    "test:wheels": "node --test tests/wheels-engine.test.mjs tests/wheels-functions.test.mjs tests/wheels-portable.test.mjs tests/wheels-multi-import.test.mjs tests/wheels-stage-layout.test.mjs tests/wheels-stage-portable.test.mjs tests/wheels-v110.test.mjs tests/wheels-v111.test.mjs tests/wheels-v112.test.mjs tests/wheels-mechanics-v2.test.mjs tests/wheels-mechanics-v2-deployed.test.mjs tests/wheels-v113.test.mjs tests/wheels-v14.test.mjs tests/wheels-v15.test.mjs tests/wheels-v16.test.mjs tests/wheels-v17.test.mjs tests/wheels-v18.test.mjs tests/wheels-v19.test.mjs",
     "test:wheels:v17": "node --test tests/wheels-v17.test.mjs",
     "test:wheels:v18": "node --test tests/wheels-v18.test.mjs",
     "test:wheels:v19": "node --test tests/wheels-v19.test.mjs",

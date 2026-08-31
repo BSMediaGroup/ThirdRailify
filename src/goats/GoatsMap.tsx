@@ -23,7 +23,8 @@ maplibregl.setWorkerUrl(maplibreWorkerUrl);
 type GoatsMapProps = {
   data: GoatMapFeatureCollection;
   selectedId: string;
-  onSelect: (id: string) => void;
+  onActivate: (id: string) => void;
+  detailOpen: boolean;
 };
 
 type GlMarker = {
@@ -41,12 +42,11 @@ export default function GoatsMap(props: GoatsMapProps) {
     : <MapLibreGoatsMap {...props} onFailure={useFallbackEngine} />;
 }
 
-function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapProps & { onFailure: () => void }) {
+function MapLibreGoatsMap({ data, selectedId, onActivate, detailOpen, onFailure }: GoatsMapProps & { onFailure: () => void }) {
   const container = useRef<HTMLDivElement>(null);
   const expandButton = useRef<HTMLButtonElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const markersRef = useRef(new Map<string, GlMarker>());
-  const lastSelectedRef = useRef(selectedId);
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
   const [mapState, setMapState] = useState<Exclude<MapState, "failed">>("loading");
@@ -66,7 +66,6 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
     setMapState("loading");
     setLoadedTileCount(0);
     setSourceFeatureCount(0);
-    lastSelectedRef.current = selectedIdRef.current;
     let active = true;
     let resizeFrame = 0;
     let observer: ResizeObserver | null = null;
@@ -75,6 +74,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
     const probeController = new AbortController();
     const loadedTiles = new Set<string>();
     const markers = new Map<string, GlMarker>();
+    const canonicalCoordinates = new Map(features.map((feature) => [String(feature.properties.id), feature.geometry.coordinates as [number, number]]));
 
     let map: MapLibreMap;
     try {
@@ -86,7 +86,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
         dragRotate: false,
         maxPitch: 0,
         maxZoom: 16,
-        minZoom: 1,
+        minZoom: -1,
         pitchWithRotate: false,
         renderWorldCopies: false,
         scrollZoom: false,
@@ -142,6 +142,10 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       const longitude = Math.max(-179, Math.min(179, center.lng));
       const latitude = Math.max(-84, Math.min(84, center.lat));
       if (longitude !== center.lng || latitude !== center.lat) map.jumpTo({ center: [longitude, latitude] });
+      markers.forEach((entry, id) => {
+        const coordinates = canonicalCoordinates.get(id);
+        if (coordinates) entry.marker.setLngLat(coordinates);
+      });
     };
     map.on("sourcedata", onSourceData);
     map.on("error", onMapError);
@@ -163,17 +167,16 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       image.width = 24;
       image.height = 32;
       element.append(image);
-      const markerOffset = markerOffsets.get(id) ?? [0, 0];
+      const markerOffset = responsiveMarkerOffset(markerOffsets.get(id), viewport.clientWidth);
       element.dataset.goatsMarkerOffset = markerOffset.join(",");
 
       const popup = new maplibregl.Popup({
-        anchor: "bottom",
         className: "goats-map-popup",
         closeButton: true,
         closeOnClick: false,
         focusAfterOpen: false,
-        maxWidth: "340px",
-        offset: [0, -34],
+        maxWidth: window.innerWidth <= 540 ? "240px" : "340px",
+        offset: 28,
       }).setLngLat(feature.geometry.coordinates as [number, number]).setDOMContent(createMarkerCard(feature));
       const marker = new maplibregl.Marker({ element, anchor: "bottom", offset: markerOffset })
         .setLngLat(feature.geometry.coordinates as [number, number])
@@ -183,20 +186,17 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
           if (markerId !== id && entry.popup.isOpen()) entry.popup.remove();
         });
         if (!popup.isOpen()) popup.addTo(map);
+        window.requestAnimationFrame(() => keepGlPopupInside(popup, viewport));
       };
       element.addEventListener("click", () => {
-        onSelect(id);
-        openCard();
-        map.easeTo({
-          center: marker.getLngLat(),
-          duration: 0,
-          essential: true,
-          offset: [0, window.innerWidth <= 540 ? 92 : 0],
-          zoom: Math.max(map.getZoom(), window.innerWidth <= 540 ? 4 : 5),
-        });
+        element.focus({ preventScroll: true });
+        onActivate(id);
+        window.requestAnimationFrame(() => popup.remove());
       });
       element.addEventListener("mouseenter", openCard);
       element.addEventListener("focus", openCard);
+      element.addEventListener("mouseleave", () => { if (document.activeElement !== element) popup.remove(); });
+      element.addEventListener("blur", () => popup.remove());
       markers.set(id, { element, marker, popup });
     }
     markersRef.current = markers;
@@ -238,44 +238,19 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       markersRef.current = new Map();
       mapRef.current = null;
     };
-  }, [features, markerOffsets, onFailure, onSelect]);
+  }, [features, markerOffsets, onActivate, onFailure]);
 
   useEffect(() => {
     markersRef.current.forEach(({ element }, id) => element.classList.toggle("is-selected", id === selectedId));
-    const map = mapRef.current;
-    const selected = markersRef.current.get(selectedId);
-    const changed = lastSelectedRef.current !== selectedId;
-    lastSelectedRef.current = selectedId;
-    if (!map || !selected || mapState !== "ready" || !changed) return;
-    markersRef.current.forEach((entry, id) => {
-      if (id !== selectedId && entry.popup.isOpen()) entry.popup.remove();
-    });
-    const openSelected = () => {
-      if (selectedIdRef.current !== selectedId) return;
-      if (!selected.popup.isOpen()) selected.popup.addTo(map);
-      selected.element.focus({ preventScroll: true });
-    };
-    map.once("moveend", openSelected);
-    map.easeTo({
-      center: selected.marker.getLngLat(),
-      duration: 450,
-      essential: true,
-      zoom: Math.max(map.getZoom(), 5),
-    });
-  }, [mapState, selectedId]);
+  }, [selectedId]);
 
   useEffect(() => {
     const resizeMap = window.requestAnimationFrame(() => {
       const map = mapRef.current;
       if (!map) return;
+      const center = map.getCenter(); const zoom = map.getZoom();
       map.resize();
-      const selected = markersRef.current.get(selectedIdRef.current);
-      if (expanded && selected?.popup.isOpen()) {
-        map.jumpTo({
-          center: selected.marker.getLngLat(),
-          zoom: Math.max(map.getZoom(), 4),
-        });
-      }
+      map.jumpTo({ center, zoom });
     });
     if (!expanded) return () => window.cancelAnimationFrame(resizeMap);
 
@@ -286,7 +261,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       window.requestAnimationFrame(() => expandButton.current?.focus({ preventScroll: true }));
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape" && !detailOpen) close();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
@@ -294,7 +269,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [expanded]);
+  }, [detailOpen, expanded]);
 
   return <div
     className={`goats-map${mapState === "ready" ? " is-ready" : ""}${expanded ? " is-expanded" : ""}`}
@@ -304,8 +279,7 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
     data-goats-map-source-feature-count={sourceFeatureCount}
     data-goats-map-state={mapState}
     data-goats-map-tile-count={loadedTileCount}
-    role={expanded ? "dialog" : undefined}
-    aria-modal={expanded || undefined}
+    role={expanded ? "region" : undefined}
     aria-label={expanded ? "Expanded interactive GOATS map" : undefined}
   >
     <div ref={container} className="goats-map__canvas" aria-label="Interactive map of approximate GOATS locations. Use the listing controls below as the accessible map alternative." />
@@ -313,23 +287,27 @@ function MapLibreGoatsMap({ data, selectedId, onSelect, onFailure }: GoatsMapPro
     <button type="button" className="goats-map__reset" onClick={() => {
       const map = mapRef.current;
       if (!map) return;
-      markersRef.current.forEach(({ popup }) => popup.remove());
-      fitGlFeatures(map, features);
+      markersRef.current.forEach(({ marker, popup }, id) => {
+        popup.remove();
+        const feature = features.find((item) => String(item.properties.id) === id);
+        if (feature) marker.setLngLat(feature.geometry.coordinates as [number, number]);
+      });
+      fitGlFeatures(map, features, expanded);
     }} disabled={!features.length}>Reset results</button>
     <button ref={expandButton} type="button" className="goats-map__expand" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)}>
       <span aria-hidden="true">{expanded ? "×" : "⛶"}</span>{expanded ? "Close expanded map" : "Expand map"}
     </button>
     <div className="goats-map__instructions">Drag to pan. Use the +/− controls to zoom. Locations are deliberately approximate. Listings sharing a point remain available below.</div>
-    <CoincidentLocations data={data} onSelect={onSelect} />
+    <CoincidentLocations data={data} onActivate={onActivate} />
+    <div className="goats-map__expanded-legend" aria-hidden="true"><span>Global field view</span><i /><small>All active coordinates · Approximate by design</small></div>
   </div>;
 }
 
-function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
+function LeafletGoatsMap({ data, selectedId, onActivate, detailOpen }: GoatsMapProps) {
   const container = useRef<HTMLDivElement>(null);
   const expandButton = useRef<HTMLButtonElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef(new Map<string, L.Marker>());
-  const lastSelectedRef = useRef(selectedId);
   const selectedIdRef = useRef(selectedId);
   selectedIdRef.current = selectedId;
   const [mapState, setMapState] = useState<MapState>("loading");
@@ -343,7 +321,6 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
     if (!viewport) return;
     setMapState("loading");
     setLoadedTileCount(0);
-    lastSelectedRef.current = selectedIdRef.current;
 
     let active = true;
     let successfulTiles = 0;
@@ -358,7 +335,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
         maxBounds: INTERACTION_BOUNDS,
         maxBoundsViscosity: 1,
         maxZoom: 8,
-        minZoom: 1,
+        minZoom: 0,
         scrollWheelZoom: false,
         worldCopyJump: false,
         zoom: 1,
@@ -382,7 +359,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       bounds: WORLD_BOUNDS,
       maxNativeZoom: 6,
       maxZoom: 8,
-      minZoom: 1,
+      minZoom: 0,
       noWrap: true,
     });
     tiles.on("tileload", () => {
@@ -404,7 +381,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
 
     for (const feature of features) {
       const id = String(feature.properties.id);
-      const [offsetX, offsetY] = markerOffsets.get(id) ?? [0, 0];
+      const [offsetX, offsetY] = responsiveMarkerOffset(markerOffsets.get(id), viewport.clientWidth);
       const icon = L.icon({
         iconUrl: goatPin,
         iconSize: [24, 32],
@@ -424,15 +401,17 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
         autoPanPadding: [24, 24],
         className: "goats-map-popup",
         closeButton: true,
-        maxWidth: 340,
-        minWidth: 300,
+        maxWidth: window.innerWidth <= 540 ? 240 : 340,
+        minWidth: window.innerWidth <= 540 ? 220 : 300,
         offset: [0, -26],
       });
       marker.on("click", () => {
-        onSelect(id);
-        marker.openPopup();
+        marker.getElement()?.focus({ preventScroll: true });
+        onActivate(id);
+        window.requestAnimationFrame(() => marker.closePopup());
       });
       marker.on("mouseover", () => marker.openPopup());
+      marker.on("mouseout", () => { if (document.activeElement !== marker.getElement()) marker.closePopup(); });
       const element = marker.getElement();
       if (element) {
         element.dataset.goatsMarkerId = id;
@@ -441,6 +420,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
         element.setAttribute("aria-label", `Select ${feature.properties.displayName} in ${feature.properties.locationLabel}`);
         element.classList.toggle("is-selected", id === selectedIdRef.current);
         element.addEventListener("focus", () => marker.openPopup());
+        element.addEventListener("blur", () => marker.closePopup());
       }
       markers.set(id, marker);
     }
@@ -468,39 +448,19 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       markersRef.current = new Map();
       mapRef.current = null;
     };
-  }, [features, markerOffsets, onSelect]);
+  }, [features, markerOffsets, onActivate]);
 
   useEffect(() => {
     markersRef.current.forEach((marker, id) => marker.getElement()?.classList.toggle("is-selected", id === selectedId));
-    const map = mapRef.current;
-    const marker = markersRef.current.get(selectedId);
-    const changed = lastSelectedRef.current !== selectedId;
-    lastSelectedRef.current = selectedId;
-    if (!map || !marker || mapState !== "ready" || !changed) return;
-    map.stop();
-    map.closePopup();
-    map.once("moveend", () => {
-      if (selectedIdRef.current !== selectedId) return;
-      marker.openPopup();
-      marker.getElement()?.focus({ preventScroll: true });
-    });
-    map.flyTo(marker.getLatLng(), Math.max(map.getZoom(), 5), { duration: 0.45 });
-  }, [mapState, selectedId]);
+  }, [selectedId]);
 
   useEffect(() => {
     const map = mapRef.current;
     const resizeMap = window.requestAnimationFrame(() => {
       if (!map) return;
-      const selectedMarker = markersRef.current.get(selectedIdRef.current);
-      const reopenCard = selectedMarker?.isPopupOpen() || false;
+      const center = map.getCenter(); const zoom = map.getZoom();
       map.invalidateSize({ pan: false });
-      if (expanded && window.innerWidth <= 540 && selectedMarker) {
-        map.setView(selectedMarker.getLatLng(), Math.max(map.getZoom(), 2), { animate: false });
-      }
-      if (reopenCard && selectedMarker) {
-        selectedMarker.closePopup();
-        selectedMarker.openPopup();
-      }
+      map.setView(center, zoom, { animate: false });
     });
     if (!expanded) return () => window.cancelAnimationFrame(resizeMap);
 
@@ -511,7 +471,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       window.requestAnimationFrame(() => expandButton.current?.focus({ preventScroll: true }));
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape" && !detailOpen) close();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
@@ -519,7 +479,7 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [expanded]);
+  }, [detailOpen, expanded]);
 
   return <div
     className={`goats-map${mapState === "ready" ? " is-ready" : ""}${expanded ? " is-expanded" : ""}`}
@@ -528,25 +488,25 @@ function LeafletGoatsMap({ data, selectedId, onSelect }: GoatsMapProps) {
     data-goats-map-feature-count={features.length}
     data-goats-map-state={mapState}
     data-goats-map-tile-count={loadedTileCount}
-    role={expanded ? "dialog" : undefined}
-    aria-modal={expanded || undefined}
+    role={expanded ? "region" : undefined}
     aria-label={expanded ? "Expanded interactive GOATS map" : undefined}
   >
     <div ref={container} className="goats-map__canvas" aria-label="Interactive map of approximate GOATS locations. Use the listing controls below as the accessible map alternative." />
     {mapState === "loading" ? <div className="goats-map__status" role="status">Loading map geography…</div> : null}
-    {mapState === "failed" ? <MapFallback data={data} selectedId={selectedId} onSelect={onSelect} /> : null}
+    {mapState === "failed" ? <MapFallback data={data} selectedId={selectedId} onActivate={onActivate} /> : null}
     <button type="button" className="goats-map__reset" onClick={() => {
       const map = mapRef.current;
       if (!map) return;
       map.stop();
       map.closePopup();
-      fitFeatures(map, features);
+      fitFeatures(map, features, expanded);
     }} disabled={!features.length || mapState === "failed"}>Reset results</button>
     <button ref={expandButton} type="button" className="goats-map__expand" aria-expanded={expanded} onClick={() => setExpanded((current) => !current)}>
       <span aria-hidden="true">{expanded ? "×" : "⛶"}</span>{expanded ? "Close expanded map" : "Expand map"}
     </button>
     <div className="goats-map__instructions">Drag to pan. Use the +/− controls to zoom. Locations are deliberately approximate. Listings sharing a point remain available below.</div>
-    <CoincidentLocations data={data} onSelect={onSelect} />
+    <CoincidentLocations data={data} onActivate={onActivate} />
+    <div className="goats-map__expanded-legend" aria-hidden="true"><span>Global field view</span><i /><small>All active coordinates · Approximate by design</small></div>
   </div>;
 }
 
@@ -554,25 +514,6 @@ function createMarkerCard(feature: GoatMapFeature): HTMLElement {
   const card = document.createElement("article");
   card.className = "goats-map-marker-card";
   card.dataset.goatsMarkerCard = String(feature.properties.id);
-
-  const media = feature.properties.imageUrl ? document.createElement("img") : document.createElement("span");
-  media.className = "goats-map-marker-card__media";
-  if (media instanceof HTMLImageElement) {
-    media.src = feature.properties.imageUrl || "";
-    media.alt = "";
-    media.loading = "lazy";
-    media.addEventListener("error", () => {
-      const fallback = document.createElement("span");
-      fallback.className = "goats-map-marker-card__media goats-map-marker-card__media--fallback";
-      fallback.textContent = "TR / GOAT";
-      media.replaceWith(fallback);
-    }, { once: true });
-  } else {
-    media.classList.add("goats-map-marker-card__media--fallback");
-    media.textContent = "TR / GOAT";
-  }
-  card.append(media);
-
   const copy = document.createElement("div");
   copy.className = "goats-map-marker-card__copy";
   const signal = document.createElement("span");
@@ -586,21 +527,19 @@ function createMarkerCard(feature: GoatMapFeature): HTMLElement {
   const product = document.createElement("span");
   product.className = "goats-map-marker-card__product";
   product.textContent = feature.properties.product.name;
-  const excerpt = document.createElement("p");
-  excerpt.textContent = feature.properties.excerpt;
-  const link = document.createElement("a");
-  link.href = `/goats/${encodeURIComponent(feature.properties.slug)}`;
-  link.textContent = "View GOAT listing ↗";
-  copy.append(signal, title, location, product, excerpt, link);
+  const hint = document.createElement("small");
+  hint.className = "goats-map-marker-card__hint";
+  hint.textContent = "Click for full signal";
+  copy.append(signal, title, location, product, hint);
   card.append(copy);
   return card;
 }
 
-function MapFallback({ data, selectedId, onSelect }: { data: GoatMapFeatureCollection; selectedId: string; onSelect: (id: string) => void }) {
-  return <div className="goats-map-fallback" role="status"><strong>Interactive map could not load.</strong><p>Every approved mapped listing remains available in this location list.</p><ul>{data.features.map((feature) => <li key={feature.properties.id}><button type="button" className={selectedId === feature.properties.id ? "is-selected" : ""} onClick={() => onSelect(feature.properties.id)}><CountryFlag countryCode={feature.properties.countryCode} />{feature.properties.displayName} · {feature.properties.locationLabel}</button></li>)}</ul></div>;
+function MapFallback({ data, selectedId, onActivate }: { data: GoatMapFeatureCollection; selectedId: string; onActivate: (id: string) => void }) {
+  return <div className="goats-map-fallback" role="status"><strong>Interactive map could not load.</strong><p>Every approved mapped listing remains available in this location list.</p><ul>{data.features.map((feature) => <li key={feature.properties.id}><button type="button" className={selectedId === feature.properties.id ? "is-selected" : ""} onClick={() => onActivate(feature.properties.id)}><CountryFlag countryCode={feature.properties.countryCode} />{feature.properties.displayName} · {feature.properties.locationLabel}</button></li>)}</ul></div>;
 }
 
-function CoincidentLocations({ data, onSelect }: { data: GoatMapFeatureCollection; onSelect: (id: string) => void }) {
+function CoincidentLocations({ data, onActivate }: { data: GoatMapFeatureCollection; onActivate: (id: string) => void }) {
   const groups = new Map<string, typeof data.features>();
   for (const feature of data.features) {
     const key = feature.geometry.coordinates.join(",");
@@ -608,7 +547,7 @@ function CoincidentLocations({ data, onSelect }: { data: GoatMapFeatureCollectio
   }
   const shared = [...groups.values()].filter((items) => items.length > 1);
   if (!shared.length) return null;
-  return <details className="goats-map__shared"><summary>Listings sharing an approximate map point</summary>{shared.map((items) => <div key={items[0].geometry.coordinates.join(",")}><strong><CountryFlag countryCode={items[0].properties.countryCode} />{items[0].properties.locationLabel}</strong><ul>{items.map((feature) => <li key={feature.properties.id}><button type="button" onClick={() => onSelect(feature.properties.id)}>{feature.properties.displayName}</button></li>)}</ul></div>)}</details>;
+  return <details className="goats-map__shared"><summary>Listings sharing an approximate map point</summary>{shared.map((items) => <div key={items[0].geometry.coordinates.join(",")}><strong><CountryFlag countryCode={items[0].properties.countryCode} />{items[0].properties.locationLabel}</strong><ul>{items.map((feature) => <li key={feature.properties.id}><button type="button" onClick={() => onActivate(feature.properties.id)}>{feature.properties.displayName}</button></li>)}</ul></div>)}</details>;
 }
 
 function validMapFeatures(data: GoatMapFeatureCollection): GoatMapFeature[] {
@@ -649,28 +588,72 @@ function coincidentMarkerOffsets(features: GoatMapFeature[]) {
   return offsets;
 }
 
-function fitFeatures(map: L.Map, features: GoatMapFeature[]) {
+function responsiveMarkerOffset(offset: [number, number] | undefined, width: number): [number, number] {
+  const [x, y] = offset ?? [0, 0];
+  return width <= 540 ? [Math.round(x * .55), Math.round(y * .55)] : [x, y];
+}
+
+function fitFeatures(map: L.Map, features: GoatMapFeature[], expanded = false) {
   if (!features.length) return;
   if (features.length === 1) {
     const [longitude, latitude] = features[0].geometry.coordinates;
     map.setView([latitude, longitude], 5, { animate: false });
     return;
   }
+  const longitudes = features.map((feature) => feature.geometry.coordinates[0]);
+  if (map.getContainer().clientWidth <= 540 && Math.max(...longitudes) - Math.min(...longitudes) > 180) {
+    const latitude = features.reduce((total, feature) => total + feature.geometry.coordinates[1], 0) / features.length;
+    const longitude = (Math.min(...longitudes) + Math.max(...longitudes)) / 2;
+    map.setView([latitude, longitude], 0, { animate: false });
+    return;
+  }
   const bounds = L.latLngBounds(features.map((feature) => {
     const [longitude, latitude] = feature.geometry.coordinates;
     return L.latLng(latitude, longitude);
   }));
-  map.fitBounds(bounds, { animate: false, maxZoom: 6, padding: [64, 64] });
+  const padding = mapFitPadding(map.getContainer().clientWidth, expanded);
+  map.fitBounds(bounds, { animate: false, maxZoom: 5, padding: [padding, padding] });
 }
 
-function fitGlFeatures(map: MapLibreMap, features: GoatMapFeature[]) {
+function fitGlFeatures(map: MapLibreMap, features: GoatMapFeature[], expanded = false) {
   if (!features.length) return;
   if (features.length === 1) {
     map.jumpTo({ center: features[0].geometry.coordinates as [number, number], zoom: 5 });
     return;
   }
+  const longitudes = features.map((feature) => feature.geometry.coordinates[0]);
+  const width = map.getContainer().clientWidth;
+  if (width <= 540 && Math.max(...longitudes) - Math.min(...longitudes) > 180) {
+    const latitude = features.reduce((total, feature) => total + feature.geometry.coordinates[1], 0) / features.length;
+    const longitude = (Math.min(...longitudes) + Math.max(...longitudes)) / 2;
+    map.jumpTo({ center: [longitude, latitude], zoom: -.45 });
+    map.getContainer().dataset.goatsMapFit = `world:${map.getZoom().toFixed(2)}`;
+    return;
+  }
   const bounds = features.reduce((result, feature) => result.extend(feature.geometry.coordinates as [number, number]), new maplibregl.LngLatBounds());
-  map.fitBounds(bounds, { animate: false, maxZoom: 6, padding: 64 });
+  map.fitBounds(bounds, { animate: false, maxZoom: 5, padding: mapFitPadding(width, expanded) });
+  map.getContainer().dataset.goatsMapFit = `bounds:${map.getZoom().toFixed(2)}`;
+}
+
+function mapFitPadding(width: number, expanded: boolean) {
+  if (width <= 540) return expanded ? 34 : 28;
+  if (width <= 900) return expanded ? 52 : 44;
+  return expanded ? 78 : 64;
+}
+
+function keepGlPopupInside(popup: maplibregl.Popup, viewport: HTMLElement) {
+  const element = popup.getElement();
+  if (!element) return;
+  element.style.translate = "";
+  const frame = viewport.getBoundingClientRect();
+  const bounds = element.getBoundingClientRect();
+  const gutter = 8;
+  let x = 0; let y = 0;
+  if (bounds.left < frame.left + gutter) x = frame.left + gutter - bounds.left;
+  else if (bounds.right > frame.right - gutter) x = frame.right - gutter - bounds.right;
+  if (bounds.top < frame.top + gutter) y = frame.top + gutter - bounds.top;
+  else if (bounds.bottom > frame.bottom - gutter) y = frame.bottom - gutter - bounds.bottom;
+  if (x || y) element.style.translate = `${Math.round(x)}px ${Math.round(y)}px`;
 }
 
 function webGlSupported() {

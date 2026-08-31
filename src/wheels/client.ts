@@ -25,7 +25,7 @@ export function getWheelMechanics(options: { force?: boolean } = {}) {
   const now = Date.now(); if (!options.force && mechanicsCache && mechanicsCache.expiresAt > now) return mechanicsCache.promise;
   const promise = request<{ ok: true; mechanics: unknown; revision: number }>("/api/wheels/mechanics")
     .then((payload) => ({ mechanics: normalizeWheelMechanics(payload.mechanics, { strict: true }), revision: Number.isSafeInteger(payload.revision) ? payload.revision : null }))
-    .catch(() => { if (!mechanicsFallbackReported) { mechanicsFallbackReported = true; console.warn("Wheel mechanics projection unavailable; using Broadcast Smooth defaults."); } return { mechanics: cloneDefaultWheelMechanics(), revision: null }; });
+    .catch(() => { if (!mechanicsFallbackReported) { mechanicsFallbackReported = true; console.warn("Wheel mechanics projection unavailable; using Natural Hybrid defaults."); } return { mechanics: cloneDefaultWheelMechanics(), revision: null }; });
   mechanicsCache = { expiresAt: now + 30_000, promise }; return promise;
 }
 export function invalidateWheelMechanics() { mechanicsCache = null; }

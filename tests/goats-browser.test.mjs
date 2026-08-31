@@ -8,7 +8,7 @@ import { chromium } from "playwright-core";
 const LIVE_ORIGIN = process.env.GOATS_BROWSER_ORIGIN || "";
 const TARGET_ORIGIN = LIVE_ORIGIN || "http://127.0.0.1:4184";
 const STRICT_LIVE = LIVE_ORIGIN === "https://thirdrailify.pages.dev";
-const EXPECTED_FEATURE_COUNT = STRICT_LIVE ? 11 : 2;
+const EXPECTED_FEATURE_COUNT = STRICT_LIVE ? 11 : 3;
 const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 let server;
 
@@ -20,7 +20,7 @@ before(async () => {
 
 after(() => server?.kill());
 
-test("GOATS MapLibre renders real vector geography, compact flagged cards, both DOM markers, selection, pan, zoom, and responsive layout", async (t) => {
+test("GOATS map renders full-width geography, previews, signal dialog, expanded mode, and responsive geometry", async (t) => {
   const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
   t.after(() => browser.close());
   const viewport = { width: Number(process.env.GOATS_BROWSER_WIDTH || 1440), height: Number(process.env.GOATS_BROWSER_HEIGHT || 900) };
@@ -61,6 +61,17 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   const mapViewport = page.locator(".goats-map__canvas.maplibregl-map");
   const bounds = await mapViewport.boundingBox();
   assert.ok(bounds && bounds.width > 250 && bounds.height >= 360, "the map viewport must have visible dimensions");
+  assert.equal(await page.locator(".goats-selected").count(), 0, "the permanent selected-signal sidecard must not exist");
+  const fullWidthGeometry = await page.locator(".goats-map-stage__grid").evaluate((grid) => {
+    const map = grid.querySelector(".goats-map");
+    const canvas = grid.querySelector(".goats-map__canvas");
+    if (!(map instanceof HTMLElement) || !(canvas instanceof HTMLElement)) return null;
+    const lastVisible = [...map.children].reverse().find((child) => child instanceof HTMLElement && child.offsetParent !== null);
+    const gridBounds = grid.getBoundingClientRect(); const mapBounds = map.getBoundingClientRect(); const lastBounds = lastVisible?.getBoundingClientRect();
+    return { gridWidth: gridBounds.width, mapWidth: mapBounds.width, deadSpace: lastBounds ? Math.abs(mapBounds.bottom - lastBounds.bottom) : 999 };
+  });
+  assert.ok(fullWidthGeometry && Math.abs(fullWidthGeometry.gridWidth - fullWidthGeometry.mapWidth) <= 2, "the map must occupy the complete workspace width");
+  assert.ok(fullWidthGeometry && fullWidthGeometry.deadSpace <= 18, `the map root must naturally end at its final bounded footer spacing instead of leaving a dead lower region (${fullWidthGeometry?.deadSpace})`);
   const mapCanvas = mapViewport.locator("canvas.maplibregl-canvas");
   assert.equal(await mapCanvas.isVisible(), true, "MapLibre must expose a visible GL canvas");
   assert.equal(await mapCanvas.evaluate((canvas) => canvas.width > 250 && canvas.height >= 360), true);
@@ -70,6 +81,7 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   const sydney = page.locator('[data-goats-marker-name="Southern Signal"]');
   const toronto = page.locator('[data-goats-marker-name="Midnight Rail"]');
   const daniel = page.locator('[data-goats-marker-name="Daniel Clancy"]');
+  const harbour = page.locator('[data-goats-marker-name="Harbour Echo"]');
   assert.equal(await sydney.count(), 1);
   assert.equal(await toronto.count(), 1);
   assert.equal(await sydney.isVisible(), true);
@@ -78,12 +90,19 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     assert.equal(await daniel.count(), 1);
     assert.equal(await daniel.isVisible(), true);
     assert.notEqual(await daniel.getAttribute("data-goats-marker-offset"), await sydney.getAttribute("data-goats-marker-offset"), "coincident privacy-safe coordinates must receive distinct visual pin offsets");
+  } else {
+    assert.equal(await harbour.isVisible(), true);
+    assert.notEqual(await harbour.getAttribute("data-goats-marker-offset"), await sydney.getAttribute("data-goats-marker-offset"), "coincident privacy-safe coordinates must receive distinct visual pin offsets");
   }
 
   const heroOrbital = page.locator(".goats-hero__orbital");
   assert.equal(await heroOrbital.isVisible(), true, "the enhanced GOATS signal hero must be visible");
   assert.ok((await heroOrbital.boundingBox())?.width >= 280, "the animated hero signal must be a substantial visual element");
   assert.notEqual(await page.locator(".goats-hero__sweep").evaluate((element) => globalThis.getComputedStyle(element).animationName), "none");
+  assert.equal(await page.locator(".goats-hero__field").isVisible(), true, "the global field environment must render around the retained hero instruments");
+  assert.equal(await page.locator(".goats-hero__world-traces").evaluate((element) => globalThis.getComputedStyle(element).pointerEvents), "none");
+  assert.equal(await page.locator(".goats-hero__route").count(), 3);
+  assert.ok(await page.locator(".goats-hero__field-nodes > g").count() >= 3);
   assert.equal(await page.locator(".goats-hero h1").evaluate((element) => Number.parseFloat(globalThis.getComputedStyle(element).lineHeight) / Number.parseFloat(globalThis.getComputedStyle(element).fontSize) >= .8), true, "the GOATS hero heading must retain the readable public-hero line-height rhythm");
   assert.equal(await heroOrbital.locator("img[data-goats-country-flag]").count(), 0, "the hero diagram must use uncrowded airport-code chips without flags");
   assert.equal(await heroOrbital.locator(".goats-hero__node").count(), 4, "the global radar must include Australian, Canadian, American, and European airport signals");
@@ -111,48 +130,73 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
   assert.ok(zoomDistanceAfter > zoomDistanceBefore * 1.5, "the visible zoom control must change map scale");
 
   await page.getByRole("button", { name: "Reset results" }).click();
-  await sydney.click();
-  await page.locator(".goats-selected h3").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
+  await page.waitForTimeout(200);
+  const resetMapBounds = await mapViewport.boundingBox();
+  for (const marker of [sydney, toronto]) {
+    const markerBounds = await marker.boundingBox();
+    assert.ok(resetMapBounds && markerBounds && markerBounds.x + markerBounds.width / 2 >= resetMapBounds.x && markerBounds.x + markerBounds.width / 2 <= resetMapBounds.x + resetMapBounds.width && markerBounds.y + markerBounds.height / 2 >= resetMapBounds.y && markerBounds.y + markerBounds.height / 2 <= resetMapBounds.y + resetMapBounds.height, `Reset Results must keep every active coordinate inside the map viewport (fit ${await mapViewport.getAttribute("data-goats-map-fit")}, map ${JSON.stringify(resetMapBounds)}, pin ${JSON.stringify(markerBounds)})`);
+  }
   const sydneyCard = page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" });
+  if (viewport.width <= 500) await sydney.focus(); else await sydney.hover();
   await sydneyCard.waitFor({ state: "visible" });
   await page.waitForTimeout(250);
   assert.equal(await sydneyCard.evaluate((element) => {
     const popup = element.closest(".maplibregl-popup");
     return popup instanceof globalThis.HTMLElement && Number(globalThis.getComputedStyle(popup).opacity) > .9;
   }), true);
-  assert.match(await sydneyCard.textContent(), /Approved signal.*Southern Signal.*Sydney.*View GOAT listing/s);
-  assert.ok((await sydneyCard.boundingBox())?.width >= 290, "the rich marker card must not collapse to its media column");
+  assert.match(await sydneyCard.textContent(), /Approved signal.*Southern Signal.*Sydney.*Click for full signal/s);
+  assert.ok((await sydneyCard.boundingBox())?.width >= 230, "the lightweight marker preview must remain legible");
   assert.equal(await sydneyCard.locator(".goats-map-marker-card__copy").isVisible(), true);
-  assert.match(await sydneyCard.locator("a").getAttribute("href"), /^\/goats\/[a-z0-9-]*southern-signal$/);
-  assert.equal(await sydneyCard.locator(".goats-map-marker-card__media").isVisible(), true);
+  assert.equal(await sydneyCard.locator("a").count(), 0, "the hover preview must not duplicate the full signal card");
   assert.equal(await sydneyCard.locator('[data-goats-country-flag="AU"]').count(), 1, "the popup must carry one Australian SVG flag beside the location only");
   const regularCardBounds = await sydneyCard.boundingBox();
   const regularMapBounds = await mapViewport.boundingBox();
-  assert.ok(regularMapBounds && regularCardBounds && regularCardBounds.x >= regularMapBounds.x && regularCardBounds.x + regularCardBounds.width <= regularMapBounds.x + regularMapBounds.width && regularCardBounds.y >= regularMapBounds.y && regularCardBounds.y + regularCardBounds.height <= regularMapBounds.y + regularMapBounds.height, "the regular marker card must remain inside the map viewport");
+  assert.ok(regularMapBounds && regularCardBounds && regularCardBounds.x >= regularMapBounds.x && regularCardBounds.x + regularCardBounds.width <= regularMapBounds.x + regularMapBounds.width && regularCardBounds.y >= regularMapBounds.y && regularCardBounds.y + regularCardBounds.height <= regularMapBounds.y + regularMapBounds.height, `the regular marker card must remain inside the map viewport (map ${JSON.stringify(regularMapBounds)}, card ${JSON.stringify(regularCardBounds)})`);
   assert.equal(await sydneyCard.locator("xpath=ancestor::*[contains(@class, 'maplibregl-popup-content')]").evaluate((element) => {
     const match = globalThis.getComputedStyle(element).backgroundColor.match(/[\d.]+/g)?.map(Number) || [];
     return match.length >= 3 && match[0] < 30 && match[1] < 30 && match[2] < 30;
   }), true, "marker card surface must be dark themed");
+
+  await sydney.click();
+  const signalDialog = page.getByRole("dialog", { name: "Southern Signal" });
+  await signalDialog.waitFor({ state: "visible" });
+  assert.match(await signalDialog.textContent(), /Signal acquired.*Southern Signal.*Sydney.*Demo product.*Approved community map fixture/s);
+  assert.equal(await signalDialog.locator('[data-goats-country-flag="AU"]').count(), 1);
+  assert.match(await signalDialog.getByRole("link", { name: /Open the full story/ }).getAttribute("href"), /^\/goats\/southern-signal$/);
+  assert.equal(await signalDialog.getByRole("button", { name: /Close Southern Signal signal/ }).evaluate((button) => document.activeElement === button), true, "focus must move into the signal dialog");
+  const dialogBounds = await signalDialog.boundingBox();
+  assert.ok(dialogBounds && dialogBounds.x >= 0 && dialogBounds.y >= 0 && dialogBounds.x + dialogBounds.width <= viewport.width && dialogBounds.y + dialogBounds.height <= viewport.height, "the signal dialog must remain inside the viewport");
+  await page.keyboard.press("Escape");
+  await signalDialog.waitFor({ state: "hidden" });
+  assert.equal(await sydney.evaluate((marker) => document.activeElement === marker), true, "closing must return focus to the originating pin");
+
+  await sydney.click();
+  await signalDialog.getByRole("button", { name: /Close Southern Signal signal/ }).click();
+  await signalDialog.waitFor({ state: "hidden" });
+  if (viewport.width <= 500) { await toronto.focus(); await page.keyboard.press("Enter"); } else await toronto.click();
+  const torontoDialog = page.getByRole("dialog", { name: "Midnight Rail" });
+  await torontoDialog.waitFor({ state: "visible" });
+  assert.match(await torontoDialog.getByRole("link", { name: /Open the full story/ }).getAttribute("href"), /^\/goats\/midnight-rail$/);
+  await torontoDialog.getByRole("button", { name: /Close Midnight Rail signal/ }).click();
+
+  if (!STRICT_LIVE) {
+    const shared = page.locator(".goats-map__shared");
+    await shared.locator("summary").click();
+    await shared.getByRole("button", { name: "Harbour Echo" }).click();
+    await page.getByRole("dialog", { name: "Harbour Echo" }).waitFor({ state: "visible" });
+    await page.getByRole("button", { name: /Close Harbour Echo signal/ }).click();
+  }
+
   await page.getByRole("button", { name: "Reset results" }).click();
   await page.locator(".goat-card").filter({ hasText: "Midnight Rail" }).locator("a").first().focus();
   if (!LIVE_ORIGIN) {
-    assert.equal(await page.locator(".goat-card .goat-profile-avatar.is-fallback").count(), 2, "listing cards without profile media must render the default goat motif");
+    assert.equal(await page.locator(".goat-card .goat-profile-avatar.is-fallback").count(), 3, "listing cards without profile media must render the default goat motif");
     assert.equal(await page.locator(".goat-card .goat-profile-avatar.is-fallback img, .goat-card .goat-profile-avatar.is-fallback svg").count(), 0, "card fallbacks must remain CSS-drawn");
   }
-  await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
-  await page.waitForTimeout(650);
-  await toronto.click();
-  await page.locator(".goats-selected h3").filter({ hasText: "Midnight Rail" }).waitFor({ state: "visible" });
-
-  if (STRICT_LIVE) {
-    await page.getByRole("button", { name: "Reset results" }).click();
-    await daniel.click();
-    await page.locator(".goats-selected h3").filter({ hasText: "Daniel Clancy" }).waitFor({ state: "visible" });
-  }
+  assert.equal(await page.getByRole("dialog").count(), 0, "gallery focus must not open the map signal dialog");
 
   await page.getByRole("button", { name: "Reset results" }).click();
   await page.locator(".goat-card").filter({ hasText: "Southern Signal" }).locator("a").first().focus();
-  await page.locator(".goats-selected h3").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
   assert.equal(await sydney.getAttribute("class").then((value) => value?.includes("is-selected")), true, "listing selection must select its marker");
 
   await page.getByRole("button", { name: "Reset results" }).click();
@@ -176,23 +220,36 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     return bounds.width >= 18 && bounds.width <= 22 && bounds.height >= 11 && bounds.height <= 15 && bounds.width / bounds.height > 1.35 && radius <= 1;
   })), true, "all retained location flags must remain small rectangular marks rather than circular avatars");
 
-  await sydney.click();
-  await sydneyCard.waitFor({ state: "visible" });
   const initialMapBounds = await mapViewport.boundingBox();
   await page.getByRole("button", { name: "Expand map" }).click();
   assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "true");
-  assert.equal(await mapRoot.getAttribute("role"), "dialog");
+  assert.equal(await mapRoot.getAttribute("role"), "region", "expanded map must not create a nested modal around the signal dialog");
   await page.waitForTimeout(250);
   const expandedMapBounds = await mapViewport.boundingBox();
-  assert.ok(initialMapBounds && expandedMapBounds && expandedMapBounds.height > initialMapBounds.height + 100, "expanded mode must materially enlarge the interactive map");
-  await sydneyCard.waitFor({ state: "visible" });
-  await page.waitForTimeout(250);
-  const expandedCardBounds = await sydneyCard.boundingBox();
-  assert.ok(expandedMapBounds && expandedCardBounds && expandedCardBounds.x >= expandedMapBounds.x && expandedCardBounds.x + expandedCardBounds.width <= expandedMapBounds.x + expandedMapBounds.width, `the expanded marker card must remain inside the mobile or desktop map viewport (map ${JSON.stringify(expandedMapBounds)}, card ${JSON.stringify(expandedCardBounds)})`);
+  const expandedRootBounds = await mapRoot.boundingBox();
+  assert.ok(expandedRootBounds && expandedRootBounds.height >= viewport.height * .9, "expanded mode must fill the viewport");
+  assert.ok(initialMapBounds && expandedMapBounds && expandedMapBounds.width * expandedMapBounds.height > initialMapBounds.width * initialMapBounds.height * 1.1, `expanded mode must materially enlarge the interactive map area (inline ${JSON.stringify(initialMapBounds)}, expanded ${JSON.stringify(expandedMapBounds)})`);
+  await page.getByRole("button", { name: "Reset results" }).click();
+  await page.waitForTimeout(200);
+  for (const marker of [sydney, toronto]) {
+    const markerBounds = await marker.boundingBox();
+    assert.ok(expandedMapBounds && markerBounds && markerBounds.x + markerBounds.width / 2 >= expandedMapBounds.x && markerBounds.x + markerBounds.width / 2 <= expandedMapBounds.x + expandedMapBounds.width && markerBounds.y + markerBounds.height / 2 >= expandedMapBounds.y && markerBounds.y + markerBounds.height / 2 <= expandedMapBounds.y + expandedMapBounds.height, `expanded map must keep every active coordinate visible (${await marker.getAttribute("data-goats-marker-name")}, fit ${await mapViewport.getAttribute("data-goats-map-fit")}, map ${JSON.stringify(expandedMapBounds)}, pin ${JSON.stringify(markerBounds)})`);
+  }
   assert.equal(await page.locator("body").evaluate((body) => globalThis.getComputedStyle(body).overflow), "hidden");
+  if (viewport.width <= 500) await sydney.focus(); else await sydney.hover();
+  await sydneyCard.waitFor({ state: "visible" });
+  const expandedCardBounds = await sydneyCard.boundingBox();
+  assert.ok(expandedMapBounds && expandedCardBounds && expandedCardBounds.x >= expandedMapBounds.x && expandedCardBounds.x + expandedCardBounds.width <= expandedMapBounds.x + expandedMapBounds.width, `the expanded marker preview must remain inside the map viewport (map ${JSON.stringify(expandedMapBounds)}, card ${JSON.stringify(expandedCardBounds)})`);
+  await sydney.click();
+  await signalDialog.waitFor({ state: "visible" });
+  assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "true", "opening signal detail must preserve expanded map state");
+  await page.keyboard.press("Escape");
+  await signalDialog.waitFor({ state: "hidden" });
+  assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "true", "closing signal detail must restore the expanded map");
   await page.keyboard.press("Escape");
   assert.equal(await mapRoot.getAttribute("data-goats-map-expanded"), "false");
   await page.waitForTimeout(250);
+  assert.equal(await page.locator("body").evaluate((body) => body.style.overflow), "", "expanded map and signal dialog must release their scroll locks");
   assert.deepEqual(applicationErrors, []);
   assert.deepEqual(requestFailures, []);
   assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true);
@@ -219,16 +276,38 @@ test("GOATS MapLibre renders real vector geography, compact flagged cards, both 
     await page.locator('.goats-map[data-goats-map-state="ready"]').waitFor({ state: "visible", timeout: 20_000 });
     await page.waitForTimeout(500);
     await page.locator(".goats-hero").screenshot({ path: path.join(output, `thirdrailify-goats-hero-${suffix}.png`) });
-    await page.locator('[data-goats-marker-name="Southern Signal"]').click();
-    await page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
-    await page.waitForTimeout(250);
     const proofViewport = viewport.width <= 500 ? "mobile" : "desktop";
     await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-${proofViewport}-PROOF.png`) });
-    await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-card-${suffix}.png`) });
+    if (viewport.width <= 500) await page.locator('[data-goats-marker-name="Southern Signal"]').focus(); else await page.locator('[data-goats-marker-name="Southern Signal"]').hover();
+    await page.locator(".goats-map-marker-card").filter({ hasText: "Southern Signal" }).waitFor({ state: "visible" });
+    await page.waitForTimeout(250);
+    await page.locator(".goats-map-stage__grid").screenshot({ path: path.join(output, `thirdrailify-goats-map-tooltip-${suffix}.png`) });
+    await page.locator('[data-goats-marker-name="Southern Signal"]').click();
+    await page.getByRole("dialog", { name: "Southern Signal" }).screenshot({ path: path.join(output, `thirdrailify-goats-signal-dialog-${suffix}.png`) });
+    await page.keyboard.press("Escape");
     await page.getByRole("button", { name: "Expand map" }).click();
     await page.waitForTimeout(250);
     await page.locator(".goats-map.is-expanded").screenshot({ path: path.join(output, `thirdrailify-goats-map-expanded-${suffix}.png`) });
+    await page.locator('[data-goats-marker-name="Southern Signal"]').click();
+    await page.getByRole("dialog", { name: "Southern Signal" }).screenshot({ path: path.join(output, `thirdrailify-goats-expanded-signal-${suffix}.png`) });
   }
+});
+
+test("GOATS hero preserves its layered field, goat, and radar in reduced-motion mode", async (t) => {
+  const browser = await chromium.launch({ executablePath: CHROME_PATH, headless: true });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1024, height: 900 }, reducedMotion: "reduce" });
+  if (!LIVE_ORIGIN) await routeGoatsApi(page);
+  await page.goto(`${TARGET_ORIGIN}/goats`, { waitUntil: "domcontentloaded" });
+  const hero = page.locator(".goats-hero");
+  await hero.waitFor({ state: "visible" });
+  assert.equal(await page.locator(".goats-hero__goat-motif").isVisible(), true);
+  assert.equal(await page.locator(".goats-hero__orbital").isVisible(), true);
+  assert.equal(await page.locator(".goats-hero__world-traces").isVisible(), true);
+  for (const selector of [".goats-hero__grid", ".goats-hero__atmosphere", ".goats-hero__scan-field", ".goats-hero__route", ".goats-hero__sweep"]) {
+    assert.equal(await page.locator(selector).first().evaluate((element) => globalThis.getComputedStyle(element).animationName), "none", `${selector} must not continuously animate with reduced motion`);
+  }
+  assert.equal(await hero.evaluate((element) => { const bounds = element.getBoundingClientRect(); return bounds.left >= 0 && bounds.right <= document.documentElement.clientWidth; }), true);
 });
 
 test("GOATS live gallery keeps primary photos visible, native controls dark, and detail media viewport-filling", { skip: !STRICT_LIVE }, async (t) => {
@@ -437,8 +516,8 @@ function listing(id, slug, name, label, latitude, longitude) { return { id, slug
 function detailListing(displayName, hasProfile) { return { ...listing("detail", "faggoat", displayName, "Toronto, ON, Canada", 43.6532, -79.3832), description: "A compact approved detail fixture.", media: { main: fixtureMedia("main", 900, 1100), profile: hasProfile ? animatedGifMedia() : null, gallery: [] }, counts: { likes: 5, dislikes: 1, comments: 0 }, currentReaction: 0, engagement: { comments: "auto", reactions: "auto" }, neighbours: { previous: null, next: null } }; }
 function animatedGifMedia() { return { id: "profile-gif-fixture", role: "profile", sortOrder: 0, url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAICRAEAIfkEAQAAAAAsAAAAAAEAAQAAAgJEAQA7" }; }
 function fixtureMedia(role, width, height) { const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#171b10"/><circle cx="50%" cy="42%" r="28%" fill="#dfff38" opacity=".2"/><path d="M0 ${height * .72}  ${width} ${height * .36}V${height}H0Z" fill="#ffd12f" opacity=".22"/></svg>`; return { id: `${role}-fixture`, role, sortOrder: 0, url: `data:image/svg+xml,${encodeURIComponent(svg)}` }; }
-function listings() { const items = [listing("sydney", "southern-signal", "Southern Signal", "Sydney, AU", -33.8688, 151.2093), listing("toronto", "midnight-rail", "Midnight Rail", "Toronto, CA", 43.6532, -79.3832)]; return { ok: true, items, page: 1, pageSize: 12, total: 2, stats: { listings: 2, countries: 2, products: 1 }, facets: { countries: [{ code: "AU", count: 1 }, { code: "CA", count: 1 }] } }; }
-function mapData() { return { type: "FeatureCollection", features: [{ type: "Feature", id: "sydney", geometry: { type: "Point", coordinates: [151.2093, -33.8688] }, properties: { id: "sydney", slug: "southern-signal", displayName: "Southern Signal", locationLabel: "Sydney, AU", countryCode: "AU", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }, { type: "Feature", id: "toronto", geometry: { type: "Point", coordinates: [-79.3832, 43.6532] }, properties: { id: "toronto", slug: "midnight-rail", displayName: "Midnight Rail", locationLabel: "Toronto, CA", countryCode: "CA", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }] }; }
+function listings() { const items = [listing("sydney", "southern-signal", "Southern Signal", "Sydney, AU", -33.8688, 151.2093), listing("sydney-echo", "harbour-echo", "Harbour Echo", "Sydney, AU", -33.8688, 151.2093), listing("toronto", "midnight-rail", "Midnight Rail", "Toronto, CA", 43.6532, -79.3832)]; return { ok: true, items, page: 1, pageSize: 12, total: 3, stats: { listings: 3, countries: 2, products: 1 }, facets: { countries: [{ code: "AU", count: 2 }, { code: "CA", count: 1 }] } }; }
+function mapData() { return { type: "FeatureCollection", features: [{ type: "Feature", id: "sydney", geometry: { type: "Point", coordinates: [151.2093, -33.8688] }, properties: { id: "sydney", slug: "southern-signal", displayName: "Southern Signal", locationLabel: "Sydney, AU", countryCode: "AU", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }, { type: "Feature", id: "sydney-echo", geometry: { type: "Point", coordinates: [151.2093, -33.8688] }, properties: { id: "sydney-echo", slug: "harbour-echo", displayName: "Harbour Echo", locationLabel: "Sydney, AU", countryCode: "AU", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }, { type: "Feature", id: "toronto", geometry: { type: "Point", coordinates: [-79.3832, 43.6532] }, properties: { id: "toronto", slug: "midnight-rail", displayName: "Midnight Rail", locationLabel: "Toronto, CA", countryCode: "CA", imageUrl: null, product: product(), rating: 5, excerpt: "Fixture", galleryPage: 1 } }] }; }
 
 async function waitForServer() {
   for (let attempt = 0; attempt < 80; attempt += 1) {
