@@ -10888,15 +10888,15 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   padding: 13px 12px 15px;
   border: 1px solid rgba(243, 201, 40, .48);
   border-radius: 12px;
-  background: radial-gradient(circle at 0 50%, rgba(243, 201, 40, .1), transparent 44%), rgba(13, 13, 10, .975);
-  box-shadow: 0 22px 64px rgba(0, 0, 0, .62), 0 0 0 1px rgba(0, 0, 0, .3);
-  backdrop-filter: blur(18px);
+  background: radial-gradient(circle at 0 50%, rgba(243, 201, 40, .1), transparent 44%), #0d0d0a;
+  box-shadow: 0 22px 64px rgba(0, 0, 0, .76), 0 0 0 1px rgba(0, 0, 0, .48);
+  backdrop-filter: blur(28px) saturate(125%);
   pointer-events: auto;
   animation: ephemeral-notice-in .22s cubic-bezier(.2, .8, .2, 1) both;
 }
 .ephemeral-notice--success { border-color: rgba(114, 215, 165, .45); }
 .ephemeral-notice--info { border-color: rgba(243, 201, 40, .52); }
-.ephemeral-notice--error { border-color: rgba(255, 91, 105, .56); background: radial-gradient(circle at 0 50%, rgba(180, 30, 48, .18), transparent 46%), rgba(15, 10, 10, .98); }
+.ephemeral-notice--error { border-color: rgba(255, 91, 105, .56); background: radial-gradient(circle at 0 50%, rgba(180, 30, 48, .18), transparent 46%), #120b0c; }
 .ephemeral-notice__icon {
   display: grid;
   width: 38px;
@@ -10930,7 +10930,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .ephemeral-notice__dismiss:focus-visible { outline: 2px solid #f3c928; outline-offset: 2px; }
 .ephemeral-notice__timer { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: linear-gradient(90deg, #f3c928, #72d7a5); transform-origin: left; animation: ephemeral-notice-timer var(--ephemeral-notice-duration) linear forwards; }
 .ephemeral-notice--error .ephemeral-notice__timer { background: linear-gradient(90deg, #a7192c, #ff7b88); }
-@keyframes ephemeral-notice-in { from { opacity: 0; transform: translate3d(0, -10px, 0) scale(.985); } }
+@keyframes ephemeral-notice-in { from { opacity: .94; transform: translate3d(0, -10px, 0) scale(.985); } }
 @keyframes ephemeral-notice-timer { to { transform: scaleX(0); } }
 @media (max-width: 640px) {
   .ephemeral-notice-region { top: 82px; right: 12px; width: calc(100vw - 24px); }
