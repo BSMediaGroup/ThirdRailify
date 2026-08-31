@@ -6,6 +6,7 @@ import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnHero from "../../assets/people/shawn3.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
+import { EditorialSignalField } from "../components/SignalField";
 import { useMotionGate } from "../hooks/useMotionGate";
 
 type HostKey = "shawn" | "gina";
@@ -117,11 +118,14 @@ const profiles: Record<HostKey, HostProfile> = {
 
 export function HostPage({ hostKey }: { hostKey: HostKey }) {
   const profile = profiles[hostKey];
+  const heroMotion = useMotionGate<HTMLElement>();
   const topicsMotion = useMotionGate<HTMLElement>();
+  const closingMotion = useMotionGate<HTMLElement>();
 
   return (
     <div className={`host-story host-story--${profile.key}`}>
-      <section className="host-profile-hero" aria-labelledby={`${profile.key}-title`}>
+      <section ref={heroMotion.ref} className={`host-profile-hero${heroMotion.active ? " is-active" : ""}`} aria-labelledby={`${profile.key}-title`} data-motion={heroMotion.active ? "active" : "static"}>
+        <EditorialSignalField variant={profile.key} context="hero" />
         <div className="host-profile-hero__ambient" aria-hidden="true"><i /><i /><i /></div>
         <div className="container host-profile-hero__layout">
           <div className="host-profile-hero__copy">
@@ -191,7 +195,8 @@ export function HostPage({ hostKey }: { hostKey: HostKey }) {
         </div>
       </section>
 
-      <section className="host-closing" aria-labelledby={`${profile.key}-closing-title`}>
+      <section ref={closingMotion.ref} className={`host-closing${closingMotion.active ? " is-active" : ""}`} aria-labelledby={`${profile.key}-closing-title`} data-motion={closingMotion.active ? "active" : "static"}>
+        <EditorialSignalField variant={profile.key} context="closing" />
         <div className="host-closing__rails" aria-hidden="true"><i /><i /><i /></div>
         <div className="container host-closing__inner">
           <RadioIcon />
@@ -239,10 +244,10 @@ function HostVoiceConsole({ profile }: { profile: HostProfile }) {
 }
 
 function TopicInstrument({ type }: { type: HostTopic["instrument"] }) {
-  if (type === "scan") return <div className="host-topic-instrument host-topic-scan" aria-hidden="true"><span>LIVE INPUT</span><div><i /><i /><i /></div><svg viewBox="0 0 420 100"><path d="M7 62h68l24-25 31 48 36-68 42 48h45l28-22 31 34 36-48 30 33h55" /></svg></div>;
-  if (type === "case" || type === "mystery") return <div className="host-topic-instrument host-topic-case" aria-hidden="true"><i /><i /><i /><div><span>?</span><b>{type === "case" ? "CASE OPEN" : "LOOK AGAIN"}</b></div><svg viewBox="0 0 420 180"><path d="M50 35 205 92 358 36M84 148 205 92l126 58M50 35l34 113m274-112-27 114" /></svg></div>;
-  if (type === "culture") return <div className="host-topic-instrument host-topic-culture" aria-hidden="true"><i /><i /><i /><i /><div><span>CULTURE</span><b>UNDER REVIEW</b></div></div>;
-  if (type === "detour") return <div className="host-topic-instrument host-topic-detour" aria-hidden="true"><svg viewBox="0 0 440 180"><path d="M18 102h92c48 0 42-62 94-62s43 99 97 99 48-68 121-68" /><circle cx="110" cy="102" r="6" /><circle cx="301" cy="139" r="6" /></svg><span>ROUTE RECALCULATING</span></div>;
-  if (type === "wit") return <div className="host-topic-instrument host-topic-wit" aria-hidden="true"><span>SASS</span><i /><div><BoltIcon /></div><i /><span>POINT</span><b>TIMING MATTERS</b></div>;
-  return <div className="host-topic-instrument host-topic-identity" aria-hidden="true"><div><BoltIcon /></div><span>JUST</span><strong>GINA</strong><i>OWN FREQUENCY</i></div>;
+  if (type === "scan") return <div className="host-topic-instrument host-topic-scan" aria-hidden="true"><span>LIVE INPUT / ACQUIRING</span><div><i /><i /><i /></div><svg viewBox="0 0 460 176"><path className="topic-baseline" d="M20 113H440" /><path className="topic-wave topic-trace" pathLength="1" d="M20 113h47l14-13 16 24 20-43 22 58 27-82 31 59 28-31 26 28h36l19-20 24 36 29-63 34 47h67" /><g className="topic-nodes"><circle cx="117" cy="81" r="5" /><circle cx="286" cy="93" r="5" /><circle cx="373" cy="66" r="5" /></g></svg><small>CH 01&nbsp;&nbsp; / &nbsp;&nbsp;SIGNAL LOCK 92%</small></div>;
+  if (type === "case" || type === "mystery") return <div className={`host-topic-instrument host-topic-case host-topic-case--${type}`} aria-hidden="true"><i /><i /><i /><i /><div><span>?</span><b>{type === "case" ? "CASE OPEN" : "LOOK AGAIN"}</b></div><svg viewBox="0 0 460 200"><circle className="topic-orbit" cx="230" cy="100" r="72" /><path className="topic-trace" pathLength="1" d="M48 42 230 100 402 38M84 164 230 100l145 64M48 42l36 122m318-126-27 126" /><path className="topic-trace topic-trace--delay" pathLength="1" d="M84 164 47 118M375 164l41-50" /></svg><small>{type === "case" ? "EVIDENCE PATH / UNRESOLVED" : "UNCERTAINTY MAP / 04 LEADS"}</small></div>;
+  if (type === "culture") return <div className="host-topic-instrument host-topic-culture" aria-hidden="true"><svg viewBox="0 0 460 210"><circle className="culture-ring culture-ring--outer" cx="230" cy="105" r="82" /><circle className="culture-ring" cx="230" cy="105" r="58" /><circle className="culture-ring culture-ring--inner" cx="230" cy="105" r="34" /><path className="culture-sector" d="M230 105 230 23A82 82 0 0 1 301 64Z" /><path className="culture-scan" d="M230 105 307 77" /></svg><div><span>CULTURE</span><b>UNDER REVIEW</b></div><small>SPECTRUM / ACTIVE SECTOR 03</small></div>;
+  if (type === "detour") return <div className="host-topic-instrument host-topic-detour" aria-hidden="true"><svg viewBox="0 0 460 200"><path className="detour-route-shadow" d="M18 126h72c42 0 35-72 86-72s42 104 96 104 42-82 92-82 40 48 82 48" /><path className="detour-route topic-trace" pathLength="1" d="M18 126h72c42 0 35-72 86-72s42 104 96 104 42-82 92-82 40 48 82 48" /><g><circle cx="90" cy="126" r="6" /><circle cx="176" cy="54" r="6" /><circle cx="272" cy="158" r="6" /><circle cx="364" cy="76" r="6" /><circle cx="446" cy="124" r="7" /></g></svg><span>ROUTE RECALCULATING</span><small>4 COURSE CORRECTIONS / DESTINATION FOUND</small></div>;
+  if (type === "wit") return <div className="host-topic-instrument host-topic-wit" aria-hidden="true"><svg viewBox="0 0 460 190"><path className="wit-guide" d="M28 105H432" /><path className="wit-timing topic-trace" pathLength="1" d="M28 105h70v-19h30v19h66v-38h18v38h55l19 0 18-64 18 114 18-50h92" /><g><circle cx="98" cy="105" r="5" /><circle cx="194" cy="105" r="5" /><circle cx="304" cy="105" r="7" /></g></svg><span className="wit-label wit-label--setup">SETUP</span><span className="wit-label wit-label--beat">TIMING</span><span className="wit-label wit-label--point">POINT</span><div><BoltIcon /></div><b>BEAT 03 / OUTPUT SHARP</b></div>;
+  return <div className="host-topic-instrument host-topic-identity" aria-hidden="true"><svg viewBox="0 0 460 210"><circle className="identity-orbit" cx="230" cy="105" r="76" /><circle className="identity-orbit identity-orbit--inner" cx="230" cy="105" r="49" /><path className="identity-feed" d="M18 134c54 0 58-35 103-35s48 35 91 35 52-35 94-35 47 35 136 35" /><path className="identity-solo topic-trace" pathLength="1" d="M18 154c63 0 66-11 111-11s52 11 92 11 51-62 93-62 52 62 128 62" /></svg><div><BoltIcon /></div><span>JUST</span><strong>GINA</strong><i>OWN FREQUENCY / LOCKED</i></div>;
 }

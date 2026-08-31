@@ -118,6 +118,9 @@ test("both host stories stay composed, animated, and overflow-free at every requ
       if (LIVE_ORIGIN) await page.waitForTimeout(1_800);
 
       await page.locator(".host-portrait-stage.is-active").waitFor({ timeout: 8_000 });
+      await page.locator(".host-profile-hero.is-active").waitFor({ timeout: 8_000 });
+      assert.equal(await page.locator(`.editorial-signal--${host}.editorial-signal--hero`).count(), 1, `${host} has its own hero signal field`);
+      assert.notEqual(await page.locator(".host-profile-hero .editorial-signal__trace-live").evaluate((element) => getComputedStyle(element).animationName), "none", `${host} hero trace animates while visible`);
       const initialLayout = await heroLayout(page);
       await page.waitForTimeout(900);
       const settledLayout = await heroLayout(page);
@@ -134,10 +137,15 @@ test("both host stories stay composed, animated, and overflow-free at every requ
       await page.locator(".host-topics").scrollIntoViewIfNeeded();
       await page.locator(".host-topics.is-active").waitFor({ timeout: 8_000 });
       assert.equal(await page.locator(".host-topic-card").count(), 4);
+      assert.equal(await page.locator(".host-topic-instrument > svg").count(), 4, `${host} renders four scalable diagram canvases`);
+      assert.equal(await page.locator(".host-topic-instrument > svg").evaluateAll((elements) => elements.every((element) => Boolean(element.getAttribute("viewBox")))), true, `${host} diagrams retain responsive viewBoxes`);
+      assert.notEqual(await page.locator(".host-topic-instrument .topic-trace").first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} diagram traces draw only after the topic section enters view`);
       assert.notEqual(await page.locator(profile.topicAnimation).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} topic motion activates`);
       await page.locator(".host-partnership").scrollIntoViewIfNeeded();
       await page.waitForFunction(() => [...document.querySelectorAll(".host-partnership img")].every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 15_000 });
       await page.locator(".host-closing").scrollIntoViewIfNeeded();
+      await page.locator(".host-closing.is-active").waitFor({ timeout: 8_000 });
+      assert.notEqual(await page.locator(".host-closing .editorial-signal__trace-live").evaluate((element) => getComputedStyle(element).animationName), "none", `${host} closing signal field animates while visible`);
       const brokenImages = await page.locator("main img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.getAttribute("src")));
       assert.deepEqual(brokenImages, []);
       assert.ok(await page.locator(".host-topic-card__copy p").first().evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize) >= 14));
@@ -150,6 +158,7 @@ test("both host stories stay composed, animated, and overflow-free at every requ
         await page.screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${host}-${width}-hero.png`) });
         await page.screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${host}-${width}x${height}.png`), fullPage: true });
         if (width === 390) {
+          await page.addStyleTag({ content: ".skip-link{display:none!important}.site-header{position:relative!important}" });
           for (const [selector, name] of [[".host-voice", "voice"], [".host-topics", "topics"], [".host-partnership", "partnership"], [".host-closing", "closing"]]) {
             await page.locator(selector).screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${host}-${width}-${name}.png`) });
           }
@@ -169,10 +178,13 @@ test("reduced motion keeps both host stories complete while disabling nonessenti
     await mockApis(page);
     await page.goto(`${ORIGIN}/${host}`, { waitUntil: "domcontentloaded" });
     assert.equal(await page.locator(".host-portrait-stage").getAttribute("data-motion"), "static");
+    assert.equal(await page.locator(".host-profile-hero").getAttribute("data-motion"), "static");
     assert.equal(await page.locator(".host-topics").getAttribute("data-motion"), "static");
+    assert.equal(await page.locator(".host-closing").getAttribute("data-motion"), "static");
     for (const selector of [".host-portrait-stage__scope i", profile.topicAnimation]) {
       assert.equal(await page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} ${selector} is static`);
     }
+    assert.equal(await page.locator(".host-profile-hero .editorial-signal__trace-live").evaluate((element) => getComputedStyle(element).animationName), "none");
     assert.equal(await page.locator(".host-topic-card").count(), 4);
     assert.equal(await page.getByRole("heading", { level: 1, name: profile.heading }).count(), 1);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
@@ -223,6 +235,7 @@ async function mockApis(page) {
     if (pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (pathname === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
+    if (pathname === "/api/analytics") return route.fulfill({ status: 204 });
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1 } });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-29T00:00:00.000Z", collections: [], products: [] });
     return json(route, { ok: false, error: "not_found" }, 404);

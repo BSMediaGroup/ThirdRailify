@@ -93,7 +93,7 @@ export async function fetchBannerConfig(fetcher: typeof fetch = fetch): Promise<
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 5_000);
   try {
-    const response = await fetcher(BANNER_CONFIG_URL, { method: "GET", credentials: "omit", headers: { Accept: "application/json" }, signal: controller.signal });
+    const response = await fetcher(BANNER_CONFIG_URL, { method: "GET", credentials: "omit", cache: "no-cache", headers: { Accept: "application/json" }, signal: controller.signal });
     if (!response.ok) throw new Error(`banner_config_http_${response.status}`);
     const config = normalizeBannerConfig(await response.json());
     if (!config) throw new Error("banner_config_invalid");

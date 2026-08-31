@@ -35,6 +35,12 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       assert.equal(await page.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true, `${route} has no overflow at ${width}x${height}`);
       assert.deepEqual(errors, [], `${route} has no console errors at ${width}x${height}`);
       if (route === "watch") {
+        const watchHero = page.locator(".watch-hero");
+        await page.locator(".watch-hero.is-motion-active").waitFor({ timeout: 8_000 });
+        assert.equal(await watchHero.locator(".watch-hero__atmosphere").count(), 1, "Watch hero has one dedicated environmental signal field");
+        assert.equal(await watchHero.locator(".watch-hero__particles i").count(), 16, "Watch hero carries the complete sparse particle field");
+        assert.equal(await watchHero.locator(".watch-hero__route--live").count(), 2, "Watch hero carries both live transmission routes");
+        assert.notEqual(await watchHero.locator(".watch-hero__route--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", `Watch hero routes animate at ${width}x${height}`);
         await page.locator(".episode-featured-grid .episode-card").first().waitFor();
         assert.equal(await page.locator(".episode-featured-grid .episode-card").count(), 6);
         assert.equal(await page.locator(".episode-featured-grid .episode-card--placeholder").count(), 5);
@@ -57,6 +63,7 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         assert.ok(Math.abs(orbitalGeometry.width - orbitalGeometry.height) <= 1, `Watch schedule orbit remains circular at ${width}x${height}`);
         assert.ok(orbitalGeometry.coreX !== null && orbitalGeometry.coreY !== null && Math.abs(orbitalGeometry.coreX - orbitalGeometry.width / 2) <= 1 && Math.abs(orbitalGeometry.coreY - orbitalGeometry.height / 2) <= 1, `Watch time core stays centered at ${width}x${height}: ${JSON.stringify(orbitalGeometry)}`);
         if (process.env.WATCH_BROWSER_SCREENSHOTS === "1" && (width === 1440 || width === 390)) {
+          await watchHero.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-hero-${width}.png`) });
           await page.addStyleTag({ content: ".site-header, .skip-link, .privacy-dock { display: none !important; }" });
           await schedule.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-schedule-${width}.png`) });
         }
@@ -66,7 +73,11 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
       if (route === "episodes") {
         const archiveRegister = page.locator(".archive-status");
         await archiveRegister.waitFor();
+        await page.locator(".episodes-signal-hero.is-motion-active").waitFor({ timeout: 8_000 });
         assert.equal(await page.locator(".episodes-signal-field__glow").count(), 1, "archive hero has a dedicated animated light field");
+        assert.equal(await page.locator(".episodes-signal-field__particles i").count(), 18, "archive hero carries the complete retained-signal particle field");
+        assert.equal(await page.locator(".episodes-signal-field__frequency--live").count(), 2, "archive hero carries both animated frequency paths");
+        assert.notEqual(await page.locator(".episodes-signal-field__frequency--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", `archive frequencies animate at ${width}x${height}`);
         assert.match(await page.locator(".archive-status__latest strong").innerText(), /Aug 27, 2026/i, "latest date remains compact, readable metadata");
         assert.equal(await page.getByText("Newest trace", { exact: true }).count(), 0, "legacy stacked date treatment is removed");
         assert.ok(Number.parseFloat(await page.locator(".archive-status__latest strong").evaluate((element) => getComputedStyle(element).fontSize)) <= 18, "latest date is not rendered as display text");
@@ -84,6 +95,7 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
         assert.equal(await rumble.getAttribute("href"), "https://rumble.com/thirdrailify");
         assert.equal(await rumble.getAttribute("target"), "_blank");
         assert.equal(await rumble.getAttribute("rel"), "noopener noreferrer");
+        if (process.env.WATCH_BROWSER_SCREENSHOTS === "1" && (width === 1440 || width === 390)) await page.locator(".episodes-signal-hero").screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-episodes-hero-${width}.png`) });
       }
       if (route === "detail") assert.equal(await page.getByRole("heading", { level: 1, name: "Fixture retained transmission" }).count(), 1);
       if (process.env.WATCH_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-watch-${route}-${width}.png`), fullPage: true });
@@ -167,8 +179,12 @@ test("Watch V2 routes, slot counts, players, precedence, redirect fallback, and 
   assert.equal(await reducedPage.evaluate(() => globalThis.document.documentElement.scrollWidth <= globalThis.document.documentElement.clientWidth), true);
   await reducedPage.goto(`${ORIGIN}/watch/episodes`); await reducedPage.locator(".archive-status").waitFor();
   assert.equal(await reducedPage.locator(".episodes-signal-field__glow").evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero light field respects reduced motion");
+  assert.equal(await reducedPage.locator(".episodes-signal-field__frequency--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero frequency routes respect reduced motion");
+  assert.equal(await reducedPage.locator(".episodes-signal-field__beacon").evaluate((element) => getComputedStyle(element).animationName), "none", "archive hero depth beacon respects reduced motion");
   assert.equal(await reducedPage.locator(".archive-status").evaluate((element) => getComputedStyle(element, "::after").animationName), "none", "archive register sweep respects reduced motion");
   await reducedPage.unroute("**/api/**"); await mockApis(reducedPage, true); await reducedPage.goto(`${ORIGIN}/watch`); const reducedLiveStage = reducedPage.locator(".watch-stage.is-live"); await reducedLiveStage.waitFor();
+  assert.equal(await reducedPage.locator(".watch-hero").getAttribute("data-motion"), "static", "Watch hero motion gate remains static for reduced motion");
+  assert.equal(await reducedPage.locator(".watch-hero__route--live").first().evaluate((element) => getComputedStyle(element).animationName), "none", "Watch hero transmission routes respect reduced motion");
   await reducedPage.locator(".watch-schedule").scrollIntoViewIfNeeded();
   assert.equal(await reducedPage.locator(".watch-schedule").getAttribute("data-motion"), "static");
   assert.deepEqual(await reducedPage.locator(".watch-schedule").evaluate((section) => [getComputedStyle(section.querySelector(".sparkling-sky__star")).animationName, getComputedStyle(section.querySelector(".watch-schedule__sweep")).animationName]), ["none", "none"], "Watch schedule night sky and orbit are static for reduced motion");

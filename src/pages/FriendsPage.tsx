@@ -9,6 +9,7 @@ import rumbleIcon from "../../assets/icons/rumble.svg";
 import twitterIcon from "../../assets/icons/twitter.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import { ArrowIcon, BoltIcon, CloseIcon, PlayIcon, RadioIcon } from "../components/Icons";
+import { EditorialSignalField } from "../components/SignalField";
 import { useMotionGate } from "../hooks/useMotionGate";
 
 type FriendKey = "daniel" | "darnell" | "davy";
@@ -189,6 +190,7 @@ export function FriendsPage() {
       </section>
 
       <section ref={close.ref} className={`friends-close${close.active ? " is-active" : ""}`} data-motion={close.active ? "active" : "static"} aria-labelledby="friends-close-title">
+        <EditorialSignalField variant="friends" context="closing" />
         <div className="friends-close__rails" aria-hidden="true"><i /><i /><i /></div>
         <div className="container friends-close__inner">
           <p className="eyebrow">The room stays open</p>

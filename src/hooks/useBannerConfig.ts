@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchBannerConfig, type BannerConfig } from "../lib/banner";
 
-const REFRESH_MS = 5 * 60 * 1000;
+const REFRESH_MS = 60 * 1000;
 
 export function useBannerConfig() {
   const [config, setConfig] = useState<BannerConfig | null>(null);

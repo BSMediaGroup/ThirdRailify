@@ -15,7 +15,7 @@ export function PromoBanner({ config, broadcast }: { config: BannerConfig | null
   const live = effectiveLiveCandidate(broadcast);
   if (live && config.live.enabled) return <LiveBanner config={config} candidate={live} />;
   if (!config.normal.enabled || config.normal.messages.length === 0) return null;
-  const signature = JSON.stringify(config.normal);
+  const signature = JSON.stringify({ normal: config.normal, updatedAt: config.updatedAt });
   if (config.normal.dismissible && dismissedSignature === signature) return null;
   return <NormalBanner config={config} onDismiss={config.normal.dismissible ? () => { writeDismissedAnnouncement(signature); setDismissedSignature(signature); } : undefined} />;
 }

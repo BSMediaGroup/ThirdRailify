@@ -15,14 +15,17 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
   t.after(() => browser.close());
 
   for (const [width, height] of [[1440, 900], [390, 844]]) {
-    let live = false;
+    let liveState = "off";
     let announcementMode = "ticker";
+    let announcementEnabled = true;
+    let announcementMalformed = false;
+    let announcementUpdatedAt = "2026-08-30T00:00:00.000Z";
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "no-preference" });
     const page = await context.newPage();
     const errors = [];
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     page.on("pageerror", (error) => errors.push(error.message));
-    await mockApis(page, () => live, () => announcementMode);
+    await mockApis(page, () => liveState, () => announcementMode, () => announcementEnabled, () => announcementUpdatedAt, () => announcementMalformed);
 
     await page.goto(ORIGIN);
     const normal = page.locator(".promo-banner--normal");
@@ -42,6 +45,15 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     const announcementCta = page.locator('.promo-banner__ticker-track .promo-banner__message-link:not([tabindex="-1"])');
     assert.equal(await announcementCta.count(), 1, "only the first logical CTA remains keyboard-focusable");
     assert.deepEqual(await announcementCta.evaluate((element) => ({ border: getComputedStyle(element).borderStyle, decoration: getComputedStyle(element).textDecorationLine, height: Math.round(element.getBoundingClientRect().height) })), { border: "solid", decoration: "none", height: 22 });
+    const headerBox = await page.locator(".site-header").boundingBox();
+    assert.ok(headerBox && normalBox && headerBox.y >= normalBox.y + normalBox.height - 1, `${width}px header begins beneath the announcement`);
+    await page.locator('a[href="/shawn"]').first().click();
+    await page.waitForURL("**/shawn");
+    await normal.waitFor();
+    assert.equal(await normal.count(), 1, `${width}px announcement persists through an internal route transition`);
+    await page.locator('a[href="/"]').first().click();
+    await page.waitForURL((url) => url.pathname === "/");
+    await normal.waitFor();
     if (process.env.BANNER_V2_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-banner-v2-normal-${width}.png`), fullPage: false });
     if (width === 1440) {
       announcementMode = "crossfade";
@@ -67,10 +79,35 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     await page.reload();
     assert.equal(await page.locator(".promo-banner--normal").count(), 0, "dismissal persists for the unchanged announcement configuration");
 
-    live = true;
+    announcementUpdatedAt = "2026-08-30T00:05:00.000Z";
+    await page.reload();
+    await normal.waitFor();
+    assert.equal(await normal.count(), 1, "an authoritative Admin republish revives a previously dismissed announcement");
+    announcementEnabled = false;
+    announcementUpdatedAt = "2026-08-30T00:06:00.000Z";
+    await page.reload();
+    assert.equal(await normal.count(), 0, "disabled announcement stays hidden");
+    announcementEnabled = true;
+    announcementUpdatedAt = "2026-08-30T00:07:00.000Z";
+    announcementMalformed = true;
+    await page.reload();
+    assert.equal(await normal.count(), 0, "malformed announcement configuration fails closed in the Public shell");
+    announcementMalformed = false;
+
+    liveState = "stale";
+    await page.reload();
+    await normal.waitFor();
+    assert.equal(await page.locator(".promo-banner--live").count(), 0, "stale live activity cannot take over the announcement");
+    liveState = "expired";
+    await page.reload();
+    await normal.waitFor();
+    assert.equal(await page.locator(".promo-banner--live").count(), 0, "expired live activity cannot take over the announcement");
+
+    liveState = "live";
     await page.goto(`${ORIGIN}/watch`);
     const takeover = page.locator(".promo-banner--live");
     await takeover.waitFor();
+    assert.equal(await page.locator(".promo-banner--normal").count(), 0, "verified Live Now deliberately takes precedence over the enabled announcement");
     assert.equal(Math.round((await takeover.boundingBox()).height), 31, `${width}px live takeover is slimline`);
     const motion = await takeover.evaluate((element) => ({
       sweep: getComputedStyle(element, "::after").animationName,
@@ -103,7 +140,7 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
 
   const reducedContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const reducedPage = await reducedContext.newPage();
-  await mockApis(reducedPage, () => false, () => "ticker");
+  await mockApis(reducedPage, () => "off", () => "ticker", () => true, () => "2026-08-30T00:00:00.000Z", () => false);
   await reducedPage.goto(ORIGIN);
   await reducedPage.locator(".promo-banner--normal").waitFor();
   assert.equal(await reducedPage.locator(".promo-banner__ticker .promo-banner__message:visible").count(), 1, "reduced motion exposes one stable announcement");
@@ -111,13 +148,17 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
   await reducedContext.close();
 });
 
-async function mockApis(page, isLive, mode) {
+async function mockApis(page, liveState, mode, announcementEnabled, announcementUpdatedAt, announcementMalformed) {
   await page.route("**/api/**", (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/auth/config") return json(route, { configured: true, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
     if (pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
-    if (pathname === "/api/watch") return json(route, watchPayload(isLive()));
-    if (pathname === "/api/catalogue/banner") return json(route, bannerPayload(mode()));
+    if (pathname === "/api/watch") return json(route, watchPayload(liveState()));
+    if (pathname === "/api/catalogue/banner") {
+      const payload = bannerPayload(mode(), announcementEnabled(), announcementUpdatedAt());
+      if (announcementMalformed()) payload.normal.messages = [{ text: "", ctaLabel: null, href: null, newTab: false }];
+      return json(route, payload);
+    }
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-30", rates: { CAD: 1 } });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], collections: [], updatedAt: null });
     if (pathname === "/api/community/discord") return json(route, { available: false });
@@ -125,24 +166,26 @@ async function mockApis(page, isLive, mode) {
   });
 }
 
-function bannerPayload(mode = "ticker") {
+function bannerPayload(mode = "ticker", enabled = true, updatedAt = "2026-08-30T00:00:00.000Z") {
   return {
     ok: true,
     schema: "thirdrailify-banner-v1",
-    normal: { enabled: true, dismissible: true, messages: mode === "crossfade" ? [{ text: "FIRST CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }, { text: "SECOND CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }] : [{ text: "ONE MOVING ANNOUNCEMENT", ctaLabel: "WATCH", href: "/watch", newTab: false }, { text: "SECOND MOVING ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }], mode, speed: mode === "crossfade" ? "fast" : "normal", glyph: "zap", glyphSize: "large" },
+    normal: { enabled, dismissible: true, messages: mode === "crossfade" ? [{ text: "FIRST CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }, { text: "SECOND CROSSFADE ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }] : [{ text: "ONE MOVING ANNOUNCEMENT", ctaLabel: "WATCH", href: "/watch", newTab: false }, { text: "SECOND MOVING ANNOUNCEMENT", ctaLabel: null, href: null, newTab: false }], mode, speed: mode === "crossfade" ? "fast" : "normal", glyph: "zap", glyphSize: "large" },
     live: { enabled: true, label: "LIVE NOW", showTitle: true, supportingText: "Confirmed by Watch", ctaLabel: "WATCH NOW", ctaPath: "/watch/live", animation: "pulse-sweep", intensity: "normal" },
     homeRail: { enabled: true, items: ["THIRD RAILIFY", "NEWS HANGOUT"], mode: "marquee", speed: "normal", easing: "linear", glyph: "zap", glyphSize: "medium" },
-    updatedAt: "2026-08-30T00:00:00.000Z",
+    updatedAt,
   };
 }
 
-function watchPayload(live) {
-  const item = candidate(live ? "live" : "archive");
-  return { available: true, schema: "thirdrailify-broadcast-v1", generatedAt: new Date().toISOString(), retrievedAt: new Date().toISOString(), ageSeconds: 1, freshness: "fresh", liveNow: live ? [item] : [], primary: item, latest: item, latestByPlatform: { youtube: item, rumble: null }, upcoming: null, providerStatus: { youtube: { state: live ? "live" : "completed", checkedAt: new Date().toISOString() }, rumble: { state: "offline", checkedAt: new Date().toISOString() } } };
+function watchPayload(state) {
+  const live = state !== "off";
+  const item = candidate(live ? state : "archive");
+  return { available: true, schema: "thirdrailify-broadcast-v1", generatedAt: new Date().toISOString(), retrievedAt: new Date().toISOString(), ageSeconds: 1, freshness: state === "stale" ? "stale" : "fresh", liveNow: live ? [item] : [], primary: item, latest: item, latestByPlatform: { youtube: item, rumble: null }, upcoming: null, providerStatus: { youtube: { state: live ? "live" : "completed", checkedAt: new Date().toISOString() }, rumble: { state: "offline", checkedAt: new Date().toISOString() } } };
 }
 
 function candidate(state) {
-  return { platform: "youtube", key: "youtube:abc123DEF45", contentId: "abc123DEF45", watchUrl: "https://www.youtube.com/watch?v=abc123DEF45", embedUrl: null, title: state === "live" ? "Fixture live transmission" : "Fixture latest transmission", description: "Validated fixture description.", creatorName: "Third Railify", thumbnailUrl: null, providerState: state === "live" ? "live" : "completed", presentationState: state, publishedAt: "2026-08-27T03:00:00.000Z", scheduledStart: null, actualStart: state === "live" ? new Date(Date.now() - 60_000).toISOString() : null, actualEnd: state === "archive" ? "2026-08-27T04:00:00.000Z" : null, liveVerifiedAt: state === "live" ? new Date(Date.now() - 10_000).toISOString() : null, liveExpiresAt: state === "live" ? new Date(Date.now() + 180_000).toISOString() : null, viewerCount: state === "live" ? 12 : null, observedAt: new Date().toISOString() };
+  const live = state !== "archive";
+  return { platform: "youtube", key: "youtube:abc123DEF45", contentId: "abc123DEF45", watchUrl: "https://www.youtube.com/watch?v=abc123DEF45", embedUrl: null, title: live ? "Fixture live transmission" : "Fixture latest transmission", description: "Validated fixture description.", creatorName: "Third Railify", thumbnailUrl: null, providerState: live ? "live" : "completed", presentationState: live ? "live" : "archive", publishedAt: "2026-08-27T03:00:00.000Z", scheduledStart: null, actualStart: live ? new Date(Date.now() - 60_000).toISOString() : null, actualEnd: !live ? "2026-08-27T04:00:00.000Z" : null, liveVerifiedAt: live ? new Date(Date.now() - 10_000).toISOString() : null, liveExpiresAt: live ? new Date(Date.now() + (state === "expired" ? -180_000 : 180_000)).toISOString() : null, viewerCount: live ? 12 : null, observedAt: new Date().toISOString() };
 }
 
 function json(route, body, status = 200) { return route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) }); }

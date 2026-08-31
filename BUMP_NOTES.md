@@ -1,5 +1,13 @@
 # Bump notes
 
+## 2026-08-31 - Host signal fields and banner republish repair
+
+- Deepened Shawn's hero into a motion-gated broadcast field with transmission sweeps, frequency traces, signal nodes, and restrained gold depth; rebuilt News, Crime, Pop Culture, and The Detour as distinct responsive SVG instruments with viewport-entry trace motion.
+- Gave Gina a separate curiosity/radar motion language with orbital geometry and magenta path analysis; rebuilt Mysteries, Culture, Sass + Humour, and Just Gina as investigative, spectrum, timing, and independent-frequency instruments rather than recoloured Shawn graphics.
+- Added a shared lightweight closing-signal system with page-specific Shawn, Gina, and Friends variants. All new motion is CSS/SVG based, pauses offscreen or in background tabs through the existing motion gate, preserves static composition under reduced motion, and remains decorative to assistive technology.
+- Repaired announcement republishing by including the authoritative Admin `updatedAt` value in the dismiss identity. An unchanged dismissed revision stays dismissed, while a later Admin save/re-enable can surface the announcement again; Public refresh now revalidates once per minute without adding render-time request spam.
+- Extended deterministic browser coverage for enabled, disabled, malformed, dismissed, republished, route-persistent, mobile, reduced-motion, stale-live, expired-live, and verified-live states. Verified Live Now retains deliberate takeover precedence over a simultaneous normal announcement and continues to use the shared fresh Watch authority without provider mutation.
+
 ## 2026-08-31 - Wheels import and form-focus hotfix
 
 CURRENT VER=0.1.0-alpha.0

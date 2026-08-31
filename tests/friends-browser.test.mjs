@@ -214,6 +214,10 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
     }
     const danielCardPortrait = cardPortraits.find((portrait) => portrait.key === "friend-card--daniel");
     assert.ok(danielCardPortrait && danielCardPortrait.centerRatio <= .46, `Daniel stays left-shifted inside his card at ${width}px`);
+    await page.locator(".friends-close").scrollIntoViewIfNeeded();
+    await page.locator(".friends-close.is-active").waitFor({ timeout: 8_000 });
+    assert.equal(await page.locator(".friends-close .editorial-signal--friends").count(), 1, `Friends closing uses the community signal variant at ${width}px`);
+    assert.notEqual(await page.locator(".friends-close .editorial-signal__trace-live").evaluate((node) => getComputedStyle(node).animationName), "none", `Friends closing network moves while visible at ${width}px`);
 
     if (process.env.FRIENDS_SCREENSHOTS === "1" && (width === 1920 || width === 1440 || width === 390)) {
       await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); window.scrollTo(0, 0); });
@@ -221,6 +225,7 @@ test("Friends stays composed, animated, and overflow-free at all supported viewp
       await page.waitForTimeout(100);
       await page.screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}-hero.png`) });
       await page.screenshot({ path: path.join(RESULTS, `${PREFIX}-${width}x${height}.png`), fullPage: true });
+      if (width === 390) await page.addStyleTag({ content: ".skip-link{display:none!important}.site-header{position:relative!important}" });
       for (const profile of PROFILES) {
         await page.getByRole("button", { name: profile.trigger }).click();
         await page.waitForTimeout(250);
@@ -248,6 +253,7 @@ test("reduced motion keeps the full Friends experience static and operable", asy
   assert.equal(await page.locator(".friends-hero").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-roster").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".friends-close").getAttribute("data-motion"), "static");
+  assert.equal(await page.locator(".friends-close .editorial-signal__trace-live").evaluate((node) => getComputedStyle(node).animationName), "none");
   for (const selector of [".friends-hero__starfield", ".friends-hero__star", ".friends-hero__meteors i", ".friends-signal__aura", ".friends-signal__grid", ".friends-signal__scope i", ".friend-card__scan i"]) assert.equal(await page.locator(selector).first().evaluate((node) => getComputedStyle(node).animationName), "none");
   assert.equal(await page.locator(".friend-card").count(), 3);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
@@ -277,6 +283,7 @@ async function mockApis(page) {
     if (pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (pathname === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
+    if (pathname === "/api/analytics") return route.fulfill({ status: 204 });
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1 } });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, updatedAt: "2026-08-29T00:00:00.000Z", collections: [], products: [] });
     return json(route, { ok: false, error: "not_found" }, 404);
