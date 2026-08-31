@@ -41,6 +41,8 @@ test("Gaming is a first-class public route with route SEO and scoped green theme
   ]);
   assert.match(app, /path="\/gaming" element={<GamingPage \/>}/);
   assert.match(shell, /to: "\/gaming", label: "Gaming"/);
+  assert.match(shell, /const showItems = \[\{ to: "\/shawn", label: "Shawn" \}, \{ to: "\/gina", label: "Gina" \}, \{ to: "\/gaming", label: "Gaming" \}\]/);
+  assert.doesNotMatch(shell, /const communityItems = \[\{ to: "\/gaming"/);
   assert.match(shell, /<Link to="\/gaming">Gaming<\/Link>/);
   assert.match(page, /classList\.add\("theme-gaming"\)/);
   assert.match(page, /classList\.remove\("theme-gaming"\)/);

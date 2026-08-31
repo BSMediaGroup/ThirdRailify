@@ -42,6 +42,18 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.equal(await page.title(), "Third Railify Gaming | Third Railify");
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), `${ORIGIN}/gaming`);
 
+    if (width === 1440) {
+      const showParent = page.getByRole("link", { name: "The show", exact: true });
+      assert.equal(await showParent.getAttribute("href"), "/about", "The show remains a clickable route");
+      await showParent.hover();
+      const showDropdown = page.locator(".desktop-nav__show .community-dropdown");
+      await showDropdown.waitFor({ state: "visible" });
+      assert.deepEqual(await showDropdown.locator("a").allTextContents(), ["Shawn", "Gina", "Gaming"]);
+      assert.deepEqual(await showDropdown.locator("a").evaluateAll((links) => links.map((link) => link.getAttribute("href"))), ["/shawn", "/gina", "/gaming"]);
+      assert.equal(await page.locator('.desktop-nav__community:not(.desktop-nav__show) .community-dropdown a[href="/gaming"]').count(), 0, "Gaming is removed from Community");
+      if (SCREENSHOTS) await page.screenshot({ path: path.join(ARTIFACTS, "show-dropdown-1440x1000.png"), fullPage: false });
+    }
+
     if (SCREENSHOTS && [1920, 1440, 390].includes(width)) {
       await page.screenshot({ path: path.join(ARTIFACTS, `hero-${width}x${height}.png`), fullPage: false });
       await page.locator(".gaming-about").scrollIntoViewIfNeeded();
@@ -53,7 +65,9 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
 
     if (width === 390) {
       await page.getByRole("button", { name: "Open navigation" }).click();
-      assert.equal(await page.locator('.mobile-nav a[href="/gaming"]').getByText("Gaming", { exact: true }).isVisible(), true);
+      assert.deepEqual(await page.locator(".mobile-nav__show > div > a").allTextContents(), ["Shawn", "Gina", "Gaming"]);
+      assert.equal(await page.locator('.mobile-nav__show > a[href="/about"]').isVisible(), true);
+      assert.equal(await page.locator('.mobile-nav__community:not(.mobile-nav__show) a[href="/gaming"]').count(), 0);
       await page.getByRole("button", { name: "Close navigation" }).click();
     }
 

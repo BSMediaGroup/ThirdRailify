@@ -23,12 +23,14 @@ const navItems = [
   { to: "/community", label: "Community" },
   { to: "/vip", label: "VIP" },
 ];
-const communityItems = [{ to: "/gaming", label: "Gaming" }, { to: "/friends", label: "Friends" }, { to: "/goats", label: "GOATS in the Wild" }, { to: "/wheels", label: "Wheels" }, { to: "/polls", label: "Polls" }];
+const showItems = [{ to: "/shawn", label: "Shawn" }, { to: "/gina", label: "Gina" }, { to: "/gaming", label: "Gaming" }];
+const communityItems = [{ to: "/friends", label: "Friends" }, { to: "/goats", label: "GOATS in the Wild" }, { to: "/wheels", label: "Wheels" }, { to: "/polls", label: "Polls" }];
+const submenuItems: Record<string, typeof showItems> = { "/about": showItems, "/community": communityItems };
 
 export function SiteShell() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [communityOpen, setCommunityOpen] = useState(false);
-  const communityNav = useRef<HTMLLIElement>(null);
+  const [submenuOpen, setSubmenuOpen] = useState<string | null>(null);
+  const submenuNav = useRef<Record<string, HTMLLIElement | null>>({});
   const location = useLocation();
   const previousPath = useRef(location.pathname);
   const cart = useCart();
@@ -41,6 +43,7 @@ export function SiteShell() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setSubmenuOpen(null);
     const state = location.state as { wheelSceneNavigation?: boolean } | null;
     const wheelToWheel = /^\/wheels\/[^/]+$/.test(previousPath.current) && /^\/wheels\/[^/]+$/.test(location.pathname);
     previousPath.current = location.pathname;
@@ -61,12 +64,13 @@ export function SiteShell() {
 
   useEffect(() => {
     const close = (event: KeyboardEvent | MouseEvent) => {
-      if (event instanceof KeyboardEvent && event.key === "Escape") { setCommunityOpen(false); (communityNav.current?.querySelector("a") as HTMLElement | null)?.focus(); }
-      if (event instanceof MouseEvent && communityNav.current && !communityNav.current.contains(event.target as Node)) setCommunityOpen(false);
+      const activeNav = submenuOpen ? submenuNav.current[submenuOpen] : null;
+      if (event instanceof KeyboardEvent && event.key === "Escape") { setSubmenuOpen(null); (activeNav?.querySelector("a") as HTMLElement | null)?.focus(); }
+      if (event instanceof MouseEvent && activeNav && !activeNav.contains(event.target as Node)) setSubmenuOpen(null);
     };
     document.addEventListener("keydown", close); document.addEventListener("mousedown", close);
     return () => { document.removeEventListener("keydown", close); document.removeEventListener("mousedown", close); };
-  }, []);
+  }, [submenuOpen]);
 
   return (
     <div className="site-frame" data-site-shell="mounted">
@@ -79,7 +83,10 @@ export function SiteShell() {
             <span className="brand__type"><strong>THIRD RAILIFY</strong><small>OFFICIAL</small></span>
           </Link>
           <nav className="desktop-nav" aria-label="Primary navigation">
-            <ul>{navItems.map((item) => item.to === "/community" ? <li ref={communityNav} key={item.to} className={`desktop-nav__community${communityOpen ? " is-open" : ""}`} onMouseEnter={() => setCommunityOpen(true)} onMouseLeave={() => setCommunityOpen(false)} onFocus={() => setCommunityOpen(true)}><span><NavLink to={item.to}>{item.label}</NavLink></span><ul className="community-dropdown">{communityItems.map((child) => <li key={child.to}><NavLink to={child.to}>{child.label}<ArrowIcon /></NavLink></li>)}</ul></li> : <li key={item.to}><NavLink to={item.to} end={item.to === "/"}>{item.label}</NavLink></li>)}</ul>
+            <ul>{navItems.map((item) => {
+              const children = submenuItems[item.to];
+              return children ? <li ref={(node) => { submenuNav.current[item.to] = node; }} key={item.to} className={`desktop-nav__community desktop-nav__${item.to === "/about" ? "show" : "community"}${submenuOpen === item.to ? " is-open" : ""}`} onMouseEnter={() => setSubmenuOpen(item.to)} onMouseLeave={() => setSubmenuOpen(null)} onFocus={() => setSubmenuOpen(item.to)}><span><NavLink to={item.to} aria-haspopup="true" aria-expanded={submenuOpen === item.to}>{item.label}</NavLink></span><ul className="community-dropdown" aria-label={`${item.label} links`}>{children.map((child) => <li key={child.to}><NavLink to={child.to}>{child.label}<ArrowIcon /></NavLink></li>)}</ul></li> : <li key={item.to}><NavLink to={item.to} end={item.to === "/"}>{item.label}</NavLink></li>;
+            })}</ul>
           </nav>
           <div className="header-actions">
             {liveNow.length > 0 && <Link className="header-watch" to="/watch"><LiveNowIndicator candidates={liveNow} compact /><ArrowIcon /></Link>}
@@ -94,7 +101,10 @@ export function SiteShell() {
         </div>
         <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
           <div className="container">
-            {navItems.map((item, index) => <div className={item.to === "/community" ? "mobile-nav__community" : ""} key={item.to}><NavLink to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>{item.to === "/community" ? <div>{communityItems.map((child) => <NavLink key={child.to} to={child.to}>{child.label}<ArrowIcon /></NavLink>)}</div> : null}</div>)}
+            {navItems.map((item, index) => {
+              const children = submenuItems[item.to];
+              return <div className={children ? `mobile-nav__community mobile-nav__${item.to === "/about" ? "show" : "community"}` : ""} key={item.to}><NavLink to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>{children ? <div>{children.map((child) => <NavLink key={child.to} to={child.to}>{child.label}<ArrowIcon /></NavLink>)}</div> : null}</div>;
+            })}
             {liveNow.length > 0 && <Link to="/watch"><span>{liveNavNumber}</span>Watch live now<ArrowIcon /></Link>}
             {account
               ? <Link to="/account"><span>{accountNavNumber}</span>Your account<ArrowIcon /></Link>
