@@ -18,6 +18,7 @@ import {
   removePollMedia,
   savePoll,
   uploadPollMedia,
+  visibilityPoll,
   votePoll,
   type PollError,
 } from "../polls/client";
@@ -35,48 +36,84 @@ import "../styles/gallery-heroes.css";
 export function PollsPage() {
   const { account, openAuth } = useAuth();
   const hero = useMotionGate<HTMLElement>();
-  const [view, setView] = useState("open");
+  const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
-  const [items, setItems] = useState<Poll[]>([]);
+  const [openItems, setOpenItems] = useState<Poll[]>([]);
+  const [pastItems, setPastItems] = useState<Poll[]>([]);
+  const [mineItems, setMineItems] = useState<Poll[]>([]);
   const [selected, setSelected] = useState<Poll | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [openLoading, setOpenLoading] = useState(true);
+  const [pastLoading, setPastLoading] = useState(true);
+  const [mineLoading, setMineLoading] = useState(false);
+  const [openError, setOpenError] = useState("");
+  const [pastError, setPastError] = useState("");
+  const [mineError, setMineError] = useState("");
+  const [pastPage, setPastPage] = useState(1);
+  const [pastPages, setPastPages] = useState(0);
   const [canCreate, setCanCreate] = useState(false);
-  const load = useCallback(
-    async (quiet = false) => {
-      if (!quiet) setLoading(true);
-      try {
-        const [payload, access] = await Promise.all([
-          listPolls(view, search),
-          account
-            ? getCreatorAccess().catch(() => null)
-            : Promise.resolve(null),
-        ]);
-        setItems(payload.items);
-        setCanCreate(Boolean(access?.canCreate));
-        setError("");
-        setSelected((current) =>
-          current
-            ? payload.items.find((item) => item.id === current.id) || current
-            : null,
-        );
-      } catch (reason) {
-        setError(message(reason));
-      } finally {
-        if (!quiet) setLoading(false);
-      }
-    },
-    [account, search, view],
-  );
+  const openIds = useRef<string[]>([]);
+  const loadPast = useCallback(async (page = 1, append = false, quiet = false) => {
+    if (!quiet) setPastLoading(true);
+    try {
+      const payload = await listPolls("closed", search, page, 12);
+      setPastItems((current) => append ? mergePolls(current, payload.items) : payload.items);
+      setPastPage(payload.page);
+      setPastPages(payload.totalPages);
+      setPastError("");
+    } catch (reason) {
+      setPastError(message(reason));
+    } finally {
+      if (!quiet) setPastLoading(false);
+    }
+  }, [search]);
+  const loadOpen = useCallback(async (quiet = false) => {
+    if (!quiet) setOpenLoading(true);
+    try {
+      const payload = await listPolls("open", search, 1, 24);
+      const nextIds = payload.items.map((item) => item.id);
+      if (quiet && openIds.current.some((id) => !nextIds.includes(id))) await loadPast(1, false, true);
+      openIds.current = nextIds;
+      setOpenItems(payload.items);
+      setOpenError("");
+    } catch (reason) {
+      setOpenError(message(reason));
+    } finally {
+      if (!quiet) setOpenLoading(false);
+    }
+  }, [loadPast, search]);
+  const loadMine = useCallback(async () => {
+    setMineLoading(true);
+    try {
+      const payload = await listPolls("mine", search, 1, 48);
+      setMineItems(payload.items);
+      setMineError("");
+    } catch (reason) {
+      setMineError(message(reason));
+    } finally {
+      setMineLoading(false);
+    }
+  }, [search]);
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (view === "all" || view === "open") void loadOpen();
+    if (view === "all" || view === "closed") void loadPast();
+    if (view === "mine") void loadMine();
+  }, [loadMine, loadOpen, loadPast, view]);
+  useEffect(() => {
+    if (!account) { setCanCreate(false); return; }
+    void getCreatorAccess().then((access) => setCanCreate(Boolean(access.canCreate))).catch(() => setCanCreate(false));
+  }, [account]);
   useCoordinatedPollRefresh(
     useCallback(() => {
-      if (items.some((item) => item.state === "open")) void load(true);
-    }, [items, load]),
-    items.some((item) => item.state === "open"),
+      if (openItems.length) void loadOpen(true);
+    }, [loadOpen, openItems.length]),
+    (view === "all" || view === "open") && openItems.length > 0,
   );
+  const changed = (poll: Poll) => {
+    setSelected(poll);
+    setOpenItems((current) => current.map((item) => item.id === poll.id ? poll : item));
+    setPastItems((current) => current.map((item) => item.id === poll.id ? poll : item));
+    setMineItems((current) => current.map((item) => item.id === poll.id ? poll : item));
+  };
   return (
     <div className="polls-page">
       <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
@@ -133,9 +170,9 @@ export function PollsPage() {
                 value={view}
                 onChange={(event) => setView(event.target.value)}
               >
+                <option value="all">All</option>
                 <option value="open">Open</option>
                 <option value="closed">Closed</option>
-                <option value="recent">Recent</option>
                 {account ? <option value="mine">Mine</option> : null}
               </select>
             </label>
@@ -150,26 +187,9 @@ export function PollsPage() {
             </label>
           </div>
         </header>
-        {error ? (
-          <State
-            kind="error"
-            title="Polls temporarily unavailable"
-            copy={error}
-          />
-        ) : loading ? (
-          <State title="Tuning the Poll signal…" />
-        ) : !items.length ? (
-          <State
-            title={view === "open" ? "No open Polls" : "No Polls found"}
-            copy="That is an authoritative empty state—not a loading failure."
-          />
-        ) : (
-          <div className="poll-card-grid">
-            {items.map((poll) => (
-              <PollCard key={poll.id} poll={poll} onQuickView={setSelected} />
-            ))}
-          </div>
-        )}
+        {view === "all" || view === "open" ? <PollDirectorySection title="Open Polls" eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} /> : null}
+        {view === "all" || view === "closed" ? <PollDirectorySection title="Past Polls" eyebrow="SETTLED SIGNALS" items={pastItems} loading={pastLoading} error={pastError} empty="No completed Polls yet." onQuickView={setSelected} footer={pastPage < pastPages ? <button className="button button--ghost poll-history-more" type="button" disabled={pastLoading} onClick={() => void loadPast(pastPage + 1, true)}>{pastLoading ? "Loading…" : "Load more Past Polls"}</button> : null} /> : null}
+        {view === "mine" ? <PollDirectorySection title="Your Polls" eyebrow="CREATOR LIBRARY" items={mineItems} loading={mineLoading} error={mineError} empty="You have not created a Poll yet." onQuickView={setSelected} /> : null}
       </section>
       {selected ? (
         <PollQuickView
@@ -177,16 +197,26 @@ export function PollsPage() {
           account={account}
           openAuth={openAuth}
           onClose={() => setSelected(null)}
-          onChanged={(poll) => {
-            setSelected(poll);
-            setItems((current) =>
-              current.map((item) => (item.id === poll.id ? poll : item)),
-            );
-          }}
+          onChanged={changed}
         />
       ) : null}
     </div>
   );
+}
+
+function PollDirectorySection({ title, eyebrow, items, loading, error, empty, onQuickView, footer }: { title: string; eyebrow: string; items: Poll[]; loading: boolean; error: string; empty: string; onQuickView: (poll: Poll) => void; footer?: React.ReactNode }) {
+  const headingId = `poll-section-${title.toLowerCase().replace(/\s+/g, "-")}`;
+  return <section className="poll-directory-section" aria-labelledby={headingId}>
+    <header><div><p className="eyebrow">{eyebrow}</p><h3 id={headingId}>{title}</h3></div><span>{items.length} shown</span></header>
+    {error ? <State kind="error" title={`${title} temporarily unavailable`} copy={error} /> : loading && !items.length ? <State title={`Loading ${title}…`} /> : items.length ? <div className="poll-card-grid">{items.map((poll) => <PollCard key={poll.id} poll={poll} onQuickView={onQuickView} />)}</div> : <div className="poll-section-empty"><p>{empty}</p></div>}
+    {footer ? <footer className="poll-directory-section__footer">{footer}</footer> : null}
+  </section>;
+}
+
+function mergePolls(current: Poll[], incoming: Poll[]) {
+  const items = new Map(current.map((poll) => [poll.id, poll]));
+  incoming.forEach((poll) => items.set(poll.id, poll));
+  return [...items.values()];
 }
 
 function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: boolean; children?: React.ReactNode }) {
@@ -209,9 +239,9 @@ function PollCard({
   onQuickView: (poll: Poll) => void;
   preview?: boolean;
 }) {
-  const ranked = [...poll.options].sort((a, b) => b.votes - a.votes);
+  const ranked = [...poll.options].sort((a, b) => b.votes - a.votes || a.position - b.position);
   const leading = ranked[0];
-  const tied = Boolean(leading && ranked[1] && leading.votes === ranked[1].votes);
+  const outcome = pollOutcome(poll);
   return (
     <article className={`poll-card poll-card--${poll.state}`} style={{ "--poll-accent": poll.theme?.accent || "#f3c928" } as React.CSSProperties}>
       {!preview ? <button
@@ -239,11 +269,12 @@ function PollCard({
           }}
         />
         {leading?.image ? <img src={leading.image.url} alt="" /> : null}
-        <strong>{leading ? `${poll.state === "closed" && !tied && poll.totalVotes ? "LEADING · " : ""}${leading.label}` : "Awaiting first vote"}</strong>
+        <strong>{leading ? `${poll.state === "closed" && poll.totalVotes ? outcome.tied ? "TIED TOP RESULT · " : "TOP RESULT · " : ""}${outcome.tied ? outcome.leaders.map((option) => option.label).join(" + ") : leading.label}` : "Awaiting first vote"}</strong>
         <b>
           {poll.totalVotes} vote{poll.totalVotes === 1 ? "" : "s"}
         </b>
       </div>
+      {poll.state === "closed" ? <div className="poll-card__finals" aria-label={`Final results for ${poll.title}`}>{ranked.slice(0, 3).map((option) => { const percentage = poll.totalVotes ? (option.votes / poll.totalVotes) * 100 : 0; return <div key={option.id}><span><b>{option.label}</b><em>{percentage.toFixed(poll.totalVotes ? 1 : 0)}% · {option.votes}</em></span><i aria-hidden="true"><i style={{ width: `${percentage}%` }} /></i></div>; })}</div> : null}
       {!preview ? <footer>
         <span>
           By {poll.owner.displayName} ·{" "}
@@ -263,6 +294,13 @@ function PollCard({
       </footer> : null}
     </article>
   );
+}
+
+function pollOutcome(poll: Poll) {
+  const ranked = [...poll.options].sort((a, b) => b.votes - a.votes || a.position - b.position);
+  const highest = ranked[0]?.votes || 0;
+  const leaders = highest > 0 ? ranked.filter((option) => option.votes === highest) : [];
+  return { leaders, tied: leaders.length > 1, topIds: new Set(leaders.map((option) => option.id)) };
 }
 
 function PollQuickView({
@@ -337,6 +375,7 @@ function PollQuickView({
             <span aria-hidden="true">&times;</span>
           </button>
         </PollCover>
+        {poll.state === "closed" ? <div className="poll-modal__summary"><strong>{pollOutcome(poll).tied ? "Tied top result" : poll.totalVotes ? "Final top result" : "Final result"}</strong><span>{poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}</span></div> : null}
         <ResultOptions poll={poll} busy={busy} vote={vote} />
         <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
@@ -431,6 +470,15 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
     catch (reason) { setError(message(reason)); void load(true); }
     finally { setBusy(""); }
   };
+  const manageVisibility = async () => {
+    if (!poll || !access.isOwner || !csrfToken || poll.state !== "closed") return;
+    const nextPublic = !poll.public;
+    if (!nextPublic && !window.confirm(`Hide “${poll.title}” from the public Poll gallery? Its owner management view will remain available.`)) return;
+    setBusy("visibility"); setError("");
+    try { const result = await visibilityPoll(poll.slug, poll.revision, nextPublic, csrfToken); setPoll(result.poll); setNotice(nextPublic ? "Poll is visible in the public gallery." : "Poll is hidden from the public gallery."); }
+    catch (reason) { setError(message(reason)); void load(true); }
+    finally { setBusy(""); }
+  };
   if (loading) return <State title="Loading Poll…" />;
   if (!poll)
     return <State kind="error" title="Poll unavailable" copy={error} />;
@@ -453,10 +501,14 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
                   : "Signed-in accounts only"}
               </span>
               <span>{freshness(poll.updatedAt)}</span>
+              <span>{poll.public ? "Publicly listed" : "Hidden from gallery"}</span>
             </div>
           </div>
           {!popout ? (
             <div className="poll-stage__actions">
+              <Link className="button button--primary poll-back-to-gallery" to="/polls">
+                ← Back to Polls
+              </Link>
               {access.canManage ? (
                 <Link
                   className="button button--secondary"
@@ -468,6 +520,11 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
               {access.isOwner && poll.state === "open" ? (
                 <button className="button poll-owner-close" type="button" disabled={Boolean(busy)} onClick={() => void closeOwnedPoll()}>
                   {busy === "close" ? "Closing…" : "Close Poll"}
+                </button>
+              ) : null}
+              {access.isOwner && poll.state === "closed" ? (
+                <button className="button button--secondary poll-owner-visibility" type="button" disabled={Boolean(busy)} onClick={() => void manageVisibility()} aria-label={poll.public ? "Hide this closed Poll from the gallery" : "Show this closed Poll in the gallery"}>
+                  {busy === "visibility" ? "Updating…" : poll.public ? "Hide from gallery" : "Show in gallery"}
                 </button>
               ) : null}
               <button
@@ -530,6 +587,7 @@ function ResultOptions({
   busy: string;
   vote?: (optionId: string) => void;
 }) {
+  const outcome = pollOutcome(poll);
   return (
     <div className="poll-options">
       {poll.options.map((option) => {
@@ -538,7 +596,7 @@ function ResultOptions({
           : 0;
         const current = poll.currentVoteOptionId === option.id;
         return (
-          <article key={option.id} className={`${current ? "is-current" : ""}${option.image ? " has-image" : ""}`}>
+          <article key={option.id} className={`${current ? "is-current" : ""}${option.image ? " has-image" : ""}${poll.state === "closed" && outcome.topIds.has(option.id) ? " is-top-result" : ""}`}>
             <div
               className="poll-option__bar"
               style={
@@ -552,6 +610,7 @@ function ResultOptions({
             <div className="poll-option__identity">
               <span>{String(option.position + 1).padStart(2, "0")}</span>
               <strong>{option.label}</strong>
+              {poll.state === "closed" && outcome.topIds.has(option.id) ? <small className="poll-option__outcome">{outcome.tied ? "TIED TOP RESULT" : "TOP RESULT"}</small> : null}
               {option.description ? <small>{option.description}</small> : null}
             </div>
             <b>{percentage.toFixed(poll.totalVotes ? 1 : 0)}%</b>

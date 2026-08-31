@@ -39,7 +39,9 @@ test("Wheel accent reuses the validated pointerAccent contract across palette, r
   assert.match(appearance, /pointerAccent: option\.pointerAccent/);
   assert.match(canvas, /strokeStyle = config\.pointerAccent/);
   assert.match(page, /"--wheel-accent": wheel\.config\.pointerAccent/);
-  assert.match(styles, /\.wheel-stage__rim--outer\{[^}]*var\(--pointer\)/);
+  assert.match(canvas, /drawMechanicalOverlay\(mechanicsElement, geometry, config\.pointerAccent\)/);
+  assert.match(canvas, /context\.strokeStyle = accent/);
+  assert.match(styles, /\.wheel-stage__mechanics\{[^}]*pointer-events:none/);
 });
 
 test("Wheels V1.6 refinement exposes expanded palettes, reset, presentation navigation, and reliable sharing", async () => {

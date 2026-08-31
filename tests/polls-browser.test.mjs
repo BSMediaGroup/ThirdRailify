@@ -43,7 +43,7 @@ async function respond(route) { const url = new URL(route.request().url()); cons
   if (url.pathname === "/api/polls/access") return json(route, { ok: true, authenticated: true, canCreate: true, canManageAll: false });
   if (url.pathname === "/api/polls/discovery") return json(route, discovery());
   if (url.pathname === "/api/polls" && method === "POST" && createFailure) return json(route, { ok: false, error: "service_schema_mismatch", message: "The service database schema is not compatible with this deployment." }, 503);
-  if (url.pathname === "/api/polls" && method === "GET") return json(route, { ok: true, items: [poll("open"), signedPoll(), poll("closed")], count: 3, refreshedAt: new Date().toISOString() });
+  if (url.pathname === "/api/polls" && method === "GET") { const view = url.searchParams.get("view"); const items = view === "closed" ? [poll("closed")] : [poll("open"), signedPoll()]; return json(route, { ok: true, view, items, count: items.length, page: 1, pageSize: view === "closed" ? 12 : 24, total: items.length, totalPages: items.length ? 1 : 0, refreshedAt: new Date().toISOString() }); }
   if (url.pathname.endsWith("/vote")) { voted = true; return json(route, { ok: true, poll: poll("open"), vote: { optionId: "opt_carrot", repeated: false, changed: false }, refreshedAt: new Date().toISOString() }); }
   if (url.pathname.endsWith("/lifecycle")) return json(route, { ok: true, poll: poll("closed"), access: { canManage: true, canManageAll: false, isOwner: true } });
   if (url.pathname === "/api/polls/open-audience-choice") return json(route, { ok: true, poll: poll("open"), access: { canManage: true, canManageAll: false, isOwner: true }, refreshedAt: new Date().toISOString() });

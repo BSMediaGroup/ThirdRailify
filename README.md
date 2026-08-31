@@ -1,5 +1,13 @@
 # Third Railify V2 public site
 
+## Public Polls V1.2 history and visibility (local implementation)
+
+The default `/polls` directory now renders independent **Open Polls** and **Past Polls** sections under one shared search. Open remains the coordinated seven-second live dataset; closed history loads as a bounded 12-record page and is refreshed only when an open Poll disappears during a lifecycle refresh. `view=open|closed|mine` remains available for focused browsing, and `page`/`pageSize` metadata provides deterministic load-more history without one request per card.
+
+Closing and gallery visibility are separate. Admin-owned `polls.state` remains `draft|open|closed|archived`, while the existing `polls.is_public` flag remains the listing authority. A public closed Poll stays directly accessible, in quick view/popout, and under Past Polls; an owner can explicitly hide/show that closed Poll through the existing signed session/CSRF relay. Hidden and archived Polls are excluded from public lists and ordinary public detail reads. Every non-popout detail now provides a visible **Back to Polls** action.
+
+No migration is required. Local rollout requires the Admin API/authority deployment first and the Public Function/app deployment second, followed by staged open/closed paging, owner visibility, direct-detail, popout, and responsive acceptance. No deployment, remote D1 write, bot/provider action, secret, or DNS change was performed.
+
 ## Third Railify Gaming (local implementation)
 
 `/gaming` is a first-class green-accented sub-brand route with the supplied Monday, Tuesday, Thursday, and Friday `2 PM` schedule, direct `https://rumble.com/thirdrailifygaming` viewing actions, and the exact four-title rotation: WITCHER, LUMINARY, SUPER MARIO WORLD, and PARTY ANIMAL. Luminary is the only exact verified Steam match and uses app `1648360`; the other labels deliberately use branded fallback art and no guessed store links. The page includes a manual Steam-search helper, responsive/reduced-motion-safe signal artwork, scoped scrollbar theming that cleans up on navigation, route SEO, and semantic header/mobile/footer discovery.

@@ -1,5 +1,11 @@
 # Wheels Stage V1.1
 
+## V1.14 exact concentric Stage rotors
+
+Overview tiles for one through six Wheels, Focus, individual spins, and Spin All now inherit V1.14's one-scalar, even-physical-pixel geometry. The Stage layout helper still owns only the requested scalar diameter; the shared renderer reconciles it once and gives the frame, pure-rotation rotor, rotating face Canvas, fixed mechanical Canvas, hub, pointer axis, and overlays one square and one centre. The approved `0.8759` face/outer and `0.22` hub/outer ratios are unchanged.
+
+Stage behavior and authority are untouched: deterministic 1-6 arrangements, centred 3+2 layout, Focus navigation, combined results, Fullscreen, Natural Hybrid snapshots, Practice Spin All, and atomic Official All persistence retain their existing contracts. Browser acceptance covers Overview, Focus, concurrent Spin All, desktop/ultrawide/tablet/phone portrait/phone landscape, Fullscreen, square backing, isotropic matrices, no overflow, clean console, and zero non-GET Wheel requests.
+
 ## Wheel Mechanics V2 Stage parity
 
 Stage individual, Focus, and Spin All plans now freeze the same 1025-sample Mechanics V2 compiler result used by regular and Presentation Wheels. Spin All still reads one sanitized mechanics projection and shares its revision and scheduled start across all six plans; each Wheel retains its own secure winner, interior landing, duration, full turns, and target. Boundary sounds are derived from each tile's actual weighted-segment crossings with the existing square-root batch gain. Combined results still wait for every exact zero-speed settlement, and Official All authority/atomic persistence is unchanged.

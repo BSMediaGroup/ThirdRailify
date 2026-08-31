@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { createWheelRenderPlan } from "../src/wheels/wheelRenderPlan.mjs";
+import { createWheelRenderPlan, resolveWheelGeometry } from "../src/wheels/wheelRenderPlan.mjs";
 
 const ROTATIONS = [0, 45, 90, 135, 180, 225, 270, 315];
 const IMAGE_ID = "11111111-1111-4111-8111-111111111111";
@@ -24,7 +24,7 @@ const dimensions = new Map([[IMAGE_ID, { width: 80, height: 120 }], [GIF_ID, { w
 const measure = (label, size) => label.length * size * .61;
 
 test("V1.9 wheel-local label, pattern, and image metrics are mathematically rotation-invariant", () => {
-  const plan = createWheelRenderPlan(entries, config, 640, measure, dimensions);
+  const plan = createWheelRenderPlan(entries, config, resolveWheelGeometry(640), measure, dimensions);
   const localMetrics = plan.segments.map(metrics);
   for (const rotation of ROTATIONS) {
     const rigidlyRotated = plan.segments.map((segment) => ({ worldMidpoint: segment.midpoint + rotation * Math.PI / 180, local: metrics(segment) }));
@@ -35,7 +35,7 @@ test("V1.9 wheel-local label, pattern, and image metrics are mathematically rota
 });
 
 test("V1.9 static font fitting responds to label length and weighted local wedge span", () => {
-  const plan = createWheelRenderPlan(entries, config, 640, measure, dimensions);
+  const plan = createWheelRenderPlan(entries, config, resolveWheelGeometry(640), measure, dimensions);
   const [shortWide, mediumWide, demo, longNarrow] = plan.segments;
   assert.ok(shortWide.label.fontSize >= mediumWide.label.fontSize);
   assert.ok(mediumWide.label.fontSize >= demo.label.fontSize);
@@ -45,7 +45,7 @@ test("V1.9 static font fitting responds to label length and weighted local wedge
 });
 
 test("V1.9 vector pattern and asymmetric image-cover plans stay fixed in segment-local coordinates", () => {
-  const plan = createWheelRenderPlan(entries, config, 640, measure, dimensions);
+  const plan = createWheelRenderPlan(entries, config, resolveWheelGeometry(640), measure, dimensions);
   for (const id of ["zigzag", "dots", "triangles", "checkers", "third-rail-bolts"]) {
     const segment = plan.segments.find((candidate) => candidate.pattern?.id === id); assert.ok(segment?.pattern); assert.ok(segment.pattern.tileWidth > 0); assert.ok(segment.pattern.tileHeight > 0); assert.ok(segment.pattern.lineWidth > 0); assert.equal(segment.pattern.scale, 1); assert.equal(segment.pattern.originX, segment.pattern.originY);
   }
@@ -54,7 +54,7 @@ test("V1.9 vector pattern and asymmetric image-cover plans stay fixed in segment
 
 test("V1.9 renderer owns a cached local face and never sizes layout from the rotated screen box", async () => {
   const source = await readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8");
-  assert.match(source, /frameElement\.clientWidth/);
+  assert.match(source, /observer\.observe\(hostElement\)/);
   assert.doesNotMatch(source, /rotorElement\.clientWidth/);
   assert.doesNotMatch(source, /const rect = canvas\.getBoundingClientRect\(\)/);
   assert.match(source, /staticFaceRebuilds/);

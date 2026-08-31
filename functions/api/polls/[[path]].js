@@ -28,6 +28,10 @@ async function read(request, env, path, session, fetchImpl) {
     if (!session) throw failure(401, "authentication_required", "Sign in to view creator access.");
     return signedRelay(env, fetchImpl, "POST", `/api/polls/internal/${path}`, { accountId: session.accountId });
   }
+  if (!path && url.searchParams.get("view") === "mine") {
+    if (!session) throw failure(401, "authentication_required", "Sign in to view your Polls.");
+    return signedRelay(env, fetchImpl, "POST", "/api/polls/internal/mine", { accountId: session.accountId, input: { search: url.searchParams.get("search"), page: url.searchParams.get("page"), pageSize: url.searchParams.get("pageSize") } });
+  }
   if (path && session) return signedRelay(env, fetchImpl, "POST", `/api/polls/internal/${encodePath(path)}/read`, { accountId: session.accountId });
   const target = `/api/polls${path ? `/${encodePath(path)}` : ""}${url.search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, target), { method: request.method, headers: { Accept: "application/json" } });
@@ -58,6 +62,7 @@ async function write(request, env, path, session, fetchImpl) {
   if (!path && request.method === "POST") internal = "create";
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{0,79}$/i.test(path)) internal = `${path}/save`;
   else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/lifecycle$/i.test(path)) internal = path;
+  else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/visibility$/i.test(path)) internal = path;
   else if (request.method === "DELETE" && mediaPath) internal = path;
   else throw failure(404, "poll_route_not_found", "The Poll action was not found.");
   return signedRelay(env, fetchImpl, request.method, `/api/polls/internal/${encodePath(internal)}`, { accountId: session.accountId, input });

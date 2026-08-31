@@ -1,3 +1,15 @@
+# Third Railify Wheels V1.14
+
+## Exact circularity and concentric paint authority
+
+V1.14 resolves every operational Wheel from one `requestedDiameterCssPx` and device-pixel ratio. `resolveWheelGeometry` snaps the requested physical side to the nearest positive even integer, then derives `cssDiameter = physicalSide / dpr`, exact CSS/physical centres, the outer/face/hub radii, ring radii, black annulus, and pointer dimensions. Frame, pure-rotation rotor, Canvas CSS box, participant paths, fixed mechanics overlay, hub, and decorative overlays consume that same reconciled square. The approved ratios remain face/outer `0.8759`, hub/outer `0.22`, outer-rim inset `0.008`, and inner-rim inset `0.03`; this is a geometry correction, not a visual redesign.
+
+The residual defect had two measurable causes. First, the old renderer rounded its Canvas backing independently from a fractional CSS rotor (`792.938px` CSS versus `793` physical pixels at DPR 1), while the Canvas plan separately truncated to `792px`; that left a one-pixel asymmetric strip and approximately half-pixel centre/radius disagreement. Second, the gold face boundary was painted on Canvas while the black band and hard rim boundary came from independently rasterized CSS rings. Even after square snapping, those mixed paint authorities produced a rotation-phase annular-gap spread of about `1.86 CSS px` in the diagnostic fixture.
+
+The corrected rotor is a borderless/padding-free full canonical square with an explicit transform origin equal to the canonical centre and a rotate-only matrix. Participant content remains one cached rotating Canvas. The hard black annulus and mechanical boundary rings are now a second, non-rotating Canvas painted from the identical backing side, centre, and radii; CSS retains only decoration and ticks. This removes independent circle rasterization without rotating the fixed mechanical assembly or changing V1.9 labels, patterns, images, GIF composition, winner selection, landing, duration, or authority.
+
+Painted-pixel acceptance samples 720 radial rays and fits participant and rim circles at 13 fixed phases, live idle/early/quarter/mid/late/near-settle/settled checkpoints, equivalent zoom `67-200%`, DPR `1/1.25/1.5/2/2.5/3`, responsive/orientation loops, and Fullscreen. It asserts equal transform scales, even square backing, fitted circularity within `1.0005`, centre delta within one physical pixel, and 360-degree annular-gap variation within one physical pixel. Regular, Presentation, Appearance/editor previews, and Stage Overview/Focus/Spin All inherit the shared renderer and retain zero Wheel writes in browser fixtures.
+
 # Third Railify Wheels V1.13
 
 ## Wheel Mechanics V2 natural hybrid compiler

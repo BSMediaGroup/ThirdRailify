@@ -67,7 +67,7 @@ test("Mechanics V2 six-Wheel Spin All shares one mechanics projection, revision,
     await page.waitForTimeout(180);
     assert.equal(mechanicsRequests, 1);
     const active = await page
-      .locator(".stage-wheel-tile canvas")
+      .locator(".stage-wheel-tile .wheel-stage__face")
       .evaluateAll((canvases) =>
         canvases.map((canvas) => canvas.__wheelSpinV110),
       );
@@ -86,7 +86,7 @@ test("Mechanics V2 six-Wheel Spin All shares one mechanics projection, revision,
     );
     assert.equal(new Set(active.map((item) => item.startAt)).size, 1);
     const rendererBefore = await page
-      .locator(".stage-wheel-tile canvas")
+      .locator(".stage-wheel-tile .wheel-stage__face")
       .evaluateAll((canvases) =>
         canvases.map((canvas) => ({
           width: canvas.width,
@@ -118,7 +118,7 @@ test("Mechanics V2 six-Wheel Spin All shares one mechanics projection, revision,
         path: join(ARTIFACTS, "spin-all-natural-settled-1920x1080.png"),
       });
     const settled = await page
-      .locator(".stage-wheel-tile canvas")
+      .locator(".stage-wheel-tile .wheel-stage__face")
       .evaluateAll((canvases) =>
         canvases.map((canvas) => ({
           spin: canvas.__wheelSpinV110,
@@ -176,7 +176,7 @@ test("Mechanics V2 six-Wheel Spin All shares one mechanics projection, revision,
     page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); }); page.on("pageerror", (error) => errors.push(error.message)); page.on("request", (request) => { const path = new URL(request.url()).pathname; if (path === "/api/wheels/mechanics") mechanicsRequests += 1; if (path.startsWith("/api/wheels") && !["GET", "HEAD"].includes(request.method())) writes.push(`${request.method()} ${path}`); });
     await page.route("**/api/**", respond);
     const slug = surface.duration === 10_000 ? "natural-10" : "natural-20"; const suffix = surface.mode === "presentation" ? "/present" : "";
-    await page.goto(`${ORIGIN}/wheels/${slug}${suffix}`, { waitUntil: "networkidle" }); const canvas = page.locator(".wheel-stage canvas").first(); await canvas.waitFor();
+    await page.goto(`${ORIGIN}/wheels/${slug}${suffix}`, { waitUntil: "networkidle" }); const canvas = page.locator(".wheel-stage__face").first(); await canvas.waitFor();
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth <= 1));
     if (surface.mode === "regular" && surface.viewport.width === 1440) {
       await page.screenshot({ path: join(ARTIFACTS, "21-public-regular-natural.png") }); const started = performance.now(); await page.getByRole("button", { name: "Start demo spin" }).click(); await page.waitForTimeout(900); await page.screenshot({ path: join(ARTIFACTS, "21-public-regular-natural-in-motion.png") }); await page.getByRole("dialog").waitFor({ timeout: 12_000 }); const metrics = await canvas.evaluate((node) => node.__wheelSpinV110); assert.ok(metrics.completed); assert.equal(metrics.durationMs, 10_000); assert.ok(Math.abs(metrics.settledAt - metrics.startAt - 10_000) < 50); assert.ok(performance.now() - started >= 9_950);

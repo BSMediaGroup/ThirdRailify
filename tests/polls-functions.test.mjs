@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { onRequest } from "../functions/api/polls/[[path]].js";
-import { hmacSha256 } from "../functions/_shared/public-auth.js";
+import { onRequest, read, write } from "../functions/api/polls/[[path]].js";
+import { hmacSha256, sha256 } from "../functions/_shared/public-auth.js";
 
 const PUBLIC_ORIGIN = "https://www.thirdrailify.test";
 const ADMIN_ORIGIN = "https://admin.thirdrailify.test";
@@ -46,6 +46,36 @@ test("cross-origin Poll writes fail before any Admin relay", async () => {
   assert.equal(called, false);
 });
 
+test("public Poll list forwards bounded history paging and shared search parameters", async () => {
+  let upstreamUrl = "";
+  const response = await read(new Request(`${PUBLIC_ORIGIN}/api/polls?view=closed&search=acceptance&page=2&pageSize=12`), contextEnv(), "", null, async (url) => {
+    upstreamUrl = String(url);
+    return Response.json({ ok: true, view: "closed", items: [], count: 0, page: 2, pageSize: 12, total: 13, totalPages: 2, refreshedAt: new Date().toISOString() }, { headers: { "Cache-Control": "public, max-age=60" } });
+  });
+  assert.equal(response.status, 200);
+  assert.equal(upstreamUrl, `${ADMIN_ORIGIN}/api/polls?view=closed&search=acceptance&page=2&pageSize=12`);
+  assert.deepEqual((await response.json()).totalPages, 2);
+});
+
+test("owner closed-Poll visibility mutation is CSRF-bound and signed to the existing Admin authority", async () => {
+  const csrf = "poll-visibility-csrf";
+  let upstream;
+  const session = { accountId: "owner-account", csrfTokenHash: await sha256(csrf), account: { displayName: "Owner" } };
+  const response = await write(new Request(`${PUBLIC_ORIGIN}/api/polls/owner-poll/visibility`, {
+    method: "POST",
+    headers: { Origin: PUBLIC_ORIGIN, "Content-Type": "application/json", "X-CSRF-Token": csrf },
+    body: JSON.stringify({ revision: 5, public: false }),
+  }), contextEnv(), "owner-poll/visibility", session, async (url, init) => {
+    upstream = { url: String(url), init };
+    return Response.json({ ok: true, poll: { slug: "owner-poll", state: "closed", public: false, revision: 6 } });
+  });
+  assert.equal(response.status, 200);
+  assert.equal(upstream.url, `${ADMIN_ORIGIN}/api/polls/internal/owner-poll/visibility`);
+  const relayed = JSON.parse(String(upstream.init.body));
+  assert.equal(relayed.accountId, "owner-account");
+  assert.deepEqual(relayed.input, { revision: 5, public: false });
+});
+
 function context(url, init, pollsFetch) {
   return {
     request: new Request(url, init),
@@ -56,6 +86,15 @@ function context(url, init, pollsFetch) {
       THIRDRAILIFY_POLL_ANONYMOUS_SECRET: "anonymous-cookie-secret",
     },
     data: { pollsFetch },
+  };
+}
+
+function contextEnv() {
+  return {
+    THIRDRAILIFY_PUBLIC_ORIGIN: PUBLIC_ORIGIN,
+    THIRDRAILIFY_ADMIN_ORIGIN: ADMIN_ORIGIN,
+    THIRDRAILIFY_COMMUNITY_API_SECRET: RELAY_SECRET,
+    THIRDRAILIFY_POLL_ANONYMOUS_SECRET: "anonymous-cookie-secret",
   };
 }
 

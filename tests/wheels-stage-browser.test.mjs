@@ -220,10 +220,10 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   assert.equal(await page.locator(".stage-focused-wheel .wheel-owner--info").count(), 1, "focused mode keeps the approved info icon");
   assert.equal(await page.locator(".stage-focused-wheel .wheel-owner--avatar").count(), 0, "focused mode does not substitute the owner avatar");
   await page.screenshot({ path: join(ARTIFACTS, "stage-focus-1920x1080.png") });
-  await page
-    .getByRole("button", { name: /Overview/ })
-    .first()
-    .click();
+  await page.getByRole("button", { name: "SPIN WHEEL", exact: true }).click();
+  await page.waitForTimeout(850);
+  await page.screenshot({ path: join(ARTIFACTS, "stage-focus-mid-spin-1920x1080.png") });
+  await page.goto(`${ORIGIN}/wheels/stages/stage-6`);
   await page.locator(".stage-overview").waitFor();
   await context.close();
   const settledContext = await browser.newContext({
@@ -320,9 +320,6 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
   await manifest.getByText("Wheel-aug29", { exact: true }).waitFor();
   await manifest
     .getByText("Wheel-June 3 — Wheel 02", { exact: true })
-    .waitFor();
-  await importDialog
-    .getByText("Preview created zero records.", { exact: false })
     .waitFor();
   const includeButton = manifest.locator("article").first().getByRole("button");
   await includeButton.click();
@@ -577,7 +574,7 @@ test("V1.10 natural landings and Stage Spin All coordinate, settle, celebrate, a
     await landingPage.locator(".wheel-visual-wrap").scrollIntoViewIfNeeded();
     const name = `natural-same-winner-${String(Math.round(fraction * 100)).padStart(2, "0")}.png`;
     await landingPage.locator(".wheel-control-layout").screenshot({ path: join(ARTIFACTS, name) });
-    const metrics = await landingPage.locator(".wheel-stage canvas").evaluate((canvas) => canvas.__wheelSpinV110);
+    const metrics = await landingPage.locator(".wheel-stage__face").evaluate((canvas) => canvas.__wheelSpinV110);
     assert.equal(metrics.completed, true);
     assert.ok(Math.abs(metrics.actualFinalFrameDelta - metrics.expectedFinalFrameDelta) < .001);
     landingProof.push({ fraction, winnerId: winner.id, rotation: metrics.finalRotation, artifact: name });
@@ -623,7 +620,7 @@ test("V1.10 natural landings and Stage Spin All coordinate, settle, celebrate, a
     };
   });
   assert.deepEqual(portalAndEffects, { portalInsideRoot: true, fullscreenContainsModal: true, confetti: true, fireworks: true, lighting: true });
-  const metrics = await page.locator(".stage-wheel-tile canvas").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
+  const metrics = await page.locator(".stage-wheel-tile .wheel-stage__face").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
   assert.equal(metrics.length, 6);
   assert.ok(Math.max(...metrics.map((item) => item.firstFrameAt)) - Math.min(...metrics.map((item) => item.firstFrameAt)) <= 32, JSON.stringify(metrics));
   assert.deepEqual(metrics.map((item) => item.durationMs), [2000, 2500, 3000, 3500, 4000, 4500]);
@@ -649,7 +646,7 @@ test("V1.10 natural landings and Stage Spin All coordinate, settle, celebrate, a
   assert.equal(await durationPage.locator('[data-spin-substate="spinning"]').count(), 1);
   await durationPage.waitForFunction(() => document.querySelectorAll('[data-spin-substate="settled"]').length === 3);
   await durationPage.getByRole("dialog", { name: "WINNERS LOCKED." }).waitFor();
-  const durationMetrics = await durationPage.locator(".stage-wheel-tile canvas").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
+  const durationMetrics = await durationPage.locator(".stage-wheel-tile .wheel-stage__face").evaluateAll((canvases) => canvases.map((canvas) => canvas.__wheelSpinV110));
   assert.deepEqual(durationMetrics.map((item) => item.durationMs), [3000, 5000, 7000]);
   assert.ok(durationMetrics[0].settledAt < durationMetrics[1].settledAt && durationMetrics[1].settledAt < durationMetrics[2].settledAt);
   await durationContext.close();

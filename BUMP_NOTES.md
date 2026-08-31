@@ -1,5 +1,30 @@
 # Bump notes
 
+## 2026-09-01 - Wheels V1.14 exact circularity and concentric rotor geometry
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Reconciled every Wheel to one scalar CSS diameter snapped through one even physical backing side, with one exact CSS/physical centre and proportional face, hub, ring, annulus, and pointer geometry.
+- Replaced independently rasterized CSS hard rings with a fixed mechanics Canvas sharing the rotating face Canvas backing, centre, and radii. The outer mechanical assembly remains stationary while the participant face remains a rigid rotate-only cached layer.
+- Preserved the approved face/outer ratio `0.8759`, hub/outer ratio `0.22`, Natural Hybrid mechanics, secure landing, winner authority, Stage Official All atomicity, V1.9 labels/patterns/images/GIFs, centre media, and all Wheel schemas and persistence boundaries.
+- Added 720-ray painted-circle/concentric-gap analysis across 13 fixed phases, live spin checkpoints, zoom `67-200%`, DPR through `3`, responsive/orientation repeats, Fullscreen, Appearance, Presentation, and Stage surfaces. Diagnostics require square even backing, isotropic transforms, and no more than one physical pixel of painted raster variance.
+- No Admin, schema, migration, D1/R2, Official-result, provider/payment, DNS, nameserver, or custom-domain configuration change is part of this release.
+
+## 2026-09-01 - Public Polls V1.2 history gallery and detail navigation
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced the default open-only Poll directory with permanent, independently resilient **Open Polls** and **Past Polls** sections under one shared search. A compact no-open state never hides valid history.
+- Added bounded 12-record closed-history pages with deterministic `closed_at DESC, updated_at DESC, id ASC` order and load-more access. Open records retain the coordinated seven-second refresh; closed records reload only when an open ID leaves the live set.
+- Upgraded closed cards, quick view, detail, and popout with settled raw counts/percentages, square option imagery, subtle top-result treatment, and explicit multi-option tie treatment. Closed surfaces render no vote buttons.
+- Added a prominent **Back to Polls** action to every non-popout Poll detail. Closed owners alone receive revision/CSRF-protected **Hide from gallery / Show in gallery** actions; ordinary viewers receive neither management control.
+- Extended signed Poll relay, lifecycle/search/pagination, zero/open/history/error, owner/non-owner, hide/show, direct-detail, closed popout, 1920/1440/768/390 overflow, option geometry, and actually inspected screenshot coverage under `.artifacts/polls-v12`.
+- No schema migration is required: lifecycle remains Admin `state`, while listing remains existing `is_public`. Rollout is Admin authority/API first, then Public Function/app, then staged and stable-origin acceptance. No deployment, remote D1 write, bot/provider/payment action, secret, or DNS change was performed.
+
 ## 2026-09-01 - Third Railify Gaming public experience
 
 CURRENT VER=0.1.0-alpha.0
