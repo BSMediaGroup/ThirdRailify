@@ -88,6 +88,11 @@ test("About presents the supplied story, formats, hosts, internal paths, and no 
   assert.equal(hrefs.some((href) => /^https?:/i.test(href || "")), false, "About contains no external platform directory");
   assert.equal(await main.locator('a[href^="mailto:"]').count(), 0, "About does not duplicate footer contact addresses");
   assert.equal(await main.locator('[data-chat-message], .testimonial, [class*="testimonial"]').count(), 0);
+  for (const [host, href] of [["shawn", "/shawn"], ["gina", "/gina"]]) {
+    const card = main.locator(`a.host-panel--${host}[href="${href}"]`);
+    assert.equal(await card.count(), 1, `${host}'s complete About card is the route link`);
+    assert.equal(await card.locator("img").count(), 1, `${host}'s portrait is inside the route link`);
+  }
   assert.doesNotMatch(text, /A proper story belongs here|Migration-stage route|current About page|generic Wix FAQ|Show history pending|Media and contact context pending|Review current About page|Back home|thirdrailify\.com\/about|@[a-z0-9_]+|\b(?:viewers|subscribers|testimonials?)\b/i);
   assert.deepEqual(errors, []);
   await context.close();
@@ -142,10 +147,14 @@ test("About remains composed, animated, complete, and overflow-free at every req
     await page.locator(".about-formats").scrollIntoViewIfNeeded();
     await page.locator(".about-formats.is-active").waitFor({ timeout: 8_000 });
     assert.equal(await page.locator(".format-card").count(), 4);
-    assert.notEqual(await page.locator(".format-bracket b").evaluate((element) => getComputedStyle(element).animationName), "none");
+    assert.equal(await page.locator(".format-bracket__tree-live").count(), 3);
+    assert.notEqual(await page.locator(".format-bracket__final").evaluate((element) => getComputedStyle(element).animationName), "none");
+    assert.notEqual(await page.locator(".format-news-track__packet").evaluate((element) => getComputedStyle(element).animationName), "none");
     await page.locator(".about-community").scrollIntoViewIfNeeded();
     await page.locator(".about-community.is-active").waitFor({ timeout: 8_000 });
     assert.notEqual(await page.locator(".community-circuit__scope i").first().evaluate((element) => getComputedStyle(element).animationName), "none");
+    assert.equal(await page.locator(".community-circuit__paths .community-circuit__path").count(), 4);
+    assert.notEqual(await page.locator(".community-circuit__packet").first().evaluate((element) => getComputedStyle(element).animationName), "none");
     await page.locator(".about-manifesto").scrollIntoViewIfNeeded();
 
     const brokenImages = await page.locator("main img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.getAttribute("src")));
@@ -162,10 +171,11 @@ test("About remains composed, animated, complete, and overflow-free at every req
       await page.waitForTimeout(100);
       await page.screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${width}-hero.png`) });
       await page.screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${width}x${height}.png`), fullPage: true });
-      if (width === 390) {
+      if (width === 390 || width === 1440) {
         for (const [selector, name] of [[".about-hosts", "hosts"], [".about-formats", "formats"], [".about-community", "community"], [".about-manifesto", "manifesto"]]) {
           await page.locator(selector).screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${width}-${name}.png`) });
         }
+        await page.locator(".about-origin").screenshot({ path: path.join(RESULTS, `${SCREENSHOT_PREFIX}-${width}-origin.png`) });
       }
     }
     assert.deepEqual(errors, []);
@@ -183,11 +193,30 @@ test("reduced motion keeps the complete About story while disabling nonessential
   assert.equal(await page.locator(".about-network").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-formats").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-community").getAttribute("data-motion"), "static");
-  for (const selector of [".about-hero .sparkling-sky__star", ".about-network__pulse", ".format-bracket b", ".community-circuit__scope i"]) {
+  for (const selector of [".about-hero .sparkling-sky__star", ".about-network__pulse", ".format-bracket__final", ".format-news-track__packet", ".community-circuit__scope i", ".community-circuit__packet"]) {
     assert.equal(await page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${selector} is static in reduced motion`);
   }
   assert.equal(await page.getByRole("heading", { level: 2, name: /Grab the rail\.\s+Don’t let go\./i }).count(), 1);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth), false);
+  await context.close();
+});
+
+test("About and Home make each complete host card, including its portrait, the route link", async () => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await addConsent(context);
+  const page = await context.newPage();
+  await mockApis(page);
+  for (const [route, cardClass] of [["/about", "host-panel"], ["/", "host-card"]]) {
+    await page.goto(`${ORIGIN}${route}`, { waitUntil: "domcontentloaded" });
+    for (const host of ["shawn", "gina"]) {
+      const card = page.locator(`a.${cardClass}--${host}[href="/${host}"]`);
+      assert.equal(await card.count(), 1, `${host}'s ${route} card is one semantic link`);
+      assert.equal(await card.locator("img").count(), 1, `${host}'s ${route} portrait is clickable`);
+      assert.ok(await card.evaluate((element) => element.getBoundingClientRect().height >= 300), `${host}'s ${route} link covers the full card`);
+    }
+  }
+  await page.locator('a.host-card--shawn[href="/shawn"] img').click();
+  await page.waitForURL(`${ORIGIN}/shawn`);
   await context.close();
 });
 

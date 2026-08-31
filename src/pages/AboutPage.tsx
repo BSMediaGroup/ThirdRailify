@@ -79,12 +79,13 @@ export function AboutPage() {
             <p>Third Railify touched it. Friends pulled up chairs. A late-night studio took shape. Somewhere along the way, “we should probably stop” stopped being a warning and became the format.</p>
             <div className="origin-warning" aria-label="The Third Railify origin in three stages">
               <div className="origin-warning__header"><span>TR / ORIGIN CIRCUIT</span><strong>DO NOT TOUCH</strong></div>
+              <div className="origin-warning__field" aria-hidden="true"><i /><i /><i /><i /></div>
               <ol>
                 <li><span>01</span><div><b>The subject</b><small>Everybody circles it.</small></div></li>
                 <li><span>02</span><div><b>The room</b><small>Friends and a late-night studio.</small></div></li>
                 <li><span>03</span><div><b>The show</b><small>The bad idea stays live.</small></div></li>
               </ol>
-              <div className="origin-warning__rail" aria-hidden="true"><i /><i /><i /><BoltIcon /></div>
+              <div className="origin-warning__rail" aria-hidden="true"><span /><i /><i /><i /><BoltIcon /></div>
             </div>
           </div>
         </div>
@@ -96,7 +97,7 @@ export function AboutPage() {
           <p>Between them: the hosting, co-hosting, producing, ADHD commentary, public roasting, and just enough control to send the whole thing off-track on purpose. They talk like actual people and leave room for chat to talk back.</p>
         </div>
         <div className="container host-dynamic">
-          <article className="host-panel host-panel--shawn">
+          <Link className="host-panel host-panel--shawn" to="/shawn">
             <div className="host-panel__portrait">
               <span className="host-panel__index">HOST / 01</span>
               <img src={shawnPortrait} alt="Illustrated portrait of Shawn" width="1024" height="940" loading="lazy" decoding="async" />
@@ -105,12 +106,12 @@ export function AboutPage() {
             <div className="host-panel__copy">
               <p>Third Railify host</p>
               <h3>Shawn</h3>
-              <span>One half of the live conversation, the detours, and the arguments that go much further than anyone planned.</span>
-              <Link className="text-link" to="/shawn">Meet Shawn <ArrowIcon /></Link>
+              <span className="host-panel__bio">One half of the live conversation, the detours, and the arguments that go much further than anyone planned.</span>
+              <span className="text-link">Meet Shawn <ArrowIcon /></span>
             </div>
-          </article>
+          </Link>
           <div className="host-dynamic__junction" aria-hidden="true"><span>CO-HOST / PRODUCE / DERAIL</span><div><i /><BoltIcon /><i /></div><b>CHAT IN THE LOOP</b></div>
-          <article className="host-panel host-panel--gina">
+          <Link className="host-panel host-panel--gina" to="/gina">
             <div className="host-panel__portrait">
               <span className="host-panel__index">HOST / 02</span>
               <img src={ginaPortrait} alt="Illustrated portrait of Gina" width="1024" height="940" loading="lazy" decoding="async" />
@@ -119,10 +120,10 @@ export function AboutPage() {
             <div className="host-panel__copy">
               <p>Third Railify co-host</p>
               <h3>Gina</h3>
-              <span>The other half of the on-air chemistry, with the show held together for precisely as long as the moment requires.</span>
-              <Link className="text-link" to="/gina">Meet Gina <ArrowIcon /></Link>
+              <span className="host-panel__bio">The other half of the on-air chemistry, with the show held together for precisely as long as the moment requires.</span>
+              <span className="text-link">Meet Gina <ArrowIcon /></span>
             </div>
-          </article>
+          </Link>
         </div>
       </section>
 
@@ -232,23 +233,52 @@ function HighVoltageNetwork() {
 function FormatInstrument({ type }: { type: (typeof formatModules)[number]["key"] }) {
   if (type === "aboot") return (
     <div className="format-instrument format-bracket" aria-hidden="true">
-      <div><i /><i /><i /><i /></div><span className="format-bracket__line format-bracket__line--one" /><span className="format-bracket__line format-bracket__line--two" /><b>?</b>
+      <div className="format-instrument__readout"><span>QUALIFIERS</span><i /><b>FINAL UNKNOWN</b></div>
+      <div className="format-bracket__entrants"><i><span>01</span></i><i><span>02</span></i><i><span>03</span></i><i><span>04</span></i></div>
+      <svg className="format-bracket__tree" viewBox="0 0 460 170" preserveAspectRatio="none">
+        <path className="format-bracket__tree-base" d="M88 20H208V52H280M88 62H208V52M88 108H208V138H280M88 150H208V138M280 52H324V95H372M280 138H324V95" />
+        <path className="format-bracket__tree-live format-bracket__tree-live--one" d="M88 20H208V52H280" />
+        <path className="format-bracket__tree-live format-bracket__tree-live--two" d="M88 108H208V138H280" />
+        <path className="format-bracket__tree-live format-bracket__tree-live--three" d="M280 52H324V95H372" />
+      </svg>
+      <div className="format-bracket__final"><span>?</span><i /></div>
+      <div className="format-bracket__charge" />
     </div>
   );
   if (type === "beatdown") return (
     <div className="format-instrument format-impact" aria-hidden="true">
-      <span>MON</span><i /><div><b>POP</b><b>VS</b><b>CULTURE</b></div><i /><span>ROUND</span>
+      <div className="format-instrument__readout"><span>MONDAY</span><i /><b>CONTACT SPORT</b></div>
+      <div className="format-impact__rings"><i /><i /><i /></div>
+      <span className="format-impact__side format-impact__side--left">MON</span>
+      <span className="format-impact__side format-impact__side--right">ROUND</span>
+      <div className="format-impact__core"><b>POP</b><span>VS</span><b>CULTURE</b></div>
+      <i className="format-impact__slash format-impact__slash--left" /><i className="format-impact__slash format-impact__slash--right" />
+      <div className="format-impact__flash" />
     </div>
   );
   if (type === "news") return (
     <div className="format-instrument format-news-track" aria-hidden="true">
-      <div><span>NEWS</span><i /><span>TOPIC 01</span><i /><span>DETOUR</span><i /><span>?</span></div>
-      <svg viewBox="0 0 450 100"><path d="M12 52h145c46 0 29 31 74 31h79c43 0 36-60 78-60h50" /><circle cx="158" cy="52" r="5" /><circle cx="310" cy="83" r="5" /></svg>
+      <div className="format-instrument__readout"><span>NEWS</span><i /><b>AGENDA DRIFT</b></div>
+      <div className="format-news-track__labels"><span>NEWS</span><i /><span>TOPIC 01</span><i /><span>DETOUR</span><i /><span>?</span></div>
+      <svg viewBox="0 0 450 112" preserveAspectRatio="none">
+        <path className="format-news-track__shadow" d="M12 52h145c46 0 29 31 74 31h79c43 0 36-60 78-60h50" />
+        <path className="format-news-track__signal" d="M12 52h145c46 0 29 31 74 31h79c43 0 36-60 78-60h50" />
+        <circle cx="158" cy="52" r="5" /><circle cx="310" cy="83" r="5" />
+        <circle className="format-news-track__packet" cx="12" cy="52" r="3" />
+      </svg>
+      <div className="format-news-track__levels"><i /><i /><i /><i /><i /><i /><i /></div>
     </div>
   );
   return (
     <div className="format-instrument format-switch" aria-hidden="true">
-      <div className="format-switch__hub"><BoltIcon /></div><i className="format-switch__track format-switch__track--one" /><i className="format-switch__track format-switch__track--two" /><i className="format-switch__track format-switch__track--three" /><span>RAID</span><span>WHEEL</span><span>MERCH</span><b>?</b>
+      <div className="format-instrument__readout"><span>INPUT OPEN</span><i /><b>ROUTE UNLOCKED</b></div>
+      <div className="format-switch__orbit"><i /><i /><i /></div>
+      <div className="format-switch__hub"><BoltIcon /><span /></div>
+      <i className="format-switch__track format-switch__track--one" /><i className="format-switch__track format-switch__track--two" /><i className="format-switch__track format-switch__track--three" />
+      <span className="format-switch__endpoint format-switch__endpoint--one"><i />RAID</span>
+      <span className="format-switch__endpoint format-switch__endpoint--two"><i />WHEEL</span>
+      <span className="format-switch__endpoint format-switch__endpoint--three"><i />MERCH</span>
+      <b className="format-switch__unknown">?</b><div className="format-switch__scan" />
     </div>
   );
 }
@@ -258,12 +288,19 @@ function CommunityCircuit() {
     <div className="community-circuit" aria-hidden="true">
       <div className="community-circuit__meta"><span>TR / OPEN LOOP</span><strong>AUDIENCE INPUT ENABLED</strong></div>
       <div className="community-circuit__scope"><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
-      <div className="community-circuit__path community-circuit__path--one" />
-      <div className="community-circuit__path community-circuit__path--two" />
+      <svg className="community-circuit__paths" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path className="community-circuit__path community-circuit__path--main" d="M14 55H86" />
+        <path className="community-circuit__path community-circuit__path--branch" d="M50 55C63 55 72 72 82 84" />
+        <path className="community-circuit__path community-circuit__path--return" d="M82 84C65 96 29 91 14 55" />
+        <path className="community-circuit__path community-circuit__path--live" d="M14 55H86" />
+      </svg>
+      <div className="community-circuit__packet community-circuit__packet--one" />
+      <div className="community-circuit__packet community-circuit__packet--two" />
       <div className="community-circuit__node community-circuit__node--chat"><span>01</span><b>CHAT</b><small>STEERS</small></div>
       <div className="community-circuit__node community-circuit__node--hosts"><span>02</span><b>HOSTS</b><small>RESPOND</small></div>
       <div className="community-circuit__node community-circuit__node--show"><span>03</span><b>SHOW</b><small>DERAILS</small></div>
-      <div className="community-circuit__wheel"><div><BoltIcon /></div><span>THE WHEEL</span></div>
+      <div className="community-circuit__wheel"><i /><i /><div><BoltIcon /></div><span>THE WHEEL</span></div>
+      <div className="community-circuit__levels"><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <p>NO FAKE MESSAGES · NO PASSIVE AUDIENCE · LIVE INPUT</p>
     </div>
   );

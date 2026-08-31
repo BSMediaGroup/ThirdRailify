@@ -142,14 +142,14 @@ export function HomePage() {
       <section className="section hosts-section">
         <div className="container section-heading"><p className="eyebrow">Meet the instigators</p><h2>Two hosts.<br />One live wire.</h2></div>
         <div className="container host-grid">
-          <article className="host-card host-card--shawn">
+          <Link className="host-card host-card--shawn" to="/shawn">
             <div className="host-card__image"><img src={shawnPortrait} alt="Portrait of Shawn" /></div>
-            <div className="host-card__body"><small>Host · @ThirdRailify</small><h3>Shawn</h3><p>Daily news, crime, and pop culture with the perspective—and detours—that define Third Railify.</p><Link className="text-link" to="/shawn">Meet Shawn <ArrowIcon /></Link></div>
-          </article>
-          <article className="host-card host-card--gina">
+            <div className="host-card__body"><small>Host · @ThirdRailify</small><h3>Shawn</h3><p>Daily news, crime, and pop culture with the perspective—and detours—that define Third Railify.</p><span className="text-link">Meet Shawn <ArrowIcon /></span></div>
+          </Link>
+          <Link className="host-card host-card--gina" to="/gina">
             <div className="host-card__image"><img src={ginaPortrait} alt="Portrait of Gina" /></div>
-            <div className="host-card__body"><small>Host · @JustGina</small><h3>Gina</h3><p>Sass, smarts, humor, mysteries, and culture in a distinct Just Gina lane inside the shared show universe.</p><Link className="text-link" to="/gina">Meet Gina <ArrowIcon /></Link></div>
-          </article>
+            <div className="host-card__body"><small>Host · @JustGina</small><h3>Gina</h3><p>Sass, smarts, humor, mysteries, and culture in a distinct Just Gina lane inside the shared show universe.</p><span className="text-link">Meet Gina <ArrowIcon /></span></div>
+          </Link>
         </div>
       </section>
 
