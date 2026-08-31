@@ -14,6 +14,7 @@ PENDING VER=0.1.0-alpha.0
 - Added deterministic zero/one/partial/exact/over-capacity/ineligible/non-Featured/error coverage plus rendered Home/Shop checks at 1920, 1440, tablet, and 390 widths with fixed slots, no non-Featured contamination, and no horizontal overflow. Production deployment and live-origin acceptance follow the clean scoped release.
 - Added the existing analytics-beacon fixture response to the focused Home rail and Shop browser harnesses so their catch-all API mocks remain console-clean; production analytics behavior is unchanged.
 - Focused gates are green under repository-pinned Node 22.16.0: 7 Featured unit/browser tests, 8 storefront tests, Home rail and Shop browser suites, lint, typecheck, production build, and the Pages Functions compile.
+- Scoped storefront commit `2989ffb` shipped through Git-integrated Pages production deployment `90cbc4f6-e85a-4ce8-b98f-480d41f2e0a6`; stable-origin cache, DOM-authority, responsive screenshot, and console/network acceptance are recorded separately after custom-domain promotion.
 
 ## 2026-08-31 - About and host feature-art refinement
 
