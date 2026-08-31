@@ -2035,20 +2035,20 @@ h3 {
 
 .discord-widget__channel-icon {
   display: grid;
-  width: 31px;
-  height: 31px;
+  width: 36px;
+  height: 36px;
   place-items: center;
   border-radius: 9px;
   background: rgba(88, 101, 242, 0.1);
   color: var(--discord-bright);
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 20px;
 }
 
 .discord-widget__channels strong,
 .discord-widget__members strong {
   overflow: hidden;
-  font-size: 12px;
+  font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2058,7 +2058,7 @@ h3 {
   overflow: hidden;
   margin: 0;
   color: var(--muted-deep);
-  font-size: 6.4px;
+  font-size: 8px;
   letter-spacing: 0;
   line-height: 1.55;
   overflow-wrap: anywhere;
@@ -2071,7 +2071,7 @@ h3 {
 .discord-widget__channel-meta,
 .discord-widget__members small {
   color: var(--muted-deep);
-  font-size: 6px;
+  font-size: 8px;
 }
 
 .discord-widget__channels b {
@@ -2085,7 +2085,7 @@ h3 {
   gap: 4px;
   color: var(--discord-bright);
   font-family: var(--mono);
-  font-size: 6px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-decoration: none;
@@ -5809,21 +5809,23 @@ h3 {
 }
 
 .header-watch {
-  width: 42px;
-  min-width: 42px;
+  width: auto;
+  min-width: 0;
   height: 42px;
+  flex: 0 0 auto;
   justify-content: center;
   gap: 0;
-  overflow: hidden;
+  padding-inline: 11px;
   border: 1px solid rgba(255,70,93,.58);
   border-radius: 9px;
   background: linear-gradient(115deg,rgba(137,13,36,.78),rgba(35,8,14,.94));
   box-shadow: inset 0 1px rgba(255,255,255,.09),0 0 18px rgba(255,37,68,.14);
+  white-space: nowrap;
 }
 
-.header-watch .live-indicator { min-height: 0; gap: 3px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.header-watch .live-indicator { min-height: 0; gap: 5px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 .header-watch .live-indicator > i { width: 7px; height: 7px; }
-.header-watch .live-indicator strong { font-size: 6.5px; line-height: 1; letter-spacing: .04em; }
+.header-watch .live-indicator strong { font-size: 8px; line-height: 1; letter-spacing: .04em; }
 .header-watch .live-indicator img { display: none; }
 .header-watch > svg { display: none; }
 
@@ -6220,6 +6222,7 @@ h3 {
 
 @media (max-width: 680px) {
   .header-actions { gap: 5px; }
+  .header-watch { padding-inline: 9px; }
   .live-indicator--compact { min-height: 0; padding-inline: 0; }
   .live-indicator--compact img { display: none; }
   .live-indicator--compact strong { font-size: 7px; }
@@ -6252,6 +6255,8 @@ h3 {
 @media (max-width: 420px) {
   .brand__type small { display: none; }
   .brand__type strong { font-size: 14px; }
+  .header-watch { padding-inline: 8px; }
+  .header-watch .live-indicator strong { font-size: 7.5px; }
   .live-indicator--compact { gap: 5px; padding-inline: 0; }
   .live-indicator--compact strong { font-size: 6px; }
   .watch-signal-card { padding: 22px; }
@@ -10234,7 +10239,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .format-impact__rings circle:nth-child(2) { stroke-dasharray: 5 7; }.format-impact__rings circle:nth-child(3) { stroke: rgba(255, 60, 146, .36); }
 .format-impact__core rect { fill: rgba(12, 8, 10, .94); stroke: rgba(255, 60, 146, .38); stroke-width: 1; }
 .format-impact__core text { text-anchor: middle; }
-.format-impact__word { fill: var(--paper); font: 400 39px/1 var(--display); letter-spacing: -.5px; }
+.format-impact__diagram .format-impact__word { fill: var(--paper); font: 400 39px/1 var(--display); letter-spacing: -.5px; }
 .format-impact__versus { fill: var(--pink); font-size: 7px; font-weight: 900; letter-spacing: 2px; }
 .format-impact__side-labels text { fill: rgba(255, 255, 255, .4); font-size: 6px; font-weight: 800; letter-spacing: 1.2px; }
 .format-impact__side-labels text:last-child { text-anchor: end; }

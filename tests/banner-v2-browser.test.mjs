@@ -14,7 +14,7 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   t.after(() => browser.close());
 
-  for (const [width, height] of [[1440, 900], [390, 844]]) {
+  for (const [width, height] of [[1920, 1080], [1440, 900], [1024, 768], [768, 1024], [390, 844]]) {
     let liveState = "off";
     let announcementMode = "ticker";
     let announcementEnabled = true;
@@ -104,7 +104,7 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     assert.equal(await page.locator(".promo-banner--live").count(), 0, "expired live activity cannot take over the announcement");
 
     liveState = "live";
-    await page.goto(`${ORIGIN}/watch`);
+    await page.goto(ORIGIN);
     const takeover = page.locator(".promo-banner--live");
     await takeover.waitFor();
     assert.equal(await page.locator(".promo-banner--normal").count(), 0, "verified Live Now deliberately takes precedence over the enabled announcement");
@@ -122,17 +122,31 @@ test("slim configurable banners animate, dismiss safely, and align Live Now surf
     assert.deepEqual(liveReadability, { markWrap: "nowrap", markFits: true, signalWidth: width <= 780 ? 0 : 12, ctaFont: width <= 520 ? "7.5px" : "9px" });
     assert.equal(await takeover.getByRole("button", { name: "Dismiss announcement" }).count(), 0, "the live takeover remains non-dismissible");
 
-    const [headerLive, cart] = await Promise.all([page.locator(".header-watch").boundingBox(), page.locator(".cart-button").boundingBox()]);
-    assert.ok(headerLive && cart);
-    assert.equal(Math.round(headerLive.width), 42); assert.equal(Math.round(headerLive.height), 42);
-    assert.equal(Math.round(headerLive.height), Math.round(cart.height), "header Live Now matches its neighboring action height");
+    const [headerLive, cart, account] = await Promise.all([page.locator(".header-watch").boundingBox(), page.locator(".cart-button").boundingBox(), page.locator(".account-login").boundingBox()]);
+    assert.ok(headerLive && cart && account);
+    assert.ok(headerLive.width > headerLive.height, `${width}px header Live Now is a horizontal content-sized chip`);
+    assert.equal(Math.round(headerLive.height), 42, `${width}px header Live Now preserves the header action height`);
+    assert.equal(Math.round(cart.height), 42, `${width}px cart geometry is unchanged`);
+    assert.ok(cart.width >= 42, `${width}px cart retains its minimum control width`);
+    assert.equal(Math.round(account.height), 42, `${width}px account geometry is unchanged`);
     assert.equal(await page.locator(".header-watch").evaluate((element) => getComputedStyle(element).borderRadius), "9px");
-    assert.equal(await page.locator(".header-watch .live-indicator").evaluate((element) => element.scrollWidth <= element.clientWidth), true, "header live icon and text remain fully legible");
+    const headerLiveReadability = await page.locator(".header-watch").evaluate((element) => {
+      const indicator = element.querySelector(".live-indicator"); const label = indicator.querySelector("strong"); const style = getComputedStyle(element); const labelStyle = getComputedStyle(label);
+      return { aspectRatio: style.aspectRatio, flexShrink: style.flexShrink, whiteSpace: labelStyle.whiteSpace, labelFits: label.scrollWidth <= label.clientWidth, indicatorFits: indicator.scrollWidth <= indicator.clientWidth, labelLines: label.getClientRects().length, fontSize: labelStyle.fontSize };
+    });
+    assert.deepEqual(headerLiveReadability, { aspectRatio: "auto", flexShrink: "0", whiteSpace: "nowrap", labelFits: true, indicatorFits: true, labelLines: 1, fontSize: width <= 420 ? "7.5px" : "8px" });
+    const actionGeometry = await page.locator(".header-actions").evaluate((element) => {
+      const boxes = [...element.children].map((child) => child.getBoundingClientRect()).filter((box) => box.width > 0 && box.height > 0);
+      return { contained: element.scrollWidth <= element.clientWidth, separated: boxes.every((box, index) => index === 0 || boxes[index - 1].right <= box.left) };
+    });
+    assert.deepEqual(actionGeometry, { contained: true, separated: true }, `${width}px header actions neither overflow nor overlap`);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true, `${width}px page has no horizontal overflow`);
+    await page.locator(".header-watch").click();
+    await page.waitForURL((url) => url.pathname === "/watch");
     const status = page.locator(".broadcast-status--live").first();
     await status.waitFor();
     assert.equal(Math.round((await status.boundingBox()).height), 25, "page-level Live Now status uses slim padding without reducing its type");
     assert.equal(await status.evaluate((element) => getComputedStyle(element).fontSize), "8px");
-    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
     assert.deepEqual(errors, []);
     if (process.env.BANNER_V2_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-banner-v2-${width}.png`), fullPage: false });
     await context.close();

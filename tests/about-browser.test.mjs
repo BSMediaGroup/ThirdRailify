@@ -151,6 +151,8 @@ test("About remains composed, animated, complete, and overflow-free at every req
     assert.notEqual(await page.locator(".format-bracket__champion").evaluate((element) => getComputedStyle(element).animationName), "none");
     assert.notEqual(await page.locator(".format-impact__rings").evaluate((element) => getComputedStyle(element).animationName), "none");
     assert.notEqual(await page.locator(".format-news-track__packet").evaluate((element) => getComputedStyle(element).animationName), "none");
+    const impactWordFont = await page.locator(".format-impact__word").first().evaluate((element) => getComputedStyle(element).fontFamily);
+    assert.match(impactWordFont, /American Captain/i, `beatdown title uses the display font at ${width}px: ${impactWordFont}`);
     const diagramGeometry = await page.evaluate(() => {
       const bracket = document.querySelector(".format-bracket__diagram");
       const entrant = document.querySelector(".format-bracket__entrants rect").getBoundingClientRect();

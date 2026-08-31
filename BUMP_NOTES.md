@@ -6,6 +6,7 @@ CURRENT VER=0.1.0-alpha.0
 
 PENDING VER=0.1.0-alpha.0
 
+- Replaced the Public header LiveNow control's fixed 42px square with a content-sized horizontal chip, kept `LIVE NOW` on one line, modestly increased its compact mono label, and added responsive geometry/click/overflow coverage from 1920px through 390px without changing live-state behavior.
 - Replaced technical-first Rumble setup with creator-scoped heartbeat discovery, friendly source and live-stream selection, explicit healthy/stale/offline states, and a separate advanced/custom path. Provider timestamps are never treated as creator IDs.
 - Rebuilt the Poll editor into six clear sections with optional banner and per-option image uploads, validated accent presets/custom colour, an in-place premium preview, and intentional create-versus-edit lifecycle states.
 - Unified gallery, quick view, detail, and popout presentation across uploaded and generated artwork, compact voting/result metadata, optional option imagery, accessible focus/keyboard behavior, responsive layouts, and reduced motion.
