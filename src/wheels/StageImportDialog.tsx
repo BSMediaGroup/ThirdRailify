@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import { createStage, getCreatorAccess, getWheel } from "./client";
 import {
   ImportedWheelCreationError,
@@ -537,16 +538,7 @@ export function StageImportDialog({
               </button>
             </section>
           ) : null}
-          {error ? (
-            <p className="wheel-alert" role="alert">
-              {error}
-            </p>
-          ) : null}
-          {notice ? (
-            <p className="wheel-notice" role="status">
-              {notice}
-            </p>
-          ) : null}
+          <EphemeralNotices notice={notice} error={error} noticeTitle="Stage import ready" errorTitle="Stage import unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         </div>
         <footer className="wheel-modal__footer">
           <button

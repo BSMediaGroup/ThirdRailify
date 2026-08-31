@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "../components/Icons";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import { saveWheel, uploadWheelMedia } from "./client";
 import { secureShuffle } from "./engine.mjs";
 import type { Wheel, WheelEntry } from "./types";
@@ -41,7 +42,7 @@ export function ParticipantManagerDialog({ wheel, csrfToken, onClose, onSaved }:
         <button type="button" onClick={() => { const style = styleForEntry(entries, entry.id, paletteStyles); patch(entry.id, { colour: style.color, style }); }}>Reset style</button><button type="button" onClick={() => patch(entry.id, { state: entry.state === "hidden" ? "active" : "hidden" })}>{entry.state === "hidden" ? "Unhide" : "Hide"}</button><button type="button" className="danger" onClick={() => setEntries((current) => normalize(current.filter((candidate) => candidate.id !== entry.id)))} aria-label={`Remove ${entry.label}`}>Remove</button>
       </div>)}</div>
     </div>
-    {error ? <p className="wheel-alert" role="alert">{error}</p> : null}{notice ? <p className="wheel-notice" role="status">{notice}</p> : null}{confirmClose ? <div className="wheel-modal__close-confirm" role="alert"><span>Discard unsaved participant changes?</span><button type="button" onClick={() => setConfirmClose(false)}>Keep editing</button><button type="button" className="danger" onClick={onClose}>Discard and close</button></div> : null}
+    <EphemeralNotices notice={notice} error={error} noticeTitle="Participants updated" errorTitle="Participants could not be updated" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />{confirmClose ? <div className="wheel-modal__close-confirm" role="alert"><span>Discard unsaved participant changes?</span><button type="button" onClick={() => setConfirmClose(false)}>Keep editing</button><button type="button" className="danger" onClick={onClose}>Discard and close</button></div> : null}
     <footer className="wheel-modal__footer"><button type="button" className="button button--secondary" onClick={() => { setEntries(JSON.parse(baseline.current)); setNotice("Unsaved participant changes discarded."); }} disabled={!dirty || busy}>Discard</button><button type="button" className="button button--primary" onClick={() => void save()} disabled={!dirty || busy || !entries.length}>{busy ? "Saving…" : "Save participants"}</button></footer>
     {styleEntryId ? <SegmentStyleDialog label={entries.find((entry) => entry.id === styleEntryId)?.label || "Entrant"} value={resolvedEntryStyle(entries.find((entry) => entry.id === styleEntryId)!, wheel.config)} media={segmentMedia} previewUrls={previewUrls} onFile={(file) => { const id = crypto.randomUUID(); setStagedFiles((current) => new Map(current).set(id, file)); return id; }} onApply={(style) => patch(styleEntryId, { colour: style.color, style })} onClose={() => setStyleEntryId(null)} /> : null}
   </div></div>, document.body);

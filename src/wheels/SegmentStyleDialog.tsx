@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import type { WheelMediaAsset } from "./types";
 import { SEGMENT_PATTERN_IDS, SEGMENT_PATTERN_LABELS, normalizeSegmentStyle, type SegmentStyle } from "./segmentStyles.mjs";
 import { useModalDialog } from "./dialog";
@@ -21,7 +22,7 @@ export function SegmentStyleDialog({ label, value, media, previewUrls = {}, onFi
       {mode === "image" ? <div className="segment-style-image-fields"><label><span>Wheel image</span><select aria-label={`Segment image for ${label}`} value={draft.imageAssetId} onChange={(event) => setDraft({ ...draft, imageAssetId: event.target.value })}>{media.map((asset) => <option key={asset.id} value={asset.id}>{asset.fileName || `${asset.contentType} · ${Math.round(asset.byteSize / 1024)} KiB`}</option>)}</select></label><p>Image fills crop to cover the wheel segment.</p><button type="button" onClick={() => setDraft({ mode: "solid", color })}>Remove image</button></div> : null}
       <label className="segment-style-upload"><span>{mode === "image" ? "Upload / Change" : "Upload image fill"}</span><input aria-label={`Upload segment image for ${label}`} type="file" accept=".svg,.bmp,.jpg,.jpeg,.gif,.webp,.png,image/svg+xml,image/bmp,image/jpeg,image/gif,image/webp,image/png" onChange={(event) => { const file = event.target.files?.[0]; if (!file) return; if (file.size > 2 * 1024 * 1024) { setError("Segment images must be 2 MiB or smaller; SVG and static formats have stricter server limits."); return; } const id = onFile(file); setDraft({ mode: "image", color, imageAssetId: id }); setError(""); }} /><small>SVG ≤ 512 KiB · static raster ≤ 1.5 MiB · GIF ≤ 2 MiB · up to 2048×2048.</small></label>
     </div>
-    {error ? <p className="wheel-alert" role="alert">{error}</p> : null}<footer><button type="button" className="button button--secondary" onClick={onClose}>Cancel</button><button type="button" className="button button--primary" onClick={apply}>Apply style</button></footer>
+    <EphemeralNotices error={error} errorTitle="Segment style unavailable" onDismissError={() => setError("")} /><footer><button type="button" className="button button--secondary" onClick={onClose}>Cancel</button><button type="button" className="button button--primary" onClick={apply}>Apply style</button></footer>
   </section></div>, document.body);
 }
 

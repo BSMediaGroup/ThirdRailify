@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import {
   getWheel,
   removeWheelMedia,
@@ -895,11 +896,7 @@ export function AppearanceDialog({
                 ) : null}
               </section>
             </div>
-            {error ? (
-              <p className="wheel-alert" role="alert">
-                {error}
-              </p>
-            ) : null}
+            <EphemeralNotices error={error} errorTitle="Appearance could not be updated" onDismissError={() => setError("")} />
             <footer>
               <button
                 className="button button--secondary appearance-reset"

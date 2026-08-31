@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState, type DragEvent } from "react";
 import { createPortal } from "react-dom";
 import packageInfo from "../../package.json";
 import { CloseIcon, CopyIcon } from "../components/Icons";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import { useModalDialog } from "./dialog";
 import type { Wheel, WheelConfig, WheelEntry } from "./types";
 import {
@@ -91,7 +92,7 @@ export function ImportExportDialog({ source, mode, canExport = true, currentMedi
         </section>}
         <aside className="wheel-transfer-privacy"><strong>Import privacy</strong><p>Entries become public if you publish the resulting wheel. Do not import email addresses, payment details, street addresses or sensitive personal information. Files cannot grant access or import official history. External URLs and executable content are ignored or rejected.</p></aside>
       </div>
-      {error ? <p className="wheel-alert" role="alert">{error}</p> : null}{notice ? <p className="wheel-notice" role="status">{notice}</p> : null}
+      <EphemeralNotices notice={notice} error={error} noticeTitle="Wheel transfer ready" errorTitle="Wheel transfer unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
       <footer className="wheel-modal__footer"><button type="button" className="button button--secondary" onClick={requestClose} disabled={busy}>Return to editor</button>{tab === "import" && proposal && !confirming ? <button type="button" className="button button--primary" disabled={busy} onClick={apply}>{mode === "new" ? "Use as new wheel" : "Review replacement"}</button> : null}</footer>
     </div>
   </div>, document.body);

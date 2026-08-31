@@ -14,6 +14,7 @@ import {
   PracticeIcon,
   SoundIcon,
 } from "../components/Icons";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import {
   getStage,
   getWheelMechanics,
@@ -731,11 +732,7 @@ export function WheelStagePage({
           />
         ) : null}
       </main>
-      {error ? (
-        <div className="stage-global-alert wheel-alert" role="alert">
-          {error}
-        </div>
-      ) : null}
+      <EphemeralNotices error={error} errorTitle="Stage action unavailable" onDismissError={() => setError("")} />
       {preflightIssues ? (
         <StagePreflightDialog
           issues={preflightIssues}

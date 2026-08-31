@@ -10864,3 +10864,81 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
     animation: none !important;
   }
 }
+/* Shared transient Polls/Wheels feedback: fixed above page content and dialogs. */
+.ephemeral-notice-region {
+  position: fixed;
+  z-index: 260;
+  top: 96px;
+  right: clamp(14px, 2.4vw, 34px);
+  display: grid;
+  width: min(430px, calc(100vw - 28px));
+  gap: 10px;
+  pointer-events: none;
+}
+.ephemeral-notice-region--site { top: 118px; }
+.ephemeral-notice-region--standalone { top: 18px; }
+.ephemeral-notice {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 13px 12px 15px;
+  border: 1px solid rgba(243, 201, 40, .48);
+  border-radius: 12px;
+  background: radial-gradient(circle at 0 50%, rgba(243, 201, 40, .1), transparent 44%), rgba(13, 13, 10, .975);
+  box-shadow: 0 22px 64px rgba(0, 0, 0, .62), 0 0 0 1px rgba(0, 0, 0, .3);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+  animation: ephemeral-notice-in .22s cubic-bezier(.2, .8, .2, 1) both;
+}
+.ephemeral-notice--success { border-color: rgba(114, 215, 165, .45); }
+.ephemeral-notice--info { border-color: rgba(243, 201, 40, .52); }
+.ephemeral-notice--error { border-color: rgba(255, 91, 105, .56); background: radial-gradient(circle at 0 50%, rgba(180, 30, 48, .18), transparent 46%), rgba(15, 10, 10, .98); }
+.ephemeral-notice__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(243, 201, 40, .28);
+  border-radius: 10px;
+  background: rgba(243, 201, 40, .08);
+  color: #f3c928;
+}
+.ephemeral-notice__icon svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.ephemeral-notice--success .ephemeral-notice__icon { border-color: rgba(114, 215, 165, .3); background: rgba(114, 215, 165, .09); color: #72d7a5; }
+.ephemeral-notice--error .ephemeral-notice__icon { border-color: rgba(255, 91, 105, .34); background: rgba(255, 91, 105, .1); color: #ff7b88; }
+.ephemeral-notice__copy,.ephemeral-notice__copy strong,.ephemeral-notice__copy span { display: block; min-width: 0; }
+.ephemeral-notice__copy strong { color: #f4f0e7; font: 800 .64rem var(--mono); letter-spacing: .075em; text-transform: uppercase; }
+.ephemeral-notice__copy span { margin-top: 4px; color: #aaa49a; font-size: .79rem; line-height: 1.4; overflow-wrap: anywhere; }
+.ephemeral-notice__dismiss {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #77736b;
+  cursor: pointer;
+}
+.ephemeral-notice__dismiss svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.ephemeral-notice__dismiss:hover { border-color: #39362f; background: rgba(255, 255, 255, .04); color: #f4f0e7; }
+.ephemeral-notice__dismiss:focus-visible { outline: 2px solid #f3c928; outline-offset: 2px; }
+.ephemeral-notice__timer { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: linear-gradient(90deg, #f3c928, #72d7a5); transform-origin: left; animation: ephemeral-notice-timer var(--ephemeral-notice-duration) linear forwards; }
+.ephemeral-notice--error .ephemeral-notice__timer { background: linear-gradient(90deg, #a7192c, #ff7b88); }
+@keyframes ephemeral-notice-in { from { opacity: 0; transform: translate3d(0, -10px, 0) scale(.985); } }
+@keyframes ephemeral-notice-timer { to { transform: scaleX(0); } }
+@media (max-width: 640px) {
+  .ephemeral-notice-region { top: 82px; right: 12px; width: calc(100vw - 24px); }
+  .ephemeral-notice-region--standalone { top: 12px; }
+  .ephemeral-notice { grid-template-columns: 34px minmax(0, 1fr) 32px; padding: 11px 10px 13px; }
+  .ephemeral-notice__icon { width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ephemeral-notice { animation: none; }
+  .ephemeral-notice__timer { animation: none; transform: none; }
+}

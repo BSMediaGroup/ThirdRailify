@@ -698,3 +698,9 @@ When a listed provider is live, both homepage social rails now open that confirm
 - Corrected the Poll creator's top-level error and success banners so they retain the shared centered container instead of replacing its automatic margins with viewport-edge spacing.
 - Polished the existing editor without redesigning it: balanced header/action geometry, consistent panel rhythm, clearer input focus/hover states, responsive full-width mobile actions, and aligned main/preview columns.
 - Added production-build browser coverage that forces the schema-error state, compares both banner edges to the editor layout, captures the corrected desktop state, and retains the 1920/1440/768/390 Poll matrix with console and overflow checks.
+
+## 2026-09-01 - shared Polls and Wheels overlay notices
+
+- Replaced transient Poll and Wheel info/error banners with one shared, body-portalled overlay system matching the established Admin notification treatment: titled icon cards, safe fixed positioning above the site shell and modal stack, explicit dismissal, bounded auto-dismiss timers, progress rails, stacked messages, responsive sizing, and reduced-motion behavior.
+- Applied the shared feedback surface to Poll voting, owner lifecycle actions, and the Poll editor, plus Wheel detail/share/spin actions, the full-page Wheel editor, Stage runtime/editor/import flows, and nested appearance, participant, transfer, and segment-style dialogs. Persistent loading, empty, validation, capacity, and confirmation states remain in context because they are not ephemeral notifications.
+- Updated browser acceptance to prove Poll error overlays and Wheel info overlays are portalled, fixed, above the sticky header, viewport-contained, dismissible, and time-bounded on production builds.

@@ -27,6 +27,7 @@ import { useCoordinatedPollRefresh } from "../polls/live";
 import { usePageSeo } from "../seo/SeoProvider";
 import type { SeoDocument } from "../../seo/site-seo.js";
 import { GalleryHeroAtmosphere, PollSignalDiagram } from "../components/GalleryHeroVisuals";
+import { EphemeralNotices } from "../components/EphemeralNotices";
 import { useMotionGate } from "../hooks/useMotionGate";
 import "../styles/polls.css";
 import "../styles/gallery-heroes.css";
@@ -337,16 +338,7 @@ function PollQuickView({
           </button>
         </PollCover>
         <ResultOptions poll={poll} busy={busy} vote={vote} />
-        {notice ? (
-          <p className="poll-notice" role="status">
-            {notice}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="poll-error" role="alert">
-            {error}
-          </p>
-        ) : null}
+        <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
           <Link to={`/polls/${poll.slug}`}>Full Poll</Link>
           <a
@@ -508,16 +500,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
             will animate this stage.
           </p>
         ) : null}
-        {notice ? (
-          <p className="poll-notice" role="status">
-            {notice}
-          </p>
-        ) : null}
-        {error ? (
-          <p className="poll-error" role="alert">
-            {error}
-          </p>
-        ) : null}
+        <EphemeralNotices notice={notice} error={error} noticeTitle="Poll updated" errorTitle="Poll action unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
           <strong>
             {poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}
@@ -822,16 +805,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
           </button>
         </div>
       </header>
-      {error ? (
-        <p className="container poll-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {notice ? (
-        <p className="container poll-notice" role="status">
-          {notice}
-        </p>
-      ) : null}
+      <EphemeralNotices notice={notice} error={error} noticeTitle="Poll draft updated" errorTitle="Poll could not be updated" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
       <div className="container poll-editor__layout">
         <div>
           <section className="poll-editor-panel">
