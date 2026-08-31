@@ -73,6 +73,23 @@ test("Wheels and Polls gallery heroes share premium motion, feature diagrams, re
     assert.equal(await hero.getAttribute("data-motion"), "static");
     const animationNames = await hero.locator(route === "wheels" ? ".hero-wheel__ring,.hero-wheel__inner-orbit,.gallery-hero__grid-field" : ".poll-signal-diagram__links .is-live,.poll-signal-result,.gallery-hero__grid-field").evaluateAll((nodes) => nodes.map((node) => getComputedStyle(node).animationName));
     assert.ok(animationNames.every((name) => name === "none"), JSON.stringify({ route, animationNames }));
+    if (route === "wheels") {
+      const markerAngles = await hero.locator(".hero-wheel__ring").evaluate((ring) => {
+        const bounds = ring.getBoundingClientRect();
+        const centre = { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
+        return [...ring.querySelectorAll(":scope > i")].map((marker) => {
+          const markerBounds = marker.getBoundingClientRect();
+          const dx = markerBounds.left + markerBounds.width / 2 - centre.x;
+          const dy = markerBounds.top + markerBounds.height / 2 - centre.y;
+          return (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+        });
+      });
+      const segmentCentres = [356.2, 34, 79, 125.8, 172.6, 217.6, 260.8, 311.2];
+      markerAngles.forEach((angle, index) => {
+        const delta = Math.abs(((angle - segmentCentres[index] + 540) % 360) - 180);
+        assert.ok(delta < .35, JSON.stringify({ markerAngles, segmentCentres, index, delta }));
+      });
+    }
     await hero.screenshot({ path: `${ARTIFACTS}/${route}-reduced-motion-1440x900.png` });
     await context.close();
   }

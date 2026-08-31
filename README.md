@@ -1,5 +1,13 @@
 # Third Railify V2 public site
 
+## Public Polls V1.1 (local implementation)
+
+Poll creation now discovers the signed-in creator's current Rumble source from the bot heartbeat instead of asking for an opaque source ID. Healthy discovery shows the creator name and detected live streams, supports automatic or explicit stream selection, and keeps a clearly separated advanced/custom source path. Stale or offline bot state is shown honestly and never manufactures a source from the provider `now` timestamp or grants Poll automation access.
+
+The editor is rebuilt around Poll identity, optional Poll/option imagery, voting access, Rumble automation, appearance, and lifecycle. Images are submitted through the same-origin authenticated/CSRF-protected relay and remain Admin-owned; the Public app stores no R2 credentials. Gallery cards, quick view, detail, and popout share one theme/media presentation with generated artwork when no upload exists. A six-digit accent is validated server-side. On the detail page, an open Poll's logged-in owner alone sees a revision-checked **Close Poll** action and can end it without leaving the page.
+
+Local rollout requires Admin migration `0027_polls_v11_media.sql`, then the Admin API/media worker, bot heartbeat adapter, and Public app. No deployment, remote migration, D1/R2 write, provider request, bot restart, secret, or DNS change was performed.
+
 ## Current commerce catalogue boundary (local implementation)
 
 The same-origin catalogue proxy now carries a sanitized current-product count from Admin and fails closed if a reconciled Public projection exceeds that authority. There is still no Public Commerce D1 binding, provider credential, raw provider identity, or runtime Wix/static merge. Product/category/search/Featured/SEO surfaces continue to derive from the one Admin-owned current projection.

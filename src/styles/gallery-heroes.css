@@ -282,14 +282,14 @@
   box-shadow: 0 0 16px 2px rgba(243, 201, 40, .8);
 }
 
-.hero-wheel__ring i:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(2) { transform: translate(-50%, -50%) rotate(45deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(3) { transform: translate(-50%, -50%) rotate(90deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(4) { transform: translate(-50%, -50%) rotate(135deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(5) { transform: translate(-50%, -50%) rotate(180deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(6) { transform: translate(-50%, -50%) rotate(225deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(7) { transform: translate(-50%, -50%) rotate(270deg) translateY(calc(-1 * var(--marker-radius))); }
-.hero-wheel__ring i:nth-child(8) { transform: translate(-50%, -50%) rotate(315deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(1) { transform: translate(-50%, -50%) rotate(-3.8deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(2) { transform: translate(-50%, -50%) rotate(34deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(3) { transform: translate(-50%, -50%) rotate(79deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(4) { transform: translate(-50%, -50%) rotate(125.8deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(5) { transform: translate(-50%, -50%) rotate(172.6deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(6) { transform: translate(-50%, -50%) rotate(217.6deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(7) { transform: translate(-50%, -50%) rotate(260.8deg) translateY(calc(-1 * var(--marker-radius))); }
+.hero-wheel__ring i:nth-child(8) { transform: translate(-50%, -50%) rotate(311.2deg) translateY(calc(-1 * var(--marker-radius))); }
 
 .hero-wheel__inner-orbit {
   position: absolute;

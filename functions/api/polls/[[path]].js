@@ -12,7 +12,7 @@ export async function onRequest(context) {
     const path = new URL(request.url).pathname.slice(PREFIX.length).replace(/^\/+|\/+$/g, "");
     const session = await resolveSession(env, request).catch(() => null);
     if (request.method === "GET" || request.method === "HEAD") return await read(request, env, path, session, context.data?.pollsFetch || fetch);
-    if (!new Set(["POST", "PUT"]).has(request.method)) throw failure(405, "method_not_allowed", "This Poll method is not allowed.");
+    if (!new Set(["POST", "PUT", "DELETE"]).has(request.method)) throw failure(405, "method_not_allowed", "This Poll method is not allowed.");
     requirePublicOrigin(request, env);
     return await write(request, env, path, session, context.data?.pollsFetch || fetch);
   } catch (error) { return publicError(error); }
@@ -20,7 +20,11 @@ export async function onRequest(context) {
 
 async function read(request, env, path, session, fetchImpl) {
   const url = new URL(request.url);
-  if (path === "access" || path === "mine") {
+  if (/^media\/[A-Za-z0-9_-]{16,80}$/.test(path)) {
+    if (session) return signedRelay(env, fetchImpl, "POST", `/api/polls/internal/${path}`, { accountId: session.accountId }, { rawResponse: true });
+    return boundedFetch(fetchImpl, adminUrl(env, `/api/polls/${path}`), { method: request.method, headers: { Accept: "image/*" } });
+  }
+  if (path === "access" || path === "mine" || path === "discovery") {
     if (!session) throw failure(401, "authentication_required", "Sign in to view creator access.");
     return signedRelay(env, fetchImpl, "POST", `/api/polls/internal/${path}`, { accountId: session.accountId });
   }
@@ -31,6 +35,12 @@ async function read(request, env, path, session, fetchImpl) {
 }
 
 async function write(request, env, path, session, fetchImpl) {
+  const mediaPath = path.match(/^([a-z0-9][a-z0-9-]{0,79})\/media\/(banner|option)(?:\/([A-Za-z0-9_-]{8,180}))?$/i);
+  if (mediaPath && request.method === "POST" && String(request.headers.get("content-type") || "").toLowerCase().startsWith("multipart/form-data")) {
+    if (!session) throw failure(401, "authentication_required", "Sign in to manage Poll images.");
+    await requireCsrf(request, session);
+    return relayMediaUpload(request, env, fetchImpl, path, session.accountId);
+  }
   const input = await readInput(request);
   if (path.endsWith("/vote")) {
     const slug = path.slice(0, -5).replace(/\/+$/, "");
@@ -48,6 +58,7 @@ async function write(request, env, path, session, fetchImpl) {
   if (!path && request.method === "POST") internal = "create";
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{0,79}$/i.test(path)) internal = `${path}/save`;
   else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/lifecycle$/i.test(path)) internal = path;
+  else if (request.method === "DELETE" && mediaPath) internal = path;
   else throw failure(404, "poll_route_not_found", "The Poll action was not found.");
   return signedRelay(env, fetchImpl, request.method, `/api/polls/internal/${encodePath(internal)}`, { accountId: session.accountId, input });
 }
@@ -58,7 +69,21 @@ async function signedRelay(env, fetchImpl, method, pathname, payload, options = 
   const timestamp = String(Math.floor(Date.now() / 1000)); const requestId = crypto.randomUUID(); const digest = await digestHex(encoder.encode(body));
   const signature = await hmacSha256(secret, `${method}\n${pathname}\n${timestamp}\n${requestId}\n${digest}`);
   const response = await boundedFetch(fetchImpl, adminUrl(env, pathname), { method, redirect: "manual", headers: { Accept: "application/json", "Content-Type": "application/json", "X-ThirdRailify-Timestamp": timestamp, "X-ThirdRailify-Request-Id": requestId, "X-ThirdRailify-Signature": signature }, body });
+  if (options.rawResponse) return response;
   return forward(response, "no-store", options.returnResponse);
+}
+
+async function relayMediaUpload(request, env, fetchImpl, path, accountId) {
+  const declared = Number(request.headers.get("content-length") || 0); if (Number.isFinite(declared) && declared > 9 * 1024 * 1024) throw failure(413, "request_too_large", "The Poll image request is too large.");
+  let data; try { data = await request.formData(); } catch { throw failure(400, "poll_media_form_invalid", "The Poll image upload could not be read."); }
+  const file = data.get("image"); if (!file || typeof file === "string" || typeof file.arrayBuffer !== "function") throw failure(400, "poll_media_file_required", "Choose a JPG, PNG, or WebP image.");
+  const form = new FormData(); form.set("accountId", accountId); form.set("image", file, file.name || "poll-image");
+  const prepared = new Request("https://internal.invalid/", { method: "POST", body: form }); const bytes = new Uint8Array(await prepared.arrayBuffer());
+  if (bytes.byteLength > 9 * 1024 * 1024) throw failure(413, "request_too_large", "The Poll image request is too large.");
+  const pathname = `/api/polls/internal/${encodePath(path)}`; const secret = String(env?.THIRDRAILIFY_COMMUNITY_API_SECRET || ""); if (!secret) throw failure(503, "polls_api_not_configured", "The Poll authority is not configured.");
+  const timestamp = String(Math.floor(Date.now() / 1000)); const requestId = crypto.randomUUID(); const digest = await digestHex(bytes); const signature = await hmacSha256(secret, `POST\n${pathname}\n${timestamp}\n${requestId}\n${digest}`);
+  const response = await boundedFetch(fetchImpl, adminUrl(env, pathname), { method: "POST", redirect: "manual", headers: { Accept: "application/json", "Content-Type": prepared.headers.get("content-type"), "X-ThirdRailify-Timestamp": timestamp, "X-ThirdRailify-Request-Id": requestId, "X-ThirdRailify-Signature": signature }, body: bytes });
+  return forward(response, "no-store");
 }
 
 async function anonymousIdentity(request, env) {

@@ -12,14 +12,17 @@ import {
   createPoll,
   getCreatorAccess,
   getPoll,
+  getRumbleDiscovery,
   lifecyclePoll,
   listPolls,
+  removePollMedia,
   savePoll,
+  uploadPollMedia,
   votePoll,
   type PollError,
 } from "../polls/client";
 import { matchPollTrigger, normalizePollTrigger } from "../polls/normalization";
-import type { Poll } from "../polls/types";
+import type { Poll, PollAccess, PollMediaAsset, RumbleDiscovery } from "../polls/types";
 import { useCoordinatedPollRefresh } from "../polls/live";
 import { usePageSeo } from "../seo/SeoProvider";
 import type { SeoDocument } from "../../seo/site-seo.js";
@@ -185,32 +188,46 @@ export function PollsPage() {
   );
 }
 
+function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: boolean; children?: React.ReactNode }) {
+  const accent = poll.theme?.accent || "#f3c928";
+  return (
+    <div className={`poll-cover${compact ? " poll-cover--compact" : ""}${poll.media?.banner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
+      {poll.media?.banner ? <img src={poll.media.banner.url} alt={`${poll.title} cover`} /> : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
+      <div className="poll-cover__shade" />
+      {children}
+    </div>
+  );
+}
+
 function PollCard({
   poll,
   onQuickView,
+  preview = false,
 }: {
   poll: Poll;
   onQuickView: (poll: Poll) => void;
+  preview?: boolean;
 }) {
-  const leading = [...poll.options].sort((a, b) => b.votes - a.votes)[0];
+  const ranked = [...poll.options].sort((a, b) => b.votes - a.votes);
+  const leading = ranked[0];
+  const tied = Boolean(leading && ranked[1] && leading.votes === ranked[1].votes);
   return (
-    <article className={`poll-card poll-card--${poll.state}`}>
-      <button
+    <article className={`poll-card poll-card--${poll.state}`} style={{ "--poll-accent": poll.theme?.accent || "#f3c928" } as React.CSSProperties}>
+      {!preview ? <button
         className="poll-card__quick"
         type="button"
         onClick={() => onQuickView(poll)}
         aria-label={`Quick view ${poll.title}`}
-      />
-      <div className="poll-card__signal">
-        <Status poll={poll} />
-        <span>{poll.rumbleEnabled ? "Rumble + Web" : "Web"}</span>
-      </div>
-      <div>
-        <p className="eyebrow">
-          {poll.webVotingMode === "anyone"
-            ? "OPEN AUDIENCE"
-            : "SIGNED-IN AUDIENCE"}
-        </p>
+      /> : null}
+      <PollCover poll={poll} compact>
+        <div className="poll-card__signal">
+          <Status poll={poll} />
+          <span>{poll.rumbleEnabled ? "RUMBLE + WEB" : "WEB"}</span>
+          <span>{poll.webVotingMode === "anyone" ? "OPEN ACCESS" : "SIGNED IN"}</span>
+        </div>
+      </PollCover>
+      <div className="poll-card__identity">
+        <p className="eyebrow">BY {poll.owner.displayName}</p>
         <h3>{poll.title}</h3>
         <p>{poll.description || "A Third Railify audience Poll."}</p>
       </div>
@@ -220,12 +237,13 @@ function PollCard({
             width: `${poll.totalVotes && leading ? Math.round((leading.votes / poll.totalVotes) * 100) : 0}%`,
           }}
         />
-        <strong>{leading ? leading.label : "Awaiting first vote"}</strong>
+        {leading?.image ? <img src={leading.image.url} alt="" /> : null}
+        <strong>{leading ? `${poll.state === "closed" && !tied && poll.totalVotes ? "LEADING · " : ""}${leading.label}` : "Awaiting first vote"}</strong>
         <b>
           {poll.totalVotes} vote{poll.totalVotes === 1 ? "" : "s"}
         </b>
       </div>
-      <footer>
+      {!preview ? <footer>
         <span>
           By {poll.owner.displayName} ·{" "}
           {poll.closedAt
@@ -241,7 +259,7 @@ function PollCard({
         >
           Open detail ↗
         </Link>
-      </footer>
+      </footer> : null}
     </article>
   );
 }
@@ -308,16 +326,16 @@ function PollQuickView({
         aria-labelledby="poll-quick-title"
         ref={root}
       >
-        <header>
-          <div>
+        <PollCover poll={poll}>
+          <div className="poll-modal__cover-copy">
             <Status poll={poll} />
             <h2 id="poll-quick-title">{poll.title}</h2>
             <p>By {poll.owner.displayName}</p>
           </div>
-          <button ref={close} type="button" onClick={onClose}>
-            Close
+          <button ref={close} className="poll-modal__close" type="button" onClick={onClose} aria-label="Close Poll quick view">
+            <span aria-hidden="true">&times;</span>
           </button>
-        </header>
+        </PollCover>
         <ResultOptions poll={poll} busy={busy} vote={vote} />
         {notice ? (
           <p className="poll-notice" role="status">
@@ -348,7 +366,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   const { slug = "" } = useParams();
   const { account, csrfToken, openAuth } = useAuth();
   const [poll, setPoll] = useState<Poll | null>(null);
-  const [access, setAccess] = useState({ canManage: false });
+  const [access, setAccess] = useState<PollAccess>({ canManage: false, canManageAll: false, isOwner: false });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState("");
@@ -413,14 +431,21 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
       setBusy("");
     }
   };
+  const closeOwnedPoll = async () => {
+    if (!poll || !access.isOwner || !csrfToken || poll.state !== "open") return;
+    setBusy("close"); setError("");
+    try { const result = await lifecyclePoll(poll.slug, poll.revision, "close", csrfToken); setPoll(result.poll); setNotice("Poll closed. Final results are now settled."); }
+    catch (reason) { setError(message(reason)); void load(true); }
+    finally { setBusy(""); }
+  };
   if (loading) return <State title="Loading Poll…" />;
   if (!poll)
     return <State kind="error" title="Poll unavailable" copy={error} />;
   return (
     <div className={popout ? "poll-popout" : "poll-detail-page"}>
-      <section className="poll-stage">
-        <header>
-          <div>
+      <section className="poll-stage" style={{ "--poll-accent": poll.theme?.accent || "#f3c928" } as React.CSSProperties}>
+        <PollCover poll={poll}>
+          <div className="poll-stage__cover-copy">
             <Status poll={poll} />
             <p className="eyebrow">
               {poll.rumbleEnabled ? "WEB + RUMBLE LIVE CHAT" : "WEB POLL"}
@@ -447,6 +472,11 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
                   Edit Poll
                 </Link>
               ) : null}
+              {access.isOwner && poll.state === "open" ? (
+                <button className="button poll-owner-close" type="button" disabled={Boolean(busy)} onClick={() => void closeOwnedPoll()}>
+                  {busy === "close" ? "Closing…" : "Close Poll"}
+                </button>
+              ) : null}
               <button
                 className="button button--ghost"
                 onClick={() =>
@@ -465,7 +495,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
               </a>
             </div>
           ) : null}
-        </header>
+        </PollCover>
         <ResultOptions
           poll={poll}
           busy={busy}
@@ -524,7 +554,7 @@ function ResultOptions({
           : 0;
         const current = poll.currentVoteOptionId === option.id;
         return (
-          <article key={option.id} className={current ? "is-current" : ""}>
+          <article key={option.id} className={`${current ? "is-current" : ""}${option.image ? " has-image" : ""}`}>
             <div
               className="poll-option__bar"
               style={
@@ -534,7 +564,8 @@ function ResultOptions({
                 } as React.CSSProperties
               }
             />
-            <div>
+            {option.image ? <img className="poll-option__image" src={option.image.url} alt={`${option.label} option`} /> : null}
+            <div className="poll-option__identity">
               <span>{String(option.position + 1).padStart(2, "0")}</span>
               <strong>{option.label}</strong>
               {option.description ? <small>{option.description}</small> : null}
@@ -566,6 +597,9 @@ type EditorOption = {
   label: string;
   description: string;
   trigger: string;
+  image?: PollMediaAsset | null;
+  imageFile?: File | null;
+  imagePreview?: string;
 };
 export function PollEditorPage({ create = false }: { create?: boolean }) {
   const { slug = "" } = useParams();
@@ -580,10 +614,18 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   );
   const [rumbleEnabled, setRumbleEnabled] = useState(false);
   const [sourceScope, setSourceScope] = useState("");
+  const [customSource, setCustomSource] = useState(false);
+  const [discovery, setDiscovery] = useState<RumbleDiscovery | null>(null);
+  const [discoveryLoading, setDiscoveryLoading] = useState(true);
   const [livestreamMode, setLivestreamMode] = useState<"automatic" | "exact">(
     "automatic",
   );
+  const [streamChoice, setStreamChoice] = useState<"automatic" | "detected" | "custom">("automatic");
   const [livestreamId, setLivestreamId] = useState("");
+  const [themeAccent, setThemeAccent] = useState("#f3c928");
+  const [customTint, setCustomTint] = useState(false);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState("");
   const [options, setOptions] = useState<EditorOption[]>([
     { label: "Option one", description: "", trigger: "1" },
     { label: "Option two", description: "", trigger: "2" },
@@ -610,17 +652,33 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
           setSourceScope(poll.rumbleSourceScope || "");
           setLivestreamMode(poll.livestreamMode || "automatic");
           setLivestreamId(poll.livestreamId || "");
+          setStreamChoice(poll.livestreamMode === "exact" ? "custom" : "automatic");
+          setThemeAccent(poll.theme?.accent || "#f3c928");
           setOptions(
             poll.options.map((option) => ({
               id: option.id,
               label: option.label,
               description: option.description || "",
               trigger: option.trigger,
+              image: option.image || null,
             })),
           );
         })
         .catch((reason) => setError(message(reason)));
   }, [account, create, slug]);
+  useEffect(() => {
+    if (!account) return;
+    setDiscoveryLoading(true);
+    void getRumbleDiscovery().then((value) => {
+      setDiscovery(value);
+      if (create && !sourceScope && value.source && value.botState !== "offline") setSourceScope(value.source.scope);
+    }).catch(() => setDiscovery(null)).finally(() => setDiscoveryLoading(false));
+  }, [account, create]);
+  useEffect(() => {
+    if (!source || !discovery?.source) return;
+    setCustomSource(source.rumbleSourceScope !== discovery.source.scope);
+    if (source.livestreamMode === "exact") setStreamChoice(discovery.livestreams.some((item) => item.id === source.livestreamId) ? "detected" : "custom");
+  }, [discovery, source]);
   const normalized = options.map((option) =>
     normalizePollTrigger(option.trigger),
   );
@@ -633,6 +691,9 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     (option) => option.trigger && matchPollTrigger(option.trigger, testMessage),
   );
   const structuralLocked = source?.state === "open";
+  const liveStreams = discovery?.livestreams.filter((item) => item.isLive) || [];
+  const streamNeedsChoice = rumbleEnabled && streamChoice === "automatic" && liveStreams.length > 1;
+  const sourceInvalid = rumbleEnabled && !/^(?:user|channel):[A-Za-z0-9_-]{1,180}$/.test(sourceScope);
   const payload = () => ({
     title,
     description,
@@ -643,28 +704,49 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     livestreamId,
     requestedIntervalSeconds: 15,
     revision: source?.revision,
-    options: options.map((option) => ({ ...option })),
+    theme: { accent: themeAccent, layout: "bars" },
+    options: options.map((option) => ({ id: option.id, label: option.label, description: option.description, trigger: option.trigger })),
   });
   const save = async (event: FormEvent) => {
     event.preventDefault();
-    if (!csrfToken || collisions.size) return;
+    if (!csrfToken || collisions.size || sourceInvalid || streamNeedsChoice) { if (streamNeedsChoice) setError("Several live streams are detected. Choose the stream this Poll should use."); return; }
     setBusy(true);
     setError("");
     try {
       const result = create
         ? await createPoll(payload(), csrfToken)
         : await savePoll(slug, payload(), csrfToken);
-      setSource(result.poll);
+      if (bannerFile) await uploadPollMedia(result.poll.slug, "banner", bannerFile, csrfToken);
+      for (let index = 0; index < options.length; index += 1) if (options[index].imageFile && result.poll.options[index]) await uploadPollMedia(result.poll.slug, "option", options[index].imageFile as File, csrfToken, result.poll.options[index].id);
+      const finalPoll = bannerFile || options.some((item) => item.imageFile) ? (await getPoll(result.poll.slug)).poll : result.poll;
+      setSource(finalPoll); setBannerFile(null); setBannerPreview("");
+      setOptions(finalPoll.options.map((option) => ({ id: option.id, label: option.label, description: option.description || "", trigger: option.trigger, image: option.image || null })));
       setNotice(
         create ? "Draft created." : "Draft saved at the latest revision.",
       );
       if (create)
-        navigate(`/polls/${result.poll.slug}/edit`, { replace: true });
+        navigate(`/polls/${finalPoll.slug}/edit`, { replace: true });
     } catch (reason) {
       setError(message(reason));
     } finally {
       setBusy(false);
     }
+  };
+  const removeBanner = async () => {
+    if (bannerFile) { setBannerFile(null); setBannerPreview(""); return; }
+    if (!source || !csrfToken) return; setBusy(true); try { await removePollMedia(source.slug, "banner", csrfToken); setSource((await getPoll(source.slug)).poll); setNotice("Poll cover removed. The generated fallback is active."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
+  };
+  const removeOptionImage = async (index: number) => {
+    const option = options[index]; if (option.imageFile) { setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: null, imagePreview: "" } : item)); return; }
+    if (!source || !csrfToken || !option.id) return; setBusy(true); try { await removePollMedia(source.slug, "option", csrfToken, option.id); const poll = (await getPoll(source.slug)).poll; setSource(poll); setOptions(poll.options.map((item) => ({ id: item.id, label: item.label, description: item.description || "", trigger: item.trigger, image: item.image || null }))); setNotice("Option image removed."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
+  };
+  const previewPoll: Poll = {
+    id: source?.id || "preview", slug: source?.slug || "preview", title: title || "Your Poll title", description: description || "A polished audience choice, ready for the live signal.", state: source?.state || "draft", public: source?.public || false,
+    webVotingMode, rumbleEnabled, rumbleSourceScope: sourceScope || null, livestreamMode, livestreamId: livestreamId || null, revision: source?.revision || 1, totalVotes: source?.totalVotes || 0,
+    options: options.map((option, index) => ({ id: option.id || `preview-${index}`, position: index, label: option.label || `Option ${index + 1}`, description: option.description || null, trigger: option.trigger, normalizedTrigger: normalizePollTrigger(option.trigger), votes: source?.options[index]?.votes || 0, image: option.imagePreview ? { id: `preview-image-${index}`, purpose: "option", optionId: option.id, url: option.imagePreview, contentType: option.imageFile?.type || "image/png", byteSize: option.imageFile?.size || 0, width: 1, height: 1, createdAt: new Date().toISOString() } : option.image || null })),
+    owner: source?.owner || { id: account?.id || "creator", displayName: account?.displayName || "Poll creator", avatarUrl: account?.avatarUrl || null }, theme: { accent: themeAccent, layout: "bars" },
+    media: { banner: bannerPreview ? { id: "preview-banner", purpose: "banner", url: bannerPreview, contentType: bannerFile?.type || "image/png", byteSize: bannerFile?.size || 0, width: 1, height: 1, createdAt: new Date().toISOString() } : source?.media?.banner || null },
+    updatedAt: source?.updatedAt || new Date().toISOString(), openedAt: source?.openedAt || null, closedAt: source?.closedAt || null,
   };
   const lifecycle = async (
     action: "open" | "close" | "archive" | "restore",
@@ -752,7 +834,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
       <div className="container poll-editor__layout">
         <div>
           <section className="poll-editor-panel">
-            <p className="eyebrow">01 · IDENTITY</p>
+            <p className="eyebrow">01 · POLL IDENTITY</p>
             <label>
               <span>Title</span>
               <input
@@ -772,23 +854,9 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
                 onChange={(event) => setDescription(event.target.value)}
               />
             </label>
-            <label>
-              <span>Web voting</span>
-              <select
-                value={webVotingMode}
-                onChange={(event) =>
-                  setWebVotingMode(event.target.value as "anyone" | "signed_in")
-                }
-              >
-                <option value="anyone">
-                  Anyone — signed anonymous cookie or account
-                </option>
-                <option value="signed_in">Signed-in accounts only</option>
-              </select>
-            </label>
           </section>
           <section className="poll-editor-panel">
-            <p className="eyebrow">02 · OPTIONS + EXACT TRIGGERS</p>
+            <p className="eyebrow">02 · OPTIONS</p>
             <p>
               Leading and trailing spaces and letter case are ignored. The
               entire chat message must equal the trigger.
@@ -836,6 +904,15 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
                       }
                     />
                   </label>
+                  <label className="poll-editor-option__description">
+                    <b>Short description</b>
+                    <input value={option.description} maxLength={240} disabled={structuralLocked} onChange={(event) => setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item))} />
+                  </label>
+                  <div className="poll-editor-option__media">
+                    {option.imagePreview || option.image ? <img src={option.imagePreview || option.image?.url} alt={`${option.label} preview`} /> : <span>IMAGE OPTIONAL</span>}
+                    <label><b>1:1 image</b><input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={(event) => { const file = event.target.files?.[0] || null; setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: file, imagePreview: file ? URL.createObjectURL(file) : "" } : item)); }} /></label>
+                    {option.imagePreview || option.image ? <button type="button" onClick={() => void removeOptionImage(index)}>Remove image</button> : null}
+                  </div>
                   <div className="poll-editor-option__order" aria-label={`Reorder ${option.label}`}>
                     <button
                       type="button"
@@ -898,55 +975,40 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
             ) : null}
           </section>
           <section className="poll-editor-panel">
-            <p className="eyebrow">03 · RUMBLE VOTING</p>
-            <label className="poll-toggle">
-              <input
-                type="checkbox"
-                checked={rumbleEnabled}
-                onChange={(event) => setRumbleEnabled(event.target.checked)}
-              />
-              <span>Enable exact-chat voting when this Poll opens</span>
-            </label>
-            {rumbleEnabled ? (
-              <>
-                <label>
-                  <span>Source scope</span>
-                  <input
-                    value={sourceScope}
-                    onChange={(event) => setSourceScope(event.target.value)}
-                    placeholder="user:12345 or channel:12345"
-                  />
-                </label>
-                <label>
-                  <span>Livestream selection</span>
-                  <select
-                    value={livestreamMode}
-                    onChange={(event) =>
-                      setLivestreamMode(
-                        event.target.value as "automatic" | "exact",
-                      )
-                    }
-                  >
-                    <option value="automatic">
-                      Exactly one current live stream
-                    </option>
-                    <option value="exact">Exact live stream ID</option>
-                  </select>
-                </label>
-                {livestreamMode === "exact" ? (
-                  <label>
-                    <span>Livestream ID</span>
-                    <input
-                      value={livestreamId}
-                      onChange={(event) => setLivestreamId(event.target.value)}
-                    />
-                  </label>
-                ) : null}
-              </>
-            ) : null}
+            <p className="eyebrow">03 · VOTING ACCESS</p>
+            <label><span>Web voting</span><select value={webVotingMode} onChange={(event) => setWebVotingMode(event.target.value as "anyone" | "signed_in")}><option value="anyone">Anyone — anonymous cookie or account</option><option value="signed_in">Signed-in accounts only</option></select></label>
+          </section>
+          <section className="poll-editor-panel poll-rumble-config">
+            <p className="eyebrow">04 · RUMBLE AUTOMATION</p>
+            <label className="poll-toggle"><input type="checkbox" checked={rumbleEnabled} onChange={(event) => setRumbleEnabled(event.target.checked)} /><span>Enable exact-chat voting when this Poll opens</span></label>
+            {rumbleEnabled ? <>
+              <div className={`poll-discovery-state poll-discovery-state--${discovery?.botState || "offline"}`}><strong>{discoveryLoading ? "Detecting Rumble source…" : discovery?.source && discovery.botState !== "offline" ? "Bot discovery connected" : "Rumble source discovery temporarily unavailable."}</strong><span>{discovery?.freshness ? `${discovery.botState} · heartbeat ${discovery.freshness.ageSeconds}s ago` : "Disable automation or use the advanced source field."}</span></div>
+              {!customSource && discovery?.source ? <label><span>Rumble source</span><select value={sourceScope} onChange={(event) => setSourceScope(event.target.value)}><option value={discovery.source.scope}>{discovery.source.displayName}</option>{sourceScope !== discovery.source.scope ? <option value={sourceScope}>{sourceScope.replace(/^(?:user|channel):/, "Saved source · ")}</option> : null}</select><small>Detected from Third Railify Bot · {discovery.source.type} source</small></label> : null}
+              {!customSource && !discovery?.source && sourceScope ? <div className="poll-saved-source"><strong>Saved Rumble source</strong><span>{sourceScope.replace(/^(user|channel):/, "$1 source · ")}</span></div> : null}
+              <button className="poll-advanced-toggle" type="button" onClick={() => setCustomSource((value) => !value)}>{customSource ? "Use detected source" : "Advanced / Custom source"}</button>
+              {customSource ? <label><span>Canonical source scope</span><input value={sourceScope} onChange={(event) => setSourceScope(event.target.value.trim())} placeholder="user:id or channel:id" className={sourceInvalid ? "is-invalid" : ""} /><small>Advanced only. The provider response timestamp is not a source ID.</small></label> : null}
+              <fieldset className="poll-stream-choices"><legend>Live stream</legend>
+                <label><input type="radio" name="stream-choice" checked={streamChoice === "automatic"} onChange={() => { setStreamChoice("automatic"); setLivestreamMode("automatic"); setLivestreamId(""); }} /><span><strong>Automatically use the current live stream</strong><small>The bot attaches this Poll when exactly one Rumble stream is active.</small></span></label>
+                {streamChoice === "automatic" ? <div className="poll-stream-current">{liveStreams.length === 1 ? <><b>LIVE</b><strong>{liveStreams[0].title}</strong><span>{liveStreams[0].watchingNow ?? 0} watching now</span></> : liveStreams.length === 0 ? <span>No live stream currently detected</span> : <strong>Multiple live streams detected — choose one below.</strong>}</div> : null}
+                <label><input type="radio" name="stream-choice" checked={streamChoice === "detected"} disabled={!discovery?.livestreams.length} onChange={() => { setStreamChoice("detected"); setLivestreamMode("exact"); setLivestreamId(liveStreams.length === 1 ? liveStreams[0].id : ""); }} /><span><strong>Choose a detected stream</strong><small>Select by title; the safe provider ID stays technical metadata.</small></span></label>
+                {streamChoice === "detected" ? <label className="poll-stream-select"><span>Detected stream</span><select required value={livestreamId} onChange={(event) => setLivestreamId(event.target.value)}><option value="">Choose a stream</option>{discovery?.livestreams.map((stream) => <option key={stream.id} value={stream.id}>{stream.isLive ? "LIVE · " : ""}{stream.title}</option>)}</select>{livestreamId ? <small>Stream reference: {livestreamId}</small> : null}</label> : null}
+                <label><input type="radio" name="stream-choice" checked={streamChoice === "custom"} onChange={() => { setStreamChoice("custom"); setLivestreamMode("exact"); }} /><span><strong>Advanced / custom stream reference</strong><small>Use only when the bot cannot detect a known stream.</small></span></label>
+                {streamChoice === "custom" ? <label className="poll-stream-select"><span>Livestream reference</span><input required value={livestreamId} onChange={(event) => setLivestreamId(event.target.value.trim())} /></label> : null}
+              </fieldset>
+            </> : null}
+          </section>
+          <section className="poll-editor-panel poll-appearance">
+            <p className="eyebrow">05 · APPEARANCE</p>
+            <div className="poll-cover-editor"><div>{bannerPreview || source?.media?.banner ? <img src={bannerPreview || source?.media?.banner?.url} alt="Poll cover preview" /> : <PollCover poll={previewPoll} compact />}</div><label><span>Poll cover</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0] || null; setBannerFile(file); setBannerPreview(file ? URL.createObjectURL(file) : ""); }} /></label>{bannerPreview || source?.media?.banner ? <button type="button" onClick={() => void removeBanner()}>Remove cover</button> : <small>Generated electric artwork is used when no image is set.</small>}</div>
+            <fieldset className="poll-tint-picker"><legend>Feature tint</legend>{[["Gold","#f3c928"],["Violet","#8f6cff"],["Magenta","#ed4da9"],["Electric blue","#36a9ff"],["Red","#e34b5f"]].map(([label, value]) => <button key={value} type="button" className={themeAccent === value ? "is-selected" : ""} style={{ "--swatch": value } as React.CSSProperties} onClick={() => { setThemeAccent(value); setCustomTint(false); }}><i />{label}</button>)}<button type="button" className={customTint ? "is-selected" : ""} onClick={() => setCustomTint(true)}><i className="is-custom" />Custom</button></fieldset>
+            {customTint ? <label><span>Custom six-digit hex</span><input type="text" pattern="#[0-9A-Fa-f]{6}" value={themeAccent} onChange={(event) => setThemeAccent(event.target.value)} /></label> : null}
           </section>
         </div>
         <aside>
+          <section className="poll-editor-panel poll-live-preview">
+            <p className="eyebrow">LIVE CARD PREVIEW</p>
+            <PollCard poll={previewPoll} onQuickView={() => undefined} preview />
+          </section>
           <section className="poll-editor-panel trigger-tester">
             <p className="eyebrow">TRIGGER TESTER</p>
             <label>
@@ -974,9 +1036,10 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
           </section>
           {source ? (
             <section className="poll-editor-panel poll-lifecycle">
-              <p className="eyebrow">LIFECYCLE · {source.state}</p>
+              <p className="eyebrow">06 · LIFECYCLE · {source.state}</p>
               {new Set(["draft", "closed"]).has(source.state) ? (
                 <button
+                  className="poll-lifecycle__primary"
                   type="button"
                   onClick={() => void lifecycle("open")}
                   disabled={busy}
@@ -986,6 +1049,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
               ) : null}
               {source.state === "open" ? (
                 <button
+                  className="poll-lifecycle__close"
                   type="button"
                   onClick={() => void lifecycle("close")}
                   disabled={busy}
@@ -995,6 +1059,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
               ) : null}
               {new Set(["draft", "closed"]).has(source.state) ? (
                 <button
+                  className="poll-lifecycle__archive"
                   type="button"
                   onClick={() => void lifecycle("archive")}
                   disabled={busy}
@@ -1004,6 +1069,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
               ) : null}
               {source.state === "archived" ? (
                 <button
+                  className="poll-lifecycle__primary"
                   type="button"
                   onClick={() => void lifecycle("restore")}
                   disabled={busy}
@@ -1011,8 +1077,9 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
                   Restore draft
                 </button>
               ) : null}
+              {busy ? <small className="poll-lifecycle__reason">Finishing the current save or lifecycle command.</small> : null}
             </section>
-          ) : null}
+          ) : <section className="poll-editor-panel poll-lifecycle"><p className="eyebrow">06 · LIFECYCLE</p><button className="poll-lifecycle__primary" type="button" disabled>Open Poll</button><small className="poll-lifecycle__reason">Save this draft before opening.</small></section>}
         </aside>
       </div>
     </form>
