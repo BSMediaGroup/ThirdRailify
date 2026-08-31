@@ -198,6 +198,7 @@ export function HostPage({ hostKey }: { hostKey: HostKey }) {
       <section ref={closingMotion.ref} className={`host-closing${closingMotion.active ? " is-active" : ""}`} aria-labelledby={`${profile.key}-closing-title`} data-motion={closingMotion.active ? "active" : "static"}>
         <EditorialSignalField variant={profile.key} context="closing" />
         <div className="host-closing__rails" aria-hidden="true"><i /><i /><i /></div>
+        <div className="host-closing__telemetry" aria-hidden="true"><span>TR / {profile.key === "shawn" ? "MIC A" : "MIC B"}</span><i /><strong>{profile.output}</strong></div>
         <div className="container host-closing__inner">
           <RadioIcon />
           <p className="eyebrow">The signal is waiting</p>
@@ -244,10 +245,91 @@ function HostVoiceConsole({ profile }: { profile: HostProfile }) {
 }
 
 function TopicInstrument({ type }: { type: HostTopic["instrument"] }) {
-  if (type === "scan") return <div className="host-topic-instrument host-topic-scan" aria-hidden="true"><span>LIVE INPUT / ACQUIRING</span><div><i /><i /><i /></div><svg viewBox="0 0 460 176"><path className="topic-baseline" d="M20 113H440" /><path className="topic-wave topic-trace" pathLength="1" d="M20 113h47l14-13 16 24 20-43 22 58 27-82 31 59 28-31 26 28h36l19-20 24 36 29-63 34 47h67" /><g className="topic-nodes"><circle cx="117" cy="81" r="5" /><circle cx="286" cy="93" r="5" /><circle cx="373" cy="66" r="5" /></g></svg><small>CH 01&nbsp;&nbsp; / &nbsp;&nbsp;SIGNAL LOCK 92%</small></div>;
-  if (type === "case" || type === "mystery") return <div className={`host-topic-instrument host-topic-case host-topic-case--${type}`} aria-hidden="true"><i /><i /><i /><i /><div><span>?</span><b>{type === "case" ? "CASE OPEN" : "LOOK AGAIN"}</b></div><svg viewBox="0 0 460 200"><circle className="topic-orbit" cx="230" cy="100" r="72" /><path className="topic-trace" pathLength="1" d="M48 42 230 100 402 38M84 164 230 100l145 64M48 42l36 122m318-126-27 126" /><path className="topic-trace topic-trace--delay" pathLength="1" d="M84 164 47 118M375 164l41-50" /></svg><small>{type === "case" ? "EVIDENCE PATH / UNRESOLVED" : "UNCERTAINTY MAP / 04 LEADS"}</small></div>;
-  if (type === "culture") return <div className="host-topic-instrument host-topic-culture" aria-hidden="true"><svg viewBox="0 0 460 210"><circle className="culture-ring culture-ring--outer" cx="230" cy="105" r="82" /><circle className="culture-ring" cx="230" cy="105" r="58" /><circle className="culture-ring culture-ring--inner" cx="230" cy="105" r="34" /><path className="culture-sector" d="M230 105 230 23A82 82 0 0 1 301 64Z" /><path className="culture-scan" d="M230 105 307 77" /></svg><div><span>CULTURE</span><b>UNDER REVIEW</b></div><small>SPECTRUM / ACTIVE SECTOR 03</small></div>;
-  if (type === "detour") return <div className="host-topic-instrument host-topic-detour" aria-hidden="true"><svg viewBox="0 0 460 200"><path className="detour-route-shadow" d="M18 126h72c42 0 35-72 86-72s42 104 96 104 42-82 92-82 40 48 82 48" /><path className="detour-route topic-trace" pathLength="1" d="M18 126h72c42 0 35-72 86-72s42 104 96 104 42-82 92-82 40 48 82 48" /><g><circle cx="90" cy="126" r="6" /><circle cx="176" cy="54" r="6" /><circle cx="272" cy="158" r="6" /><circle cx="364" cy="76" r="6" /><circle cx="446" cy="124" r="7" /></g></svg><span>ROUTE RECALCULATING</span><small>4 COURSE CORRECTIONS / DESTINATION FOUND</small></div>;
-  if (type === "wit") return <div className="host-topic-instrument host-topic-wit" aria-hidden="true"><svg viewBox="0 0 460 190"><path className="wit-guide" d="M28 105H432" /><path className="wit-timing topic-trace" pathLength="1" d="M28 105h70v-19h30v19h66v-38h18v38h55l19 0 18-64 18 114 18-50h92" /><g><circle cx="98" cy="105" r="5" /><circle cx="194" cy="105" r="5" /><circle cx="304" cy="105" r="7" /></g></svg><span className="wit-label wit-label--setup">SETUP</span><span className="wit-label wit-label--beat">TIMING</span><span className="wit-label wit-label--point">POINT</span><div><BoltIcon /></div><b>BEAT 03 / OUTPUT SHARP</b></div>;
-  return <div className="host-topic-instrument host-topic-identity" aria-hidden="true"><svg viewBox="0 0 460 210"><circle className="identity-orbit" cx="230" cy="105" r="76" /><circle className="identity-orbit identity-orbit--inner" cx="230" cy="105" r="49" /><path className="identity-feed" d="M18 134c54 0 58-35 103-35s48 35 91 35 52-35 94-35 47 35 136 35" /><path className="identity-solo topic-trace" pathLength="1" d="M18 154c63 0 66-11 111-11s52 11 92 11 51-62 93-62 52 62 128 62" /></svg><div><BoltIcon /></div><span>JUST</span><strong>GINA</strong><i>OWN FREQUENCY / LOCKED</i></div>;
+  if (type === "scan") return (
+    <div className="host-topic-instrument host-topic-scan" aria-hidden="true">
+      <InstrumentChrome channel="CH 01 / LIVE INPUT" status="ACQUIRING" />
+      <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+        <g className="topic-scale"><path d="M30 58H570M30 108H570M30 158H570" /><text x="32" y="52">+12</text><text x="32" y="102">00</text><text x="32" y="152">-12</text></g>
+        <path className="topic-baseline" d="M55 124H565" />
+        <path className="topic-wave topic-wave--ghost" d="M55 124h61l17-18 21 35 24-71 28 109 31-137 38 98 35-45 31 29h41l25-27 28 51 33-91 41 67h76" />
+        <path className="topic-wave topic-trace" pathLength="1" d="M55 124h61l17-18 21 35 24-71 28 109 31-137 38 98 35-45 31 29h41l25-27 28 51 33-91 41 67h76" />
+        <g className="topic-nodes"><circle cx="178" cy="53" r="7" /><circle cx="341" cy="124" r="7" /><circle cx="478" cy="57" r="7" /></g>
+        <circle className="topic-packet topic-packet--scan" cx="0" cy="0" r="4" />
+      </svg>
+      <span className="host-topic-instrument__probe" /><small>SIGNAL LOCK 92% / HUMAN READ ACTIVE</small>
+    </div>
+  );
+  if (type === "case" || type === "mystery") {
+    const isMystery = type === "mystery";
+    return (
+      <div className={`host-topic-instrument host-topic-case host-topic-case--${type}`} aria-hidden="true">
+        <InstrumentChrome channel={isMystery ? "04 / UNCERTAINTY MAP" : "02 / EVIDENCE MAP"} status={isMystery ? "CLOSER INSPECTION" : "QUESTIONS REMAIN"} />
+        <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+          <g className="case-orbits"><circle cx="300" cy="113" r="82" /><circle className="topic-orbit" cx="300" cy="113" r="55" /></g>
+          <g className="case-paths">
+            <path className="topic-trace" pathLength="1" d={isMystery ? "M62 50 164 165 300 113 454 53 520 168M164 165 112 88M454 53l66 115" : "M58 47 300 113 531 43M108 177 300 113l195 64M58 47l50 130m423-134-36 134"} />
+            <path className="topic-trace topic-trace--delay" pathLength="1" d={isMystery ? "M62 50 112 88 300 113M520 168 454 53" : "M108 177 58 132M495 177l52-61"} />
+          </g>
+          <g className="case-nodes"><circle cx="58" cy="47" r="6" /><circle cx="531" cy="43" r="6" /><circle cx="108" cy="177" r="6" /><circle cx="495" cy="177" r="6" /></g>
+          <g className="case-core"><circle cx="300" cy="113" r="48" /><text className="case-core__question" x="300" y="118">?</text><text className="case-core__label" x="300" y="144">{isMystery ? "LOOK AGAIN" : "CASE OPEN"}</text></g>
+        </svg>
+        <span className="host-topic-instrument__probe" /><small>{isMystery ? "04 LEADS / CERTAINTY WITHHELD" : "EVIDENCE PATH / ANSWER UNRESOLVED"}</small>
+      </div>
+    );
+  }
+  if (type === "culture") return (
+    <div className="host-topic-instrument host-topic-culture" aria-hidden="true">
+      <InstrumentChrome channel="03 / CULTURE SCOPE" status="READ THE ROOM" />
+      <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+        <g className="culture-crosshair"><path d="M60 113H540M300 21V205" /></g>
+        <g className="culture-orbits"><circle className="culture-ring culture-ring--outer" cx="300" cy="113" r="88" /><circle className="culture-ring" cx="300" cy="113" r="64" /><circle className="culture-ring culture-ring--inner" cx="300" cy="113" r="39" /></g>
+        <g className="culture-ticks"><path d="M300 15v12M300 199v12M202 113h12M386 113h12M231 44l9 9M360 173l9 9M369 44l-9 9M240 173l-9 9" /></g>
+        <path className="culture-sector" d="M300 113 300 25A88 88 0 0 1 376 69Z" /><path className="culture-scan" d="M300 113 382 83" />
+        <g className="culture-core"><rect x="238" y="82" width="124" height="62" rx="31" /><text x="300" y="113">CULTURE</text><text className="culture-core__sub" x="300" y="130">UNDER REVIEW</text></g>
+      </svg>
+      <span className="host-topic-instrument__probe" /><small>SPECTRUM / ACTIVE SECTOR 03</small>
+    </div>
+  );
+  if (type === "detour") return (
+    <div className="host-topic-instrument host-topic-detour" aria-hidden="true">
+      <InstrumentChrome channel="04 / ROUTE MODEL" status="RECALCULATING" />
+      <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+        <path className="detour-alt" d="M34 142C120 142 113 70 200 70s92 84 170 84 88-62 196-62" />
+        <path className="detour-route-shadow" d="M34 142h86c51 0 43-86 105-86s50 126 116 126 51-99 112-99 48 59 113 59" />
+        <path className="detour-route topic-trace" pathLength="1" d="M34 142h86c51 0 43-86 105-86s50 126 116 126 51-99 112-99 48 59 113 59" />
+        <g className="detour-nodes"><circle cx="120" cy="142" r="7" /><circle cx="225" cy="56" r="7" /><circle cx="341" cy="182" r="7" /><circle cx="453" cy="83" r="7" /><circle cx="566" cy="142" r="8" /></g>
+        <circle className="topic-packet topic-packet--detour" cx="0" cy="0" r="4" />
+      </svg>
+      <span className="host-topic-instrument__probe" /><small>4 COURSE CORRECTIONS / DESTINATION FOUND</small>
+    </div>
+  );
+  if (type === "wit") return (
+    <div className="host-topic-instrument host-topic-wit" aria-hidden="true">
+      <InstrumentChrome channel="03 / DELIVERY SYSTEM" status="OUTPUT SHARP" />
+      <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+        <g className="wit-zones"><rect x="42" y="53" width="154" height="119" /><rect x="196" y="53" width="190" height="119" /><rect x="386" y="53" width="172" height="119" /></g>
+        <path className="wit-guide" d="M42 129H558" />
+        <path className="wit-timing topic-trace" pathLength="1" d="M42 129h94v-26h38v26h85V76h23v53h62l26 0 23-84 27 151 26-67h112" />
+        <g className="wit-nodes"><circle cx="136" cy="129" r="6" /><circle cx="259" cy="129" r="6" /><circle cx="393" cy="129" r="8" /></g>
+        <g className="wit-captions"><text x="62" y="71">SETUP</text><text x="218" y="71">TIMING</text><text x="489" y="71">POINT</text></g>
+      </svg>
+      <div className="host-topic-wit__impact"><BoltIcon /></div><span className="host-topic-instrument__probe" /><small>BEAT 03 / DELIVERY LOCKED</small>
+    </div>
+  );
+  return (
+    <div className="host-topic-instrument host-topic-identity" aria-hidden="true">
+      <InstrumentChrome channel="04 / DISTINCT FREQUENCY" status="LANE LOCKED" />
+      <svg viewBox="0 0 600 220" preserveAspectRatio="xMidYMid meet">
+        <path className="identity-feed" d="M32 145c68 0 74-42 132-42s61 42 116 42 67-42 120-42 60 42 168 42" />
+        <path className="identity-solo topic-trace" pathLength="1" d="M32 165c80 0 84-14 142-14s66 14 117 14 65-80 119-80 66 80 158 80" />
+        <g className="identity-rings"><circle className="identity-orbit" cx="320" cy="112" r="83" /><circle className="identity-orbit identity-orbit--inner" cx="320" cy="112" r="54" /></g>
+        <g className="identity-lock"><circle cx="320" cy="112" r="38" /><path d="M320 78V57M320 167v-21M286 112h-21M375 112h-21" /><text x="320" y="105">JUST</text><text className="identity-lock__name" x="320" y="130">GINA</text></g>
+      </svg>
+      <span className="host-topic-instrument__probe" /><small>OWN FREQUENCY / SIGNAL INDEPENDENT</small>
+    </div>
+  );
+}
+
+function InstrumentChrome({ channel, status }: { channel: string; status: string }) {
+  return <div className="host-topic-instrument__chrome"><span>{channel}</span><i /><strong>{status}</strong><b><em /><em /><em /></b></div>;
 }

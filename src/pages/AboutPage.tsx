@@ -3,6 +3,7 @@ import canadianFlag from "../../assets/flags/ca.svg";
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ArrowIcon, BoltIcon, PlayIcon } from "../components/Icons";
+import { EditorialSignalField } from "../components/SignalField";
 import { SparklingSky } from "../components/SparklingSky";
 import { useMotionGate } from "../hooks/useMotionGate";
 
@@ -41,6 +42,7 @@ export function AboutPage() {
   const hero = useMotionGate<HTMLElement>();
   const formats = useMotionGate<HTMLElement>();
   const community = useMotionGate<HTMLElement>();
+  const manifesto = useMotionGate<HTMLElement>();
 
   return (
     <div className="about-page">
@@ -159,8 +161,10 @@ export function AboutPage() {
         </div>
       </section>
 
-      <section className="about-manifesto" aria-labelledby="manifesto-title">
+      <section ref={manifesto.ref} className={`about-manifesto${manifesto.active ? " is-active" : ""}`} aria-labelledby="manifesto-title" data-motion={manifesto.active ? "active" : "static"}>
+        <EditorialSignalField variant="about" context="closing" />
         <div className="about-manifesto__rails" aria-hidden="true"><i /><i /><i /></div>
+        <div className="about-manifesto__telemetry" aria-hidden="true"><span>TR / OPEN CIRCUIT</span><i /><strong>HOLD THE SIGNAL</strong></div>
         <div className="container about-manifesto__inner">
           <p className="eyebrow">No committee · no fixed destination</p>
           <p className="about-manifesto__statement">We are not entirely sure what this is on any given night.</p>
@@ -233,27 +237,38 @@ function HighVoltageNetwork() {
 function FormatInstrument({ type }: { type: (typeof formatModules)[number]["key"] }) {
   if (type === "aboot") return (
     <div className="format-instrument format-bracket" aria-hidden="true">
-      <div className="format-instrument__readout"><span>QUALIFIERS</span><i /><b>FINAL UNKNOWN</b></div>
-      <div className="format-bracket__entrants"><i><span>01</span></i><i><span>02</span></i><i><span>03</span></i><i><span>04</span></i></div>
-      <svg className="format-bracket__tree" viewBox="0 0 460 170" preserveAspectRatio="none">
-        <path className="format-bracket__tree-base" d="M88 20H208V52H280M88 62H208V52M88 108H208V138H280M88 150H208V138M280 52H324V95H372M280 138H324V95" />
-        <path className="format-bracket__tree-live format-bracket__tree-live--one" d="M88 20H208V52H280" />
-        <path className="format-bracket__tree-live format-bracket__tree-live--two" d="M88 108H208V138H280" />
-        <path className="format-bracket__tree-live format-bracket__tree-live--three" d="M280 52H324V95H372" />
+      <div className="format-instrument__readout"><span>QUALIFIERS / 04</span><i /><b>FINAL UNKNOWN</b></div>
+      <svg className="format-bracket__diagram" viewBox="0 0 600 190" preserveAspectRatio="xMidYMid meet">
+        <g className="format-bracket__stage-labels"><text x="26" y="14">OPEN FIELD</text><text x="255" y="14">SEMIFINAL</text><text x="499" y="14">CHAMPION</text></g>
+        <g className="format-bracket__entrants">
+          <rect x="24" y="27" width="92" height="25" rx="4" /><rect x="24" y="65" width="92" height="25" rx="4" /><rect x="24" y="103" width="92" height="25" rx="4" /><rect x="24" y="141" width="92" height="25" rx="4" />
+          <text x="101" y="43">01</text><text x="101" y="81">02</text><text x="101" y="119">03</text><text x="101" y="157">04</text>
+        </g>
+        <g className="format-bracket__routes">
+          <path d="M116 39H211V58H265M116 77H211V58M116 115H211V134H265M116 153H211V134M265 58H359V96H470M265 134H359V96" />
+          <circle cx="211" cy="58" r="3" /><circle cx="211" cy="134" r="3" /><circle cx="359" cy="96" r="3" />
+        </g>
+        <g className="format-bracket__live-routes">
+          <path className="format-bracket__tree-live format-bracket__tree-live--one" d="M116 39H211V58H265" />
+          <path className="format-bracket__tree-live format-bracket__tree-live--two" d="M116 115H211V134H265" />
+          <path className="format-bracket__tree-live format-bracket__tree-live--three" d="M265 58H359V96H470" />
+        </g>
+        <g className="format-bracket__champion"><circle cx="516" cy="96" r="44" /><circle cx="516" cy="96" r="34" /><text x="516" y="113">?</text><path d="M489 124H543" /></g>
       </svg>
-      <div className="format-bracket__final"><span>?</span><i /></div>
-      <div className="format-bracket__charge" />
+      <div className="format-bracket__scan" />
     </div>
   );
   if (type === "beatdown") return (
     <div className="format-instrument format-impact" aria-hidden="true">
-      <div className="format-instrument__readout"><span>MONDAY</span><i /><b>CONTACT SPORT</b></div>
-      <div className="format-impact__rings"><i /><i /><i /></div>
-      <span className="format-impact__side format-impact__side--left">MON</span>
-      <span className="format-impact__side format-impact__side--right">ROUND</span>
-      <div className="format-impact__core"><b>POP</b><span>VS</span><b>CULTURE</b></div>
-      <i className="format-impact__slash format-impact__slash--left" /><i className="format-impact__slash format-impact__slash--right" />
-      <div className="format-impact__flash" />
+      <div className="format-instrument__readout"><span>MONDAY / ROUND OPEN</span><i /><b>CONTACT SPORT</b></div>
+      <svg className="format-impact__diagram" viewBox="0 0 600 190" preserveAspectRatio="xMidYMid meet">
+        <g className="format-impact__burst"><path d="M300 95 39 34M300 95 74 156M300 95 164 20M300 95 437 20M300 95 527 156M300 95 561 34" /></g>
+        <g className="format-impact__rails"><path d="M24 95H218" /><path d="M382 95H576" /><path className="format-impact__rail-live" d="M24 95H218" /><path className="format-impact__rail-live format-impact__rail-live--right" d="M382 95H576" /></g>
+        <g className="format-impact__rings"><circle cx="300" cy="95" r="79" /><circle cx="300" cy="95" r="59" /><circle cx="300" cy="95" r="39" /></g>
+        <g className="format-impact__core"><rect x="231" y="40" width="138" height="110" rx="55" /><text className="format-impact__word" x="300" y="79">POP</text><text className="format-impact__versus" x="300" y="98">VS</text><text className="format-impact__word" x="300" y="133">CULTURE</text></g>
+        <g className="format-impact__side-labels"><text x="42" y="87">MON / INPUT A</text><text x="558" y="112">INPUT B / ROUND</text></g>
+      </svg>
+      <div className="format-impact__scanner" />
     </div>
   );
   if (type === "news") return (

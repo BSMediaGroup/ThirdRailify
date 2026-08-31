@@ -21,7 +21,7 @@ export function SignalField() {
   );
 }
 
-export type EditorialSignalVariant = "shawn" | "gina" | "friends";
+export type EditorialSignalVariant = "about" | "shawn" | "gina" | "friends";
 
 export function EditorialSignalField({ variant, context }: { variant: EditorialSignalVariant; context: "hero" | "closing" }) {
   return (
@@ -30,7 +30,13 @@ export function EditorialSignalField({ variant, context }: { variant: EditorialS
       <div className="editorial-signal__bloom" />
       <div className="editorial-signal__beams"><i /><i /><i /></div>
       <svg className="editorial-signal__trace" viewBox="0 0 1200 700" preserveAspectRatio="none">
-        {variant === "shawn" ? (
+        {variant === "about" ? (
+          <>
+            <path className="editorial-signal__trace-ghost" d="M-40 494 C120 494 174 442 286 442 S432 504 576 398 742 256 884 344 1034 468 1240 260" />
+            <path className="editorial-signal__trace-ghost editorial-signal__trace-ghost--alt" d="M-40 228 C140 260 215 355 354 365 S528 284 654 353 824 506 963 414 1112 277 1240 316" />
+            <path className="editorial-signal__trace-live" d="M-40 494 C120 494 174 442 286 442 S432 504 576 398 742 256 884 344 1034 468 1240 260" />
+          </>
+        ) : variant === "shawn" ? (
           <>
             <path className="editorial-signal__trace-ghost" d="M-40 468 C130 468 155 365 286 365 S430 530 585 430 760 272 902 347 1055 405 1240 238" />
             <path className="editorial-signal__trace-live" d="M-40 468 C130 468 155 365 286 365 S430 530 585 430 760 272 902 347 1055 405 1240 238" />
@@ -50,7 +56,13 @@ export function EditorialSignalField({ variant, context }: { variant: EditorialS
       </svg>
       <div className="editorial-signal__orbits"><i /><i /><i /></div>
       <div className="editorial-signal__nodes"><i /><i /><i /><i /><i /></div>
+      <div className="editorial-signal__aperture"><i /><i /><i /><i /></div>
+      <div className="editorial-signal__spectrum">{Array.from({ length: 11 }, (_, index) => <i key={index} />)}</div>
+      <div className="editorial-signal__rail-core"><span /><BoltIcon /><span /></div>
+      <div className="editorial-signal__edge-data editorial-signal__edge-data--left"><b>INPUT OPEN</b><i /><span>01 / 04</span></div>
+      <div className="editorial-signal__edge-data editorial-signal__edge-data--right"><b>SIGNAL HELD</b><i /><span>LIVE CIRCUIT</span></div>
       <div className="editorial-signal__sweep" />
+      <div className="editorial-signal__scanline" />
     </div>
   );
 }

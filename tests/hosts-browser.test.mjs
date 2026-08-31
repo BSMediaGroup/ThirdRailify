@@ -19,7 +19,7 @@ const HOSTS = {
     required: ["Third Railify host", "@ThirdRailify", "Canadian", "News", "Crime", "Pop culture", "ADHD", "most nights around 10 PM Eastern", "The detour"],
     identity: /CA\s+Canadian · unfiltered/i,
     flagPath: /\/assets\/flags\/ca\.svg$/,
-    topicAnimation: ".host-topic-scan path",
+    topicAnimation: ".host-topic-instrument__probe",
     partnerHref: "/gina",
     partnerName: /Meet Gina/i,
   },
@@ -28,7 +28,7 @@ const HOSTS = {
     required: ["Third Railify co-host", "@JustGina", "American", "Massachusetts", "Mysteries", "conspiracies", "Culture", "Sass + humour", "Just Gina", "most nights around 10 PM Eastern"],
     identity: /US\s+American · Massachusetts/i,
     flagPath: /\/assets\/flags\/us\.svg$/,
-    topicAnimation: ".host-topic-case > div",
+    topicAnimation: ".host-topic-instrument__probe",
     partnerHref: "/shawn",
     partnerName: /Meet Shawn/i,
   },
@@ -138,14 +138,21 @@ test("both host stories stay composed, animated, and overflow-free at every requ
       await page.locator(".host-topics.is-active").waitFor({ timeout: 8_000 });
       assert.equal(await page.locator(".host-topic-card").count(), 4);
       assert.equal(await page.locator(".host-topic-instrument > svg").count(), 4, `${host} renders four scalable diagram canvases`);
+      assert.equal(await page.locator(".host-topic-instrument__chrome").count(), 4, `${host} renders four aligned instrument readouts`);
       assert.equal(await page.locator(".host-topic-instrument > svg").evaluateAll((elements) => elements.every((element) => Boolean(element.getAttribute("viewBox")))), true, `${host} diagrams retain responsive viewBoxes`);
       assert.notEqual(await page.locator(".host-topic-instrument .topic-trace").first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} diagram traces draw only after the topic section enters view`);
       assert.notEqual(await page.locator(profile.topicAnimation).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} topic motion activates`);
+      assert.equal(await page.locator(".host-topic-instrument").evaluateAll((elements) => elements.every((element) => {
+        const box = element.getBoundingClientRect();
+        const svg = element.querySelector(":scope > svg").getBoundingClientRect();
+        return Math.abs(svg.left - box.left) <= 1 && Math.abs(svg.right - box.right) <= 1 && Math.abs(svg.top - box.top) <= 1 && Math.abs(svg.bottom - box.bottom) <= 1;
+      })), true, `${host} keeps all four diagrams registered to their card canvases`);
       await page.locator(".host-partnership").scrollIntoViewIfNeeded();
       await page.waitForFunction(() => [...document.querySelectorAll(".host-partnership img")].every((image) => image.complete && image.naturalWidth > 0), null, { timeout: 15_000 });
       await page.locator(".host-closing").scrollIntoViewIfNeeded();
       await page.locator(".host-closing.is-active").waitFor({ timeout: 8_000 });
       assert.notEqual(await page.locator(".host-closing .editorial-signal__trace-live").evaluate((element) => getComputedStyle(element).animationName), "none", `${host} closing signal field animates while visible`);
+      assert.notEqual(await page.locator(".host-closing .editorial-signal__aperture i").first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} closing aperture animates while visible`);
       const brokenImages = await page.locator("main img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.getAttribute("src")));
       assert.deepEqual(brokenImages, []);
       assert.ok(await page.locator(".host-topic-card__copy p").first().evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize) >= 14));
@@ -181,7 +188,7 @@ test("reduced motion keeps both host stories complete while disabling nonessenti
     assert.equal(await page.locator(".host-profile-hero").getAttribute("data-motion"), "static");
     assert.equal(await page.locator(".host-topics").getAttribute("data-motion"), "static");
     assert.equal(await page.locator(".host-closing").getAttribute("data-motion"), "static");
-    for (const selector of [".host-portrait-stage__scope i", profile.topicAnimation]) {
+    for (const selector of [".host-portrait-stage__scope i", profile.topicAnimation, ".host-closing .editorial-signal__aperture i"]) {
       assert.equal(await page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${host} ${selector} is static`);
     }
     assert.equal(await page.locator(".host-profile-hero .editorial-signal__trace-live").evaluate((element) => getComputedStyle(element).animationName), "none");

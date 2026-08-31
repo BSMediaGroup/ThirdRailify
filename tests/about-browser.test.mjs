@@ -148,14 +148,40 @@ test("About remains composed, animated, complete, and overflow-free at every req
     await page.locator(".about-formats.is-active").waitFor({ timeout: 8_000 });
     assert.equal(await page.locator(".format-card").count(), 4);
     assert.equal(await page.locator(".format-bracket__tree-live").count(), 3);
-    assert.notEqual(await page.locator(".format-bracket__final").evaluate((element) => getComputedStyle(element).animationName), "none");
+    assert.notEqual(await page.locator(".format-bracket__champion").evaluate((element) => getComputedStyle(element).animationName), "none");
+    assert.notEqual(await page.locator(".format-impact__rings").evaluate((element) => getComputedStyle(element).animationName), "none");
     assert.notEqual(await page.locator(".format-news-track__packet").evaluate((element) => getComputedStyle(element).animationName), "none");
+    const diagramGeometry = await page.evaluate(() => {
+      const bracket = document.querySelector(".format-bracket__diagram");
+      const entrant = document.querySelector(".format-bracket__entrants rect").getBoundingClientRect();
+      const route = document.querySelector(".format-bracket__routes path");
+      const routeStart = new DOMPoint(route.getPointAtLength(0).x, route.getPointAtLength(0).y).matrixTransform(route.getScreenCTM());
+      const championRing = document.querySelector(".format-bracket__champion circle").getBoundingClientRect();
+      const championText = document.querySelector(".format-bracket__champion text").getBoundingClientRect();
+      const impact = document.querySelector(".format-impact__diagram").getBoundingClientRect();
+      const impactCore = document.querySelector(".format-impact__core rect").getBoundingClientRect();
+      return {
+        entrantJoinX: entrant.right,
+        entrantJoinY: entrant.top + entrant.height / 2,
+        routeStart: { x: routeStart.x, y: routeStart.y },
+        championDelta: Math.abs((championRing.left + championRing.width / 2) - (championText.left + championText.width / 2)),
+        impactDelta: Math.abs((impact.left + impact.width / 2) - (impactCore.left + impactCore.width / 2)),
+        bracketOverflow: bracket.getBoundingClientRect().left < document.querySelector(".format-bracket").getBoundingClientRect().left - 1,
+      };
+    });
+    assert.ok(Math.abs(diagramGeometry.entrantJoinX - diagramGeometry.routeStart.x) <= 1.5 && Math.abs(diagramGeometry.entrantJoinY - diagramGeometry.routeStart.y) <= 1.5, `bracket entrant and route share one coordinate system at ${width}px: ${JSON.stringify(diagramGeometry)}`);
+    assert.ok(diagramGeometry.championDelta <= 1.5, `bracket champion glyph is centered at ${width}px: ${JSON.stringify(diagramGeometry)}`);
+    assert.ok(diagramGeometry.impactDelta <= 1.5, `beatdown typography and linework share the same center at ${width}px: ${JSON.stringify(diagramGeometry)}`);
+    assert.equal(diagramGeometry.bracketOverflow, false, `bracket diagram remains inside its instrument at ${width}px`);
     await page.locator(".about-community").scrollIntoViewIfNeeded();
     await page.locator(".about-community.is-active").waitFor({ timeout: 8_000 });
     assert.notEqual(await page.locator(".community-circuit__scope i").first().evaluate((element) => getComputedStyle(element).animationName), "none");
     assert.equal(await page.locator(".community-circuit__paths .community-circuit__path").count(), 4);
     assert.notEqual(await page.locator(".community-circuit__packet").first().evaluate((element) => getComputedStyle(element).animationName), "none");
     await page.locator(".about-manifesto").scrollIntoViewIfNeeded();
+    await page.locator(".about-manifesto.is-active").waitFor({ timeout: 8_000 });
+    assert.equal(await page.locator(".about-manifesto .editorial-signal--about.editorial-signal--closing").count(), 1);
+    assert.notEqual(await page.locator(".about-manifesto .editorial-signal__aperture i").first().evaluate((element) => getComputedStyle(element).animationName), "none");
 
     const brokenImages = await page.locator("main img").evaluateAll((images) => images.filter((image) => !image.complete || image.naturalWidth === 0).map((image) => image.getAttribute("src")));
     assert.deepEqual(brokenImages, []);
@@ -193,7 +219,8 @@ test("reduced motion keeps the complete About story while disabling nonessential
   assert.equal(await page.locator(".about-network").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-formats").getAttribute("data-motion"), "static");
   assert.equal(await page.locator(".about-community").getAttribute("data-motion"), "static");
-  for (const selector of [".about-hero .sparkling-sky__star", ".about-network__pulse", ".format-bracket__final", ".format-news-track__packet", ".community-circuit__scope i", ".community-circuit__packet"]) {
+  assert.equal(await page.locator(".about-manifesto").getAttribute("data-motion"), "static");
+  for (const selector of [".about-hero .sparkling-sky__star", ".about-network__pulse", ".format-bracket__champion", ".format-news-track__packet", ".community-circuit__scope i", ".community-circuit__packet", ".about-manifesto .editorial-signal__aperture i"]) {
     assert.equal(await page.locator(selector).first().evaluate((element) => getComputedStyle(element).animationName), "none", `${selector} is static in reduced motion`);
   }
   assert.equal(await page.getByRole("heading", { level: 2, name: /Grab the rail\.\s+Don’t let go\./i }).count(), 1);
