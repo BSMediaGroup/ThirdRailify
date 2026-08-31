@@ -54,7 +54,8 @@ test("V1.9 vector pattern and asymmetric image-cover plans stay fixed in segment
 
 test("V1.9 renderer owns a cached local face and never sizes layout from the rotated screen box", async () => {
   const source = await readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8");
-  assert.match(source, /rotorElement\.clientWidth/);
+  assert.match(source, /frameElement\.clientWidth/);
+  assert.doesNotMatch(source, /rotorElement\.clientWidth/);
   assert.doesNotMatch(source, /const rect = canvas\.getBoundingClientRect\(\)/);
   assert.match(source, /staticFaceRebuilds/);
   assert.match(source, /gifLayerComposites/);

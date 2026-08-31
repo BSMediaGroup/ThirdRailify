@@ -1,5 +1,30 @@
 # Bump notes
 
+## 2026-09-01 - Current catalogue and stale-cart hardening
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added a sanitized reconciled current-product count to the Admin-to-Public catalogue boundary and reject projections that exceed it.
+- Cart Drawer, Cart Page, and Checkout now show locally persisted products/variants that disappeared from the current catalogue as unavailable, with removal controls instead of silently dropping them.
+- Unavailable lines are omitted from the displayed subtotal and block shipping/payment; server checkout separately enforces current provider presence.
+- Public remains a read-only proxy with no Commerce D1 binding, provider token, static/Wix runtime fallback, or provider identity exposure.
+- Focused storefront/checkout tests and the Node 22 production build are green. No deployment, provider write, purchase, fulfillment, or production mutation occurred.
+
+## 2026-09-01 - Wheels V1.13 canonical responsive geometry
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced containing-block-relative Wheel padding with one non-rotating square frame, a 3.9% frame-owned rotor inset, square Canvas CSS/backing geometry, and a ResizeObserver on the stable frame. Spin remains rigid rotation only and V1.9 static-face/GIF cache behavior is preserved.
+- Centralized the established physical ratios: participant face/outer `0.8759`, hub radius/outer radius `0.22`, hub padding `0.015`, and outer/inner rim insets `0.008`/`0.03`. Removed the render plan's fixed 8px face inset and the fixed 12px hub padding drift.
+- Removed Stage Overview's one-axis `max-height` clamp and obsolete phone overflow clip. The layout helper's diameter now owns both axes; short-landscape Presentation uses a general side-by-side square-Wheel/control layout rather than collapsing the Wheel under desktop vertical constraints.
+- Added pure diameter/DPR geometry tests and expanded rigid-renderer browser evidence across desktop, Presentation, phone idle/mid-spin, landscape, Fullscreen, Appearance, 67-200% effective layout scales, DPR 1-3, and repeated orientation/resizes. Sixty local conditions measured frame/rotor circularity `1.000`, face ratio `0.8759`, hub ratio `0.220005-0.220082`, square backing bitmaps, equal transform scales, and zero Wheel writes.
+- Preview `28c27233-34d6-4d7a-a35c-d376d3c77a0d` (`https://28c27233.thirdrailify.pages.dev`) passed the remote Wheel and Stage matrices before the identical manifest (`9cc87bc381d4a0f71a74003050caa06cdc3066bad2c8757b862c6bb277fc67d2`) was promoted as production deployment `f7a02e4c-3aa6-4f6d-a4e1-1d10f4171348` (`https://f7a02e4c.thirdrailify.pages.dev`). Stable desktop/mobile demo-spin acceptance stayed square with face ratio `0.8759`, zero Wheels writes, and byte-identical entry JS/CSS.
+- No winner selection, probability, mechanics profile, Official persistence, schema, migration, D1/R2, provider, DNS, custom-domain, or Admin behavior changed.
+
 ## 2026-08-31 - Public Polls V1
 
 CURRENT VER=0.1.0-alpha.0

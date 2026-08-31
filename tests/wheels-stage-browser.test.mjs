@@ -408,6 +408,7 @@ test("Stage overview and focus remain wide, circular, contained, and isolated ac
       { waitUntil: "networkidle" },
     );
     await widePage.locator(".wheel-stage canvas").first().waitFor();
+    if (surface.mode === "detail") await widePage.waitForFunction(() => document.querySelectorAll(".wheel-control-heading__actions > *").length === 4);
     const ownerTrigger = widePage.getByRole("button", { name: /Wheel owner and access details/ });
     await ownerTrigger.waitFor();
     if (surface.width === 1920) {
@@ -799,7 +800,7 @@ async function respond(route, options = {}) {
       ok: true,
       wheel: wheel(0),
       access: {
-        role: "editor",
+        role: "owner",
         isMasterAdmin: false,
         canEdit: true,
         canSpinOfficially: false,

@@ -5,15 +5,58 @@ import { resolvedEntryStyle } from "./segmentStyles.mjs";
 export const WHEEL_LABEL_FONT_FAMILY = '"Geist Mono", monospace';
 export const WHEEL_LABEL_FONT_WEIGHT = 700;
 
-export function createWheelRenderPlan(entries, config, size, measureLabel, imageDimensions = new Map()) {
+// One physical wheel, expressed as ratios of its non-rotating outer frame.
+export const WHEEL_GEOMETRY = Object.freeze({
+  rotorInsetRatio: .039,
+  faceToOuterRatio: .8759,
+  hubToOuterRatio: .22,
+  hubPaddingRatio: .015,
+  outerRimInsetRatio: .008,
+  innerRimInsetRatio: .03,
+  pointerWidthRatio: .1,
+  pointerHeightRatio: .15,
+  pointerTopRatio: -.002,
+  dprCap: 2.5,
+});
+
+export function resolveWheelGeometry(diameter, dpr = 1) {
+  const outerDiameter = Math.max(1, Number(diameter) || 1);
+  const outerRadius = outerDiameter / 2;
+  const rotorDiameter = outerDiameter * (1 - 2 * WHEEL_GEOMETRY.rotorInsetRatio);
+  const faceRadius = outerRadius * WHEEL_GEOMETRY.faceToOuterRatio;
+  const hubRadius = outerRadius * WHEEL_GEOMETRY.hubToOuterRatio;
+  const pixelRatio = Math.min(Math.max(1, Number(dpr) || 1), WHEEL_GEOMETRY.dprCap);
+  const canvasBackingSide = Math.max(1, Math.round(rotorDiameter * pixelRatio));
+  return Object.freeze({
+    diameter: outerDiameter,
+    outerDiameter,
+    outerRadius,
+    rotorDiameter,
+    canvasCssSide: rotorDiameter,
+    canvasBackingSide,
+    faceRadius,
+    faceDiameter: faceRadius * 2,
+    hubRadius,
+    hubDiameter: hubRadius * 2,
+    faceToOuterRatio: WHEEL_GEOMETRY.faceToOuterRatio,
+    hubToOuterRatio: WHEEL_GEOMETRY.hubToOuterRatio,
+    dpr: pixelRatio,
+  });
+}
+
+export function createWheelRenderPlan(entries, config, size, measureLabel, imageDimensions = new Map(), outerDiameter = null) {
   const safeSize = Math.max(1, Math.floor(Number(size) || 1));
   const centre = safeSize / 2;
-  const radius = centre - Math.max(8, safeSize * .025);
+  const canonicalOuterDiameter = Number(outerDiameter) > 0
+    ? Number(outerDiameter)
+    : safeSize / (1 - 2 * WHEEL_GEOMETRY.rotorInsetRatio);
+  const radialGeometry = resolveWheelGeometry(canonicalOuterDiameter);
+  const radius = radialGeometry.faceRadius;
   const angles = entryAngles(entries);
   const density = angles.length <= 40 ? 1 : Math.ceil(angles.length / 40);
-  const geometry = Object.freeze({ size: safeSize, centre, radius, hubRadius: safeSize * .12, count: angles.length, density });
+  const geometry = Object.freeze({ size: safeSize, centre, radius, hubRadius: radialGeometry.hubRadius, count: angles.length, density });
   const segments = angles.map((segment, index) => segmentRenderPlan(segment, index, geometry, config, measureLabel, imageDimensions));
-  return Object.freeze({ size: safeSize, centre, radius, density, segments: Object.freeze(segments) });
+  return Object.freeze({ size: safeSize, centre, radius, hubRadius: radialGeometry.hubRadius, outerDiameter: radialGeometry.outerDiameter, faceToOuterRatio: radialGeometry.faceToOuterRatio, hubToOuterRatio: radialGeometry.hubToOuterRatio, density, segments: Object.freeze(segments) });
 }
 
 export function segmentRenderPlan(segment, index, geometry, config, measureLabel = approximateLabelWidth, imageDimensions = new Map()) {

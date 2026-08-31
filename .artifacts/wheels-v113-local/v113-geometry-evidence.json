@@ -1,0 +1,2922 @@
+{
+  "origin": "http://127.0.0.1:4197",
+  "canonical": {
+    "rotorInsetRatio": 0.039,
+    "faceToOuterRatio": 0.8759,
+    "hubToOuterRatio": 0.22,
+    "hubPaddingRatio": 0.015,
+    "outerRimInsetRatio": 0.008,
+    "innerRimInsetRatio": 0.03,
+    "pointerWidthRatio": 0.1,
+    "pointerHeightRatio": 0.15,
+    "pointerTopRatio": -0.002,
+    "dprCap": 2.5
+  },
+  "matrix": [
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 140.18011641828122,
+        "transform": "matrix(-0.768061, 0.640376, -0.640376, -0.768061, 0, 0)",
+        "transformScale": {
+          "x": 0.9999995605484033,
+          "y": 0.9999995605484033
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 13,
+        "faceComposites": 17
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 92.66631141604316,
+        "transform": "matrix(-0.0465191, 0.998917, -0.998917, -0.0465191, 0, 0)",
+        "transformScale": {
+          "x": 0.999999599776825,
+          "y": 0.999999599776825
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1365,
+        "height": 768
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 176.4633457265644,
+        "transform": "matrix(-0.998096, 0.0616871, -0.0616871, -0.998096, 0, 0)",
+        "transformScale": {
+          "x": 1.0000004617610985,
+          "y": 1.0000004617610985
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 820,
+          "height": 820
+        },
+        "rotor": {
+          "width": 756,
+          "height": 756
+        },
+        "canvas": {
+          "width": 756,
+          "height": 756,
+          "cssWidth": 756.062,
+          "cssHeight": 756.062
+        },
+        "geometry": {
+          "outerDiameter": 820,
+          "faceDiameter": 718.238,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 180.40625,
+          "hubToOuterRatio": 0.2200076219512195
+        },
+        "rotation": 157.4621958436513,
+        "transform": "matrix(-0.923627, 0.383293, -0.383293, -0.923627, 0, 0)",
+        "transformScale": {
+          "x": 1.000000179488984,
+          "y": 1.000000179488984
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 756,
+          "dpr": 1,
+          "pixels": 756
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 704,
+          "height": 704
+        },
+        "rotor": {
+          "width": 649,
+          "height": 649
+        },
+        "canvas": {
+          "width": 649,
+          "height": 649,
+          "cssWidth": 649.094,
+          "cssHeight": 649.094
+        },
+        "geometry": {
+          "outerDiameter": 704,
+          "faceDiameter": 616.6336,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 154.90625,
+          "hubToOuterRatio": 0.22003728693181818
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 649,
+          "dpr": 1,
+          "pixels": 649
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 704,
+          "height": 704
+        },
+        "rotor": {
+          "width": 649,
+          "height": 649
+        },
+        "canvas": {
+          "width": 649,
+          "height": 649,
+          "cssWidth": 649.094,
+          "cssHeight": 649.094
+        },
+        "geometry": {
+          "outerDiameter": 704,
+          "faceDiameter": 616.6336,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 154.90625,
+          "hubToOuterRatio": 0.22003728693181818
+        },
+        "rotation": -116.18615442293091,
+        "transform": "matrix(-0.441289, -0.897365, 0.897365, -0.441289, 0, 0)",
+        "transformScale": {
+          "x": 0.9999999623729993,
+          "y": 0.9999999623729993
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 649,
+          "dpr": 1,
+          "pixels": 649
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 473,
+        "height": 1024
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 437,
+          "height": 437
+        },
+        "rotor": {
+          "width": 403,
+          "height": 403
+        },
+        "canvas": {
+          "width": 403,
+          "height": 403,
+          "cssWidth": 402.938,
+          "cssHeight": 402.938
+        },
+        "geometry": {
+          "outerDiameter": 437,
+          "faceDiameter": 382.7683,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 96.15625,
+          "hubToOuterRatio": 0.22003718535469108
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 402,
+          "dpr": 1,
+          "pixels": 403
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 437,
+          "height": 437
+        },
+        "rotor": {
+          "width": 403,
+          "height": 403
+        },
+        "canvas": {
+          "width": 403,
+          "height": 403,
+          "cssWidth": 402.938,
+          "cssHeight": 402.938
+        },
+        "geometry": {
+          "outerDiameter": 437,
+          "faceDiameter": 382.7683,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 96.15625,
+          "hubToOuterRatio": 0.22003718535469108
+        },
+        "rotation": 93.16613590585736,
+        "transform": "matrix(-0.0552314, 0.998474, -0.998474, -0.0552314, 0, 0)",
+        "transformScale": {
+          "x": 1.0000004181108926,
+          "y": 1.0000004181108926
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 402,
+          "dpr": 1,
+          "pixels": 403
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 394,
+          "height": 394
+        },
+        "rotor": {
+          "width": 363,
+          "height": 363
+        },
+        "canvas": {
+          "width": 363,
+          "height": 363,
+          "cssWidth": 363.281,
+          "cssHeight": 363.281
+        },
+        "geometry": {
+          "outerDiameter": 394,
+          "faceDiameter": 345.1046,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 86.6875,
+          "hubToOuterRatio": 0.22001903553299493
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 363,
+          "dpr": 1,
+          "pixels": 363
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 394,
+          "height": 394
+        },
+        "rotor": {
+          "width": 363,
+          "height": 363
+        },
+        "canvas": {
+          "width": 363,
+          "height": 363,
+          "cssWidth": 363.281,
+          "cssHeight": 363.281
+        },
+        "geometry": {
+          "outerDiameter": 394,
+          "faceDiameter": 345.1046,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 86.6875,
+          "hubToOuterRatio": 0.22001903553299493
+        },
+        "rotation": 60.76979027371202,
+        "transform": "matrix(0.48832, 0.872665, -0.872665, 0.48832, 0, 0)",
+        "transformScale": {
+          "x": 1.0000003123124512,
+          "y": 1.0000003123124512
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 363,
+          "dpr": 1,
+          "pixels": 363
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 376,
+          "height": 376
+        },
+        "rotor": {
+          "width": 347,
+          "height": 347
+        },
+        "canvas": {
+          "width": 347,
+          "height": 347,
+          "cssWidth": 346.688,
+          "cssHeight": 346.688
+        },
+        "geometry": {
+          "outerDiameter": 376,
+          "faceDiameter": 329.3384,
+          "faceToOuterRatio": 0.8758999999999999,
+          "hubDiameter": 82.75,
+          "hubToOuterRatio": 0.22007978723404256
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 346,
+          "dpr": 1,
+          "pixels": 347
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 376,
+          "height": 376
+        },
+        "rotor": {
+          "width": 347,
+          "height": 347
+        },
+        "canvas": {
+          "width": 347,
+          "height": 347,
+          "cssWidth": 346.688,
+          "cssHeight": 346.688
+        },
+        "geometry": {
+          "outerDiameter": 376,
+          "faceDiameter": 329.3384,
+          "faceToOuterRatio": 0.8758999999999999,
+          "hubDiameter": 82.75,
+          "hubToOuterRatio": 0.22007978723404256
+        },
+        "rotation": -17.981202147036836,
+        "transform": "matrix(0.951158, -0.308705, 0.308705, 0.951158, 0, 0)",
+        "transformScale": {
+          "x": 1.0000001589944871,
+          "y": 1.0000001589944871
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 346,
+          "dpr": 1,
+          "pixels": 347
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 354,
+          "height": 354
+        },
+        "rotor": {
+          "width": 326,
+          "height": 326
+        },
+        "canvas": {
+          "width": 326,
+          "height": 326,
+          "cssWidth": 326.406,
+          "cssHeight": 326.406
+        },
+        "geometry": {
+          "outerDiameter": 354,
+          "faceDiameter": 310.0686,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 77.90625,
+          "hubToOuterRatio": 0.2200741525423729
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 326,
+          "dpr": 1,
+          "pixels": 326
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 354,
+          "height": 354
+        },
+        "rotor": {
+          "width": 326,
+          "height": 326
+        },
+        "canvas": {
+          "width": 326,
+          "height": 326,
+          "cssWidth": 326.406,
+          "cssHeight": 326.406
+        },
+        "geometry": {
+          "outerDiameter": 354,
+          "faceDiameter": 310.0686,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 77.90625,
+          "hubToOuterRatio": 0.2200741525423729
+        },
+        "rotation": 95.82198212725415,
+        "transform": "matrix(-0.101438, 0.994842, -0.994842, -0.101438, 0, 0)",
+        "transformScale": {
+          "x": 1.0000001364039908,
+          "y": 1.0000001364039908
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 326,
+          "dpr": 1,
+          "pixels": 326
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 780,
+          "height": 780
+        },
+        "rotor": {
+          "width": 719,
+          "height": 719
+        },
+        "canvas": {
+          "width": 719,
+          "height": 719,
+          "cssWidth": 719.188,
+          "cssHeight": 719.188
+        },
+        "geometry": {
+          "outerDiameter": 780,
+          "faceDiameter": 683.202,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 171.625,
+          "hubToOuterRatio": 0.22003205128205128
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 719,
+          "dpr": 1,
+          "pixels": 719
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 780,
+          "height": 780
+        },
+        "rotor": {
+          "width": 719,
+          "height": 719
+        },
+        "canvas": {
+          "width": 719,
+          "height": 719,
+          "cssWidth": 719.188,
+          "cssHeight": 719.188
+        },
+        "geometry": {
+          "outerDiameter": 780,
+          "faceDiameter": 683.202,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 171.625,
+          "hubToOuterRatio": 0.22003205128205128
+        },
+        "rotation": -33.24010963034531,
+        "transform": "matrix(0.836381, -0.548149, 0.548149, 0.836381, 0, 0)",
+        "transformScale": {
+          "x": 1.0000002516809683,
+          "y": 1.0000002516809683
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 719,
+          "dpr": 1,
+          "pixels": 719
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 151.30984273434754,
+        "transform": "matrix(-0.877229, 0.480073, -0.480073, -0.877229, 0, 0)",
+        "transformScale": {
+          "x": 1.0000004018849193,
+          "y": 1.0000004018849193
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 13,
+        "faceComposites": 17
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 2048,
+        "height": 1152
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 802,
+          "height": 802
+        },
+        "rotor": {
+          "width": 739,
+          "height": 739
+        },
+        "canvas": {
+          "width": 739,
+          "height": 739,
+          "cssWidth": 739.469,
+          "cssHeight": 739.469
+        },
+        "geometry": {
+          "outerDiameter": 802,
+          "faceDiameter": 702.4718,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 176.46875,
+          "hubToOuterRatio": 0.22003584788029926
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 739,
+          "dpr": 1,
+          "pixels": 739
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 802,
+          "height": 802
+        },
+        "rotor": {
+          "width": 739,
+          "height": 739
+        },
+        "canvas": {
+          "width": 739,
+          "height": 739,
+          "cssWidth": 739.469,
+          "cssHeight": 739.469
+        },
+        "geometry": {
+          "outerDiameter": 802,
+          "faceDiameter": 702.4718,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 176.46875,
+          "hubToOuterRatio": 0.22003584788029926
+        },
+        "rotation": -146.67920989773418,
+        "transform": "matrix(-0.835608, -0.549326, 0.549326, -0.835608, 0, 0)",
+        "transformScale": {
+          "x": 0.9999998919699942,
+          "y": 0.9999998919699942
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 739,
+          "dpr": 1,
+          "pixels": 739
+        },
+        "gifFramesDecoded": 13,
+        "faceComposites": 17
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 2560,
+        "height": 1080
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 23.89476156613107,
+        "transform": "matrix(0.914291, 0.405058, -0.405058, 0.914291, 0, 0)",
+        "transformScale": {
+          "x": 1.0000000080224998,
+          "y": 1.0000000080224998
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 13,
+        "faceComposites": 17
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 3440,
+        "height": 1440
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 860,
+          "height": 860
+        },
+        "rotor": {
+          "width": 793,
+          "height": 793
+        },
+        "canvas": {
+          "width": 793,
+          "height": 793,
+          "cssWidth": 792.938,
+          "cssHeight": 792.938
+        },
+        "geometry": {
+          "outerDiameter": 860,
+          "faceDiameter": 753.274,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 189.21875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 792,
+          "dpr": 1,
+          "pixels": 793
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 860,
+          "height": 860
+        },
+        "rotor": {
+          "width": 793,
+          "height": 793
+        },
+        "canvas": {
+          "width": 793,
+          "height": 793,
+          "cssWidth": 792.938,
+          "cssHeight": 792.938
+        },
+        "geometry": {
+          "outerDiameter": 860,
+          "faceDiameter": 753.274,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 189.21875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": -75.51172022683878,
+        "transform": "matrix(0.250182, -0.968199, 0.968199, 0.250182, 0, 0)",
+        "transformScale": {
+          "x": 1.000000168362486,
+          "y": 1.000000168362486
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 792,
+          "dpr": 1,
+          "pixels": 793
+        },
+        "gifFramesDecoded": 14,
+        "faceComposites": 18
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 682,
+          "height": 682,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 2,
+          "pixels": 682
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 682,
+          "height": 682,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": -143.6893410530266,
+        "transform": "matrix(-0.805818, -0.592163, 0.592163, -0.805818, 0, 0)",
+        "transformScale": {
+          "x": 0.9999998338464863,
+          "y": 0.9999998338464863
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 2,
+          "pixels": 682
+        },
+        "gifFramesDecoded": 14,
+        "faceComposites": 18
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 473,
+        "height": 1024
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0.0078125
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 378.390625,
+          "height": 378.390625
+        },
+        "rotor": {
+          "width": 349.36065641534395,
+          "height": 349.36065641534395
+        },
+        "canvas": {
+          "width": 349,
+          "height": 349,
+          "cssWidth": 349.25154377480163,
+          "cssHeight": 349.25154377480163
+        },
+        "geometry": {
+          "outerDiameter": 378.390625,
+          "faceDiameter": 331.4323484375,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 83.265625,
+          "hubToOuterRatio": 0.22005202956600736
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 348,
+          "dpr": 1,
+          "pixels": 349
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 378.390625,
+          "height": 378.390625
+        },
+        "rotor": {
+          "width": 349.36065641534395,
+          "height": 349.36065641534395
+        },
+        "canvas": {
+          "width": 349,
+          "height": 349,
+          "cssWidth": 349.25154377480163,
+          "cssHeight": 349.25154377480163
+        },
+        "geometry": {
+          "outerDiameter": 378.390625,
+          "faceDiameter": 331.4323484375,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 83.265625,
+          "hubToOuterRatio": 0.22005202956600736
+        },
+        "rotation": -92.1811228438886,
+        "transform": "matrix(-0.0380586, -0.999276, 0.999276, -0.0380586, 0, 0)",
+        "transformScale": {
+          "x": 1.0000004906048598,
+          "y": 1.0000004906048598
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 348,
+          "dpr": 1,
+          "pixels": 349
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 344,
+          "height": 344
+        },
+        "rotor": {
+          "width": 317,
+          "height": 317
+        },
+        "canvas": {
+          "width": 317,
+          "height": 317,
+          "cssWidth": 317.188,
+          "cssHeight": 317.188
+        },
+        "geometry": {
+          "outerDiameter": 344,
+          "faceDiameter": 301.3096,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 75.6875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 317,
+          "dpr": 1,
+          "pixels": 317
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 344,
+          "height": 344
+        },
+        "rotor": {
+          "width": 317,
+          "height": 317
+        },
+        "canvas": {
+          "width": 317,
+          "height": 317,
+          "cssWidth": 317.188,
+          "cssHeight": 317.188
+        },
+        "geometry": {
+          "outerDiameter": 344,
+          "faceDiameter": 301.3096,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 75.6875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 167.1008242652669,
+        "transform": "matrix(-0.974764, 0.223236, -0.223236, -0.974764, 0, 0)",
+        "transformScale": {
+          "x": 0.9999995836959134,
+          "y": 0.9999995836959134
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 317,
+          "dpr": 1,
+          "pixels": 317
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 312,
+          "height": 312
+        },
+        "rotor": {
+          "width": 288,
+          "height": 288
+        },
+        "canvas": {
+          "width": 288,
+          "height": 288,
+          "cssWidth": 287.688,
+          "cssHeight": 287.688
+        },
+        "geometry": {
+          "outerDiameter": 312,
+          "faceDiameter": 273.2808,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 68.65625,
+          "hubToOuterRatio": 0.22005208333333334
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 287,
+          "dpr": 1,
+          "pixels": 288
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 312,
+          "height": 312
+        },
+        "rotor": {
+          "width": 288,
+          "height": 288
+        },
+        "canvas": {
+          "width": 288,
+          "height": 288,
+          "cssWidth": 287.688,
+          "cssHeight": 287.688
+        },
+        "geometry": {
+          "outerDiameter": 312,
+          "faceDiameter": 273.2808,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 68.65625,
+          "hubToOuterRatio": 0.22005208333333334
+        },
+        "rotation": -161.3778322275284,
+        "transform": "matrix(-0.947645, -0.319326, 0.319326, -0.947645, 0, 0)",
+        "transformScale": {
+          "x": 1.0000000701504974,
+          "y": 1.0000000701504974
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 287,
+          "dpr": 1,
+          "pixels": 288
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "frame": {
+          "width": 258,
+          "height": 258
+        },
+        "rotor": {
+          "width": 238,
+          "height": 238
+        },
+        "canvas": {
+          "width": 238,
+          "height": 238,
+          "cssWidth": 237.906,
+          "cssHeight": 237.906
+        },
+        "geometry": {
+          "outerDiameter": 258,
+          "faceDiameter": 225.9822,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 56.78125,
+          "hubToOuterRatio": 0.22008236434108527
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 237,
+          "dpr": 1,
+          "pixels": 238
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "frame": {
+          "width": 258,
+          "height": 258
+        },
+        "rotor": {
+          "width": 238,
+          "height": 238
+        },
+        "canvas": {
+          "width": 238,
+          "height": 238,
+          "cssWidth": 237.906,
+          "cssHeight": 237.906
+        },
+        "geometry": {
+          "outerDiameter": 258,
+          "faceDiameter": 225.9822,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 56.78125,
+          "hubToOuterRatio": 0.22008236434108527
+        },
+        "rotation": 116.12870517646543,
+        "transform": "matrix(-0.440389, 0.897807, -0.897807, -0.440389, 0, 0)",
+        "transformScale": {
+          "x": 0.9999999402849982,
+          "y": 0.9999999402849982
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 237,
+          "dpr": 1,
+          "pixels": 238
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    }
+  ],
+  "zoom": [
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 0.67,
+      "viewport": {
+        "width": 3057,
+        "height": 1719
+      },
+      "sample": {
+        "name": "zoom-0.67",
+        "frame": {
+          "width": 860,
+          "height": 860
+        },
+        "rotor": {
+          "width": 793,
+          "height": 793
+        },
+        "canvas": {
+          "width": 793,
+          "height": 793,
+          "cssWidth": 792.938,
+          "cssHeight": 792.938
+        },
+        "geometry": {
+          "outerDiameter": 860,
+          "faceDiameter": 753.274,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 189.21875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 5,
+          "staticFaceRebuilds": 5,
+          "measureTextCalls": 80,
+          "patternConstructions": 25,
+          "imageCoverCalculations": 10,
+          "size": 792,
+          "dpr": 1,
+          "pixels": 793
+        },
+        "gifFramesDecoded": 7,
+        "faceComposites": 12
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 0.8,
+      "viewport": {
+        "width": 2560,
+        "height": 1440
+      },
+      "sample": {
+        "name": "zoom-0.8",
+        "frame": {
+          "width": 860,
+          "height": 860
+        },
+        "rotor": {
+          "width": 793,
+          "height": 793
+        },
+        "canvas": {
+          "width": 793,
+          "height": 793,
+          "cssWidth": 792.938,
+          "cssHeight": 792.938
+        },
+        "geometry": {
+          "outerDiameter": 860,
+          "faceDiameter": 753.274,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 189.21875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 5,
+          "staticFaceRebuilds": 5,
+          "measureTextCalls": 80,
+          "patternConstructions": 25,
+          "imageCoverCalculations": 10,
+          "size": 792,
+          "dpr": 1,
+          "pixels": 793
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 16
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 0.9,
+      "viewport": {
+        "width": 2276,
+        "height": 1280
+      },
+      "sample": {
+        "name": "zoom-0.9",
+        "frame": {
+          "width": 860,
+          "height": 860
+        },
+        "rotor": {
+          "width": 793,
+          "height": 793
+        },
+        "canvas": {
+          "width": 793,
+          "height": 793,
+          "cssWidth": 792.938,
+          "cssHeight": 792.938
+        },
+        "geometry": {
+          "outerDiameter": 860,
+          "faceDiameter": 753.274,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 189.21875,
+          "hubToOuterRatio": 0.22002180232558138
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 5,
+          "staticFaceRebuilds": 5,
+          "measureTextCalls": 80,
+          "patternConstructions": 25,
+          "imageCoverCalculations": 10,
+          "size": 792,
+          "dpr": 1,
+          "pixels": 793
+        },
+        "gifFramesDecoded": 13,
+        "faceComposites": 18
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 1,
+      "viewport": {
+        "width": 2048,
+        "height": 1152
+      },
+      "sample": {
+        "name": "zoom-1",
+        "frame": {
+          "width": 802,
+          "height": 802
+        },
+        "rotor": {
+          "width": 739,
+          "height": 739
+        },
+        "canvas": {
+          "width": 739,
+          "height": 739,
+          "cssWidth": 739.469,
+          "cssHeight": 739.469
+        },
+        "geometry": {
+          "outerDiameter": 802,
+          "faceDiameter": 702.4718,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 176.46875,
+          "hubToOuterRatio": 0.22003584788029926
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 6,
+          "staticFaceRebuilds": 6,
+          "measureTextCalls": 96,
+          "patternConstructions": 30,
+          "imageCoverCalculations": 12,
+          "size": 739,
+          "dpr": 1,
+          "pixels": 739
+        },
+        "gifFramesDecoded": 14,
+        "faceComposites": 20
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 1.1,
+      "viewport": {
+        "width": 1862,
+        "height": 1047
+      },
+      "sample": {
+        "name": "zoom-1.1",
+        "frame": {
+          "width": 697,
+          "height": 697
+        },
+        "rotor": {
+          "width": 643,
+          "height": 643
+        },
+        "canvas": {
+          "width": 643,
+          "height": 643,
+          "cssWidth": 642.656,
+          "cssHeight": 642.656
+        },
+        "geometry": {
+          "outerDiameter": 697,
+          "faceDiameter": 610.5023,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 153.34375,
+          "hubToOuterRatio": 0.22000538020086083
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 7,
+          "staticFaceRebuilds": 7,
+          "measureTextCalls": 112,
+          "patternConstructions": 35,
+          "imageCoverCalculations": 14,
+          "size": 642,
+          "dpr": 1,
+          "pixels": 643
+        },
+        "gifFramesDecoded": 15,
+        "faceComposites": 22
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 1.25,
+      "viewport": {
+        "width": 1638,
+        "height": 922
+      },
+      "sample": {
+        "name": "zoom-1.25",
+        "frame": {
+          "width": 572,
+          "height": 572
+        },
+        "rotor": {
+          "width": 527,
+          "height": 527
+        },
+        "canvas": {
+          "width": 527,
+          "height": 527,
+          "cssWidth": 527.406,
+          "cssHeight": 527.406
+        },
+        "geometry": {
+          "outerDiameter": 572,
+          "faceDiameter": 501.0148,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 125.84375,
+          "hubToOuterRatio": 0.22000655594405594
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 8,
+          "staticFaceRebuilds": 8,
+          "measureTextCalls": 128,
+          "patternConstructions": 40,
+          "imageCoverCalculations": 16,
+          "size": 527,
+          "dpr": 1,
+          "pixels": 527
+        },
+        "gifFramesDecoded": 17,
+        "faceComposites": 25
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 1.5,
+      "viewport": {
+        "width": 1365,
+        "height": 768
+      },
+      "sample": {
+        "name": "zoom-1.5",
+        "frame": {
+          "width": 418,
+          "height": 418
+        },
+        "rotor": {
+          "width": 385,
+          "height": 385
+        },
+        "canvas": {
+          "width": 385,
+          "height": 385,
+          "cssWidth": 385.406,
+          "cssHeight": 385.406
+        },
+        "geometry": {
+          "outerDiameter": 418,
+          "faceDiameter": 366.1262,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 91.96875,
+          "hubToOuterRatio": 0.22002093301435408
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 9,
+          "staticFaceRebuilds": 9,
+          "measureTextCalls": 144,
+          "patternConstructions": 45,
+          "imageCoverCalculations": 18,
+          "size": 385,
+          "dpr": 1,
+          "pixels": 385
+        },
+        "gifFramesDecoded": 18,
+        "faceComposites": 27
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 1.75,
+      "viewport": {
+        "width": 1170,
+        "height": 658
+      },
+      "sample": {
+        "name": "zoom-1.75",
+        "frame": {
+          "width": 308,
+          "height": 308
+        },
+        "rotor": {
+          "width": 284,
+          "height": 284
+        },
+        "canvas": {
+          "width": 284,
+          "height": 284,
+          "cssWidth": 284,
+          "cssHeight": 284
+        },
+        "geometry": {
+          "outerDiameter": 308,
+          "faceDiameter": 269.7772,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 67.78125,
+          "hubToOuterRatio": 0.2200689935064935
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 10,
+          "staticFaceRebuilds": 10,
+          "measureTextCalls": 160,
+          "patternConstructions": 50,
+          "imageCoverCalculations": 20,
+          "size": 283,
+          "dpr": 1,
+          "pixels": 284
+        },
+        "gifFramesDecoded": 20,
+        "faceComposites": 30
+      }
+    },
+    {
+      "mode": "equivalent-layout-viewport",
+      "value": 2,
+      "viewport": {
+        "width": 1024,
+        "height": 576
+      },
+      "sample": {
+        "name": "zoom-2",
+        "frame": {
+          "width": 444,
+          "height": 444
+        },
+        "rotor": {
+          "width": 409,
+          "height": 409
+        },
+        "canvas": {
+          "width": 409,
+          "height": 409,
+          "cssWidth": 409.375,
+          "cssHeight": 409.375
+        },
+        "geometry": {
+          "outerDiameter": 444,
+          "faceDiameter": 388.8996,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 97.6875,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 11,
+          "staticFaceRebuilds": 11,
+          "measureTextCalls": 176,
+          "patternConstructions": 55,
+          "imageCoverCalculations": 22,
+          "size": 409,
+          "dpr": 1,
+          "pixels": 409
+        },
+        "gifFramesDecoded": 21,
+        "faceComposites": 32
+      }
+    }
+  ],
+  "dpr": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "value": 1,
+      "sample": {
+        "name": "dpr-1",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 341,
+          "height": 341,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 1,
+          "pixels": 341
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      }
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "value": 1.25,
+      "sample": {
+        "name": "dpr-1.25",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 426,
+          "height": 426,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 1.25,
+          "pixels": 426
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      }
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "value": 1.5,
+      "sample": {
+        "name": "dpr-1.5",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 512,
+          "height": 512,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 1.5,
+          "pixels": 512
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      }
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "value": 2,
+      "sample": {
+        "name": "dpr-2",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 682,
+          "height": 682,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 2,
+          "pixels": 682
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      }
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "value": 3,
+      "sample": {
+        "name": "dpr-3",
+        "frame": {
+          "width": 370,
+          "height": 370
+        },
+        "rotor": {
+          "width": 341,
+          "height": 341
+        },
+        "canvas": {
+          "width": 853,
+          "height": 853,
+          "cssWidth": 341.156,
+          "cssHeight": 341.156
+        },
+        "geometry": {
+          "outerDiameter": 370,
+          "faceDiameter": 324.083,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 81.40625,
+          "hubToOuterRatio": 0.22001689189189189
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 341,
+          "dpr": 2.5,
+          "pixels": 853
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      }
+    }
+  ],
+  "repeatedResize": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "sample": {
+        "name": "resize-1920x1080",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 7,
+        "faceComposites": 11
+      }
+    },
+    {
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "sample": {
+        "name": "resize-768x1024",
+        "frame": {
+          "width": 552.953125,
+          "height": 552.953125
+        },
+        "rotor": {
+          "width": 509.9567698915009,
+          "height": 509.9567698915009
+        },
+        "canvas": {
+          "width": 510,
+          "height": 510,
+          "cssWidth": 509.7847844710669,
+          "cssHeight": 509.7847844710669
+        },
+        "geometry": {
+          "outerDiameter": 552.953125,
+          "faceDiameter": 484.33164218750005,
+          "faceToOuterRatio": 0.8759000000000001,
+          "hubDiameter": 121.671875,
+          "hubToOuterRatio": 0.2200401254627144
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 5,
+          "staticFaceRebuilds": 5,
+          "measureTextCalls": 80,
+          "patternConstructions": 25,
+          "imageCoverCalculations": 10,
+          "size": 509,
+          "dpr": 1,
+          "pixels": 510
+        },
+        "gifFramesDecoded": 9,
+        "faceComposites": 14
+      }
+    },
+    {
+      "viewport": {
+        "width": 473,
+        "height": 1024
+      },
+      "sample": {
+        "name": "resize-473x1024",
+        "frame": {
+          "width": 378.390625,
+          "height": 378.390625
+        },
+        "rotor": {
+          "width": 349.36065641534395,
+          "height": 349.36065641534395
+        },
+        "canvas": {
+          "width": 349,
+          "height": 349,
+          "cssWidth": 349.25154377480163,
+          "cssHeight": 349.25154377480163
+        },
+        "geometry": {
+          "outerDiameter": 378.390625,
+          "faceDiameter": 331.4323484375,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 83.265625,
+          "hubToOuterRatio": 0.22005202956600736
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 6,
+          "staticFaceRebuilds": 6,
+          "measureTextCalls": 96,
+          "patternConstructions": 30,
+          "imageCoverCalculations": 12,
+          "size": 348,
+          "dpr": 1,
+          "pixels": 349
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 17
+      }
+    },
+    {
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "sample": {
+        "name": "resize-844x390",
+        "frame": {
+          "width": 258,
+          "height": 258
+        },
+        "rotor": {
+          "width": 238,
+          "height": 238
+        },
+        "canvas": {
+          "width": 238,
+          "height": 238,
+          "cssWidth": 237.906,
+          "cssHeight": 237.906
+        },
+        "geometry": {
+          "outerDiameter": 258,
+          "faceDiameter": 225.9822,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 56.78125,
+          "hubToOuterRatio": 0.22008236434108527
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 7,
+          "staticFaceRebuilds": 7,
+          "measureTextCalls": 112,
+          "patternConstructions": 35,
+          "imageCoverCalculations": 14,
+          "size": 237,
+          "dpr": 1,
+          "pixels": 238
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 19
+      }
+    },
+    {
+      "viewport": {
+        "width": 473,
+        "height": 1024
+      },
+      "sample": {
+        "name": "resize-473x1024",
+        "frame": {
+          "width": 378.390625,
+          "height": 378.390625
+        },
+        "rotor": {
+          "width": 349.36065641534395,
+          "height": 349.36065641534395
+        },
+        "canvas": {
+          "width": 349,
+          "height": 349,
+          "cssWidth": 349.25154377480163,
+          "cssHeight": 349.25154377480163
+        },
+        "geometry": {
+          "outerDiameter": 378.390625,
+          "faceDiameter": 331.4323484375,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 83.265625,
+          "hubToOuterRatio": 0.22005202956600736
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 8,
+          "staticFaceRebuilds": 8,
+          "measureTextCalls": 128,
+          "patternConstructions": 40,
+          "imageCoverCalculations": 16,
+          "size": 348,
+          "dpr": 1,
+          "pixels": 349
+        },
+        "gifFramesDecoded": 15,
+        "faceComposites": 23
+      }
+    },
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "sample": {
+        "name": "resize-1920x1080",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 9,
+          "staticFaceRebuilds": 9,
+          "measureTextCalls": 144,
+          "patternConstructions": 45,
+          "imageCoverCalculations": 18,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 17,
+        "faceComposites": 26
+      }
+    }
+  ],
+  "fullscreen": [
+    {
+      "state": "entered",
+      "sample": {
+        "name": "fullscreen",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 9,
+          "staticFaceRebuilds": 9,
+          "measureTextCalls": 144,
+          "patternConstructions": 45,
+          "imageCoverCalculations": 18,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 19,
+        "faceComposites": 28
+      }
+    },
+    {
+      "state": "exited",
+      "sample": {
+        "name": "fullscreen-exited",
+        "frame": {
+          "width": 730,
+          "height": 730
+        },
+        "rotor": {
+          "width": 673,
+          "height": 673
+        },
+        "canvas": {
+          "width": 673,
+          "height": 673,
+          "cssWidth": 673.062,
+          "cssHeight": 673.062
+        },
+        "geometry": {
+          "outerDiameter": 730,
+          "faceDiameter": 639.407,
+          "faceToOuterRatio": 0.8759,
+          "hubDiameter": 160.625,
+          "hubToOuterRatio": 0.22003424657534246
+        },
+        "rotation": 0,
+        "transform": "matrix(1, 0, 0, 1, 0, 0)",
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 9,
+          "staticFaceRebuilds": 9,
+          "measureTextCalls": 144,
+          "patternConstructions": 45,
+          "imageCoverCalculations": 18,
+          "size": 673,
+          "dpr": 1,
+          "pixels": 673
+        },
+        "gifFramesDecoded": 22,
+        "faceComposites": 31
+      }
+    }
+  ]
+}

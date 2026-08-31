@@ -1,5 +1,13 @@
 # Wheels Stage V1.1
 
+## V1.13 canonical square Wheel geometry
+
+Stage's deterministic layout helper remains the sole Overview diameter authority for one through six Wheels. Each tile now assigns that one diameter to both inline and block size; the previous independent `max-height: 100%` clamp and phone-only overflow clip were removed because they could turn the shared rotor/Canvas into a rectangle inside a short tile. Focus mode continues to resolve one scalar from its available broadcast surface and inherits the same square frame, 0.8759 face/outer ratio, 0.22 hub/outer ratio, square Canvas backing, and frame-owned ResizeObserver as regular and Presentation Wheels.
+
+The existing 1, 2, 3, 4, 5, and 6-Wheel arrangements, centred 3+2 map, focus navigation, compact control rail, Stage Spin All, combined results, Fullscreen root, sounds, celebration, and Official authority remain unchanged. V1.13 browser evidence includes six-Wheel Overview, focused Stage, concurrent six-Wheel motion, Fullscreen combined results, desktop/ultrawide/tablet/phone layouts, and zero non-GET Wheel requests.
+
+The complete Stage matrix passed on immutable preview deployment `28c27233-34d6-4d7a-a35c-d376d3c77a0d` before the identical artifact was promoted as production deployment `f7a02e4c-3aa6-4f6d-a4e1-1d10f4171348`.
+
 ## V1.12 shared Stage mechanics snapshot
 
 Practice/Demo All and Official All now resolve the global Public mechanics projection once per batch and snapshot the same mechanics revision, curve parameters, and start timestamp into every Wheel's local animation plan. Individual and focused Stage spins use the identical planner. A settings change during an active batch therefore affects only future spins; it cannot split the current six-Wheel presentation or change any authoritative result. Stage persistence, membership, Official atomicity, and result ownership are unchanged.

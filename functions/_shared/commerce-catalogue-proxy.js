@@ -40,16 +40,22 @@ export async function proxyCommerceShippingMarkets(env, fetchImpl = fetch) {
 export function normalizeCatalogue(input) {
   if (!input || input.ok !== true || input.source !== "commerce-d1" || !Array.isArray(input.products)) throw new Error("catalogue_invalid");
   const products = input.products.map(normalizeProduct);
+  const authority = normalizeCatalogueAuthority(input.authority, products.length);
+  if (authority.reconciled && products.length > authority.currentProducts) throw new Error("catalogue_authority_count_invalid");
   const collections = requiredArray(input.collections, 200).map(normalizeCollection);
   if (new Set(products.map((product) => product.id)).size !== products.length || new Set(products.map((product) => product.slug)).size !== products.length) throw new Error("catalogue_duplicate");
   if (new Set(collections.map((collection) => collection.slug)).size !== collections.length) throw new Error("catalogue_collection_duplicate");
-  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, collections, products, updatedAt: boundedText(input.updatedAt, 80) || null };
+  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, authority, collections, products, updatedAt: boundedText(input.updatedAt, 80) || null };
 }
 
 export function normalizeProductPayload(input) {
   if (!input || input.ok !== true || input.source !== "commerce-d1") throw new Error("catalogue_product_invalid");
-  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, product: normalizeProduct(input.product) };
+  const authority = normalizeCatalogueAuthority(input.authority, 1);
+  if (authority.reconciled && authority.currentProducts < 1) throw new Error("catalogue_authority_count_invalid");
+  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, authority, product: normalizeProduct(input.product) };
 }
+
+function normalizeCatalogueAuthority(input, fallbackCount) { if (input === undefined) return { currentProducts: fallbackCount, reconciled: false }; if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("catalogue_authority_invalid"); const currentProducts = integer(input.currentProducts, 0, 100000, null); if (currentProducts === null || typeof input.reconciled !== "boolean") throw new Error("catalogue_authority_invalid"); return { currentProducts, reconciled: input.reconciled }; }
 
 function normalizeProduct(input) {
   const id = identifier(input?.id); const slug = boundedText(input?.slug, 180); const title = boundedText(input?.title, 240);

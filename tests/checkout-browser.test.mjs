@@ -129,6 +129,32 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
   assert.equal(await accountPage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
   assert.deepEqual(accountErrors, []);
   await accountContext.close();
+
+  const staleContext = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  await staleContext.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: new Date(Date.now() + 86400000).toISOString(), categories: { preferences: true, externalMedia: false } })), url: ORIGIN, sameSite: "Lax" }]);
+  await staleContext.addInitScript(() => localStorage.setItem("thirdrailify-commerce-cart-v2", JSON.stringify([{ productId: "archived-product", variantId: "archived-variant", quantity: 2 }])));
+  const stalePage = await staleContext.newPage(); const staleErrors = [];
+  stalePage.on("console", (message) => { if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) staleErrors.push(message.text()); });
+  stalePage.on("pageerror", (error) => staleErrors.push(error.message));
+  await stalePage.route("**/api/**", async (route) => { const path = new URL(route.request().url()).pathname;
+    if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
+    if (path === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
+    if (path === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, authority: { currentProducts: 0, reconciled: true }, updatedAt: "2026-09-01T00:00:00.000Z", collections: [], products: [] });
+    if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
+    if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
+    return json(route, { ok: false, error: "not_found" }, 404);
+  });
+  await stalePage.goto(`${ORIGIN}/cart`); await stalePage.getByRole("heading", { name: "Your cart." }).waitFor();
+  await stalePage.getByRole("heading", { name: "Unavailable catalogue item" }).waitFor();
+  assert.match(await stalePage.locator(".cart-summary").innerText(), /1 unavailable cart item[\s\S]*excluded from the subtotal/i);
+  await stalePage.getByRole("button", { name: "Open cart, 2 items" }).click();
+  const drawer = stalePage.getByRole("dialog", { name: "Your cart" }); await drawer.getByRole("heading", { name: "Unavailable catalogue item" }).waitFor();
+  await drawer.getByRole("button", { name: "Remove unavailable item from cart" }).click();
+  await drawer.getByRole("heading", { name: "Nothing on the rail yet." }).waitFor();
+  assert.equal(await stalePage.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth), true);
+  assert.deepEqual(staleErrors, []);
+  await stalePage.screenshot({ path: `${RESULTS}/stale-cart-390x844.png`, fullPage: true });
+  await staleContext.close();
 });
 
 async function fillDelivery(page) {

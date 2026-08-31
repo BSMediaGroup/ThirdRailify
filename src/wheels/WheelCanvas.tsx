@@ -6,8 +6,8 @@ import type { WheelConfig, WheelEntry, WheelMediaAsset } from "./types";
 import { WheelsBrandMark } from "./WheelsBrandMark";
 import { pointerAccentShades } from "./segmentStyles.mjs";
 import { drawCoverImage, drawSegmentPattern } from "./segmentPatterns";
-import { createWheelRenderPlan, WHEEL_LABEL_FONT_FAMILY, WHEEL_LABEL_FONT_WEIGHT } from "./wheelRenderPlan.mjs";
-import type { WheelRenderPlan, WheelSegmentRenderPlan } from "./wheelRenderPlan.mjs";
+import { createWheelRenderPlan, resolveWheelGeometry, WHEEL_GEOMETRY, WHEEL_LABEL_FONT_FAMILY, WHEEL_LABEL_FONT_WEIGHT } from "./wheelRenderPlan.mjs";
+import type { WheelGeometry, WheelRenderPlan, WheelSegmentRenderPlan } from "./wheelRenderPlan.mjs";
 
 type Props = { entries: WheelEntry[]; config: WheelConfig; rotation: number; durationMs: number; spinning: boolean; animation?: WheelSpinPlan | null; reducedMotion?: boolean; onSpinEnd?: () => void; onPointerTargetChange?: (entry: WheelEntry | null) => void; onSegmentSelect?: (entry: WheelEntry, trigger: HTMLCanvasElement) => void; onCentreSpin?: () => void; centreSpinDisabled?: boolean; centreSpinLabel?: string; compact?: boolean; centreImageUrl?: string | null; segmentMedia?: WheelMediaAsset[]; segmentPreviewUrls?: Record<string, string>; winner?: boolean };
 type SegmentCanvasImage = { source: CanvasImageSource; width: number; height: number };
@@ -15,16 +15,16 @@ type DecodedGifFrame = CanvasImageSource & { close: () => void; displayWidth: nu
 type GifDecoder = { tracks: { ready: Promise<void>; selectedTrack?: { frameCount: number } | null }; decode: (options: { frameIndex: number }) => Promise<{ image: DecodedGifFrame }>; close: () => void };
 type GifDecoderConstructor = new (options: { data: ArrayBuffer; type: string }) => GifDecoder;
 type GifState = { decoder: GifDecoder; frameCount: number; frameIndex: number; nextAt: number; busy: boolean; bitmap: ImageBitmap | null };
-type RendererMetrics = { version: "wheel-renderer-v19"; size: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; lastReason: string; plan: WheelRenderPlan | null };
+type RendererMetrics = { version: "wheel-renderer-v19"; geometryVersion: "canonical-square-v113"; size: number; outerDiameter: number; faceDiameter: number; faceToOuterRatio: number; hubToOuterRatio: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; lastReason: string; plan: WheelRenderPlan | null };
   type SpinMetrics = { version: "wheel-spin-v112"; id: string; startAt: number; firstFrameAt: number | null; durationMs: number; startRotation: number; finalRotation: number; frameCount: number; lastFrameAt: number; lastFrameRotation: number; finalFrameRotation: number | null; expectedFinalFrameDelta: number | null; actualFinalFrameDelta: number | null; settledAt: number | null; completed: boolean; reducedMotion: boolean; mechanicsVersion: number; curveProfile: string; mechanicsRevision: number | null };
 type InstrumentedCanvas = HTMLCanvasElement & { __wheelRendererV19?: RendererMetrics; __wheelSpinV110?: SpinMetrics };
-type FaceCache = { size: number; ratio: number; pixels: number; plan: WheelRenderPlan; underlay: HTMLCanvasElement; foreground: HTMLCanvasElement };
+type FaceCache = { size: number; ratio: number; pixels: number; geometry: WheelGeometry; plan: WheelRenderPlan; underlay: HTMLCanvasElement; foreground: HTMLCanvasElement };
 
 const EMPTY_MEDIA: WheelMediaAsset[] = [];
 const EMPTY_PREVIEWS: Record<string, string> = {};
 
 export function WheelCanvas({ entries, config, rotation, durationMs, spinning, animation = null, reducedMotion = false, onSpinEnd, onPointerTargetChange, onSegmentSelect, onCentreSpin, centreSpinDisabled = false, centreSpinLabel = "Spin wheel from centre", compact = false, centreImageUrl, segmentMedia = EMPTY_MEDIA, segmentPreviewUrls = EMPTY_PREVIEWS, winner = false }: Props) {
-  const canvas = useRef<InstrumentedCanvas>(null); const rotor = useRef<HTMLDivElement>(null); const lastTarget = useRef<string | null>(null); const targetCallback = useRef(onPointerTargetChange);
+  const frame = useRef<HTMLDivElement>(null); const canvas = useRef<InstrumentedCanvas>(null); const rotor = useRef<HTMLDivElement>(null); const lastTarget = useRef<string | null>(null); const targetCallback = useRef(onPointerTargetChange);
   const spinEndCallback = useRef(onSpinEnd);
   const active = useMemo(() => entries.filter((entry) => entry.state === "active"), [entries]);
   const shades = useMemo(() => pointerAccentShades(config.pointerAccent), [config.pointerAccent]);
@@ -34,12 +34,12 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
   spinEndCallback.current = onSpinEnd;
 
   useEffect(() => {
-    const element = canvas.current; const rotorElement = rotor.current; if (!element || !rotorElement) return;
+    const frameElement = frame.current; const element = canvas.current; const rotorElement = rotor.current; if (!frameElement || !element || !rotorElement) return;
     const images = imageCache.current; const gifs = gifCache.current;
     const sources = new Map(segmentMedia.map((asset) => [asset.id, asset.url])); for (const [id, url] of Object.entries(segmentPreviewUrls)) sources.set(id, url);
     const animatedIds = new Set(segmentMedia.filter((asset) => asset.contentType === "image/gif").map((asset) => asset.id));
     const dimensions = new Map(segmentMedia.filter((asset) => asset.width && asset.height).map((asset) => [asset.id, { width: Number(asset.width), height: Number(asset.height) }]));
-    const metrics: RendererMetrics = { version: "wheel-renderer-v19", size: 0, dpr: 0, pixels: 0, planBuilds: 0, staticFaceRebuilds: 0, faceComposites: 0, gifLayerComposites: 0, gifFramesDecoded: 0, measureTextCalls: 0, patternConstructions: 0, imageCoverCalculations: 0, resizeInvalidations: 0, lastReason: "initial", plan: null };
+    const metrics: RendererMetrics = { version: "wheel-renderer-v19", geometryVersion: "canonical-square-v113", size: 0, outerDiameter: 0, faceDiameter: 0, faceToOuterRatio: WHEEL_GEOMETRY.faceToOuterRatio, hubToOuterRatio: WHEEL_GEOMETRY.hubToOuterRatio, dpr: 0, pixels: 0, planBuilds: 0, staticFaceRebuilds: 0, faceComposites: 0, gifLayerComposites: 0, gifFramesDecoded: 0, measureTextCalls: 0, patternConstructions: 0, imageCoverCalculations: 0, resizeInvalidations: 0, lastReason: "initial", plan: null };
     element.__wheelRendererV19 = metrics;
     let face: FaceCache | null = null; let disposed = false;
 
@@ -60,14 +60,14 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
 
     const rebuild = (reason: string, countResize = false) => {
       if (disposed) return;
-      const size = Math.max(1, Math.floor(Math.min(rotorElement.clientWidth || 640, rotorElement.clientHeight || rotorElement.clientWidth || 640))); const ratio = Math.min(window.devicePixelRatio || 1, 2.5); const pixels = Math.max(1, Math.round(size * ratio));
-      if (countResize && face && face.size === size && face.ratio === ratio && face.pixels === pixels) return;
+      const diameter = frameElement.clientWidth || 640; const geometry = resolveWheelGeometry(diameter, window.devicePixelRatio || 1); const size = Math.max(1, Math.floor(geometry.canvasCssSide)); const ratio = geometry.dpr; const pixels = geometry.canvasBackingSide;
+      if (countResize && face && face.size === size && face.ratio === ratio && face.pixels === pixels && Math.abs(face.geometry.outerDiameter - geometry.outerDiameter) < .01) return;
       if (countResize) metrics.resizeInvalidations += 1;
       const underlay = layerCanvas(pixels); const foreground = layerCanvas(pixels); const measureContext = foreground.getContext("2d"); if (!measureContext) return;
       const measureLabel = (label: string, fontSize: number) => { metrics.measureTextCalls += 1; measureContext.font = `${WHEEL_LABEL_FONT_WEIGHT} ${fontSize}px ${WHEEL_LABEL_FONT_FAMILY}`; return measureContext.measureText(label).width; };
-      const plan = createWheelRenderPlan(active, config, size, measureLabel, dimensions); metrics.planBuilds += 1; metrics.imageCoverCalculations += plan.segments.filter((segment) => segment.image).length;
+      const plan = createWheelRenderPlan(active, config, size, measureLabel, dimensions, geometry.outerDiameter); metrics.planBuilds += 1; metrics.imageCoverCalculations += plan.segments.filter((segment) => segment.image).length;
       drawUnderlay(underlay, plan, ratio, images, animatedIds, metrics); drawForeground(foreground, plan, ratio, config);
-      face = { size, ratio, pixels, plan, underlay, foreground }; metrics.size = size; metrics.dpr = ratio; metrics.pixels = pixels; metrics.plan = plan; metrics.staticFaceRebuilds += 1; metrics.lastReason = reason; compose(reason);
+      face = { size, ratio, pixels, geometry, plan, underlay, foreground }; metrics.size = size; metrics.outerDiameter = geometry.outerDiameter; metrics.faceDiameter = geometry.faceDiameter; metrics.faceToOuterRatio = geometry.faceToOuterRatio; metrics.hubToOuterRatio = geometry.hubToOuterRatio; metrics.dpr = ratio; metrics.pixels = pixels; metrics.plan = plan; metrics.staticFaceRebuilds += 1; metrics.lastReason = reason; compose(reason);
     };
 
     const usedImageIds = new Set(active.map((entry, index) => {
@@ -79,7 +79,7 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
       if (animatedIds.has(id)) void prepareGif(id, url, images, gifs, () => { metrics.gifFramesDecoded += 1; compose("gif-frame"); }, () => disposed);
     }
     rebuild("initial");
-    const resize = () => rebuild("resize", true); const observer = new ResizeObserver(resize); observer.observe(rotorElement); window.addEventListener("resize", resize);
+    const resize = () => rebuild("resize", true); const observer = new ResizeObserver(resize); observer.observe(frameElement); window.addEventListener("resize", resize);
     void document.fonts?.ready.then(() => { if (!disposed) rebuild("fonts-ready"); });
     const ticker = animatedIds.size ? window.setInterval(() => { if (document.visibilityState === "visible") advanceGifs(images, gifs, () => { metrics.gifFramesDecoded += 1; compose("gif-frame"); }, () => disposed); }, 75) : null;
     return () => { disposed = true; observer.disconnect(); window.removeEventListener("resize", resize); if (ticker != null) window.clearInterval(ticker); for (const state of gifs.values()) { state.bitmap?.close(); state.decoder.close(); } gifs.clear(); images.clear(); delete element.__wheelRendererV19; };
@@ -120,15 +120,16 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
   }, [animation, reducedMotion, rotation, spinning]);
 
   const alternative = active.length ? `Wheel with ${active.length} active participants: ${active.slice(0, 12).map((entry) => entry.label).join(", ")}${active.length > 12 ? ", and more" : ""}.` : "Wheel with no active participants.";
+  const geometryStyle = { "--wheel-rotor-inset": `${WHEEL_GEOMETRY.rotorInsetRatio * 100}%`, "--wheel-rim-outer-inset": `${WHEEL_GEOMETRY.outerRimInsetRatio * 100}%`, "--wheel-rim-inner-inset": `${WHEEL_GEOMETRY.innerRimInsetRatio * 100}%`, "--wheel-hub-inset": `${(1 - WHEEL_GEOMETRY.hubToOuterRatio) * 50}%`, "--wheel-hub-padding": `${WHEEL_GEOMETRY.hubPaddingRatio * 100}%`, "--wheel-pointer-width": `${WHEEL_GEOMETRY.pointerWidthRatio * 100}%`, "--wheel-pointer-height": `${WHEEL_GEOMETRY.pointerHeightRatio * 100}%`, "--wheel-pointer-top": `${WHEEL_GEOMETRY.pointerTopRatio * 100}%`, "--pointer": shades.base, "--pointer-dark": shades.dark, "--pointer-light": shades.light, "--pointer-glow": shades.glow } as React.CSSProperties;
   return (
-    <div className={`wheel-stage${compact ? " wheel-stage--compact" : ""}${spinning ? " is-spinning" : ""}${winner ? " is-winner" : ""}`} style={{ "--pointer": shades.base, "--pointer-dark": shades.dark, "--pointer-light": shades.light, "--pointer-glow": shades.glow } as React.CSSProperties}>
+    <div ref={frame} className={`wheel-stage${compact ? " wheel-stage--compact" : ""}${spinning ? " is-spinning" : ""}${winner ? " is-winner" : ""}`} style={geometryStyle} data-wheel-geometry="canonical-square-v113">
       <div className="wheel-stage__halo" aria-hidden="true" />
       <div className="wheel-stage__rim wheel-stage__rim--outer" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <div className="wheel-stage__rim wheel-stage__rim--inner" aria-hidden="true" />
       <div className="wheel-stage__energy" aria-hidden="true" />
       <div className="wheel-stage__pointer" aria-hidden="true"><span className="wheel-stage__pointer-housing"><i className="wheel-stage__pointer-blade" /><i className="wheel-stage__pointer-groove" /></span></div>
       <div ref={rotor} className="wheel-stage__rotor" style={{ transform: `rotate(${spinning && animation ? animation.startRotation : rotation}deg)`, transitionDuration: "0ms" }} data-spin-duration-ms={spinning && animation ? animation.durationMs : durationMs}>
-        <canvas ref={canvas} role="img" aria-label={alternative} className={onSegmentSelect && !spinning ? "is-interactive" : undefined} onClick={(event) => { if (spinning || !onSegmentSelect) return; const parent = event.currentTarget.parentElement; const stage = event.currentTarget.closest<HTMLElement>(".wheel-stage"); if (!parent || !stage) return; const stageRect = stage.getBoundingClientRect(); const size = Math.min(parent.clientWidth, parent.clientHeight); const selected = hitTestWheel(active, { x: event.clientX - stageRect.left - parent.offsetLeft, y: event.clientY - stageRect.top - parent.offsetTop }, size, rotation); if (selected) onSegmentSelect(selected, event.currentTarget); }} />
+        <canvas ref={canvas} role="img" aria-label={alternative} className={onSegmentSelect && !spinning ? "is-interactive" : undefined} onClick={(event) => { if (spinning || !onSegmentSelect) return; const parent = event.currentTarget.parentElement; const stage = event.currentTarget.closest<HTMLElement>(".wheel-stage"); if (!parent || !stage) return; const stageRect = stage.getBoundingClientRect(); const size = parent.clientWidth; const transform = getComputedStyle(parent).transform; const matrix = transform === "none" ? null : new DOMMatrixReadOnly(transform); const renderedRotation = matrix ? Math.atan2(matrix.b, matrix.a) * 180 / Math.PI : rotation; const selected = hitTestWheel(active, { x: event.clientX - (stageRect.left + stageRect.width / 2) + size / 2, y: event.clientY - (stageRect.top + stageRect.height / 2) + size / 2 }, size, renderedRotation); if (selected) onSegmentSelect(selected, event.currentTarget); }} />
       </div>
       {onCentreSpin ? <button type="button" className={`wheel-stage__hub is-spin-control${centreImageUrl ? " is-custom" : " is-default"}`} onClick={onCentreSpin} disabled={centreSpinDisabled} aria-label={centreSpinLabel}>{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</button> : <div className={`wheel-stage__hub${centreImageUrl ? " is-custom" : " is-default"}`} aria-hidden="true">{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</div>}
     </div>

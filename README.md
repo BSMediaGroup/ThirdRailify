@@ -1,5 +1,13 @@
 # Third Railify V2 public site
 
+## Current commerce catalogue boundary (local implementation)
+
+The same-origin catalogue proxy now carries a sanitized current-product count from Admin and fails closed if a reconciled Public projection exceeds that authority. There is still no Public Commerce D1 binding, provider credential, raw provider identity, or runtime Wix/static merge. Product/category/search/Featured/SEO surfaces continue to derive from the one Admin-owned current projection.
+
+Device-local carts now retain unresolved historical IDs visibly: Cart Drawer, Cart Page, and Checkout show an explicit unavailable state and removal action when a product or variant disappears from the current catalogue. Unavailable lines are excluded from browser subtotals and block shipping/payment requests; the Admin checkout boundary independently rejects non-current product or variant rows. No cart is silently rewritten.
+
+Updated tree: `functions/_shared/commerce-catalogue-proxy.js`, `src/lib/catalogueProvider.ts`, `src/components/CartDrawer.tsx`, `src/pages/CartPage.tsx`, `src/pages/CheckoutPage.tsx`, shared styles, and checkout/storefront browser coverage. No deployment, payment, order, provider call, or production mutation was performed.
+
 ## Public Polls V1 (local implementation)
 
 `/polls` is a first-class gallery with open/closed/recent/mine views, compact result cards, an accessible quick-view dialog, public detail stages, a lightweight noindex `/polls/:slug/popout`, and approved-creator draft/edit routes. Open views share one visibility-aware seven-second refresh coordinator; closed results do not keep polling. Exact totals and the current browser/account vote come only from the Admin authority.

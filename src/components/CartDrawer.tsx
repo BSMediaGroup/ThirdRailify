@@ -12,8 +12,9 @@ export function CartDrawer() {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [products, setProducts] = useState<CatalogueProduct[]>([]);
   const [catalogueError, setCatalogueError] = useState(false);
+  const [catalogueReady, setCatalogueReady] = useState(false);
 
-  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(false); }).catch(() => setCatalogueError(true)); return () => controller.abort(); }, []);
+  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(false); setCatalogueReady(true); }).catch(() => { setCatalogueError(true); setCatalogueReady(false); }); return () => controller.abort(); }, []);
 
   useEffect(() => {
     if (!cart.isOpen) return;
@@ -55,6 +56,7 @@ export function CartDrawer() {
     return product && variant ? [{ item, product, variant }] : [];
   });
   const subtotal = rows.reduce((sum, row) => sum + row.variant.unitAmount * row.item.quantity, 0);
+  const unavailable = catalogueReady ? cart.items.filter((item) => !rows.some((row) => row.item.productId === item.productId && row.item.variantId === item.variantId)) : [];
 
   return (
     <div className="cart-layer">
@@ -82,15 +84,17 @@ export function CartDrawer() {
               </div>
               <button className="cart-remove-button cart-row__remove" type="button" onClick={() => cart.remove(product.id, variant.id)} aria-label={`Remove ${product.name} from cart`} title="Remove item"><TrashIcon /></button>
             </article>
-          )) : (
+          )) : null}
+          {unavailable.map((item) => <article className="cart-row cart-row--unavailable" key={`${item.productId}:${item.variantId}`}><div className="cart-row__unavailable-mark" aria-hidden="true">!</div><div><h3>Unavailable catalogue item</h3><p className="cart-row__variant">This saved product or variant is no longer in the current catalogue.</p><small>{item.productId} · {item.variantId} · Qty {item.quantity}</small></div><button className="cart-remove-button cart-row__remove" type="button" onClick={() => cart.remove(item.productId, item.variantId)} aria-label="Remove unavailable item from cart" title="Remove item"><TrashIcon /></button></article>)}
+          {!rows.length && !unavailable.length ? (
             <div className="empty-state empty-state--cart"><BagIcon /><h3>Nothing on the rail yet.</h3><p>Choose a product variant from the shop to add it here.</p></div>
-          )}
+          ) : null}
         </div>
         <div className="cart-drawer__footer">
           <div><span>Cart subtotal</span><CadAmount minorUnits={subtotal} /></div>
           <button className="button button--disabled" type="button" disabled>Checkout unavailable</button>
           <Link className="button button--secondary" to="/cart" onClick={cart.close}>View full cart</Link>
-          {rows.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
+          {cart.items.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
         </div>
       </aside>
     </div>

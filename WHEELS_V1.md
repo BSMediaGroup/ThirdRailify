@@ -1,3 +1,17 @@
+# Third Railify Wheels V1.13
+
+## V1.13 canonical responsive geometry
+
+Every runtime Wheel now has one non-rotating square frame and one scalar outer diameter. The rotor is absolutely inset by 3.9% of that square frame, remains `aspect-ratio: 1 / 1`, and receives rigid `rotate(...)` transforms only. Canvas CSS geometry fills that rotor square; its backing bitmap uses one rounded side from the rotor diameter and bounded DPR. The ResizeObserver watches the non-rotating outer frame, so rotation creates no resize invalidation or static-face rebuild.
+
+The previous large-band defect came from `.wheel-stage { padding: 3.9% }`: CSS percentage padding resolved against the containing block's inline size, not the Wheel's own diameter. A wide 2048x1152 Presentation container therefore reduced an 802px Wheel to a 659px rotor and drove the face/outer ratio down to 0.7806, while the same design measured about 0.876 on phone. The previous render plan also used `centre - max(8px, 2.5%)`, allowing its fixed 8px inset to win on small previews. V1.13 replaces both with one canonical face/outer ratio of `0.8759`; hub radius/outer radius is `0.22`, hub padding is `0.015` of the frame, and outer/inner rim insets remain the established `0.008`/`0.03` design ratios.
+
+The mobile ellipse risk came from Stage Overview combining an aspect-ratio-derived width with an independent `max-height: 100%` clamp inside a rectangular tile. Stage's existing layout-helper diameter now sets both inline and block size, with no one-axis clamp or mobile overflow clip. Detail, Presentation, focused Stage, editor/Appearance previews, and short-landscape Presentation all choose one scalar square size. The 844x390 Presentation layout places the square Wheel beside reachable controls rather than subtracting a desktop-height control stack until the Wheel collapses.
+
+Local browser acceptance covers detail and Presentation at desktop, 473x1024, 430x932, 412x915, 390x844, and 844x390; Presentation additionally covers 2048x1152, 2560x1080, 3440x1440, and 1280x720. Equivalent layout scales 67-200%, DPR 1/1.25/1.5/2/3, repeated desktop-tablet-phone-landscape-phone-desktop resize, orientation return, Fullscreen enter/exit, Appearance preview, patterned/static-image/GIF/weighted content, and idle/mid-spin states all held exact square geometry. Across 60 recorded conditions the frame and rotor circularity ratios were exactly `1`, face/outer stayed `0.8759`, hub/outer stayed `0.220005-0.220082`, Canvas backing stayed square, and transform X/Y scales were identical. V1.9 caching remains intact: spin changes rotation and bounded GIF composites only, with no static plan rebuild.
+
+Public preview `28c27233-34d6-4d7a-a35c-d376d3c77a0d` and production `f7a02e4c-3aa6-4f6d-a4e1-1d10f4171348` serve the same artifact-manifest SHA-256 `9cc87bc381d4a0f71a74003050caa06cdc3066bad2c8757b862c6bb277fc67d2`. Immutable preview acceptance repeated the full Wheel and Stage matrices. Live `thirdrailify.com` acceptance on the genuine `standard-wheel-test` route passed desktop and 390x844 idle/mid-spin/settled geometry with zero Wheels writes; stable and immutable entry JS/CSS hashes match byte-for-byte.
+
 # Third Railify Wheels V1.12
 
 ## V1.12 global spin-mechanics projection

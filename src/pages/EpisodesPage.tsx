@@ -4,6 +4,7 @@ import rumbleIcon from "../../assets/icons/rumble.svg";
 import { formatDate } from "../components/BroadcastComponents";
 import { EpisodeCard } from "../components/EpisodeComponents";
 import { ArrowIcon, BoltIcon, RadioIcon } from "../components/Icons";
+import { WatchTrailBackground } from "../components/WatchTrailBackground";
 import { useEpisodes } from "../hooks/useEpisodes";
 import { useMotionGate } from "../hooks/useMotionGate";
 
@@ -20,19 +21,7 @@ export function EpisodesPage() {
   return (
     <div className="episodes-page">
       <header ref={motion.ref} className={`episodes-hero episodes-signal-hero${motion.active ? " is-motion-active" : ""}`} data-motion={motion.active ? "active" : "static"}>
-        <div className="episodes-signal-field" aria-hidden="true">
-          <i className="episodes-signal-field__grid" />
-          <div className="episodes-signal-field__depth"><i /><i /></div>
-          <svg className="episodes-signal-field__frequencies" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path className="episodes-signal-field__frequency episodes-signal-field__frequency--base" d="M-8 82C18 68 32 74 47 54S72 23 108 12" />
-            <path className="episodes-signal-field__frequency episodes-signal-field__frequency--base" d="M-8 92C20 84 38 88 53 67S77 42 108 36" />
-            <path className="episodes-signal-field__frequency episodes-signal-field__frequency--live episodes-signal-field__frequency--one" d="M-8 82C18 68 32 74 47 54S72 23 108 12" />
-            <path className="episodes-signal-field__frequency episodes-signal-field__frequency--live episodes-signal-field__frequency--two" d="M-8 92C20 84 38 88 53 67S77 42 108 36" />
-          </svg>
-          <div className="episodes-signal-field__particles">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div>
-          <i className="episodes-signal-field__glow" />
-          <div className="episodes-signal-field__beacon"><i /><i /><i /><span /></div>
-        </div>
+        <WatchTrailBackground />
         <div className="container episodes-signal-hero__layout">
           <div className="episodes-signal-hero__copy">
             <p className="eyebrow"><i /> Stream archive / 24 retained records</p>

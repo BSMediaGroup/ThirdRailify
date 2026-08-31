@@ -813,6 +813,51 @@
   }
 }
 
+/* Short landscape Presentation keeps one square Wheel beside reachable controls. */
+@media (orientation: landscape) and (max-height: 600px) {
+  .wheel-control-page--presentation .wheel-presentation-layout {
+    min-height: 100dvh;
+    padding: 58px 12px 8px;
+  }
+
+  .wheel-control-page--presentation .wheel-control-stage {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 42vw);
+    grid-template-rows: auto minmax(0, 1fr);
+    column-gap: 12px;
+  }
+
+  .wheel-control-page--presentation .wheel-navigator {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .wheel-control-page--presentation .wheel-visual-wrap {
+    --wheel-target-radius: min(calc(50dvh - 66px), 26vw, 260px);
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    padding: 2px;
+  }
+
+  .wheel-control-page--presentation .wheel-stage {
+    inline-size: min(calc(100dvh - 132px), 52vw, 520px);
+  }
+
+  .wheel-control-page--presentation .pointer-target-hud--presentation {
+    width: 150px;
+  }
+
+  .wheel-control-page--presentation .wheel-spin-console {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    width: 100%;
+    margin: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wheel-owner--identity .wheel-owner__trigger,
   .wheel-owner--identity .wheel-owner__trigger > span:not(.wheel-owner__avatar),

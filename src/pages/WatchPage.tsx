@@ -6,6 +6,7 @@ import { BroadcastMetadata, BroadcastPlayer, BroadcastStatusBadge, PlatformSelec
 import { EpisodeCard } from "../components/EpisodeComponents";
 import { ArrowIcon, RadioIcon } from "../components/Icons";
 import { SparklingSky } from "../components/SparklingSky";
+import { WatchTrailBackground } from "../components/WatchTrailBackground";
 import { useBroadcast } from "../hooks/useBroadcast";
 import { useEpisodes } from "../hooks/useEpisodes";
 import { useMotionGate } from "../hooks/useMotionGate";
@@ -30,18 +31,7 @@ export function WatchPage() {
   return (
     <div className="watch-page watch-v2">
       <section ref={hero.ref} className={`watch-hero${live ? " is-live" : ""}${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
-        <div className="watch-hero__atmosphere" aria-hidden="true">
-          <div className="watch-hero__beams"><i /><i /></div>
-          <svg className="watch-hero__routes" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path className="watch-hero__route watch-hero__route--base" d="M-8 79C16 67 27 72 45 53S72 24 108 8" />
-            <path className="watch-hero__route watch-hero__route--base" d="M-6 90C20 78 33 83 51 63S78 37 108 29" />
-            <path className="watch-hero__route watch-hero__route--live watch-hero__route--live-one" d="M-8 79C16 67 27 72 45 53S72 24 108 8" />
-            <path className="watch-hero__route watch-hero__route--live watch-hero__route--live-two" d="M-6 90C20 78 33 83 51 63S78 37 108 29" />
-            <circle cx="45" cy="53" r=".55" /><circle cx="74" cy="28" r=".55" />
-          </svg>
-          <div className="watch-hero__particles">{Array.from({ length: 10 }, (_, index) => <i key={index} />)}</div>
-          <div className="watch-hero__beacon"><i /><i /><i /><span /></div>
-        </div>
+        <WatchTrailBackground />
         <div className="container watch-hero__grid">
           <div>
             <p className="eyebrow"><i /> Third Railify broadcast network</p>

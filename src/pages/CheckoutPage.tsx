@@ -27,6 +27,7 @@ export function CheckoutPage() {
   const [products, setProducts] = useState<CatalogueProduct[]>([]);
   const [shippingMarkets, setShippingMarkets] = useState<ShippingMarket[]>([]);
   const [catalogueError, setCatalogueError] = useState("");
+  const [catalogueReady, setCatalogueReady] = useState(false);
   const [delivery, setDelivery] = useState<Delivery>(EMPTY_DELIVERY);
   const [customerMode, setCustomerMode] = useState<"guest" | "account" | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
@@ -44,7 +45,7 @@ export function CheckoutPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(""); }).catch(() => setCatalogueError("Current catalogue details are unavailable."));
+    catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueReady(true); setCatalogueError(""); }).catch(() => { setCatalogueReady(false); setCatalogueError("Current catalogue details are unavailable."); });
     return () => controller.abort();
   }, []);
 
@@ -88,6 +89,7 @@ export function CheckoutPage() {
     const variant = product?.variants?.find((candidate) => candidate.id === item.variantId);
     return product && variant ? [{ item, product, variant }] : [];
   });
+  const unavailable = catalogueReady ? cart.items.filter((item) => !rows.some((row) => row.item.productId === item.productId && row.item.variantId === item.variantId)) : [];
   const cartKey = JSON.stringify(cart.items);
   useEffect(() => { setQuote(null); setSelectedRateId(""); setMessage("Cart changed. Request current shipping methods when delivery details are complete."); checkoutRequestId.current = crypto.randomUUID(); }, [cartKey]);
 
@@ -128,6 +130,7 @@ export function CheckoutPage() {
 
   const createPayPalPayment = async (): Promise<PayPalCreateResult> => {
     setTouched(true); setMessage("");
+    if (unavailable.length) throw new Error("Remove unavailable catalogue items before payment.");
     if (!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length || !customerMode) throw new Error("Complete the customer, delivery, and current shipping selections before payment.");
     const response = await fetch("/api/commerce/paypal/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ checkoutRequestId: checkoutRequestId.current, items: cart.items, recipient: delivery, quoteId: quote.id, shippingOptionId: selectedRate.id, customer: { mode: customerMode, name: delivery.name, email: customerEmail } }) });
     const payload = await response.json() as PayPalCreateResult & { message?: string };
@@ -140,6 +143,7 @@ export function CheckoutPage() {
   return <section className="checkout-page"><div className="container">
     <header className="checkout-heading"><div><p className="eyebrow">Secure checkout · CAD authority</p><h1>Delivery &amp; checkout.</h1><p>Confirm contact and delivery details, review server-issued shipping, then approve the server-created order with PayPal when every checkout gate is enabled.</p></div><Link className="button button--secondary" to="/cart">Back to cart</Link></header>
     {catalogueError ? <div className="admin-alert" role="alert">{catalogueError}</div> : null}
+    {unavailable.length ? <div className="checkout-error" role="alert"><strong>Checkout blocked by unavailable catalogue items.</strong><p>These saved variants are no longer in the current catalogue. Remove them before requesting shipping or payment.</p>{unavailable.map((item) => <p key={`${item.productId}:${item.variantId}`}><code>{item.productId} · {item.variantId}</code> <button className="text-button" type="button" onClick={() => cart.remove(item.productId, item.variantId)}>Remove</button></p>)}</div> : null}
     <div className="checkout-layout">
       <form className="checkout-form" onSubmit={requestRates} noValidate>
         <section className="checkout-panel checkout-identity" aria-labelledby="checkout-identity-title"><p className="eyebrow">01 · Customer</p><h2 id="checkout-identity-title">How would you like to purchase?</h2>
@@ -161,7 +165,7 @@ export function CheckoutPage() {
             <CheckoutField label="Telephone (optional)" name="phone" value={delivery.phone} change={change} autoComplete="tel" maxLength={32} />
           </div>
           {account && !selectedAddressId && <div className="checkout-save-address"><label><input type="checkbox" checked={saveAddress} onChange={(event) => setSaveAddress(event.target.checked)} /><span>Save this address to my account</span></label>{saveAddress && <label><span>Address label</span><input value={addressLabel} maxLength={40} onChange={(event) => setAddressLabel(event.target.value)} /></label>}</div>}
-          <button className="button button--primary checkout-rate-button" type="submit" disabled={quoteBusy || !rows.length || !customerMode}>{quoteBusy ? "Requesting current methods…" : customerMode ? "Request shipping methods" : "Choose guest or sign in first"}</button>
+          <button className="button button--primary checkout-rate-button" type="submit" disabled={quoteBusy || !rows.length || unavailable.length > 0 || !customerMode}>{quoteBusy ? "Requesting current methods…" : unavailable.length ? "Remove unavailable items" : customerMode ? "Request shipping methods" : "Choose guest or sign in first"}</button>
         </section>
         <section className="checkout-panel" aria-labelledby="shipping-title"><p className="eyebrow">03 · Shipping method</p><h2 id="shipping-title">Server-issued options.</h2>
           {quote?.options.length ? <div className="shipping-options">{quote.options.map((rate) => <label key={rate.id} className={selectedRateId === rate.id ? "is-selected" : ""}><input type="radio" name="shipping-rate" value={rate.id} checked={selectedRateId === rate.id} onChange={() => setSelectedRateId(rate.id)} /><span><strong>{rate.name}</strong><small>{deliveryLabel(rate.delivery)}</small></span><CadAmount minorUnits={rate.amount} /></label>)}</div> : <div className="shipping-unavailable" role="status"><strong>Shipping calculation is not available yet.</strong><p>{message || "Complete delivery details and request current methods."}</p></div>}
@@ -170,7 +174,7 @@ export function CheckoutPage() {
       <aside className="checkout-summary" aria-labelledby="checkout-summary-title"><p className="eyebrow">04 · Order review & secure payment</p><h2 id="checkout-summary-title">Your order.</h2><div className="checkout-summary__items">{rows.map(({ item, product, variant }) => <article key={`${product.id}:${variant.id}`}>{product.image ? <img src={product.image} alt="" /> : <span className="checkout-summary__placeholder">TR</span>}<div><strong>{product.name}</strong><span>{variant.label} · Qty {item.quantity}</span></div><CadAmount minorUnits={variant.unitAmount * item.quantity} /></article>)}</div>
         {delivery.address1 && <div className="checkout-summary__delivery"><span>Delivery</span><strong>{delivery.name}</strong><small>{delivery.city}{delivery.region ? `, ${delivery.region}` : ""} · {delivery.countryCode}</small></div>}
         <dl><div><dt>Product subtotal</dt><dd><CadAmount minorUnits={displayedSubtotal} /></dd></div><div><dt>Shipping</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.amount} /> : "Calculated at checkout"}</dd></div><div><dt>Tax</dt><dd>Calculated before payment</dd></div><div className="checkout-summary__total"><dt>Order total</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.totalAmount} /> : "Pending authoritative amounts"}</dd></div></dl>
-        <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="store" disabled={!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
+        <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="store" disabled={unavailable.length > 0 || !quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
         <p className="checkout-gate-message">{quote?.checkoutAvailable ? "PayPal handles payment approval. Third Railify creates and captures the order on the server and never stores raw payment credentials." : "Checkout is currently unavailable. No order or payment can be created."}</p>
         <p className="checkout-policy-links">Review the <Link to="/terms">Terms of Use &amp; Sale</Link>, <Link to="/privacy">Privacy Policy</Link>, <Link to="/terms">shipping terms</Link>, and <Link to="/refunds">Returns &amp; Refund Policy</Link> before payment.</p>
         {message && quote ? <div className="checkout-error" role="alert">{message}</div> : null}

@@ -1,0 +1,812 @@
+{
+  "origin": "http://127.0.0.1:4197",
+  "frames": [
+    {
+      "name": "idle",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 1,
+        "y": 1
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 3,
+      "faceComposites": 7
+    },
+    {
+      "name": "early",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 0.9999999308164976,
+        "y": 0.9999999308164976
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 8,
+      "faceComposites": 12
+    },
+    {
+      "name": "quarter",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 0.9999996249329296,
+        "y": 0.9999996249329296
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 13,
+      "faceComposites": 17
+    },
+    {
+      "name": "mid",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 0.999999448412348,
+        "y": 0.999999448412348
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 20,
+      "faceComposites": 24
+    },
+    {
+      "name": "late",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 1.0000003527299377,
+        "y": 1.0000003527299377
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 27,
+      "faceComposites": 31
+    },
+    {
+      "name": "near-settle",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 1.000000483282383,
+        "y": 1.000000483282383
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 32,
+      "faceComposites": 36
+    },
+    {
+      "name": "settled",
+      "canvas": {
+        "width": 747,
+        "height": 747
+      },
+      "rotor": {
+        "width": 747,
+        "height": 747
+      },
+      "transformScale": {
+        "x": 1.000000483282383,
+        "y": 1.000000483282383
+      },
+      "static": {
+        "planBuilds": 4,
+        "staticFaceRebuilds": 4,
+        "measureTextCalls": 64,
+        "patternConstructions": 20,
+        "imageCoverCalculations": 8,
+        "size": 747,
+        "dpr": 1,
+        "pixels": 747
+      },
+      "gifFramesDecoded": 35,
+      "faceComposites": 39
+    }
+  ],
+  "baselineStatic": {
+    "planBuilds": 4,
+    "staticFaceRebuilds": 4,
+    "measureTextCalls": 64,
+    "patternConstructions": 20,
+    "imageCoverCalculations": 8,
+    "size": 747,
+    "dpr": 1,
+    "pixels": 747
+  },
+  "settledStatic": {
+    "planBuilds": 4,
+    "staticFaceRebuilds": 4,
+    "measureTextCalls": 64,
+    "patternConstructions": 20,
+    "imageCoverCalculations": 8,
+    "size": 747,
+    "dpr": 1,
+    "pixels": 747
+  },
+  "matrix": [
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 723,
+          "height": 723
+        },
+        "rotor": {
+          "width": 723,
+          "height": 723
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 723,
+          "dpr": 1,
+          "pixels": 723
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 723,
+          "height": 723
+        },
+        "rotor": {
+          "width": 723,
+          "height": 723
+        },
+        "transformScale": {
+          "x": 0.9999997376199656,
+          "y": 0.9999997376199656
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 723,
+          "dpr": 1,
+          "pixels": 723
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 747,
+          "height": 747
+        },
+        "rotor": {
+          "width": 747,
+          "height": 747
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 747,
+          "dpr": 1,
+          "pixels": 747
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 747,
+          "height": 747
+        },
+        "rotor": {
+          "width": 747,
+          "height": 747
+        },
+        "transformScale": {
+          "x": 1.0000001556184879,
+          "y": 1.0000001556184879
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 747,
+          "dpr": 1,
+          "pixels": 747
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1365,
+        "height": 768
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 752,
+          "height": 752
+        },
+        "rotor": {
+          "width": 752,
+          "height": 752
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 752,
+          "dpr": 1,
+          "pixels": 752
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 752,
+          "height": 752
+        },
+        "rotor": {
+          "width": 752,
+          "height": 752
+        },
+        "transformScale": {
+          "x": 0.999999873509497,
+          "y": 0.999999873509497
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 752,
+          "dpr": 1,
+          "pixels": 752
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 747,
+          "height": 747
+        },
+        "rotor": {
+          "width": 747,
+          "height": 747
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 747,
+          "dpr": 1,
+          "pixels": 747
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 747,
+          "height": 747
+        },
+        "rotor": {
+          "width": 747,
+          "height": 747
+        },
+        "transformScale": {
+          "x": 1.000000077666817,
+          "y": 1.000000077666817
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 747,
+          "dpr": 1,
+          "pixels": 747
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 649,
+          "height": 649
+        },
+        "rotor": {
+          "width": 649,
+          "height": 649
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 649,
+          "dpr": 1,
+          "pixels": 649
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 649,
+          "height": 649
+        },
+        "rotor": {
+          "width": 649,
+          "height": 649
+        },
+        "transformScale": {
+          "x": 0.99999999136018,
+          "y": 0.99999999136018
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 649,
+          "dpr": 1,
+          "pixels": 649
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "detail",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 326,
+          "height": 326
+        },
+        "rotor": {
+          "width": 326,
+          "height": 326
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 326,
+          "dpr": 1,
+          "pixels": 326
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 326,
+          "height": 326
+        },
+        "rotor": {
+          "width": 326,
+          "height": 326
+        },
+        "transformScale": {
+          "x": 1.0000000692369977,
+          "y": 1.0000000692369977
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 326,
+          "dpr": 1,
+          "pixels": 326
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 590,
+          "height": 590
+        },
+        "rotor": {
+          "width": 590,
+          "height": 590
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 590,
+          "dpr": 1,
+          "pixels": 590
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 590,
+          "height": 590
+        },
+        "rotor": {
+          "width": 590,
+          "height": 590
+        },
+        "transformScale": {
+          "x": 0.9999999428983184,
+          "y": 0.9999999428983184
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 590,
+          "dpr": 1,
+          "pixels": 590
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 556,
+          "height": 556
+        },
+        "rotor": {
+          "width": 278,
+          "height": 278
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 278,
+          "dpr": 2,
+          "pixels": 556
+        },
+        "gifFramesDecoded": 5,
+        "faceComposites": 9
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 556,
+          "height": 556
+        },
+        "rotor": {
+          "width": 278,
+          "height": 278
+        },
+        "transformScale": {
+          "x": 1.0000004944403778,
+          "y": 1.0000004944403778
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 278,
+          "dpr": 2,
+          "pixels": 556
+        },
+        "gifFramesDecoded": 11,
+        "faceComposites": 15
+      }
+    },
+    {
+      "route": "present",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fit": {
+        "overflow": 0,
+        "circular": 0,
+        "pointerAligned": 0
+      },
+      "before": {
+        "name": "before",
+        "canvas": {
+          "width": 284,
+          "height": 284
+        },
+        "rotor": {
+          "width": 284,
+          "height": 284
+        },
+        "transformScale": {
+          "x": 1,
+          "y": 1
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 284,
+          "dpr": 1,
+          "pixels": 284
+        },
+        "gifFramesDecoded": 6,
+        "faceComposites": 10
+      },
+      "during": {
+        "name": "during",
+        "canvas": {
+          "width": 284,
+          "height": 284
+        },
+        "rotor": {
+          "width": 284,
+          "height": 284
+        },
+        "transformScale": {
+          "x": 0.9999998310784857,
+          "y": 0.9999998310784857
+        },
+        "static": {
+          "planBuilds": 4,
+          "staticFaceRebuilds": 4,
+          "measureTextCalls": 64,
+          "patternConstructions": 20,
+          "imageCoverCalculations": 8,
+          "size": 284,
+          "dpr": 1,
+          "pixels": 284
+        },
+        "gifFramesDecoded": 12,
+        "faceComposites": 16
+      }
+    }
+  ],
+  "writes": [],
+  "errors": []
+}
