@@ -162,10 +162,14 @@ function GamingSessionLoop() {
 
 function RotationCard({ item }: { item: GamingRotationItem }) {
   const [coverFailed, setCoverFailed] = useState(false);
+  const [artworkShape, setArtworkShape] = useState<"pending" | "poster" | "landscape">("pending");
   const verifiedCover = Boolean(item.artworkUrl && !coverFailed);
-  return <article className={`gaming-card gaming-card--${item.visual}`} data-cover={verifiedCover ? "verified" : "fallback"}>
+  return <article className={`gaming-card gaming-card--${item.visual}`} data-cover={verifiedCover ? "verified" : "fallback"} data-artwork-shape={verifiedCover ? artworkShape : "fallback"}>
     <div className="gaming-card__visual">
-      {verifiedCover ? <img src={item.artworkUrl!} alt={`${item.title} cover artwork`} width="600" height="900" loading="lazy" decoding="async" onError={() => setCoverFailed(true)} /> : <GamingFallbackArt item={item} />}
+      {verifiedCover ? <>
+        <span className="gaming-card__artwork-backdrop" aria-hidden="true"><img src={item.artworkUrl!} alt="" loading="lazy" decoding="async" /></span>
+        <img className="gaming-card__cover" src={item.artworkUrl!} alt={`${item.title} cover artwork`} width="600" height="900" loading="lazy" decoding="async" onLoad={(event) => setArtworkShape(event.currentTarget.naturalWidth > event.currentTarget.naturalHeight ? "landscape" : "poster")} onError={() => setCoverFailed(true)} />
+      </> : <GamingFallbackArt item={item} />}
       <span className="gaming-card__scan" aria-hidden="true" />
       <span className="gaming-card__index">{item.index} / ACTIVE ROTATION</span>
       <span className="gaming-card__status"><i /> IN ROTATION</span>

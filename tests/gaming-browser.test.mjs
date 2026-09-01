@@ -46,13 +46,22 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > strong").allTextContents(), ["MON", "TUE", "THU", "FRI"]);
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > small").allTextContents(), ["2 PM", "2 PM", "2 PM", "2 PM"]);
     assert.equal(await page.locator(".gaming-card").count(), 4);
-    assert.deepEqual(await page.locator(".gaming-card h3").allTextContents(), ["WITCHER", "LUMINARY", "SUPER MARIO WORLD", "PARTY ANIMAL"]);
+    assert.deepEqual(await page.locator(".gaming-card h3").allTextContents(), ["THE WITCHER 3: WILD HUNT - COMPLETE EDITION", "LUMINARY", "SUPER MARIO WORLD", "PARTY ANIMALS"]);
     assert.deepEqual(await page.locator(".gaming-card__platform").allTextContents(), ["PC via Steam", "PC via Steam", "PC via Steam", "PC via Steam"]);
+    assert.equal(await page.locator(".gaming-card__description").evaluateAll((nodes) => nodes.every((node) => Boolean(node.textContent?.trim()))), true, "every rotation dossier retains its description");
+    assert.deepEqual(await page.locator(".gaming-card__status").allTextContents(), [" IN ROTATION", " IN ROTATION", " IN ROTATION", " IN ROTATION"]);
+    assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/292030/"]').count(), 1);
     assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1648360/"]').count(), 1);
-    assert.equal(await page.locator('.gaming-card a[href*="store.steampowered.com/app/"]').count(), 1);
-    assert.equal(await page.locator('.gaming-card[data-cover="fallback"]').count() >= 3, true);
+    assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1260320/"]').count(), 1);
+    assert.equal(await page.locator('.gaming-card a[href*="store.steampowered.com/app/"]').count(), 3);
+    assert.equal(await page.locator('.gaming-card[data-cover="fallback"]').count(), 1);
     assert.equal(await page.title(), "Third Railify Gaming | Third Railify");
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), `${ORIGIN}/gaming`);
+
+    await page.locator(".gaming-rotation").scrollIntoViewIfNeeded();
+    await page.locator(".gaming-card__cover").evaluateAll((images) => Promise.all(images.map((image) => image.complete && image.naturalWidth > 0 ? true : new Promise((resolve) => { image.addEventListener("load", () => resolve(true), { once: true }); image.addEventListener("error", () => resolve(false), { once: true }); }))));
+    await page.waitForFunction(() => document.querySelectorAll('.gaming-card[data-artwork-shape="pending"]').length === 0);
+    await assertRotationGeometry(page, width, height);
 
     if (width === 1440) {
       const showParent = page.getByRole("link", { name: "The show", exact: true });
@@ -71,9 +80,15 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
       await page.locator(".gaming-hero").screenshot({ path: path.join(ARTIFACTS, `hero-section-${width}x${height}.png`) });
       await page.locator(".gaming-about").scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(ARTIFACTS, `about-${width}x${height}.png`), fullPage: false });
-      await page.locator(".gaming-rotation").scrollIntoViewIfNeeded();
-      await page.locator(".gaming-card--luminary img").evaluate((image) => image.complete && image.naturalWidth > 0 ? true : new Promise((resolve) => { image.addEventListener("load", () => resolve(true), { once: true }); image.addEventListener("error", () => resolve(false), { once: true }); }));
-      await page.screenshot({ path: path.join(ARTIFACTS, `rotation-${width}x${height}.png`), fullPage: false });
+    }
+    if (SCREENSHOTS && [1920, 1440, 1024, 390].includes(width)) await captureRotationSection(page, path.join(ARTIFACTS, `rotation-section-${width}x${height}.png`));
+    if (SCREENSHOTS && width === 1440) {
+      await page.mouse.move(width - 2, height - 2);
+      await page.waitForTimeout(100);
+      await page.locator(".gaming-card--runes").screenshot({ path: path.join(ARTIFACTS, "rotation-witcher-closeup-1440.png") });
+      await page.locator(".gaming-card--luminary").screenshot({ path: path.join(ARTIFACTS, "rotation-luminary-closeup-1440.png") });
+      await page.locator(".gaming-card--world").screenshot({ path: path.join(ARTIFACTS, "rotation-super-mario-world-fallback-1440.png") });
+      await page.locator(".gaming-card--party").screenshot({ path: path.join(ARTIFACTS, "rotation-party-animals-closeup-1440.png") });
     }
 
     if (width <= 1120) {
@@ -234,6 +249,15 @@ async function installTurnstile(context) {
 
 async function mockApis(page, submissions, options = {}) {
   let suggestionAttempts = 0;
+  await page.route("https://gaming-fixture.test/**", (route) => {
+    const name = new URL(route.request().url()).pathname.split("/").pop()?.replace(".svg", "") || "GAME";
+    const portrait = name === "luminary";
+    const width = portrait ? 600 : 920;
+    const height = portrait ? 900 : 430;
+    const title = name.replaceAll("-", " ").toUpperCase();
+    const body = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#183a28"/><stop offset="1" stop-color="#050907"/></linearGradient></defs><rect width="100%" height="100%" fill="url(#g)"/><path d="M0 ${height * .72} L${width * .38} ${height * .25} L${width * .62} ${height * .62} L${width} ${height * .18} V${height} H0Z" fill="#3fbb6d" opacity=".34"/><text x="50%" y="48%" text-anchor="middle" fill="#effff3" font-family="Arial Narrow,Arial" font-size="${portrait ? 62 : 72}" font-weight="700">${title}</text><text x="50%" y="58%" text-anchor="middle" fill="#76f39e" font-family="monospace" font-size="22">CURRENT ROTATION</text></svg>`;
+    return route.fulfill({ status: 200, contentType: "image/svg+xml", body });
+  });
   await page.route("**/api/**", (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/gaming/rotation") return options.failRotation?json(route,{ok:false,error:"gaming_rotation_unavailable"},503):json(route,{...gamingRotation(),...(options.rotationItems?{items:options.rotationItems}:{})});
@@ -256,11 +280,62 @@ async function mockApis(page, submissions, options = {}) {
 }
 
 function gamingRotation(){return{ok:true,schema:"thirdrailify-gaming-rotation-v1",updatedAt:"2026-09-01T00:00:00.000Z",items:[
-  {id:"gaming-witcher",title:"WITCHER",platform:"PC via Steam",description:"Monster hunting, hard choices, and the side quest that quietly steals the whole session.",genre:"RPG / ADVENTURE",artworkUrl:null,steam:null,position:1},
-  {id:"gaming-luminary",title:"LUMINARY",platform:"PC via Steam",description:"Solo or co-op exploration, character progression, and a campaign built around pushing back the dark with light.",genre:"ACTION RPG / CO-OP",artworkUrl:"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1648360/library_600x900.jpg",steam:{appId:"1648360",storeUrl:"https://store.steampowered.com/app/1648360/"},position:2},
+  {id:"gaming-witcher",title:"THE WITCHER 3: WILD HUNT - COMPLETE EDITION",platform:"PC via Steam",description:"You are Geralt of Rivia, mercenary monster slayer. Before you stands a war-torn, monster-infested continent you can explore at will. Your current contract is tracking down Ciri, the Child of Prophecy, a living weapon that can alter the shape of the world.",genre:"RPG GAMES",artworkUrl:"https://gaming-fixture.test/witcher.svg",steam:{appId:"292030",storeUrl:"https://store.steampowered.com/app/292030/"},position:1},
+  {id:"gaming-luminary",title:"LUMINARY",platform:"PC via Steam",description:"Solo or co-op exploration, character progression, and a campaign built around pushing back the dark with light.",genre:"ACTION RPG / CO-OP",artworkUrl:"https://gaming-fixture.test/luminary.svg",steam:{appId:"1648360",storeUrl:"https://store.steampowered.com/app/1648360/"},position:2},
   {id:"gaming-super-mario-world",title:"SUPER MARIO WORLD",platform:"PC via Steam",description:"Classic platforming rhythm, secret routes, and one more level turning into an entire night.",genre:"PLATFORMER",artworkUrl:null,steam:null,position:3},
-  {id:"gaming-party-animal",title:"PARTY ANIMAL",platform:"PC via Steam",description:"Physics-driven party chaos where the plan survives roughly one collision.",genre:"PARTY / PHYSICS",artworkUrl:null,steam:null,position:4},
+  {id:"gaming-party-animal",title:"PARTY ANIMALS",platform:"PC via Steam",description:"Fight your friends as puppies, kittens and other fuzzy creatures in PARTY ANIMALS! Paw it out with your friends remotely, or huddle together for chaotic fun on the same screen. Interact with the world under a realistic physics engine.",genre:"ACTION GAMES",artworkUrl:"https://gaming-fixture.test/party-animals.svg",steam:{appId:"1260320",storeUrl:"https://store.steampowered.com/app/1260320/"},position:4},
 ]};}
+
+async function assertRotationGeometry(page, width, height) {
+  const geometry = await page.locator(".gaming-card").evaluateAll((cards) => cards.map((card) => {
+    const rect = (node) => { const box = node.getBoundingClientRect(); return { top: box.top, right: box.right, bottom: box.bottom, left: box.left, width: box.width, height: box.height }; };
+    return {
+      title: card.querySelector("h3")?.textContent?.trim(),
+      card: rect(card),
+      visual: rect(card.querySelector(".gaming-card__visual")),
+      body: rect(card.querySelector(".gaming-card__body")),
+      heading: rect(card.querySelector("h3")),
+      footer: rect(card.querySelector("footer")),
+      cover: card.getAttribute("data-cover"),
+      shape: card.getAttribute("data-artwork-shape"),
+      objectFit: getComputedStyle(card.querySelector(".gaming-card__cover") || card.querySelector(".gaming-card__fallback")).objectFit,
+    };
+  }));
+  const tolerance = .002;
+  for (const item of geometry) {
+    const ratio = item.visual.width / item.visual.height;
+    assert.ok(ratio + tolerance >= 9 / 16, `${item.title} artwork ratio ${ratio.toFixed(4)} is at least 9:16 at ${width}x${height}`);
+    assert.ok(item.visual.width > 0 && item.visual.height > 0, `${item.title} artwork remains visible at ${width}x${height}`);
+    assert.ok(item.heading.left >= item.card.left - 1 && item.heading.right <= item.card.right + 1 && item.heading.top >= item.card.top - 1 && item.heading.bottom <= item.card.bottom + 1, `${item.title} heading remains inside its card at ${width}x${height}`);
+    assert.ok(item.footer.left >= item.card.left - 1 && item.footer.right <= item.card.right + 1 && item.footer.bottom <= item.card.bottom + 1, `${item.title} footer remains reachable inside its card at ${width}x${height}`);
+    if (width > 1180) {
+      assert.ok(Math.abs(ratio - 2 / 3) <= .01, `${item.title} uses the preferred 2:3 poster frame at ${width}x${height}`);
+      assert.ok(item.visual.width / item.card.width >= .38 && item.visual.width / item.card.width <= .45, `${item.title} artwork occupies a substantial desktop card fraction at ${width}x${height}`);
+      assert.ok(item.visual.right <= item.body.left + 1, `${item.title} artwork and details do not overlap at ${width}x${height}`);
+    } else if (width > 620) {
+      assert.ok(Math.abs(ratio - 1) <= .01, `${item.title} uses a deliberate square tablet frame at ${width}x${height}`);
+      assert.ok(item.visual.right <= item.body.left + 1, `${item.title} artwork and details do not overlap at ${width}x${height}`);
+    } else {
+      assert.ok(Math.abs(ratio - 3 / 4) <= .01, `${item.title} uses the intentional 3:4 mobile frame at ${width}x${height}`);
+      assert.ok(item.visual.bottom <= item.body.top + 1, `${item.title} stacked artwork and details do not overlap at ${width}x${height}`);
+    }
+  }
+  assert.equal(geometry.find((item) => item.title === "SUPER MARIO WORLD")?.cover, "fallback", `fallback card preserves valid geometry at ${width}x${height}`);
+  assert.equal(geometry.find((item) => item.title === "THE WITCHER 3: WILD HUNT - COMPLETE EDITION")?.shape, "landscape", "Witcher landscape art is detected");
+  assert.equal(geometry.find((item) => item.title === "PARTY ANIMALS")?.shape, "landscape", "Party Animals landscape art is detected");
+  assert.equal(geometry.find((item) => item.title === "LUMINARY")?.shape, "poster", "Luminary poster art is detected");
+  assert.equal(await page.locator('.gaming-card[data-artwork-shape="landscape"] .gaming-card__cover').evaluateAll((images) => images.every((image) => getComputedStyle(image).objectFit === "contain")), true, "landscape covers avoid catastrophic poster cropping");
+  const expectedPosterFit = width > 620 && width <= 1180 ? "contain" : "cover";
+  assert.equal(await page.locator('.gaming-card[data-artwork-shape="poster"] .gaming-card__cover').evaluateAll((images, expected) => images.every((image) => getComputedStyle(image).objectFit === expected), expectedPosterFit), true, "poster covers use the breakpoint-appropriate fit");
+  const cardsOverlap = geometry.some((item, index) => geometry.slice(index + 1).some((other) => item.card.left < other.card.right - 1 && item.card.right > other.card.left + 1 && item.card.top < other.card.bottom - 1 && item.card.bottom > other.card.top + 1));
+  assert.equal(cardsOverlap, false, `rotation cards do not overlap at ${width}x${height}`);
+}
+
+async function captureRotationSection(page, screenshotPath) {
+  const screenshotMode = await page.addStyleTag({ content: ".site-header,.skip-link,.community-dropdown{visibility:hidden!important}" });
+  await page.locator(".gaming-rotation").screenshot({ path: screenshotPath });
+  await screenshotMode.evaluate((style) => style.remove());
+}
 
 function collectBrowserErrors(page) {
   const errors = [];

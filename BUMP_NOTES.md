@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-01 - Gaming Current Rotation poster-card repair
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Redesigned `/gaming` Current Rotation as compact game dossiers with substantial, independently bounded poster artwork, a preferred `2:3` desktop frame, and a hard rendered minimum of `9:16`.
+- Landscape artwork now preserves its full title treatment over a soft cover-fill backdrop, while portrait and fallback art share the same intentional frame geometry.
+- Added a deliberate single-column tablet transition and stacked `3:4` mobile cards so details can wrap naturally without stretching or narrowing the artwork.
+- Added rendered browser geometry coverage across 1920, 1440, 1024, 768, and 390px for artwork ratio, containment, overlap, footer reachability, fallback geometry, and page overflow.
+
 ## 2026-09-01 - Critical Poll media delivery and editor lifecycle repair
 
 CURRENT VER=0.1.0-alpha.0
