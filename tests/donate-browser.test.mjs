@@ -38,12 +38,16 @@ test("Donate is a complete responsive, accessible, and fail-closed one-time PayP
     const headingTop = await page.locator("h1").evaluate((element) => element.getBoundingClientRect().top);
     assert.ok(headingTop >= headerBottom, `heading clears the global header at ${width}x${height}`);
     assert.equal(await page.locator('input[name="donation-frequency"]').count(), 1);
-    assert.equal(await page.locator('input[name="donation-amount"]').count(), 4);
+    const suggestedDonationValues = await page.locator('input[name="donation-amount"]').evaluateAll((inputs) => inputs.map((input) => input.value));
+    assert.deepEqual(suggestedDonationValues, ["5", "15", "25", "50", "100", "250", "500", "1000"], "both rows of suggested donation amounts are available in order");
     const once = page.locator('input[name="donation-frequency"][value="once"]');
     assert.equal(await once.isChecked(), true, "only one-time donations are offered");
     await page.locator(".donate-amount label").filter({ has: page.locator('input[value="25"]') }).click();
     assert.equal(await page.locator('input[name="donation-amount"][value="25"]').isChecked(), true, "suggested amount label selects its radio");
     assert.match(await page.locator(".donate-summary").innerText(), /\$25 CAD[\s\S]*one-time donation/i);
+    await page.locator(".donate-amount label").filter({ has: page.locator('input[value="1000"]') }).click();
+    assert.equal(await page.locator('input[name="donation-amount"][value="1000"]').isChecked(), true, "second-row suggested amount selects its radio");
+    assert.match(await page.locator(".donate-summary").innerText(), /\$1,000 CAD/);
     await page.locator(".donate-custom-amount input").fill("73");
     assert.match(await page.locator(".donate-summary").innerText(), /\$73 CAD/);
     const payment = page.locator(".paypal-payment");

@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-01 - Gaming hero game-world redesign
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Rebuilt the `/gaming` hero around a dimensional game-launch interface: layered wireframe portal planes, terrain mesh, perspective floor, floating geometric shards, targeting reticle, controller/loadout core, keyboard prompts, clipped HUD chassis, and player/build telemetry.
+- Preserved the managed rotation count, weekly schedule, Gaming Rumble and Current Rotation actions, established green identity, and the complete static composition under reduced motion.
+- Added route-specific geometry and visual-contract assertions across 1920, 1440, 1024, 768, and 390px, including full-section desktop/mobile screenshot proof and horizontal-overflow protection.
+- No API, schema, Gaming authority, provider, Admin, deployment, remote mutation, or push change is included.
+
 ## 2026-09-01 - Managed Gaming Current Rotation
 
 CURRENT VER=0.1.0-alpha.0

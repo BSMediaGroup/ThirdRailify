@@ -31,6 +31,18 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.equal(await page.locator("html").evaluate((root) => root.classList.contains("theme-gaming")), true);
     assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true, `no overflow at ${width}x${height}`);
     assert.equal(await page.locator('.gaming-hero a[href="https://rumble.com/thirdrailifygaming"]').count(), 1);
+    assert.equal(await page.locator(".gaming-instrument__portal polygon").count(), 3, "hero has a layered wireframe game-world portal");
+    assert.equal(await page.locator(".gaming-instrument__terrain path").count(), 4, "hero has a planar terrain mesh");
+    assert.equal(await page.locator(".gaming-instrument__shards polygon").count(), 4, "hero has floating geometric shards");
+    assert.equal(await page.locator(".gaming-instrument__reticle").isVisible(), true, "hero targeting reticle is visible");
+    assert.equal(await page.locator(".gaming-instrument__core svg").count(), 1, "hero loadout core includes the game controller mark");
+    const heroGeometry = await page.locator(".gaming-hero").evaluate((element) => {
+      const heroBox = element.getBoundingClientRect();
+      const instrumentBox = element.querySelector(".gaming-instrument").getBoundingClientRect();
+      return { heroBox: { left: heroBox.left, right: heroBox.right }, instrumentBox: { left: instrumentBox.left, right: instrumentBox.right, width: instrumentBox.width } };
+    });
+    assert.ok(heroGeometry.instrumentBox.width >= Math.min(340, width - 40), `game-world instrument remains substantial at ${width}px`);
+    assert.ok(heroGeometry.instrumentBox.left >= heroGeometry.heroBox.left && heroGeometry.instrumentBox.right <= heroGeometry.heroBox.right, `game-world instrument stays inside the hero at ${width}px`);
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > strong").allTextContents(), ["MON", "TUE", "THU", "FRI"]);
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > small").allTextContents(), ["2 PM", "2 PM", "2 PM", "2 PM"]);
     assert.equal(await page.locator(".gaming-card").count(), 4);
@@ -56,6 +68,7 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
 
     if (SCREENSHOTS && [1920, 1440, 390].includes(width)) {
       await page.screenshot({ path: path.join(ARTIFACTS, `hero-${width}x${height}.png`), fullPage: false });
+      await page.locator(".gaming-hero").screenshot({ path: path.join(ARTIFACTS, `hero-section-${width}x${height}.png`) });
       await page.locator(".gaming-about").scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(ARTIFACTS, `about-${width}x${height}.png`), fullPage: false });
       await page.locator(".gaming-rotation").scrollIntoViewIfNeeded();
@@ -128,7 +141,8 @@ test("Gaming motion respects reduced motion and the green root theme is removed 
   await page.goto("http://127.0.0.1:4209/gaming");
   await dismissPrivacy(page);
   assert.equal(await page.locator(".gaming-hero").getAttribute("data-motion"), "static");
-  assert.equal(await page.locator(".gaming-instrument__orbit--outer").evaluate((node) => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".gaming-instrument__portal-back").evaluate((node) => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".gaming-instrument__floor-grid").evaluate((node) => getComputedStyle(node).animationName), "none");
   const gamingScrollbar = await page.locator("html").evaluate((node) => getComputedStyle(node).scrollbarColor);
   assert.match(gamingScrollbar, /69, 227, 125|rgb\(69 227 125\)/);
   if (SCREENSHOTS) { await mkdir(ARTIFACTS, { recursive: true }); await page.screenshot({ path: path.join(ARTIFACTS, "gaming-scrollbar-reduced-motion-1280x900.png"), fullPage: false }); }

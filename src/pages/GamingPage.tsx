@@ -28,7 +28,11 @@ export function GamingPage() {
       <div className="container gaming-hero__layout">
         <div className="gaming-hero__copy">
           <p className="gaming-eyebrow"><i /> Sub-brand online / session rotation armed</p>
-          <h1 id="gaming-title"><small>Third Railify</small><span>Gaming</span></h1>
+          <div className="gaming-hero__title-lock">
+            <span className="gaming-hero__player-tag" aria-hidden="true">PLAYER / 01</span>
+            <h1 id="gaming-title"><small>Third Railify</small><span>Gaming</span></h1>
+            <span className="gaming-hero__build" aria-hidden="true">BUILD 01.04 / LIVE</span>
+          </div>
           <p className="gaming-hero__lede">A live managed rotation. Four weekly sessions. One green signal with absolutely no respect for the sensible route.</p>
           <div className="gaming-actions">
             <a className="gaming-button gaming-button--primary" href={GAMING_RUMBLE_URL} target="_blank" rel="noopener noreferrer">Watch Third Railify Gaming <PlayIcon /><span className="sr-only"> (opens in a new tab)</span></a>
@@ -96,23 +100,48 @@ function GamingSchedule({ compact = false }: { compact?: boolean }) {
 
 function GamingSignalInstrument({ items }: { items: GamingRotationItem[] }) {
   return <div className="gaming-instrument" aria-hidden="true">
-    <header><span>TRG / ROUTING CORE</span><b><i /> SIGNAL READY</b></header>
+    <span className="gaming-instrument__corner gaming-instrument__corner--tl" />
+    <span className="gaming-instrument__corner gaming-instrument__corner--tr" />
+    <span className="gaming-instrument__corner gaming-instrument__corner--bl" />
+    <span className="gaming-instrument__corner gaming-instrument__corner--br" />
+    <header><span>TRG / WORLD INSTANCE 01</span><b><i /> SESSION READY</b></header>
     <div className="gaming-instrument__viewport">
-      <span className="gaming-instrument__grid" />
-      <svg viewBox="0 0 620 620" focusable="false">
-        <circle className="gaming-instrument__orbit gaming-instrument__orbit--outer" cx="310" cy="310" r="236" />
-        <circle className="gaming-instrument__orbit gaming-instrument__orbit--inner" cx="310" cy="310" r="148" />
-        <path className="gaming-instrument__route gaming-instrument__route--one" pathLength="1" d="M310 310C231 235 186 178 128 118" />
-        <path className="gaming-instrument__route gaming-instrument__route--two" pathLength="1" d="M310 310C394 227 438 174 500 122" />
-        <path className="gaming-instrument__route gaming-instrument__route--three" pathLength="1" d="M310 310C221 390 177 433 123 500" />
-        <path className="gaming-instrument__route gaming-instrument__route--four" pathLength="1" d="M310 310C394 388 443 438 503 500" />
-        <path className="gaming-instrument__wave" pathLength="1" d="M72 310h54l18-38 24 76 28-102 27 127 27-88 28 46 28-42 26 26 27-73 29 134 27-108 27 63 28-21h56" />
+      <span className="gaming-instrument__sky-grid" />
+      <span className="gaming-instrument__floor-grid" />
+      <span className="gaming-instrument__horizon" />
+      <svg className="gaming-instrument__world" viewBox="0 0 720 620" focusable="false">
+        <defs>
+          <linearGradient id="gaming-plane-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#a5ffbd" stopOpacity=".22"/><stop offset="1" stopColor="#45e37d" stopOpacity=".015"/></linearGradient>
+        </defs>
+        <g className="gaming-instrument__terrain">
+          <path d="M0 488 84 441 164 461 245 392 315 439 390 365 482 430 553 381 630 448 720 400" />
+          <path d="M0 531 92 477 174 503 257 431 320 479 399 408 487 472 558 421 638 490 720 443" />
+          <path d="M0 575 99 513 184 545 268 472 328 522 408 452 493 515 564 463 646 533 720 490" />
+          <path d="M84 441 92 477 99 513M164 461 174 503 184 545M245 392 257 431 268 472M315 439 320 479 328 522M390 365 399 408 408 452M482 430 487 472 493 515M553 381 558 421 564 463M630 448 638 490 646 533" />
+        </g>
+        <g className="gaming-instrument__shards">
+          <polygon points="119,167 196,124 184,222" />
+          <polygon points="566,134 635,201 543,217" />
+          <polygon points="88,302 145,277 127,343" />
+          <polygon points="598,301 665,276 634,350" />
+        </g>
+        <g className="gaming-instrument__portal">
+          <polygon className="gaming-instrument__portal-back" points="360,126 512,214 512,390 360,478 208,390 208,214" />
+          <polygon className="gaming-instrument__portal-mid" points="360,164 479,233 479,371 360,440 241,371 241,233" />
+          <polygon className="gaming-instrument__portal-front" points="360,206 443,254 443,350 360,398 277,350 277,254" />
+          <path className="gaming-instrument__axis" d="M360 126V478M208 214 512 390M512 214 208 390" />
+        </g>
+        <path className="gaming-instrument__route gaming-instrument__route--one" pathLength="1" d="M38 528C142 493 188 413 277 350" />
+        <path className="gaming-instrument__route gaming-instrument__route--two" pathLength="1" d="M682 526C576 490 528 416 443 350" />
       </svg>
-      <div className="gaming-instrument__core"><BoltIcon /><small>GAMING</small><strong>{String(items.length).padStart(2, "0")}</strong><span>ACTIVE SLOTS</span></div>
+      <span className="gaming-instrument__reticle"><i /><i /><i /><i /></span>
+      <div className="gaming-instrument__core"><div className="gaming-instrument__core-stack"><GamingControllerGlyph /><small>ACTIVE LOADOUT</small><strong>{String(items.length).padStart(2, "0")}</strong><span>TITLES ONLINE</span></div></div>
       {items.slice(0, 4).map((game, index) => <span className={`gaming-instrument__slot gaming-instrument__slot--${index + 1}`} key={game.id}><i />{game.index} / {game.title}</span>)}
-      <span className="gaming-instrument__sweep" />
+      <span className="gaming-instrument__command gaming-instrument__command--move"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><b>MOVE</b></span>
+      <span className="gaming-instrument__command gaming-instrument__command--play"><kbd>▶</kbd><b>PLAY</b></span>
+      <span className="gaming-instrument__glitch">READY_PLAYER_01</span>
     </div>
-    <footer><span>INPUT / 100%</span><i /><span>FRAME / LOCKED</span><i /><span>QUEUE / OPEN</span></footer>
+    <footer><span>GPU / ONLINE</span><i /><span>WORLD / LOADED</span><i /><span>QUEUE / OPEN</span></footer>
   </div>;
 }
 

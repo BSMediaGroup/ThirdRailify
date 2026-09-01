@@ -5,7 +5,7 @@ import { SignalField } from "../components/SignalField";
 import { completedDonationFromCapture, completedDonationFromStatus, DONATION_COMPLETION_STORAGE_KEY, safeAttemptId, type CompletedDonation } from "../payments/donation-completion";
 import type { PayPalCapturedPayment, PayPalCreateResult, PayPalPaymentStatus } from "../payments/paypal-types";
 const PayPalPayment = lazy(() => import("../components/PayPalPayment").then((module) => ({ default: module.PayPalPayment })));
-const suggestedAmounts = [5, 15, 25, 50];
+const suggestedAmounts = [5, 15, 25, 50, 100, 250, 500, 1000];
 
 export function DonatePage() {
   const [amount, setAmount] = useState("15");
