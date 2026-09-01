@@ -5143,6 +5143,15 @@ h3 {
 .account-form input,.account-avatar-panel__form input { width: 100%; min-height: 48px; padding: 11px 13px; border: 1px solid var(--line-strong); border-radius: 0; background: var(--ink-soft); color: var(--paper); font: 13px var(--mono); }
 .account-form input[readonly] { color: var(--muted); background: rgba(255,255,255,.018); }
 .account-form input:focus-visible,.account-avatar-panel__form input:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.account-form > .country-region-fields { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.geography-field { display: grid; min-width: 0; align-content: start; gap: 7px; }
+.geography-field > label { color: var(--paper-soft); font: 8px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.geography-field > select { width: 100%; min-height: 48px; padding: 11px 34px 11px 13px; border: 1px solid var(--line-strong); border-radius: 0; background: var(--ink-soft); color: var(--paper); font: 13px var(--mono); }
+.geography-field > select:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.geography-field > select:disabled { color: var(--muted-deep); background: rgba(255,255,255,.018); cursor: not-allowed; }
+.geography-field > strong { color: #f1a59d; font-size: 10px; font-weight: 600; }
+.geography-field > small { color: var(--muted-deep); font-size: 9px; line-height: 1.45; }
+.geography-field.has-error > select { border-color: #e27c72; }
 .account-form__actions { display: flex; grid-column: 1 / -1; align-items: center; gap: 14px; padding-top: 6px; }
 .account-form__actions > span { color: var(--muted-deep); font-size: 9px; line-height: 1.5; }
 .account-form__status { grid-column: 1 / -1; margin: 14px 0 0; padding: 11px 13px; border: 1px solid rgba(122,213,156,.4); color: #a8dfb6; background: rgba(41,113,67,.1); font-size: 11px; }
@@ -7166,6 +7175,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 .checkout-contact-fields .checkout-field { grid-column: 1 / -1; }
 .checkout-contact-fields .checkout-panel__note { align-self: end; margin: 0 0 8px; }
 .checkout-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.checkout-fields > .country-region-fields { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
 .checkout-field { display: grid; min-width: 0; gap: 7px; }
 .checkout-field:nth-child(2),.checkout-field:nth-child(3) { grid-column: 1 / -1; }
 .checkout-field > span { color: var(--paper-soft); font: 8px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
@@ -7208,6 +7218,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   .checkout-heading { align-items: flex-start; flex-direction: column; }
   .checkout-heading .button { width: 100%; justify-content: center; }
   .checkout-fields { grid-template-columns: 1fr; }
+  .checkout-fields > .country-region-fields,.account-form > .country-region-fields { grid-template-columns: 1fr; }
   .checkout-choice { grid-template-columns: 1fr; }
   .checkout-field:nth-child(2),.checkout-field:nth-child(3) { grid-column: auto; }
   .shipping-options label { grid-template-columns: auto minmax(0,1fr); }

@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-01 - Address UX V2 human-readable geography
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced Account Delivery's free-text ISO country/region fields and Checkout's code-bearing country/free-text region controls with one reusable native country/region selector pair backed by pinned offline `country-region-data@4.1.0` data.
+- Preserved canonical ISO alpha-2 country and subdivision payload values, market-filtered checkout destinations, saved-address revisions/encryption, immutable order snapshots, and disabled checkout/payment/fulfilment gates.
+- Added legacy code/name normalization, unknown-region compatibility notices, country-change region invalidation, country-aware postal labels, friendly address summaries, and stacked mobile selector geometry with no runtime geography request or migration.
+- Added representative dataset/parity tests and Account/Checkout browser coverage at 1920, 1440, 1024, 768, 430, and 390px.
+
 ## 2026-09-01 - Gaming Current Rotation poster-card repair
 
 CURRENT VER=0.1.0-alpha.0

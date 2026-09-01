@@ -20,7 +20,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
   }
   const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close());
 
-  for (const [width, height] of [[1440, 900], [768, 1024], [390, 844]]) {
+  for (const [width, height] of [[1920, 1080], [1440, 900], [1024, 768], [768, 1024], [430, 932], [390, 844]]) {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" });
     await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: new Date(Date.now() + 86400000).toISOString(), categories: { preferences: true, externalMedia: false } })), url: ORIGIN, sameSite: "Lax" }]);
     await context.addInitScript(() => localStorage.setItem("thirdrailify-commerce-cart-v2", JSON.stringify([{ productId: "product-1", variantId: "variant-1", quantity: 1 }])));
@@ -33,7 +33,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
       if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
       if (path === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
       if (path === "/api/commerce/catalogue") return json(route, catalogue());
-      if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }] });
+      if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }, { countryCode: "US", displayName: "United States" }] });
       if (path === "/api/commerce/payment-config") return json(route, paymentConfig());
       if (path === "/api/commerce/shipping-quotes") {
         quoteCalls += 1;
@@ -61,13 +61,20 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     const name = page.getByLabel("Recipient name");
     assert.equal(await name.getAttribute("autocomplete"), "name");
     assert.equal(await page.getByLabel("Address line 1").getAttribute("autocomplete"), "address-line1");
-    assert.equal(await page.getByLabel("Postal / ZIP code").getAttribute("autocomplete"), "postal-code");
+    assert.equal(await page.getByLabel("Postal code").getAttribute("autocomplete"), "postal-code");
+    assert.equal(await page.getByLabel("Country").inputValue(), "CA");
+    assert.equal(await page.getByLabel("Province / territory").inputValue(), "");
     await page.getByRole("button", { name: "Request shipping methods" }).click();
     await page.getByText("Enter the recipient name.").waitFor(); assert.equal(quoteCalls, 0);
     await fillDelivery(page);
-    await page.getByLabel("State / province / region").fill("");
+    await page.getByLabel("Province / territory").selectOption("");
     await page.getByRole("button", { name: "Request shipping methods" }).click(); await page.getByText("State, province, or region is required for this country.").waitFor(); assert.equal(quoteCalls, 0);
-    await page.getByLabel("State / province / region").fill("ON");
+    await page.getByLabel("Province / territory").selectOption("ON");
+    await page.getByLabel("Country").focus(); await page.keyboard.press("ArrowDown"); await page.keyboard.press("Escape");
+    await page.getByLabel("Country").selectOption("US"); assert.equal(await page.getByLabel("State / territory").inputValue(), "");
+    await page.getByLabel("State / territory").selectOption("NY");
+    await page.getByLabel("Country").selectOption("CA"); assert.equal(await page.getByLabel("Province / territory").inputValue(), "");
+    await page.getByLabel("Province / territory").selectOption("ON");
     await page.keyboard.press("Tab"); await name.focus();
     const focus = await name.evaluate((element) => ({ style: getComputedStyle(element).outlineStyle, width: parseFloat(getComputedStyle(element).outlineWidth) }));
     assert.equal(focus.style, "solid"); assert.ok(focus.width >= 2);
@@ -161,9 +168,9 @@ async function fillDelivery(page) {
   await page.getByLabel("Recipient name").fill("Checkout Fixture");
   await page.getByLabel("Address line 1").fill("100 Test Street");
   await page.getByLabel("City / locality").fill("London");
-  await page.getByLabel("State / province / region").fill("ON");
-  await page.getByLabel("Postal / ZIP code").fill("N6A 1A1");
-  await page.getByLabel("Destination country").selectOption("CA");
+  await page.getByLabel("Country").selectOption("CA");
+  await page.getByLabel("Province / territory").selectOption("ON");
+  await page.getByLabel("Postal code").fill("N6A 1A1");
 }
 function paymentConfig() { return { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: null, configured: false, webhookConfigured: false, storeCheckoutEnabled: false, donationsEnabled: false, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: "PayPal credentials are not configured." }; }
 function shippingQuote() { return { ok: true, quote: { id: "shq_aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", expiresAt: "2099-08-29T01:15:00.000Z", currency: "CAD", subtotalAmount: 3050, requiresShipping: true, checkoutAvailable: false, options: [{ id: "shr_bbbbbbbbbbbbbbbbbbbbbbbb", name: "Standard delivery", amount: 895, currency: "CAD", totalAmount: 3945, delivery: { minDays: 3, maxDays: 7, minDate: null, maxDate: null } }] } }; }

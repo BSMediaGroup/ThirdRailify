@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^10.4.0",
+    "country-region-data": "4.1.0",
     "leaflet": "1.9.4",
     "maplibre-gl": "6.6.0",
     "react": "18.3.1",
