@@ -86,6 +86,7 @@ test("Polls V1.2 keeps closed history visible, settled, manageable, and responsi
   assert.equal(await page.getByRole("button", { name: "Vote", exact: true }).count(), 0);
   const detailImage = await page.locator(".poll-option__image").first().boundingBox();
   assert.ok(detailImage && Math.abs(detailImage.width - detailImage.height) < 0.5, JSON.stringify(detailImage));
+  await assertDetailStatusChip(page);
   await page.screenshot({ path: `${ARTIFACTS}/closed-detail-non-owner-1440.png`, fullPage: true });
 
   await page.goto(`${ORIGIN}/polls/closed-audience-result/popout`, { waitUntil: "networkidle" });
@@ -124,6 +125,7 @@ test("Polls V1.2 keeps closed history visible, settled, manageable, and responsi
   await page.goto(`${ORIGIN}/polls/closed-audience-result`, { waitUntil: "networkidle" });
   await page.getByRole("link", { name: "Back to Polls" }).waitFor();
   assert.equal(await fits(page), true);
+  await assertDetailStatusChip(page);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-closed-detail-390.png`, fullPage: true });
   await context.close();
 
@@ -143,6 +145,19 @@ test("Polls V1.2 keeps closed history visible, settled, manageable, and responsi
   await page.screenshot({ path: `${ARTIFACTS}/lifecycle-moved-to-past-768.png`, fullPage: true });
   await context.close();
 });
+
+async function assertDetailStatusChip(page) {
+  const [cover, chip, eyebrow] = await Promise.all([
+    page.locator(".poll-stage > .poll-cover").boundingBox(),
+    page.locator(".poll-stage__cover-copy > .poll-state").boundingBox(),
+    page.locator(".poll-stage__cover-copy > .eyebrow").boundingBox(),
+  ]);
+  assert.ok(cover && chip && eyebrow, JSON.stringify({ cover, chip, eyebrow }));
+  assert.ok(chip.height >= 33 && chip.width >= 58, JSON.stringify(chip));
+  assert.ok(chip.x - cover.x >= 20 && chip.x - cover.x <= 48, JSON.stringify({ cover, chip }));
+  assert.ok(chip.y - cover.y >= 20 && chip.y - cover.y <= 48, JSON.stringify({ cover, chip }));
+  assert.ok(chip.y + chip.height + 18 < eyebrow.y, JSON.stringify({ chip, eyebrow }));
+}
 
 let fixtureMode = "both";
 let transitionOpenReads = 0;

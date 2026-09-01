@@ -36,7 +36,7 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.equal(await page.locator(".gaming-card").count(), 4);
     assert.deepEqual(await page.locator(".gaming-card h3").allTextContents(), ["WITCHER", "LUMINARY", "SUPER MARIO WORLD", "PARTY ANIMAL"]);
     assert.deepEqual(await page.locator(".gaming-card__platform").allTextContents(), ["PC via Steam", "PC via Steam", "PC via Steam", "PC via Steam"]);
-    assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1648360/Luminary/"]').count(), 1);
+    assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1648360/"]').count(), 1);
     assert.equal(await page.locator('.gaming-card a[href*="store.steampowered.com/app/"]').count(), 1);
     assert.equal(await page.locator('.gaming-card[data-cover="fallback"]').count() >= 3, true);
     assert.equal(await page.title(), "Third Railify Gaming | Third Railify");
@@ -111,6 +111,10 @@ test("Gaming request form normalizes exact Steam listings and preserves input af
   if (SCREENSHOTS) await page.screenshot({ path: path.join(ARTIFACTS, "suggestion-success-1440x1000.png"), fullPage: false });
 });
 
+test("Gaming managed rotation reflects additions/removals and shows truthful unavailability", async (t) => {
+  const server=spawn(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port","4210"],{stdio:"ignore"});t.after(()=>server.kill());await waitForServer("http://127.0.0.1:4210");const browser=await chromium.launch({executablePath:CHROME,headless:true});t.after(()=>browser.close());const context=await browser.newContext({viewport:{width:1024,height:900}});await installTurnstile(context);const page=await context.newPage();const added={id:"gaming-new",title:"NEW MANAGED GAME",platform:"PC",description:"Newly promoted from the historical library.",genre:"STRATEGY",artworkUrl:null,steam:null,position:1};await mockApis(page,[],{rotationItems:[added]});await page.goto("http://127.0.0.1:4210/gaming");await page.getByRole("heading",{name:"NEW MANAGED GAME"}).waitFor();assert.equal(await page.getByRole("heading",{name:"WITCHER"}).count(),0);assert.equal(await page.locator('.gaming-card[data-cover="fallback"]').count(),1);await page.unroute("**/api/**");await mockApis(page,[],{failRotation:true});await page.reload();await page.getByRole("heading",{name:"Current Rotation unavailable"}).waitFor();assert.equal(await page.locator(".gaming-card").count(),0);assert.match(await page.locator(".gaming-rotation__state p").textContent(),/hardcoded list is not being substituted/);await context.close();
+});
+
 test("Gaming motion respects reduced motion and the green root theme is removed on SPA navigation", async (t) => {
   const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4209"], { stdio: "ignore" });
   t.after(() => server.kill());
@@ -155,6 +159,7 @@ async function mockApis(page, submissions, options = {}) {
   let suggestionAttempts = 0;
   await page.route("**/api/**", (route) => {
     const pathname = new URL(route.request().url()).pathname;
+    if (pathname === "/api/gaming/rotation") return options.failRotation?json(route,{ok:false,error:"gaming_rotation_unavailable"},503):json(route,{...gamingRotation(),...(options.rotationItems?{items:options.rotationItems}:{})});
     if (pathname === "/api/gaming/suggestions") {
       suggestionAttempts += 1;
       submissions.push(JSON.parse(route.request().postData() || "{}"));
@@ -172,6 +177,13 @@ async function mockApis(page, submissions, options = {}) {
     return json(route, { error: "not_found" }, 404);
   });
 }
+
+function gamingRotation(){return{ok:true,schema:"thirdrailify-gaming-rotation-v1",updatedAt:"2026-09-01T00:00:00.000Z",items:[
+  {id:"gaming-witcher",title:"WITCHER",platform:"PC via Steam",description:"Monster hunting, hard choices, and the side quest that quietly steals the whole session.",genre:"RPG / ADVENTURE",artworkUrl:null,steam:null,position:1},
+  {id:"gaming-luminary",title:"LUMINARY",platform:"PC via Steam",description:"Solo or co-op exploration, character progression, and a campaign built around pushing back the dark with light.",genre:"ACTION RPG / CO-OP",artworkUrl:"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1648360/library_600x900.jpg",steam:{appId:"1648360",storeUrl:"https://store.steampowered.com/app/1648360/"},position:2},
+  {id:"gaming-super-mario-world",title:"SUPER MARIO WORLD",platform:"PC via Steam",description:"Classic platforming rhythm, secret routes, and one more level turning into an entire night.",genre:"PLATFORMER",artworkUrl:null,steam:null,position:3},
+  {id:"gaming-party-animal",title:"PARTY ANIMAL",platform:"PC via Steam",description:"Physics-driven party chaos where the plan survives roughly one collision.",genre:"PARTY / PHYSICS",artworkUrl:null,steam:null,position:4},
+]};}
 
 function collectBrowserErrors(page) {
   const errors = [];

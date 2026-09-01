@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { normalizeSteamStoreUrl, steamSearchUrl } from "../src/gaming/client.ts";
-import { GAMING_ROTATION, GAMING_RUMBLE_URL, GAMING_SCHEDULE } from "../src/gaming/rotation.ts";
+import { GAMING_RUMBLE_URL, GAMING_SCHEDULE } from "../src/gaming/rotation.ts";
 import { staticSeoForPath } from "../seo/site-seo.js";
 
-test("Gaming content authority preserves the supplied schedule and exact rotation labels", () => {
+test("Gaming static content preserves the supplied schedule without retaining a hardcoded rotation authority", async () => {
   assert.equal(GAMING_RUMBLE_URL, "https://rumble.com/thirdrailifygaming");
   assert.deepEqual(GAMING_SCHEDULE, [
     { day: "MON", time: "2 PM" },
@@ -13,13 +13,8 @@ test("Gaming content authority preserves the supplied schedule and exact rotatio
     { day: "THU", time: "2 PM" },
     { day: "FRI", time: "2 PM" },
   ]);
-  assert.deepEqual(GAMING_ROTATION.map(({ title }) => title), ["WITCHER", "LUMINARY", "SUPER MARIO WORLD", "PARTY ANIMAL"]);
-  assert.equal(GAMING_ROTATION.filter(({ steam }) => steam).length, 1);
-  assert.equal(GAMING_ROTATION[1].steam?.appId, "1648360");
-  assert.equal(GAMING_ROTATION[1].steam?.storeUrl, "https://store.steampowered.com/app/1648360/Luminary/");
-  assert.equal(GAMING_ROTATION[0].steam, null);
-  assert.equal(GAMING_ROTATION[2].steam, null);
-  assert.equal(GAMING_ROTATION[3].steam, null);
+  const rotationSource = await readFile(new URL("../src/gaming/rotation.ts", import.meta.url), "utf8");
+  assert.doesNotMatch(rotationSource, /GAMING_ROTATION|WITCHER|1648360/);
 });
 
 test("Steam helpers accept only exact HTTPS app listings and encode manual searches", () => {

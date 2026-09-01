@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequest } from "../functions/api/gaming/suggestions.js";
+import { onRequestGet as getRotation, normalizeGamingRotation } from "../functions/api/gaming/rotation.js";
 import { hmacSha256, sha256 } from "../functions/_shared/public-auth.js";
 
 const env = {
@@ -9,6 +10,16 @@ const env = {
   THIRDRAILIFY_COMMUNITY_API_SECRET: "gaming-signing-fixture",
   THIRDRAILIFY_AUTH_RATE_LIMIT_SECRET: "gaming-rate-fixture",
 };
+
+test("Public Gaming rotation relay preserves server order, verified mappings, and truthful failure", async () => {
+  const upstream = { ok:true, schema:"thirdrailify-gaming-rotation-v1", updatedAt:"2026-09-01T00:00:00.000Z", items:[
+    {id:"two",title:"SECOND",platform:"PC",description:"Second",genre:"RPG",artworkUrl:null,steam:null,position:2},
+    {id:"one",title:"FIRST",platform:"PC via Steam",description:"First",genre:"ACTION",artworkUrl:"https://cdn.thirdrailify.com/gaming/one.png",steam:{appId:"1648360",storeUrl:"https://store.steampowered.com/app/1648360/"},position:1},
+  ]};
+  const response=await getRotation({env,data:{fetchImpl:async()=>Response.json(upstream)}});assert.equal(response.status,200);const payload=await response.json();assert.deepEqual(payload.items.map((item)=>item.id),["one","two"]);assert.equal(payload.items[0].steam.appId,"1648360");
+  const unavailable=await getRotation({env,data:{fetchImpl:async()=>new Response(null,{status:503})}});assert.equal(unavailable.status,503);assert.deepEqual(await unavailable.json(),{ok:false,error:"gaming_rotation_unavailable",message:"Current Rotation is temporarily unavailable."});
+  assert.throws(()=>normalizeGamingRotation({...upstream,items:[upstream.items[0],upstream.items[0]]}),/duplicate/);
+});
 
 test("Public Gaming intake signs a bounded guest request without trusting browser identity", async () => {
   let forwarded;
@@ -70,4 +81,3 @@ function request(overrides = {}, origin = env.THIRDRAILIFY_PUBLIC_ORIGIN, extraH
 function fakeAuthDb(row) {
   return { prepare(sql) { return { bind() { return { first: async () => sql.includes("FROM sessions JOIN accounts") ? row : null, all: async () => ({ results: sql.includes("auth_identities") ? [] : [] }), run: async () => ({ meta: { changes: 1 } }) }; } }; } };
 }
-

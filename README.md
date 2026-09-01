@@ -10,13 +10,13 @@ No migration is required. Local rollout requires the Admin API/authority deploym
 
 ## Third Railify Gaming (local implementation)
 
-`/gaming` is a first-class green-accented sub-brand route with the supplied Monday, Tuesday, Thursday, and Friday `2 PM` schedule, direct `https://rumble.com/thirdrailifygaming` viewing actions, and the exact four-title rotation: WITCHER, LUMINARY, SUPER MARIO WORLD, and PARTY ANIMAL. Luminary is the only exact verified Steam match and uses app `1648360`; the other labels deliberately use branded fallback art and no guessed store links. The page includes a manual Steam-search helper, responsive/reduced-motion-safe signal artwork, scoped scrollbar theming that cleans up on navigation, route SEO, and semantic header/mobile/footer discovery.
+`/gaming` is a first-class green-accented sub-brand route with the supplied Monday, Tuesday, Thursday, and Friday `2 PM` schedule and direct `https://rumble.com/thirdrailifygaming` viewing actions. Current Rotation is no longer hardcoded runtime authority: `GET /api/gaming/rotation` relays the Admin-owned, sanitized ordered projection with a one-minute browser refresh and three-minute shared-cache freshness. Cards accept Admin-curated metadata and artwork, retain branded fallback art when no cover exists, and expose Steam links only when the Admin projection marks an exact mapping verified. Loading, configured-empty, and unavailable states remain truthful and never silently substitute the old seed.
 
 Suggestions post through same-origin `POST /api/gaming/suggestions`. Public resolves an existing account session server-side, requires its CSRF proof when authenticated, applies Turnstile and a honeypot, and signs a bounded relay to Admin with the existing `THIRDRAILIFY_COMMUNITY_API_SECRET`; the browser supplies no account or Inbox authority. Admin persists the complete request in its existing durable Inbox with category `gaming`, so no new migration, provider key, or Steam API credential is required. The existing global Live Now banner remains unchanged and continues to cover the site's channels.
 
 Focused gates are `npm run test:gaming` and `npm run test:browser:gaming`. No deployment, remote write, migration, provider mutation, secret, DNS, or live-status change was performed.
 
-Gaming tree additions are `functions/api/gaming/suggestions.js`, `src/gaming/client.ts`, `src/gaming/rotation.ts`, `src/pages/GamingPage.tsx`, `src/styles/gaming.css`, and the focused `tests/gaming-*.test.mjs` suites. Existing route, shell, SEO, CSP, package-script, README, and bump-note files are extended in place; no file was removed.
+Gaming tree additions are `functions/api/gaming/suggestions.js`, `functions/api/gaming/rotation.js`, `src/gaming/client.ts`, `src/gaming/rotation.ts`, `src/pages/GamingPage.tsx`, `src/styles/gaming.css`, and the focused `tests/gaming-*.test.mjs` suites. `rotation.ts` now retains presentation types and schedule constants only; it contains no authoritative game records. Existing route, shell, SEO, CSP, package-script, README, and bump-note files are extended in place; no file was removed.
 
 ## Public Polls V1.1 (local implementation)
 

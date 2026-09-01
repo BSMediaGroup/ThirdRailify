@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-01 - Managed Gaming Current Rotation
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Moved `/gaming` Current Rotation from a hardcoded TypeScript array to the Admin-owned, public-safe Gaming projection through same-origin `GET /api/gaming/rotation`.
+- Added ordered managed-card rendering, manual/uploaded artwork support, preserved Gaming fallback art, and Steam links only for server-projected verified mappings.
+- Added truthful loading, configured-empty, and unavailable states; Admin failure never silently substitutes the old four-title array. Browser refreshes once per minute and the relay uses a bounded three-minute shared-cache window with stale revalidation.
+- Updated focused relay/content/browser coverage for the four-title seed, ordering, artwork/fallback behavior, and lack of a competing runtime authority. No deployment, remote migration, provider/secret/DNS action, or push was performed.
+
 ## 2026-09-01 - Wheels V1.14 exact circularity and concentric rotor geometry
 
 CURRENT VER=0.1.0-alpha.0

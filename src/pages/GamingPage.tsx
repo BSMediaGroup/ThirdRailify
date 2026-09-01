@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { TurnstileWidget } from "../auth/TurnstileWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
-import { normalizeSteamStoreUrl, steamSearchUrl, submitGameSuggestion } from "../gaming/client";
-import { GAMING_ROTATION, GAMING_RUMBLE_URL, GAMING_SCHEDULE, type GamingRotationItem } from "../gaming/rotation";
+import { normalizeSteamStoreUrl, steamSearchUrl, submitGameSuggestion, useGamingRotation } from "../gaming/client";
+import { GAMING_RUMBLE_URL, GAMING_SCHEDULE, type GamingRotationItem } from "../gaming/rotation";
 import { useMotionGate } from "../hooks/useMotionGate";
 import "../styles/gaming.css";
 
 type SuggestionErrors = Partial<Record<"gameTitle" | "steamUrl" | "pitch" | "verification", string>>;
 
 export function GamingPage() {
+  const managedRotation = useGamingRotation();
   const hero = useMotionGate<HTMLElement>();
   const about = useMotionGate<HTMLElement>();
   const rotation = useMotionGate<HTMLElement>();
@@ -28,16 +29,16 @@ export function GamingPage() {
         <div className="gaming-hero__copy">
           <p className="gaming-eyebrow"><i /> Sub-brand online / session rotation armed</p>
           <h1 id="gaming-title"><small>Third Railify</small><span>Gaming</span></h1>
-          <p className="gaming-hero__lede">Four active titles. Four weekly sessions. One green signal with absolutely no respect for the sensible route.</p>
+          <p className="gaming-hero__lede">A live managed rotation. Four weekly sessions. One green signal with absolutely no respect for the sensible route.</p>
           <div className="gaming-actions">
             <a className="gaming-button gaming-button--primary" href={GAMING_RUMBLE_URL} target="_blank" rel="noopener noreferrer">Watch Third Railify Gaming <PlayIcon /><span className="sr-only"> (opens in a new tab)</span></a>
             <a className="gaming-button gaming-button--secondary" href="#rotation">Current rotation <ArrowIcon /></a>
           </div>
           <GamingSchedule compact />
         </div>
-        <GamingSignalInstrument />
+        <GamingSignalInstrument items={managedRotation.items} />
       </div>
-      <div className="gaming-hero__ticker" aria-hidden="true"><span>INPUT LOCKED</span><i /><span>04 ACTIVE TITLES</span><i /><span>04 WEEKLY SESSIONS</span><i /><strong>THIRD RAILIFY GAMING / SIGNAL ROUTED</strong></div>
+      <div className="gaming-hero__ticker" aria-hidden="true"><span>INPUT LOCKED</span><i /><span>{String(managedRotation.items.length).padStart(2, "0")} ACTIVE TITLES</span><i /><span>04 WEEKLY SESSIONS</span><i /><strong>THIRD RAILIFY GAMING / SIGNAL ROUTED</strong></div>
     </section>
 
     <section ref={about.ref} className={`gaming-about${about.active ? " is-active" : ""}`} data-motion={about.active ? "active" : "static"} aria-labelledby="gaming-about-title">
@@ -46,7 +47,7 @@ export function GamingPage() {
           <p className="gaming-eyebrow">About / another rail entirely</p>
           <h2 id="gaming-about-title">Same signal.<br /><span>Different collision.</span></h2>
           <p>Third Railify Gaming is the gaming arm of the show: live sessions, rotating worlds, co-op panic, solo detours, and the community watching a perfectly reasonable plan become evidence.</p>
-          <dl className="gaming-about__facts"><div><dt>Format</dt><dd>Live play</dd></div><div><dt>Rotation</dt><dd>Four titles</dd></div><div><dt>Destination</dt><dd>Rumble</dd></div></dl>
+          <dl className="gaming-about__facts"><div><dt>Format</dt><dd>Live play</dd></div><div><dt>Rotation</dt><dd>{managedRotation.state === "ready" ? `${managedRotation.items.length} titles` : managedRotation.state === "empty" ? "Queue open" : "Managed live"}</dd></div><div><dt>Destination</dt><dd>Rumble</dd></div></dl>
         </div>
         <GamingSessionLoop />
       </div>
@@ -54,12 +55,10 @@ export function GamingPage() {
 
     <section ref={rotation.ref} id="rotation" className={`gaming-rotation${rotation.active ? " is-active" : ""}`} data-motion={rotation.active ? "active" : "static"} aria-labelledby="gaming-rotation-title">
       <div className="container gaming-section-heading">
-        <div><p className="gaming-eyebrow">Loaded now / four active slots</p><h2 id="gaming-rotation-title">Current <span>rotation.</span></h2></div>
+        <div><p className="gaming-eyebrow">Loaded now / Admin-managed programming</p><h2 id="gaming-rotation-title">Current <span>rotation.</span></h2></div>
         <p>The names below are the live programming labels. Store links appear only where the exact Steam catalogue match has been verified.</p>
       </div>
-      <div className="container gaming-rotation__grid">
-        {GAMING_ROTATION.map((item) => <RotationCard key={item.title} item={item} />)}
-      </div>
+      {managedRotation.state === "ready" ? <div className="container gaming-rotation__grid">{managedRotation.items.map((item) => <RotationCard key={item.id} item={item} />)}</div> : <div className="container gaming-rotation__state" role="status"><BoltIcon /><h3>{managedRotation.state === "loading" ? "Loading Current Rotation" : managedRotation.state === "empty" ? "Rotation queue open" : "Current Rotation unavailable"}</h3><p>{managedRotation.state === "loading" ? "Reading the live Gaming programming authority." : managedRotation.state === "empty" ? "No games are configured in Current Rotation right now." : "The managed Gaming authority could not be reached. The historical hardcoded list is not being substituted."}</p>{managedRotation.state === "unavailable" && <button type="button" className="gaming-button gaming-button--secondary" onClick={() => void managedRotation.retry()}>Try again</button>}</div>}
     </section>
 
     <section ref={request.ref} id="suggest" className={`gaming-request${request.active ? " is-active" : ""}`} data-motion={request.active ? "active" : "static"} aria-labelledby="gaming-request-title">
@@ -95,7 +94,7 @@ function GamingSchedule({ compact = false }: { compact?: boolean }) {
   </div>;
 }
 
-function GamingSignalInstrument() {
+function GamingSignalInstrument({ items }: { items: GamingRotationItem[] }) {
   return <div className="gaming-instrument" aria-hidden="true">
     <header><span>TRG / ROUTING CORE</span><b><i /> SIGNAL READY</b></header>
     <div className="gaming-instrument__viewport">
@@ -109,8 +108,8 @@ function GamingSignalInstrument() {
         <path className="gaming-instrument__route gaming-instrument__route--four" pathLength="1" d="M310 310C394 388 443 438 503 500" />
         <path className="gaming-instrument__wave" pathLength="1" d="M72 310h54l18-38 24 76 28-102 27 127 27-88 28 46 28-42 26 26 27-73 29 134 27-108 27 63 28-21h56" />
       </svg>
-      <div className="gaming-instrument__core"><BoltIcon /><small>GAMING</small><strong>04</strong><span>ACTIVE SLOTS</span></div>
-      {GAMING_ROTATION.map((game, index) => <span className={`gaming-instrument__slot gaming-instrument__slot--${index + 1}`} key={game.title}><i />{game.index} / {game.title}</span>)}
+      <div className="gaming-instrument__core"><BoltIcon /><small>GAMING</small><strong>{String(items.length).padStart(2, "0")}</strong><span>ACTIVE SLOTS</span></div>
+      {items.slice(0, 4).map((game, index) => <span className={`gaming-instrument__slot gaming-instrument__slot--${index + 1}`} key={game.id}><i />{game.index} / {game.title}</span>)}
       <span className="gaming-instrument__sweep" />
     </div>
     <footer><span>INPUT / 100%</span><i /><span>FRAME / LOCKED</span><i /><span>QUEUE / OPEN</span></footer>
@@ -134,17 +133,17 @@ function GamingSessionLoop() {
 
 function RotationCard({ item }: { item: GamingRotationItem }) {
   const [coverFailed, setCoverFailed] = useState(false);
-  const verifiedCover = Boolean(item.steam && !coverFailed);
+  const verifiedCover = Boolean(item.artworkUrl && !coverFailed);
   return <article className={`gaming-card gaming-card--${item.visual}`} data-cover={verifiedCover ? "verified" : "fallback"}>
     <div className="gaming-card__visual">
-      {verifiedCover ? <img src={item.steam!.coverUrl} alt={`${item.title} cover art from the official Steam store`} width="600" height="900" loading="lazy" decoding="async" onError={() => setCoverFailed(true)} /> : <GamingFallbackArt item={item} />}
+      {verifiedCover ? <img src={item.artworkUrl!} alt={`${item.title} cover artwork`} width="600" height="900" loading="lazy" decoding="async" onError={() => setCoverFailed(true)} /> : <GamingFallbackArt item={item} />}
       <span className="gaming-card__scan" aria-hidden="true" />
       <span className="gaming-card__index">{item.index} / ACTIVE ROTATION</span>
       <span className="gaming-card__status"><i /> IN ROTATION</span>
     </div>
     <div className="gaming-card__body">
-      <p>{item.genre}</p><h3>{item.title}</h3><span className="gaming-card__platform">PC via Steam</span><p className="gaming-card__description">{item.description}</p>
-      <footer>{item.steam ? <a href={item.steam.storeUrl} target="_blank" rel="noopener noreferrer">Official Steam listing <ArrowIcon /><span className="sr-only"> for {item.steam.canonicalTitle} (opens in a new tab)</span></a> : <span>Store mapping pending verification</span>}<small>{item.steam ? `APP ${item.steam.appId} / VERIFIED` : "BRANDED ART / NO STORE LINK"}</small></footer>
+      <p>{item.genre}</p><h3>{item.title}</h3><span className="gaming-card__platform">{item.platform}</span><p className="gaming-card__description">{item.description}</p>
+      <footer>{item.steam ? <a href={item.steam.storeUrl} target="_blank" rel="noopener noreferrer">Official Steam listing <ArrowIcon /><span className="sr-only"> for {item.title} (opens in a new tab)</span></a> : <span>Store mapping pending verification</span>}<small>{item.steam ? `APP ${item.steam.appId} / VERIFIED` : "BRANDED ART / NO STORE LINK"}</small></footer>
     </div>
   </article>;
 }
