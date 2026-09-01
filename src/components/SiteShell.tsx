@@ -30,6 +30,8 @@ const submenuItems: Record<string, typeof showItems> = { "/about": showItems, "/
 export function SiteShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [submenuOpen, setSubmenuOpen] = useState<string | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const mobileNavRef = useRef<HTMLElement | null>(null);
   const submenuNav = useRef<Record<string, HTMLLIElement | null>>({});
   const location = useLocation();
   const previousPath = useRef(location.pathname);
@@ -63,6 +65,32 @@ export function SiteShell() {
   }, [menuOpen]);
 
   useEffect(() => {
+    if (!menuOpen) return;
+    const root = document.documentElement;
+    const breakpoint = window.matchMedia("(max-width: 1120px)");
+    const syncViewport = () => {
+      if (!breakpoint.matches) {
+        setMenuOpen(false);
+        return;
+      }
+      const headerBottom = headerRef.current?.getBoundingClientRect().bottom || 0;
+      mobileNavRef.current?.style.setProperty("--mobile-nav-top", `${Math.max(0, Math.ceil(headerBottom))}px`);
+    };
+    mobileNavRef.current?.scrollTo({ top: 0 });
+    root.classList.add("mobile-nav-open");
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    window.visualViewport?.addEventListener("resize", syncViewport);
+    breakpoint.addEventListener("change", syncViewport);
+    return () => {
+      root.classList.remove("mobile-nav-open");
+      window.removeEventListener("resize", syncViewport);
+      window.visualViewport?.removeEventListener("resize", syncViewport);
+      breakpoint.removeEventListener("change", syncViewport);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
     const close = (event: KeyboardEvent | MouseEvent) => {
       const activeNav = submenuOpen ? submenuNav.current[submenuOpen] : null;
       if (event instanceof KeyboardEvent && event.key === "Escape") { setSubmenuOpen(null); (activeNav?.querySelector("a") as HTMLElement | null)?.focus(); }
@@ -76,7 +104,7 @@ export function SiteShell() {
     <div className="site-frame" data-site-shell="mounted">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <PromoBanner config={bannerConfig} broadcast={data} />
-      <header className="site-header">
+      <header ref={headerRef} className="site-header">
         <div className="container site-header__inner">
           <Link className="brand" to="/" aria-label="Third Railify home">
             <span className="brand__mark" aria-hidden="true"><img src={boltMark} alt="" /></span>
@@ -99,19 +127,19 @@ export function SiteShell() {
             </button>
           </div>
         </div>
-        <nav id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
-          <div className="container">
-            {navItems.map((item, index) => {
-              const children = submenuItems[item.to];
-              return <div className={children ? `mobile-nav__community mobile-nav__${item.to === "/about" ? "show" : "community"}` : ""} key={item.to}><NavLink to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>{children ? <div>{children.map((child) => <NavLink key={child.to} to={child.to}>{child.label}<ArrowIcon /></NavLink>)}</div> : null}</div>;
-            })}
-            {liveNow.length > 0 && <Link to="/watch"><span>{liveNavNumber}</span>Watch live now<ArrowIcon /></Link>}
-            {account
-              ? <Link to="/account"><span>{accountNavNumber}</span>Your account<ArrowIcon /></Link>
-              : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>{accountNavNumber}</span>Log in</button>}
-          </div>
-        </nav>
       </header>
+      <nav ref={mobileNavRef} id="mobile-menu" className={`mobile-nav${menuOpen ? " is-open" : ""}`} aria-label="Mobile navigation" aria-hidden={!menuOpen}>
+        <div className="container">
+          {navItems.map((item, index) => {
+            const children = submenuItems[item.to];
+            return <div className={children ? `mobile-nav__community mobile-nav__${item.to === "/about" ? "show" : "community"}` : ""} key={item.to}><NavLink to={item.to} end={item.to === "/"}><span>0{index + 1}</span>{item.label}</NavLink>{children ? <div>{children.map((child) => <NavLink key={child.to} to={child.to}>{child.label}<ArrowIcon /></NavLink>)}</div> : null}</div>;
+          })}
+          {liveNow.length > 0 && <Link to="/watch"><span>{liveNavNumber}</span>Watch live now<ArrowIcon /></Link>}
+          {account
+            ? <Link to="/account"><span>{accountNavNumber}</span>Your account<ArrowIcon /></Link>
+            : <button className="mobile-nav__account" type="button" onClick={() => openAuth("signin")}><span>{accountNavNumber}</span>Log in</button>}
+        </div>
+      </nav>
       <main id="main-content"><Outlet context={{ bannerConfig }} /></main>
       <SiteFooter />
       <CartDrawer />

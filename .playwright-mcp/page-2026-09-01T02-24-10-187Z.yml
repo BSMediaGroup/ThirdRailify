@@ -1,0 +1,9 @@
+- main [ref=f4e3]:
+  - region [ref=f4e4]:
+    - generic [ref=f4e7]:
+      - strong [ref=f4e8]: THIRD RAILIFY
+      - generic [ref=f4e9]: CONTROL ROOM
+    - paragraph [ref=f4e10]: Account authority
+    - heading "Checking access" [level=1] [ref=f4e12]
+    - paragraph [ref=f4e13]: Resolving the current server session and role.
+    - status [ref=f4e14]: Secure session check

@@ -1,0 +1,4 @@
+[     370ms] [ERROR] Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v3d52b47920f24c319d37e2661827c42b1787588026925' violates the following Content Security Policy directive: "script-src 'self' https://challenges.cloudflare.com". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked. @ https://admin.thirdrailify.com/gaming?steamfix=341cff47:0
+[   20904ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://admin.thirdrailify.com/api/admin/gaming/steam/search?q=WITCHER:0
+[   71091ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://admin.thirdrailify.com/api/admin/gaming/steam/search?q=WITCHER:0
+[  106011ms] [ERROR] Failed to load resource: the server responded with a status of 502 () @ https://admin.thirdrailify.com/api/admin/gaming/steam/search?q=292030:0

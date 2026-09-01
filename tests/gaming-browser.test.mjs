@@ -76,12 +76,75 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
       await page.screenshot({ path: path.join(ARTIFACTS, `rotation-${width}x${height}.png`), fullPage: false });
     }
 
-    if (width === 390) {
+    if (width <= 1120) {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+      await page.waitForFunction(() => window.scrollY === 0);
       await page.getByRole("button", { name: "Open navigation" }).click();
-      assert.deepEqual(await page.locator(".mobile-nav__show > div > a").allTextContents(), ["Shawn", "Gina", "Gaming"]);
-      assert.equal(await page.locator('.mobile-nav__show > a[href="/about"]').isVisible(), true);
-      assert.equal(await page.locator('.mobile-nav__community:not(.mobile-nav__show) a[href="/gaming"]').count(), 0);
+      const mobileNav = page.locator(".mobile-nav");
+      await mobileNav.waitFor({ state: "visible" });
+      await page.waitForTimeout(300);
+      const menuGeometry = await mobileNav.evaluate((nav) => {
+        const box = nav.getBoundingClientRect();
+        const header = document.querySelector(".site-header")?.getBoundingClientRect();
+        const styles = getComputedStyle(nav);
+        const account = nav.querySelector(".mobile-nav__account")?.getBoundingClientRect();
+        nav.scrollTop = nav.scrollHeight;
+        const scrolledAccount = nav.querySelector(".mobile-nav__account")?.getBoundingClientRect();
+        return {
+          position: styles.position,
+          overflowY: styles.overflowY,
+          top: box.top,
+          bottom: box.bottom,
+          headerBottom: header?.bottom || 0,
+          viewportHeight: window.innerHeight,
+          clientHeight: nav.clientHeight,
+          scrollHeight: nav.scrollHeight,
+          scrollTop: nav.scrollTop,
+          accountInitiallyBelowFold: Boolean(account && account.bottom > box.bottom),
+          accountVisibleAfterScroll: Boolean(scrolledAccount && scrolledAccount.top >= box.top && scrolledAccount.bottom <= box.bottom),
+          rootOverflow: getComputedStyle(document.documentElement).overflow,
+          bodyOverflow: getComputedStyle(document.body).overflow,
+        };
+      });
+      assert.equal(menuGeometry.position, "fixed", JSON.stringify(menuGeometry));
+      assert.equal(menuGeometry.overflowY, "auto", JSON.stringify(menuGeometry));
+      assert.ok(Math.abs(menuGeometry.top - menuGeometry.headerBottom) <= 1, JSON.stringify(menuGeometry));
+      assert.ok(Math.abs(menuGeometry.bottom - menuGeometry.viewportHeight) <= 1, JSON.stringify(menuGeometry));
+      assert.equal(menuGeometry.rootOverflow, "hidden", JSON.stringify(menuGeometry));
+      assert.equal(menuGeometry.bodyOverflow, "hidden", JSON.stringify(menuGeometry));
+      if (menuGeometry.scrollHeight > menuGeometry.clientHeight) {
+        assert.ok(menuGeometry.scrollTop > 0, JSON.stringify(menuGeometry));
+        assert.equal(menuGeometry.accountVisibleAfterScroll, true, JSON.stringify(menuGeometry));
+      }
+      if (width === 390) {
+        assert.deepEqual(await page.locator(".mobile-nav__show > div > a").allTextContents(), ["Shawn", "Gina", "Gaming"]);
+        assert.equal(await page.locator('.mobile-nav__show > a[href="/about"]').isVisible(), true);
+        assert.equal(await page.locator('.mobile-nav__community:not(.mobile-nav__show) a[href="/gaming"]').count(), 0);
+        assert.equal(menuGeometry.accountInitiallyBelowFold || menuGeometry.scrollHeight <= menuGeometry.clientHeight, true, JSON.stringify(menuGeometry));
+        if (SCREENSHOTS) await page.screenshot({ path: path.join(ARTIFACTS, "mobile-menu-scrolled-390x844.png"), fullPage: false });
+      }
       await page.getByRole("button", { name: "Close navigation" }).click();
+      await mobileNav.waitFor({ state: "hidden" });
+      assert.equal(await page.locator("html.mobile-nav-open").count(), 0, "closing the menu restores document scrolling");
+      if (width === 390) {
+        await page.setViewportSize({ width: 390, height: 568 });
+        await page.getByRole("button", { name: "Open navigation" }).click();
+        await mobileNav.waitFor({ state: "visible" });
+        await page.waitForTimeout(300);
+        const overflowProof = await mobileNav.evaluate((nav) => {
+          const box = nav.getBoundingClientRect();
+          nav.scrollTop = nav.scrollHeight;
+          const account = nav.querySelector(".mobile-nav__account")?.getBoundingClientRect();
+          return { clientHeight: nav.clientHeight, scrollHeight: nav.scrollHeight, scrollTop: nav.scrollTop, bottom: box.bottom, viewportHeight: window.innerHeight, accountVisible: Boolean(account && account.top >= box.top && account.bottom <= box.bottom) };
+        });
+        assert.ok(overflowProof.scrollHeight > overflowProof.clientHeight, JSON.stringify(overflowProof));
+        assert.ok(overflowProof.scrollTop > 0, JSON.stringify(overflowProof));
+        assert.equal(overflowProof.accountVisible, true, JSON.stringify(overflowProof));
+        assert.ok(Math.abs(overflowProof.bottom - overflowProof.viewportHeight) <= 1, JSON.stringify(overflowProof));
+        if (SCREENSHOTS) await page.screenshot({ path: path.join(ARTIFACTS, "mobile-menu-overflow-bottom-390x568.png"), fullPage: false });
+        await page.getByRole("button", { name: "Close navigation" }).click();
+        await mobileNav.waitFor({ state: "hidden" });
+      }
     }
 
     assert.deepEqual(errors, [], `browser errors at ${width}x${height}`);

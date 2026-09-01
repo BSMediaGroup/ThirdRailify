@@ -1,0 +1,357 @@
+- generic [ref=e16]:
+  - link "Skip to content" [ref=e17] [cursor=pointer]:
+    - /url: "#admin-main"
+  - complementary "Admin navigation" [ref=e18]:
+    - generic [ref=e22]:
+      - strong [ref=e23]: THIRD RAILIFY
+      - generic [ref=e24]: CONTROL ROOM
+    - generic [ref=e25]:
+      - navigation [ref=e26]:
+        - paragraph [ref=e27]: Workspace
+        - link "Overview" [ref=e28] [cursor=pointer]:
+          - /url: /
+        - link "Watch / Broadcast" [ref=e35] [cursor=pointer]:
+          - /url: /watch
+        - link "Gaming" [ref=e41] [cursor=pointer]:
+          - /url: /gaming
+        - link "Users / Access" [ref=e46] [cursor=pointer]:
+          - /url: /access
+        - link "Audience Analytics" [ref=e51] [cursor=pointer]:
+          - /url: /analytics
+        - link "Admin Inbox" [ref=e56] [cursor=pointer]:
+          - /url: /inbox
+        - link "Site Content" [ref=e61] [cursor=pointer]:
+          - /url: /content
+        - generic [ref=e67]:
+          - link "Shop" [ref=e68] [cursor=pointer]:
+            - /url: /shop
+          - button "Expand Shop navigation" [ref=e73] [cursor=pointer]
+        - generic [ref=e77]:
+          - link "Wheels Overview" [ref=e78] [cursor=pointer]:
+            - /url: /wheels
+          - button "Expand Wheels navigation" [ref=e84] [cursor=pointer]
+        - generic [ref=e88]:
+          - link "Polls" [ref=e89] [cursor=pointer]:
+            - /url: /polls
+          - button "Expand Polls navigation" [ref=e95] [cursor=pointer]
+        - link "Automations" [ref=e98] [cursor=pointer]:
+          - /url: /automations
+        - generic [ref=e104]:
+          - link "Commerce Overview" [ref=e105] [cursor=pointer]:
+            - /url: /commerce
+          - button "Expand Commerce navigation" [ref=e110] [cursor=pointer]
+        - link "Media" [ref=e113] [cursor=pointer]:
+          - /url: /media
+        - generic [ref=e120]:
+          - link "GOATS in the Wild" [ref=e121] [cursor=pointer]:
+            - /url: /goats
+          - button "Expand GOATS navigation" [ref=e127] [cursor=pointer]
+        - link "VIP / Membership" [ref=e130] [cursor=pointer]:
+          - /url: /membership
+        - link "Integrations" [ref=e134] [cursor=pointer]:
+          - /url: /integrations
+        - link "Settings" [ref=e139] [cursor=pointer]:
+          - /url: /settings
+      - paragraph [ref=e147]:
+        - strong [ref=e148]: Authenticated control plane
+        - generic [ref=e149]: D1 account authority
+  - generic [ref=e150]:
+    - banner [ref=e151]:
+      - button "Collapse sidebar" [ref=e152] [cursor=pointer]
+      - generic [ref=e155]:
+        - generic [ref=e156]: Admin /
+        - strong [ref=e157]: Gaming
+      - button "Master Admin 1 account menu" [ref=e159] [cursor=pointer]:
+        - generic [ref=e161]:
+          - strong [ref=e162]:
+            - generic [ref=e163]: Master Admin 1
+            - img "Master Admin" [ref=e164]
+          - generic [ref=e168]: mail@danielclancy.net
+      - status
+    - main [ref=e169]:
+      - main [ref=e170]:
+        - generic [ref=e171]:
+          - generic [ref=e172]:
+            - paragraph [ref=e173]: ADMIN-OWNED PROGRAMMING AUTHORITY
+            - heading "Third Railify Gaming" [level=1] [ref=e174]
+            - paragraph [ref=e175]: Curate the permanent Game Library and the ordered Current Rotation consumed by the Public Gaming page.
+          - generic [ref=e176]:
+            - link "Open Public Gaming" [ref=e177] [cursor=pointer]:
+              - /url: https://thirdrailify.com/gaming
+            - button "Add game" [ref=e181] [cursor=pointer]
+        - region "Gaming catalogue summary" [ref=e185]:
+          - article [ref=e186]:
+            - strong [ref=e187]: "4"
+            - text: Current rotation
+          - article [ref=e188]:
+            - strong [ref=e189]: "4"
+            - text: Historical library
+          - article [ref=e190]:
+            - strong [ref=e191]: "3"
+            - text: Missing artwork
+          - article [ref=e192]:
+            - strong [ref=e193]: "3"
+            - text: Steam unverified
+        - status [ref=e194]:
+          - generic [ref=e199]:
+            - strong [ref=e200]: Steam lookup available
+            - paragraph [ref=e201]: Best-effort Store search; manual entry remains available.
+          - code [ref=e202]: Steam Store storefront search (best effort)
+        - region [ref=e203]:
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - paragraph [ref=e206]: PUBLIC PROGRAMMING ORDER
+              - heading "Current Rotation" [level=2] [ref=e207]
+            - generic [ref=e208]: Dynamic · 3 minute edge freshness
+          - generic [ref=e210]:
+            - article [ref=e211]:
+              - generic "WITCHER fallback artwork" [ref=e213]
+              - generic [ref=e217]:
+                - generic [ref=e218]: POSITION 01
+                - heading "WITCHER" [level=3] [ref=e219]
+                - paragraph [ref=e220]: PC via Steam · RPG / ADVENTURE
+                - generic [ref=e221]:
+                  - generic [ref=e222]: MISSING ARTWORK
+                  - generic [ref=e223]: STEAM UNVERIFIED
+                  - generic [ref=e224]: COPY READY
+              - generic [ref=e225]:
+                - button "Move WITCHER up" [disabled] [ref=e226]: Move up
+                - button "Move WITCHER down" [ref=e229] [cursor=pointer]: Move down
+                - button "Edit" [ref=e232] [cursor=pointer]
+                - button "Remove from rotation" [ref=e236] [cursor=pointer]
+            - article [ref=e237]:
+              - img "LUMINARY cover" [ref=e239]
+              - generic [ref=e240]:
+                - generic [ref=e241]: POSITION 02
+                - heading "LUMINARY" [level=3] [ref=e242]
+                - paragraph [ref=e243]: PC via Steam · ACTION RPG / CO-OP
+                - generic [ref=e244]:
+                  - generic [ref=e245]: ART READY
+                  - generic [ref=e246]: STEAM VERIFIED
+                  - generic [ref=e247]: COPY READY
+              - generic [ref=e248]:
+                - button "Move LUMINARY up" [ref=e249] [cursor=pointer]: Move up
+                - button "Move LUMINARY down" [ref=e252] [cursor=pointer]: Move down
+                - button "Edit" [ref=e255] [cursor=pointer]
+                - button "Remove from rotation" [ref=e259] [cursor=pointer]
+            - article [ref=e260]:
+              - generic "SUPER MARIO WORLD fallback artwork" [ref=e262]
+              - generic [ref=e266]:
+                - generic [ref=e267]: POSITION 03
+                - heading "SUPER MARIO WORLD" [level=3] [ref=e268]
+                - paragraph [ref=e269]: PC via Steam · PLATFORMER
+                - generic [ref=e270]:
+                  - generic [ref=e271]: MISSING ARTWORK
+                  - generic [ref=e272]: STEAM UNVERIFIED
+                  - generic [ref=e273]: COPY READY
+              - generic [ref=e274]:
+                - button "Move SUPER MARIO WORLD up" [ref=e275] [cursor=pointer]: Move up
+                - button "Move SUPER MARIO WORLD down" [ref=e278] [cursor=pointer]: Move down
+                - button "Edit" [ref=e281] [cursor=pointer]
+                - button "Remove from rotation" [ref=e285] [cursor=pointer]
+            - article [ref=e286]:
+              - generic "PARTY ANIMAL fallback artwork" [ref=e288]
+              - generic [ref=e292]:
+                - generic [ref=e293]: POSITION 04
+                - heading "PARTY ANIMAL" [level=3] [ref=e294]
+                - paragraph [ref=e295]: PC via Steam · PARTY / PHYSICS
+                - generic [ref=e296]:
+                  - generic [ref=e297]: MISSING ARTWORK
+                  - generic [ref=e298]: STEAM UNVERIFIED
+                  - generic [ref=e299]: COPY READY
+              - generic [ref=e300]:
+                - button "Move PARTY ANIMAL up" [ref=e301] [cursor=pointer]: Move up
+                - button "Move PARTY ANIMAL down" [disabled] [ref=e304]: Move down
+                - button "Edit" [ref=e307] [cursor=pointer]
+                - button "Remove from rotation" [ref=e311] [cursor=pointer]
+        - region [ref=e312]:
+          - generic [ref=e314]:
+            - paragraph [ref=e315]: PERMANENT HISTORICAL REGISTER
+            - heading "Game Library" [level=2] [ref=e316]
+          - generic [ref=e317]:
+            - generic [ref=e318]:
+              - text: Search Game Library
+              - searchbox "Search Game Library" [ref=e319]
+            - navigation "Game Library filters" [ref=e320]:
+              - button "all" [ref=e321] [cursor=pointer]
+              - button "rotation" [ref=e322] [cursor=pointer]
+              - button "Not in rotation" [ref=e323] [cursor=pointer]
+              - button "Missing artwork" [ref=e324] [cursor=pointer]
+              - button "Missing Steam" [ref=e325] [cursor=pointer]
+              - button "archived" [ref=e326] [cursor=pointer]
+          - table "Historical Game Library" [ref=e327]:
+            - row "Artwork Game Steam Rotation Updated Actions" [ref=e328]:
+              - generic [ref=e329]: Artwork
+              - generic [ref=e330]: Game
+              - generic [ref=e331]: Steam
+              - generic [ref=e332]: Rotation
+              - generic [ref=e333]: Updated
+              - generic [ref=e334]: Actions
+            - row [ref=e335]:
+              - cell [ref=e336]:
+                - generic "WITCHER fallback artwork" [ref=e338]
+              - cell "WITCHER PC via Steam MISSING ARTWORK STEAM UNVERIFIED COPY READY" [ref=e342]:
+                - strong [ref=e343]: WITCHER
+                - generic [ref=e344]: PC via Steam
+                - generic [ref=e345]:
+                  - generic [ref=e346]: MISSING ARTWORK
+                  - generic [ref=e347]: STEAM UNVERIFIED
+                  - generic [ref=e348]: COPY READY
+              - cell "NOT MAPPED Manual metadata valid" [ref=e349]:
+                - generic [ref=e350]: NOT MAPPED
+                - generic [ref=e351]: Manual metadata valid
+              - cell "POSITION 1" [ref=e352]
+              - cell [ref=e354]:
+                - time [ref=e355]: 01/09/2026
+              - cell "Edit IN ROTATION Archive" [ref=e356]:
+                - button "Edit" [ref=e357] [cursor=pointer]
+                - generic [ref=e361]: IN ROTATION
+                - button "Archive" [ref=e362] [cursor=pointer]
+            - row [ref=e363]:
+              - cell [ref=e364]:
+                - img "LUMINARY cover" [ref=e366]
+              - cell "LUMINARY PC via Steam ART READY STEAM VERIFIED COPY READY" [ref=e367]:
+                - strong [ref=e368]: LUMINARY
+                - generic [ref=e369]: PC via Steam
+                - generic [ref=e370]:
+                  - generic [ref=e371]: ART READY
+                  - generic [ref=e372]: STEAM VERIFIED
+                  - generic [ref=e373]: COPY READY
+              - cell "VERIFIED App 1648360" [ref=e374]:
+                - generic [ref=e375]: VERIFIED
+                - generic [ref=e376]: App 1648360
+              - cell "POSITION 2" [ref=e377]
+              - cell [ref=e379]:
+                - time [ref=e380]: 01/09/2026
+              - cell "Edit IN ROTATION Archive" [ref=e381]:
+                - button "Edit" [ref=e382] [cursor=pointer]
+                - generic [ref=e386]: IN ROTATION
+                - button "Archive" [ref=e387] [cursor=pointer]
+            - row [ref=e388]:
+              - cell [ref=e389]:
+                - generic "SUPER MARIO WORLD fallback artwork" [ref=e391]
+              - cell "SUPER MARIO WORLD PC via Steam MISSING ARTWORK STEAM UNVERIFIED COPY READY" [ref=e395]:
+                - strong [ref=e396]: SUPER MARIO WORLD
+                - generic [ref=e397]: PC via Steam
+                - generic [ref=e398]:
+                  - generic [ref=e399]: MISSING ARTWORK
+                  - generic [ref=e400]: STEAM UNVERIFIED
+                  - generic [ref=e401]: COPY READY
+              - cell "NOT MAPPED Manual metadata valid" [ref=e402]:
+                - generic [ref=e403]: NOT MAPPED
+                - generic [ref=e404]: Manual metadata valid
+              - cell "POSITION 3" [ref=e405]
+              - cell [ref=e407]:
+                - time [ref=e408]: 01/09/2026
+              - cell "Edit IN ROTATION Archive" [ref=e409]:
+                - button "Edit" [ref=e410] [cursor=pointer]
+                - generic [ref=e414]: IN ROTATION
+                - button "Archive" [ref=e415] [cursor=pointer]
+            - row [ref=e416]:
+              - cell [ref=e417]:
+                - generic "PARTY ANIMAL fallback artwork" [ref=e419]
+              - cell "PARTY ANIMAL PC via Steam MISSING ARTWORK STEAM UNVERIFIED COPY READY" [ref=e423]:
+                - strong [ref=e424]: PARTY ANIMAL
+                - generic [ref=e425]: PC via Steam
+                - generic [ref=e426]:
+                  - generic [ref=e427]: MISSING ARTWORK
+                  - generic [ref=e428]: STEAM UNVERIFIED
+                  - generic [ref=e429]: COPY READY
+              - cell "NOT MAPPED Manual metadata valid" [ref=e430]:
+                - generic [ref=e431]: NOT MAPPED
+                - generic [ref=e432]: Manual metadata valid
+              - cell "POSITION 4" [ref=e433]
+              - cell [ref=e435]:
+                - time [ref=e436]: 01/09/2026
+              - cell "Edit IN ROTATION Archive" [ref=e437]:
+                - button "Edit" [ref=e438] [cursor=pointer]
+                - generic [ref=e442]: IN ROTATION
+                - button "Archive" [ref=e443] [cursor=pointer]
+        - dialog [active] [ref=e445]:
+          - generic [ref=e446]:
+            - generic [ref=e447]:
+              - paragraph [ref=e448]: GAME LIBRARY RECORD
+              - heading "Edit WITCHER" [level=2] [ref=e449]
+              - paragraph [ref=e450]: Steam assists the editor; manual curation remains authoritative.
+            - button "Close game editor" [ref=e451] [cursor=pointer]
+          - generic [ref=e454]:
+            - group [ref=e456]:
+              - generic [ref=e457]:
+                - generic [ref=e458]:
+                  - generic [ref=e459]:
+                    - paragraph [ref=e460]: STEAM LOOKUP
+                    - heading "Find / change Steam match" [level=3] [ref=e461]
+                    - paragraph [ref=e462]: Search a title, or paste a numeric App ID or canonical Steam Store URL.
+                  - link "External Search Steam" [ref=e463] [cursor=pointer]:
+                    - /url: https://store.steampowered.com/search/?term=WITCHER
+                - generic [ref=e467]:
+                  - generic [ref=e468]:
+                    - text: Search Steam games
+                    - textbox "Search Steam games" [ref=e469]:
+                      - /placeholder: Search Steam games, App ID, or Store URL
+                      - text: WITCHER
+                  - button "Search" [ref=e470] [cursor=pointer]
+              - generic [ref=e471]:
+                - heading "Public display" [level=3] [ref=e472]
+                - generic [ref=e473]:
+                  - generic [ref=e474]:
+                    - generic [ref=e475]: Display title
+                    - textbox "Display title" [ref=e476]: WITCHER
+                  - generic [ref=e477]:
+                    - generic [ref=e478]: Platform label
+                    - textbox "Platform label" [ref=e479]: PC via Steam
+                  - generic [ref=e480]:
+                    - generic [ref=e481]: Genre / category
+                    - textbox "Genre / category" [ref=e482]: RPG / ADVENTURE
+                  - generic [ref=e483]:
+                    - generic [ref=e484]: Canonical slug
+                    - textbox "Canonical slug" [ref=e485]: witcher
+                  - generic [ref=e486]:
+                    - generic [ref=e487]: Short description
+                    - textbox "Short description" [ref=e488]: Monster hunting, hard choices, and the side quest that quietly steals the whole session.
+                  - generic [ref=e489]:
+                    - generic [ref=e490]: Developer
+                    - textbox "Developer" [ref=e491]
+                  - generic [ref=e492]:
+                    - generic [ref=e493]: Publisher
+                    - textbox "Publisher" [ref=e494]
+              - generic [ref=e495]:
+                - heading "Artwork" [level=3] [ref=e496]
+                - generic [ref=e497]:
+                  - generic [ref=e498]: Public fallback art
+                  - generic [ref=e503]:
+                    - generic [ref=e504]:
+                      - generic [ref=e505]: Upload replacement
+                      - button "Upload replacement" [ref=e506]
+                    - generic [ref=e507]:
+                      - generic [ref=e508]: Or public HTTPS image URL
+                      - textbox "Or public HTTPS image URL" [ref=e509]:
+                        - /placeholder: https://…
+              - generic [ref=e510]:
+                - generic [ref=e512]:
+                  - heading "Steam mapping" [level=3] [ref=e513]
+                  - paragraph [ref=e514]: Steam mapping is optional; unknown remains valid.
+                - generic [ref=e515]:
+                  - generic [ref=e516]:
+                    - generic [ref=e517]: Steam App ID
+                    - textbox "Steam App ID" [ref=e518]
+                  - generic [ref=e519]:
+                    - generic [ref=e520]: Canonical Steam Store URL
+                    - textbox "Canonical Steam Store URL" [ref=e521]
+                  - generic [ref=e522]:
+                    - generic [ref=e523]: Mapping state
+                    - combobox "Mapping state" [ref=e524]:
+                      - option "Unverified / manual" [selected]
+                      - option "Verified exact match"
+                      - option "Manual override"
+                  - generic [ref=e525]:
+                    - generic [ref=e526]: Metadata provenance
+                    - combobox "Metadata provenance" [ref=e527]:
+                      - option "Manual" [selected]
+                      - option "Steam verified"
+                      - option "Manual override"
+            - generic [ref=e528]:
+              - generic [ref=e529]: Nothing is saved until Save game. Changes are audited.
+              - generic [ref=e530]:
+                - button "Cancel" [ref=e531] [cursor=pointer]
+                - button "Save game" [ref=e532] [cursor=pointer]

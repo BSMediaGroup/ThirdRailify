@@ -3908,6 +3908,47 @@ h3 {
 @media (max-width: 1120px) {
   .desktop-nav { display: none; }
   .menu-button { display: inline-flex; }
+  html.mobile-nav-open,
+  html.mobile-nav-open body { overflow: hidden; overscroll-behavior: none; }
+  .mobile-nav {
+    position: fixed;
+    z-index: 89;
+    top: var(--mobile-nav-top, 72px);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-top-width: 1px;
+    background: #080906;
+    opacity: 0;
+    overscroll-behavior: contain;
+    pointer-events: none;
+    scrollbar-gutter: stable;
+    touch-action: pan-y;
+    transform: translateY(-8px);
+    visibility: hidden;
+    -webkit-overflow-scrolling: touch;
+    transition: opacity 180ms ease, transform 220ms ease, visibility 0s linear 220ms;
+  }
+  .mobile-nav.is-open {
+    max-height: none;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  .mobile-nav .container {
+    min-height: 100%;
+    align-content: start;
+    padding-top: 14px;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
   .home-hero__grid,
   .shop-hero__grid { grid-template-columns: minmax(0, 0.9fr) minmax(440px, 1.1fr); gap: 28px; }
   .hero-portrait { min-height: 560px; }
