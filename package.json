@@ -11,7 +11,7 @@
     "test:gaming": "node --experimental-strip-types --test --test-concurrency=1 tests/gaming-page.test.mjs tests/gaming-functions.test.mjs",
     "test:browser:gaming": "node --test --test-concurrency=1 tests/gaming-browser.test.mjs",
     "test:polls": "node --test --test-concurrency=1 tests/polls-functions.test.mjs",
-    "test:browser:polls": "node --test --test-concurrency=1 tests/polls-browser.test.mjs tests/polls-v12-browser.test.mjs",
+    "test:browser:polls": "node --test --test-concurrency=1 tests/polls-browser.test.mjs tests/polls-v12-browser.test.mjs tests/poll-media-browser.test.mjs",
     "test:functions": "node --test tests/contact-functions.test.mjs tests/community-functions.test.mjs tests/watch-functions.test.mjs tests/watch-v2.test.mjs tests/state-do.test.mjs tests/kv-write-budget.test.mjs tests/auth-functions.test.mjs tests/account-commerce-functions.test.mjs tests/banner-functions.test.mjs tests/checkout-success.test.mjs tests/paypal-commerce-proxy.test.mjs tests/wheels-functions.test.mjs",
     "test:paypal": "node --test tests/paypal-commerce-proxy.test.mjs",
     "test:donation": "node --experimental-strip-types --test tests/donation-completion.test.mjs tests/paypal-commerce-proxy.test.mjs",

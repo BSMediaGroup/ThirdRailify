@@ -221,9 +221,12 @@ function mergePolls(current: Poll[], incoming: Poll[]) {
 
 function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: boolean; children?: React.ReactNode }) {
   const accent = poll.theme?.accent || "#f3c928";
+  const bannerUrl = poll.media?.banner?.url || "";
+  const [failedBannerUrl, setFailedBannerUrl] = useState("");
+  const showBanner = Boolean(bannerUrl && failedBannerUrl !== bannerUrl);
   return (
-    <div className={`poll-cover${compact ? " poll-cover--compact" : ""}${poll.media?.banner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
-      {poll.media?.banner ? <img src={poll.media.banner.url} alt={`${poll.title} cover`} /> : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
+    <div className={`poll-cover${compact ? " poll-cover--compact" : ""}${showBanner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
+      {showBanner ? <img src={bannerUrl} alt={`${poll.title} cover`} onError={() => setFailedBannerUrl(bannerUrl)} /> : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
       <div className="poll-cover__shade" />
       {children}
     </div>
@@ -268,7 +271,7 @@ function PollCard({
             width: `${poll.totalVotes && leading ? Math.round((leading.votes / poll.totalVotes) * 100) : 0}%`,
           }}
         />
-        {leading?.image ? <img src={leading.image.url} alt="" /> : null}
+        {leading?.image ? <ResilientImage src={leading.image.url} alt="" /> : null}
         <strong>{leading ? `${poll.state === "closed" && poll.totalVotes ? outcome.tied ? "TIED TOP RESULT · " : "TOP RESULT · " : ""}${outcome.tied ? outcome.leaders.map((option) => option.label).join(" + ") : leading.label}` : "Awaiting first vote"}</strong>
         <b>
           {poll.totalVotes} vote{poll.totalVotes === 1 ? "" : "s"}
@@ -606,7 +609,7 @@ function ResultOptions({
                 } as React.CSSProperties
               }
             />
-            {option.image ? <img className="poll-option__image" src={option.image.url} alt={`${option.label} option`} /> : null}
+            {option.image ? <ResilientImage className="poll-option__image" src={option.image.url} alt={`${option.label} option`} /> : null}
             <div className="poll-option__identity">
               <span>{String(option.position + 1).padStart(2, "0")}</span>
               <strong>{option.label}</strong>
@@ -633,6 +636,12 @@ function ResultOptions({
       })}
     </div>
   );
+}
+
+function ResilientImage({ src, alt, className, onFailure }: { src: string; alt: string; className?: string; onFailure?: () => void }) {
+  const [failedUrl, setFailedUrl] = useState("");
+  if (!src || failedUrl === src) return null;
+  return <img className={className} src={src} alt={alt} onError={() => { setFailedUrl(src); onFailure?.(); }} />;
 }
 
 type EditorOption = {
@@ -677,6 +686,13 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [saveStage, setSaveStage] = useState<"saving" | "uploading" | "">("");
+  const [mediaWarnings, setMediaWarnings] = useState<string[]>([]);
+  const previewUrls = useRef(new Set<string>());
+  const createPreview = (file: File) => { const url = URL.createObjectURL(file); previewUrls.current.add(url); return url; };
+  const releasePreview = (url = "") => { if (!url || !previewUrls.current.delete(url)) return; URL.revokeObjectURL(url); };
+  const releaseAllPreviews = () => { for (const url of previewUrls.current) URL.revokeObjectURL(url); previewUrls.current.clear(); };
+  useEffect(() => () => { for (const url of previewUrls.current) URL.revokeObjectURL(url); previewUrls.current.clear(); }, []);
   useEffect(() => {
     if (!account) return;
     void getCreatorAccess()
@@ -754,33 +770,38 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     event.preventDefault();
     if (!csrfToken || collisions.size || sourceInvalid || streamNeedsChoice) { if (streamNeedsChoice) setError("Several live streams are detected. Choose the stream this Poll should use."); return; }
     setBusy(true);
+    setSaveStage("saving");
     setError("");
     try {
-      const result = create
+      const creatingDraft = create && !source;
+      const result = creatingDraft
         ? await createPoll(payload(), csrfToken)
-        : await savePoll(slug, payload(), csrfToken);
+        : await savePoll(source?.slug || slug, payload(), csrfToken);
+      setSource(result.poll);
+      setOptions((current) => current.map((item, index) => ({ ...item, id: result.poll.options[index]?.id || item.id })));
+      if (bannerFile || options.some((item) => item.imageFile)) setSaveStage("uploading");
       if (bannerFile) await uploadPollMedia(result.poll.slug, "banner", bannerFile, csrfToken);
       for (let index = 0; index < options.length; index += 1) if (options[index].imageFile && result.poll.options[index]) await uploadPollMedia(result.poll.slug, "option", options[index].imageFile as File, csrfToken, result.poll.options[index].id);
       const finalPoll = bannerFile || options.some((item) => item.imageFile) ? (await getPoll(result.poll.slug)).poll : result.poll;
-      setSource(finalPoll); setBannerFile(null); setBannerPreview("");
+      releaseAllPreviews(); setSource(finalPoll); setBannerFile(null); setBannerPreview(""); setMediaWarnings([]);
       setOptions(finalPoll.options.map((option) => ({ id: option.id, label: option.label, description: option.description || "", trigger: option.trigger, image: option.image || null })));
       setNotice(
-        create ? "Draft created." : "Draft saved at the latest revision.",
+        creatingDraft ? "Draft created." : "Draft saved at the latest revision.",
       );
-      if (create)
-        navigate(`/polls/${finalPoll.slug}/edit`, { replace: true });
+      if (create) navigate(`/polls/${finalPoll.slug}/edit`, { replace: true });
     } catch (reason) {
       setError(message(reason));
     } finally {
+      setSaveStage("");
       setBusy(false);
     }
   };
   const removeBanner = async () => {
-    if (bannerFile) { setBannerFile(null); setBannerPreview(""); return; }
+    if (bannerFile) { releasePreview(bannerPreview); setBannerFile(null); setBannerPreview(""); return; }
     if (!source || !csrfToken) return; setBusy(true); try { await removePollMedia(source.slug, "banner", csrfToken); setSource((await getPoll(source.slug)).poll); setNotice("Poll cover removed. The generated fallback is active."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
   };
   const removeOptionImage = async (index: number) => {
-    const option = options[index]; if (option.imageFile) { setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: null, imagePreview: "" } : item)); return; }
+    const option = options[index]; if (option.imageFile) { releasePreview(option.imagePreview); setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: null, imagePreview: "" } : item)); return; }
     if (!source || !csrfToken || !option.id) return; setBusy(true); try { await removePollMedia(source.slug, "option", csrfToken, option.id); const poll = (await getPoll(source.slug)).poll; setSource(poll); setOptions(poll.options.map((item) => ({ id: item.id, label: item.label, description: item.description || "", trigger: item.trigger, image: item.image || null }))); setNotice("Option image removed."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
   };
   const previewPoll: Poll = {
@@ -860,11 +881,12 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
             className="button button--primary"
             disabled={busy || Boolean(collisions.size)}
           >
-            {busy ? "Saving…" : "Save draft"}
+            {saveStage === "uploading" ? "Uploading images…" : busy ? "Saving…" : "Save draft"}
           </button>
         </div>
       </header>
       <EphemeralNotices notice={notice} error={error} noticeTitle="Poll draft updated" errorTitle="Poll could not be updated" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
+      {mediaWarnings.length ? <div className="container poll-media-warning" role="alert"><strong>Some saved Poll media could not be displayed.</strong><span>{mediaWarnings.join(" ")} Re-upload or remove the affected image.</span></div> : null}
       <div className="container poll-editor__layout">
         <div>
           <section className="poll-editor-panel">
@@ -943,8 +965,8 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
                     <input value={option.description} maxLength={240} disabled={structuralLocked} onChange={(event) => setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, description: event.target.value } : item))} />
                   </label>
                   <div className="poll-editor-option__media">
-                    {option.imagePreview || option.image ? <img src={option.imagePreview || option.image?.url} alt={`${option.label} preview`} /> : <span>IMAGE OPTIONAL</span>}
-                    <label><b>1:1 image</b><input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={(event) => { const file = event.target.files?.[0] || null; setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: file, imagePreview: file ? URL.createObjectURL(file) : "" } : item)); }} /></label>
+                    {option.imagePreview || option.image ? <ResilientImage src={option.imagePreview || option.image?.url || ""} alt={`${option.label} preview`} onFailure={() => setMediaWarnings((current) => current.includes(`Option ${index + 1} image is unavailable.`) ? current : [...current, `Option ${index + 1} image is unavailable.`])} /> : <span>IMAGE OPTIONAL</span>}
+                    <label><b>1:1 image</b><input key={option.imagePreview || option.image?.id || `option-${index}`} type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={(event) => { const file = event.target.files?.[0] || null; releasePreview(option.imagePreview); setOptions((current) => current.map((item, itemIndex) => itemIndex === index ? { ...item, imageFile: file, imagePreview: file ? createPreview(file) : "" } : item)); }} /></label>
                     {option.imagePreview || option.image ? <button type="button" onClick={() => void removeOptionImage(index)}>Remove image</button> : null}
                   </div>
                   <div className="poll-editor-option__order" aria-label={`Reorder ${option.label}`}>
@@ -1033,7 +1055,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
           </section>
           <section className="poll-editor-panel poll-appearance">
             <p className="eyebrow">05 · APPEARANCE</p>
-            <div className="poll-cover-editor"><div>{bannerPreview || source?.media?.banner ? <img src={bannerPreview || source?.media?.banner?.url} alt="Poll cover preview" /> : <PollCover poll={previewPoll} compact />}</div><label><span>Poll cover</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0] || null; setBannerFile(file); setBannerPreview(file ? URL.createObjectURL(file) : ""); }} /></label>{bannerPreview || source?.media?.banner ? <button type="button" onClick={() => void removeBanner()}>Remove cover</button> : <small>Generated electric artwork is used when no image is set.</small>}</div>
+            <div className="poll-cover-editor"><div>{bannerPreview || source?.media?.banner ? <ResilientImage src={bannerPreview || source?.media?.banner?.url || ""} alt="Poll cover preview" onFailure={() => setMediaWarnings((current) => current.includes("Poll cover is unavailable.") ? current : [...current, "Poll cover is unavailable."])} /> : <PollCover poll={previewPoll} compact />}</div><label><span>Poll cover</span><input key={bannerPreview || source?.media?.banner?.id || "banner"} type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={(event) => { const file = event.target.files?.[0] || null; releasePreview(bannerPreview); setBannerFile(file); setBannerPreview(file ? createPreview(file) : ""); }} /></label>{bannerPreview || source?.media?.banner ? <button type="button" onClick={() => void removeBanner()}>Remove cover</button> : <small>Generated electric artwork is used when no image is set.</small>}</div>
             <fieldset className="poll-tint-picker"><legend>Feature tint</legend>{[["Gold","#f3c928"],["Violet","#8f6cff"],["Magenta","#ed4da9"],["Electric blue","#36a9ff"],["Red","#e34b5f"]].map(([label, value]) => <button key={value} type="button" className={themeAccent === value ? "is-selected" : ""} style={{ "--swatch": value } as React.CSSProperties} onClick={() => { setThemeAccent(value); setCustomTint(false); }}><i />{label}</button>)}<button type="button" className={customTint ? "is-selected" : ""} onClick={() => setCustomTint(true)}><i className="is-custom" />Custom</button></fieldset>
             {customTint ? <label><span>Custom six-digit hex</span><input type="text" pattern="#[0-9A-Fa-f]{6}" value={themeAccent} onChange={(event) => setThemeAccent(event.target.value)} /></label> : null}
           </section>

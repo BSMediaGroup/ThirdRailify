@@ -796,6 +796,8 @@
 .poll-editor-option__remove { grid-column:12; grid-row:1; }
 .poll-discovery-state,.poll-saved-source { display:grid; gap:3px; padding:13px; border:1px solid rgba(85,215,145,.38); border-radius:10px; background:rgba(85,215,145,.07); }
 .poll-discovery-state span,.poll-saved-source span,.poll-rumble-config small { color:#918a80; font-size:.66rem; }
+.poll-media-warning { display:grid; gap:4px; margin-top:12px; padding:12px 14px; border:1px solid rgba(243,201,40,.45); border-radius:9px; background:rgba(243,201,40,.08); color:#f3c928; }
+.poll-media-warning span { color:#c8c0b4; font-size:.72rem; }
 .poll-discovery-state--stale { border-color:rgba(243,201,40,.35); background:rgba(243,201,40,.06); }
 .poll-discovery-state--offline { border-color:rgba(225,76,94,.32); background:rgba(225,76,94,.06); }
 .poll-advanced-toggle { justify-self:start; border:0; background:transparent; color:var(--gold); text-decoration:underline; text-underline-offset:3px; }

@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-09-01 - Critical Poll media delivery and editor lifecycle repair
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Proved Poll uploads, active `poll_media_assets` rows, stable option linkage, and non-empty R2 objects were intact; the production CDN Worker predated `/poll-media/<asset-id>` support and returned uncached 404s for every serialized banner/option URL. Deployed the existing scoped Worker route so the affected closed Poll recovered automatically.
+- Poll draft saves now expose an explicit image-upload stage, retain the authoritative saved draft/revision when an upload fails, and retry against that same draft rather than creating a duplicate or using a stale revision.
+- Local banner/option object URLs are tracked and revoked on replacement, removal, successful authority reconciliation, and unmount. File input filenames are cleared after reconciliation and no blob URL is persisted.
+- Broken claimed images now collapse without the browser broken-image icon; banner delivery failure uses the established generated cover, option failure leaves text/results intact, and the editor shows a scoped re-upload/remove warning.
+- Added browser coverage for pending uploads, authoritative ID replacement, hard reload, text-only second save, stable-ID reorder, banner/option removal, upload-failure retry, desktop/mobile screenshots, and absence of persisted blob URLs. No migration is required.
+
 ## 2026-09-01 - Gaming hero game-world redesign
 
 CURRENT VER=0.1.0-alpha.0
