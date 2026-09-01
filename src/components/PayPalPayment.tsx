@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { PayPalOneTimePaymentButton, PayPalProvider } from "@paypal/react-paypal-js/sdk-v6";
-import type { PayPalCaptureResult, PayPalConfig, PayPalCreateResult } from "../payments/paypal-types";
+import type { PayPalCapturedPayment, PayPalCaptureResult, PayPalConfig, PayPalCreateResult } from "../payments/paypal-types";
 
 type Props = {
   kind: "store" | "donation";
   disabled?: boolean;
   createPayment: () => Promise<PayPalCreateResult>;
-  onCaptured: (result: PayPalCaptureResult) => void;
+  onCaptured: (result: PayPalCapturedPayment) => void;
 };
 
 function usePayPalConfiguration() {
@@ -29,6 +29,7 @@ function usePayPalConfiguration() {
 export function PayPalPayment({ kind, disabled = false, createPayment, onCaptured }: Props) {
   const { config, error: configError } = usePayPalConfiguration();
   const attempt = useRef<PayPalCreateResult | null>(null);
+  const captureState = useRef<"idle" | "inflight" | "terminal">("idle");
   const [state, setState] = useState<"idle" | "creating" | "approved" | "capturing" | "completed" | "pending" | "canceled" | "failed">("idle");
   const [message, setMessage] = useState("");
   const enabled = Boolean(config?.clientId && config.preferred && config.configured && config.webhookConfigured && !config.emergencyPaused && (kind === "store" ? config.storeCheckoutEnabled : config.donationsEnabled));
@@ -50,15 +51,19 @@ export function PayPalPayment({ kind, disabled = false, createPayment, onCapture
   const approve = async ({ orderId }: { orderId: string }) => {
     const created = attempt.current;
     if (!created || orderId !== created.orderId) { setState("failed"); setMessage("PayPal approval did not match the server-created order."); return; }
+    if (captureState.current !== "idle") return;
+    captureState.current = "inflight";
     setState("approved"); setMessage("PayPal approved the order. Confirming the server-side capture…");
     setState("capturing");
     try {
       const response = await fetch("/api/commerce/paypal/capture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ attemptId: created.attemptId }) });
       const payload = await response.json() as PayPalCaptureResult & { message?: string };
       if (!response.ok || payload.ok !== true || payload.attemptId !== created.attemptId) throw new Error(payload.message || "PayPal capture could not be confirmed.");
+      captureState.current = payload.status === "failed" ? "idle" : "terminal";
       setState(payload.status); setMessage(payload.status === "completed" ? "Payment confirmed." : payload.status === "pending" ? "Payment is pending provider confirmation." : "Payment was not completed.");
-      onCaptured(payload);
+      onCaptured({ ...payload, amount: created.amount, currency: created.currency });
     } catch (reason) {
+      captureState.current = "idle";
       setState("failed"); setMessage(reason instanceof Error ? reason.message : "PayPal capture could not be confirmed.");
       throw reason;
     }
@@ -69,7 +74,7 @@ export function PayPalPayment({ kind, disabled = false, createPayment, onCapture
 
   return <div className={`paypal-payment is-${state}`}>
     <PayPalProvider clientId={config.clientId} environment={config.environment === "live" ? "production" : "sandbox"} components={["paypal-payments"]} pageType="checkout">
-      <PayPalOneTimePaymentButton type={kind === "donation" ? "donate" : "checkout"} disabled={disabled || state === "creating" || state === "capturing" || state === "completed"} createOrder={createOrder} onApprove={approve} onCancel={() => { setState("canceled"); setMessage("PayPal checkout was canceled. No payment was confirmed."); }} onError={(reason) => { setState("failed"); setMessage(reason?.message || "PayPal checkout could not be opened."); }} />
+      <PayPalOneTimePaymentButton type={kind === "donation" ? "donate" : "checkout"} disabled={disabled || state === "creating" || state === "capturing" || state === "completed" || state === "pending"} createOrder={createOrder} onApprove={approve} onCancel={() => { captureState.current = "idle"; setState("canceled"); setMessage("PayPal checkout was canceled. No payment was confirmed."); }} onError={(reason) => { captureState.current = "idle"; setState("failed"); setMessage(reason?.message || "PayPal checkout could not be opened."); }} />
     </PayPalProvider>
     <p className="paypal-payment__status" aria-live="polite">{message || (config.environment === "sandbox" ? "PayPal sandbox — no real charge" : "Secure PayPal payment")}</p>
     <p className="paypal-payment__card-note">Card payments temporarily unavailable</p>

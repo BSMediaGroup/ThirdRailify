@@ -12,3 +12,20 @@ export type PayPalCreateResult = {
 export type PayPalCaptureResult = {
   ok: true; attemptId: string; kind: "store" | "donation"; reference: string; status: "completed" | "pending" | "failed";
 };
+
+export type PayPalCapturedPayment = PayPalCaptureResult & {
+  currency: "CAD";
+  amount: number;
+};
+
+export type PayPalPaymentStatus = {
+  reference: string;
+  kind: "store" | "donation";
+  orderReference: string | null;
+  donationReference: string | null;
+  environment: "sandbox" | "live";
+  currency: "CAD";
+  amount: number;
+  status: "created" | "approved" | "pending" | "completed" | "failed" | "refunded" | "reversed" | "canceled";
+  updatedAt: string;
+};

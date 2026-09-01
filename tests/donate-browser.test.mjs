@@ -9,7 +9,7 @@ const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const VIEWPORTS = [[1440, 900], [768, 1024], [390, 844]];
 
 test("Donate is a complete responsive, accessible, and fail-closed one-time PayPal destination", async (t) => {
-  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
+  const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--mode", "paypal-fixture", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
   t.after(() => server.kill());
   await waitForServer();
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
@@ -79,17 +79,88 @@ test("Donate is a complete responsive, accessible, and fail-closed one-time PayP
     assert.equal(await reducedPage.locator(elementSelector).first().evaluate((element, pseudoElement) => getComputedStyle(element, pseudoElement).animationName, pseudo), "none", `${selector} respects reduced motion`);
   }
   await reducedContext.close();
+
+  for (const [width, height] of VIEWPORTS) {
+    const scenario = paymentScenario("completed");
+    const context = await browser.newContext({ viewport: { width, height } });
+    const page = await context.newPage();
+    await page.addInitScript(() => { window.__THIRDRAILIFY_REPEAT_APPROVAL__ = true; });
+    await mockShellApis(page, scenario);
+    await page.goto(`${ORIGIN}/donate`, { waitUntil: "domcontentloaded" });
+    const privacyDock = page.locator(".privacy-dock");
+    if (await privacyDock.isVisible()) await privacyDock.getByRole("button", { name: "Reject non-essential" }).click();
+    await page.locator(".donate-custom-amount input").fill("73");
+    await page.getByTestId("synthetic-paypal-approval").click();
+
+    const confirmation = page.locator(".donation-confirmation");
+    await confirmation.getByRole("heading", { name: "Thank you for supporting Third Railify" }).waitFor();
+    assert.match(await confirmation.innerText(), /Your contribution has been received successfully\.[\s\S]*\$15\.00 CAD[\s\S]*Payment confirmed[\s\S]*don_fixture-reference/i, "the server-created CAD amount and local donation reference are presented");
+    assert.equal(await page.locator(".donate-form, .paypal-payment, input[name='donation-amount']").count(), 0, "all payment and amount-changing controls leave the terminal state");
+    assert.equal(scenario.createCalls, 1, "one server donation intent is created");
+    assert.equal(scenario.captureCalls, 1, "a replayed approval cannot initiate a second capture");
+    assert.equal(await confirmation.getAttribute("role"), "status");
+    assert.equal(await confirmation.getAttribute("aria-live"), "polite");
+    assert.equal(await confirmation.evaluate((element) => document.activeElement === element), true, "the completed status surface receives focus");
+    assert.doesNotMatch(await page.locator("body").innerText(), /donor@example\.test|client-secret|PAYPALORDERFIXTURE|CAPTUREFIXTURE/i, "PII, secrets, and provider internals are not rendered");
+    assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true, `completed state has no overflow at ${width}x${height}`);
+    const box = await confirmation.boundingBox();
+    const completedHeaderBottom = await page.locator(".site-header").evaluate((element) => element.getBoundingClientRect().bottom);
+    assert.ok(box && box.y >= completedHeaderBottom, `the focused success surface clears the sticky header at ${width}x${height} (surface ${box?.y ?? "missing"}, header ${completedHeaderBottom})`);
+    assert.ok(box && box.height < (width <= 780 ? 760 : 950), `completed state remains compact at ${width}x${height} (${box?.height ?? "missing"}px)`);
+    if (process.env.DONATE_BROWSER_SCREENSHOTS === "1") await page.screenshot({ path: path.join(process.env.TEMP || ".", `thirdrailify-donate-complete-${width}-PROOF.png`) });
+
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.locator(".donation-confirmation").getByRole("heading", { name: "Thank you for supporting Third Railify" }).waitFor();
+    assert.equal(scenario.createCalls, 1, "reload does not create another donation intent");
+    assert.equal(scenario.captureCalls, 1, "reload revalidates status and does not capture again");
+    assert.ok(scenario.statusCalls >= 1, "reload restores completion only after server status revalidation");
+
+    await page.goto(`${ORIGIN}/watch`);
+    await page.goBack({ waitUntil: "domcontentloaded" });
+    await page.locator(".donation-confirmation").getByRole("heading", { name: "Thank you for supporting Third Railify" }).waitFor();
+    assert.equal(scenario.captureCalls, 1, "back navigation restores from server status without another capture");
+
+    await page.getByRole("button", { name: "Make another donation" }).click();
+    await page.getByTestId("synthetic-paypal-approval").click();
+    assert.equal(scenario.createCalls, 2, "a deliberate new donation creates one new intent");
+    assert.notEqual(scenario.requestIds[0], scenario.requestIds[1], "the new donation uses a distinct request identifier");
+    await context.close();
+  }
+
+  for (const captureStatus of ["pending", "failed"]) {
+    const scenario = paymentScenario(captureStatus);
+    const context = await browser.newContext({ viewport: { width: 768, height: 1024 } });
+    const page = await context.newPage(); await mockShellApis(page, scenario);
+    await page.goto(`${ORIGIN}/donate`);
+    await page.getByTestId("synthetic-paypal-approval").click();
+    const expectedStatus = captureStatus === "pending" ? "pending provider confirmation" : "not completed";
+    await page.locator(".paypal-payment__status").filter({ hasText: expectedStatus }).waitFor();
+    assert.equal(await page.locator(".donation-confirmation:not(.is-checking)").count(), 0, `${captureStatus} authority never renders the thank-you state`);
+    assert.doesNotMatch(await page.locator("body").innerText(), /Thank you for supporting Third Railify/i);
+    assert.match(await page.locator(".paypal-payment__status").innerText(), captureStatus === "pending" ? /pending provider confirmation/i : /not completed/i);
+    assert.equal(await page.getByTestId("synthetic-paypal-approval").isDisabled(), captureStatus === "pending", "pending locks the control while failure preserves safe retry");
+    assert.equal(scenario.captureCalls, 1);
+    await context.close();
+  }
 });
 
-async function mockShellApis(page) {
+function paymentScenario(captureStatus) {
+  return { captureStatus, createCalls: 0, captureCalls: 0, statusCalls: 0, requestIds: [] };
+}
+
+async function mockShellApis(page, payment = null) {
   await page.route("**/api/**", (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (pathname === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
     if (pathname === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
     if (pathname === "/api/currency-rates") return json(route, { ok: true, base: "CAD", date: "2026-08-29", rates: { CAD: 1, USD: .73, AUD: 1.1 } });
     if (pathname === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
+    if (pathname === "/api/analytics") return route.fulfill({ status: 204, body: "" });
     if (pathname === "/api/commerce/catalogue") return json(route, { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, products: [], updatedAt: null });
-    if (pathname === "/api/commerce/payment-config") return json(route, { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: null, configured: false, webhookConfigured: false, storeCheckoutEnabled: false, donationsEnabled: false, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: "PayPal credentials are not configured." });
+    if (pathname === "/api/commerce/payment-config") return json(route, payment ? { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: "fixture-client-id", configured: true, webhookConfigured: true, storeCheckoutEnabled: false, donationsEnabled: true, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: null } : { ok: true, provider: "paypal", preferred: true, environment: "sandbox", currency: "CAD", intent: "CAPTURE", clientId: null, configured: false, webhookConfigured: false, storeCheckoutEnabled: false, donationsEnabled: false, emergencyPaused: false, stripe: { configured: true, enabled: false, preferred: false }, message: "PayPal credentials are not configured." });
+    if (payment && pathname === "/api/commerce/paypal/donation") { payment.createCalls += 1; const request = JSON.parse(route.request().postData() || "{}"); payment.requestIds.push(request.donationRequestId); return json(route, { ok: true, provider: "paypal", attemptId: `pat_fixture-${payment.createCalls}`, orderId: `PAYPALORDERFIXTURE${payment.createCalls}`, target: "donation", reference: `don_fixture-reference-${payment.createCalls}`, environment: "sandbox", currency: "CAD", amount: 1500, payer: { email: "donor@example.test" }, clientSecret: "client-secret" }, 201); }
+    if (payment && pathname === "/api/commerce/paypal/capture") { payment.captureCalls += 1; return json(route, { ok: true, attemptId: `pat_fixture-${payment.createCalls}`, kind: "donation", reference: `don_fixture-reference-${payment.createCalls}`, status: payment.captureStatus, captureId: "CAPTUREFIXTURE", payerEmail: "donor@example.test" }); }
+    if (payment && pathname === "/api/commerce/payment-status") { payment.statusCalls += 1; return json(route, { ok: true, payment: { reference: `pat_fixture-${payment.createCalls}`, kind: "donation", orderReference: null, donationReference: `don_fixture-reference-${payment.createCalls}`, environment: "sandbox", currency: "CAD", amount: 1500, status: payment.captureStatus, updatedAt: "2026-09-01T00:00:00.000Z", providerOrderId: "PAYPALORDERFIXTURE" } }); }
     if (pathname === "/api/catalogue/banner") return json(route, { ok: true, schema: "thirdrailify-banner-v1", normal: { enabled: false, messages: [], mode: "static", speed: "normal" }, live: { enabled: false }, updatedAt: "2026-08-29T00:00:00.000Z" });
     return json(route, { error: "not_found" }, 404);
   });

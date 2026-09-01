@@ -3,8 +3,11 @@ import react from "@vitejs/plugin-react";
 
 const socialAssetNames = new Set(["farm1.webp", "gina3.webp", "shawn3.webp", "shawn-gina-hero.webp"]);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  resolve: mode === "paypal-fixture" ? {
+    alias: { "@paypal/react-paypal-js/sdk-v6": "/tests/fixtures/paypal-react-sdk.tsx" },
+  } : undefined,
   build: {
     rollupOptions: {
       output: {
@@ -25,4 +28,4 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 4173,
   },
-});
+}));
