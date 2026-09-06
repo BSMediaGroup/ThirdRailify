@@ -22,5 +22,5 @@ function adminOrigin(value) { const url = new URL(String(value || "")); if (url.
 
 export function normalizeIgdbMapping(value) {
   if (!value || !["string", "number"].includes(typeof value.id) || !/^[1-9]\d{0,11}$/.test(String(value.id))) return null;
-  try { const url = new URL(value.url); if (url.protocol !== "https:" || url.hostname !== "www.igdb.com" || url.username || url.password || url.port || url.search || url.hash || !/^\/games\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/.test(url.pathname)) return null; return { id: String(value.id), url: url.toString() }; } catch { return null; }
+  try { const url = new URL(value.url); if (url.protocol !== "https:" || url.hostname !== "www.igdb.com" || url.username || url.password || url.port || url.search || url.hash || !/^\/games\/[a-z0-9]+(?:-+[a-z0-9]+)*\/?$/.test(url.pathname)) return null; return { id: String(value.id), url: url.toString() }; } catch { return null; }
 }

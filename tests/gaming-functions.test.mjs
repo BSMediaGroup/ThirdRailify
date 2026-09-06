@@ -12,7 +12,7 @@ const env = {
 };
 
 test("Public IGDB projection allowlists persisted references and never makes provider requests", async () => {
-  const igdb = { id: "1942", url: "https://www.igdb.com/games/the-witcher-3-wild-hunt", token: "secret", raw: { private: true } };
+  const igdb = { id: "1942", url: "https://www.igdb.com/games/the-witcher-3-wild-hunt-complete-edition--1", token: "secret", raw: { private: true } };
   const upstream = { ok: true, schema: "thirdrailify-gaming-rotation-v1", items: [{ id: "one", title: "Witcher", position: 1, igdb }] };
   const calls = [];
   const response = await getRotation({ env, data: { fetchImpl: async url => { calls.push(url); return Response.json(upstream); } } });
