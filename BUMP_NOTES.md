@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-06 - Reconciled provider image CSP delivery
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Fixed a delivery mismatch: Admin reconciliation can project safe Printful image URLs, while Public CSP previously blocked their hosts. Added the three exact image hosts to `img-src` only; API connectivity and storefront/Featured eligibility are unchanged.
+- Shop browser fixtures now use a Printful-host image under the repository image policy and cover responsive shop, Featured, collection, product detail and cart flows. Existing Admin provenance selection, override precedence, repair-to-no-op behavior, semantic statuses and fallback remain Admin-owned.
+- No new/removed files, schema migration or version change. README documents image delivery and the required Public deployment alongside Admin's repair. No deployment, remote data mutation, provider write or credential exposure occurred.
+- Validation on Node 22.16.0: responsive shop/Featured/detail/cart browser flow passed; 17 storefront/Featured/checkout tests passed; TypeScript, production build, Functions compile and diff check passed. Unrestricted lint fails on old `.artifacts` bundles; excluding `.artifacts/**` passes with two existing hook warnings.
+
 ## 2026-09-06 - IGDB lookup and references (0.1.0-alpha.0)
 
 - Extended the managed Gaming response with a validated optional IGDB ID/canonical listing URL and compact accessible provider reference rows. Both mappings coexist; absent providers leave no empty footer.

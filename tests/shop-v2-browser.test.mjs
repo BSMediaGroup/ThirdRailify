@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir } from "node:fs/promises";
+import { mkdir, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
@@ -10,7 +10,7 @@ const ORIGIN = process.env.SHOP_BROWSER_ORIGIN || "http://127.0.0.1:4198";
 const LIVE = Boolean(process.env.SHOP_BROWSER_ORIGIN);
 const CHROME = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const RESULTS = join(tmpdir(), "thirdrailify-shop-v2-browser");
-const IMAGE = "https://static.wixstatic.com/media/shop-v2-fixture.svg";
+const IMAGE = "https://files.cdn.printful.com/files/shop-v2-fixture.png";
 
 test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, and cart UX correctly scoped", async (t) => {
   await mkdir(RESULTS, { recursive: true });
@@ -18,7 +18,7 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     const server = spawn(process.execPath, ["node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "4198"], { stdio: "ignore" });
     t.after(() => server.kill()); await waitForServer();
   }
-  const browser = await chromium.launch({ executablePath: CHROME, headless: true }); t.after(() => browser.close());
+  const browser = await chromium.launch({ executablePath: CHROME, headless: true, args: LIVE ? [] : ["--disable-features=LocalNetworkAccessChecks"] }); t.after(() => browser.close());
 
   for (const [width, height] of [[1920,1080],[1440,900],[1024,768],[768,1024],[390,844]]) {
     const { context, page, errors } = await fixturePage(browser, width, height);
@@ -26,6 +26,7 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     assert.equal(await page.locator('[aria-label="Display currency"]:visible, [aria-label="Compare in currency"]:visible').count(), 0, `gallery has no visible currency control at ${width}x${height}`);
     assert.equal(await page.locator(".product-currency-comparison").count(), 0);
     assert.equal(await page.locator(".product-card .commerce-price--cad").count(), 3);
+    await page.waitForFunction((url) => [...document.images].filter((image) => image.src === url).some((image) => image.naturalWidth > 0), IMAGE);
     assert.equal(await page.locator('.product-card .currency-flag[data-currency-flag="ca"]').count(), 3);
     const style = await page.locator(".product-card .commerce-price strong").first().evaluate((element) => { const css = getComputedStyle(element); return { color: css.color, size: parseFloat(css.fontSize) }; });
     assert.ok(style.size >= 16); assert.notEqual(style.color, "rgb(255, 255, 255)");
@@ -96,6 +97,13 @@ async function fixturePage(browser, width, height, reducedMotion = "reduce") {
   const context = await browser.newContext({ viewport: { width, height }, reducedMotion });
   await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: new Date(Date.now() + 86400000).toISOString(), categories: { preferences: true, externalMedia: false } })), url: ORIGIN, sameSite: "Lax" }]);
   const page = await context.newPage(); const errors = []; page.on("console", (message) => { if (message.type() === "error" && !message.text().startsWith("Failed to load resource")) errors.push(message.text()); }); page.on("pageerror", (error) => errors.push(error.message)); page.on("response", (response) => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
+  const headers = await readFile(new URL("../public/_headers", import.meta.url), "utf8");
+  const imagePolicy = headers.match(/img-src [^;]+/)[0];
+  if (!LIVE) await page.route((url) => url.origin === ORIGIN && !url.pathname.startsWith("/api/"), async (route) => {
+    if (route.request().resourceType() !== "document") return route.continue();
+    const response = await route.fetch();
+    return route.fulfill({ response, headers: { ...response.headers(), "content-security-policy": imagePolicy } });
+  });
   await page.route(IMAGE, (route) => route.fulfill({ status: 200, contentType: "image/svg+xml", body: `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750"><rect width="100%" height="100%" fill="#171717"/><path d="M90 375h420" stroke="#f0c419" stroke-width="42"/><text x="300" y="340" fill="white" text-anchor="middle" font-size="62">THIRD RAIL</text></svg>` }));
   await page.route("**/api/**", (route) => { const path = new URL(route.request().url()).pathname;
     if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });

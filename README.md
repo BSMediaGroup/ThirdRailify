@@ -1,5 +1,7 @@
 # Third Railify V2 public site
 
+The September 6 catalogue image repair permits the three exact Printful image hosts selected by Admin reconciliation in `public/_headers` (`img-src` only). Public continues to consume Admin-owned images and independently eligible Featured products. The shop browser harness now applies the actual image policy to provider-host fixtures across shop, Featured, product detail, collections and cart. This change requires a Public deployment alongside Admin's repair; no Public catalogue logic, schema or provider credentials change.
+
 ## Public Polls V1.2 history and visibility (local implementation)
 
 The default `/polls` directory now renders independent **Open Polls** and **Past Polls** sections under one shared search. Open remains the coordinated seven-second live dataset; closed history loads as a bounded 12-record page and is refreshed only when an open Poll disappears during a lifecycle refresh. `view=open|closed|mine` remains available for focused browsing, and `page`/`pageSize` metadata provides deterministic load-more history without one request per card.
