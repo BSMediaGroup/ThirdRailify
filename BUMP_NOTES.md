@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-06 - Readability coverage continuation (local; acceptance incomplete)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced the previous six-route Public screenshot scope with a source-derived inventory of 63 route entries, including 9 redirect aliases and 45 template groups. Every route entry was rendered at 1440/390px, with intermediate/wide measurements; complete visual and internal-surface sign-off remains outstanding and is not claimed.
+- Narrow caption/metadata corrections cover account/profile/delivery/orders, product/cart/checkout currency information, Watch archive records, Gaming, Poll editors and Wheels. Existing headings, body font system, account-widget identity behavior and prior country-flag assets remain intact.
+- Added focused readability browser regression and reusable fixture helper; README records these test files. Both repository lint/build checks and focused readability tests pass; the build includes TypeScript checking. Admin country-code tests and existing Analytics browser regression pass. No commerce/provider suites were added to this typography task.
+- Complete inventory, measured states, unresolved acceptance work and ten native before/after examples: `.artifacts/readability-complete/AUDIT.md`, `audit-register.json`, and `REVIEW.html`. Evidence is ignored and local. Awaiting Daniel's visual review; no commit, deployment or remote mutation.
+
 ## 2026-09-06 - Micro-typography legibility audit (local visual review)
 
 CURRENT VER=0.1.0-alpha.0

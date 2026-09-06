@@ -77,11 +77,11 @@ export function normalizeAgreement(input) {
     items:agreement.items.map(item=>pick(item,["productId","variantId","name","description","variant","options","unitAmount","quantity","lineTotalAmount"])),
     totals:pick(agreement.totals,["productSubtotalAmount","shippingAmount","taxAmount","totalAmount","currency"]),
     tax:pick(agreement.tax,["policy","statement"]),
-    shipping:{...pick(agreement.shipping,["methodId","method","destinationCountryCode"]),delivery:agreement.shipping.delivery?pick(agreement.shipping.delivery,["minDays","maxDays","minDate","maxDate"]):null,destination:pick(agreement.shipping.destination,["recipientName","company","address1","address2","city","region","postalCode","countryCode"])},
+    shipping:{...pick(agreement.shipping,["methodId","method","destinationCountryCode"]),delivery:agreement.shipping.delivery?pick(agreement.shipping.delivery,["text","minDays","maxDays","minDate","maxDate"]):null,destination:pick(agreement.shipping.destination,["recipientName","company","address1","address2","city","region","postalCode","countryCode"])},
     payment:pick(agreement.payment,["provider","currency","terms"]),fulfillment:pick(agreement.fulfillment,["provider","method","statement"]),policies}};
 }
 
-function normalizeDeliveryEstimate(value) { const result = { minDays: optionalInteger(value?.minDays, 1, 365), maxDays: optionalInteger(value?.maxDays, 1, 365), minDate: isoDate(value?.minDate), maxDate: isoDate(value?.maxDate) }; if (Object.values(result).every((item) => item === null)) throw new Error("delivery_estimate_invalid"); return result; }
+function normalizeDeliveryEstimate(value) { if (value?.text) { const text = boundedText(value.text, 240); if (hasUnsafeText(text)) throw new Error("delivery_estimate_invalid"); return { text }; } const result = { minDays: optionalInteger(value?.minDays, 1, 365), maxDays: optionalInteger(value?.maxDays, 1, 365), minDate: isoDate(value?.minDate), maxDate: isoDate(value?.maxDate) }; if (Object.values(result).every((item) => item === null)) throw new Error("delivery_estimate_invalid"); return result; }
 function configuredOrigin(value, code) { const url = new URL(String(value || "")); if (url.protocol !== "https:" || url.username || url.password || url.pathname !== "/" || url.search || url.hash) throw new Error(code); return url.origin; }
 function safeOrigin(value) { try { return new URL(String(value || "")).origin; } catch { return ""; } }
 function safeCode(value) { const code = boundedText(value, 80); return /^[a-z][a-z0-9_]{1,79}$/.test(code) ? code : ""; }

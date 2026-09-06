@@ -33,12 +33,14 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
       if (path === "/api/auth/config") return json(route, { configured: false, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
       if (path === "/api/auth/session") return json(route, { ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
       if (path === "/api/commerce/catalogue") return json(route, catalogue());
-      if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }, { countryCode: "US", displayName: "United States" }] });
+      if (path === "/api/commerce/shipping-markets") return json(route, { ok: true, authority: "Commerce D1", markets: [{ countryCode: "CA", displayName: "Canada" }, { countryCode: "US", displayName: "United States" }, { countryCode: "HK", displayName: "Hong Kong" }] });
       if (path === "/api/commerce/payment-config") return json(route, paymentConfig());
       if (path === "/api/commerce/shipping-quotes") {
         quoteCalls += 1;
         if (quoteMode === "unavailable") return json(route, { ok: false, error: "shipping_unavailable", message: "Shipping calculation is not available yet." }, 409);
-        return json(route, shippingQuote());
+        const quote = shippingQuote();
+        if (route.request().postDataJSON().recipient.countryCode === "HK") { quote.quote.options[0] = { ...quote.quote.options[0], name: "Standard Shipping (Worldwide)", amount: 6703, totalAmount: 9753, delivery: null }; }
+        return json(route, quote);
       }
       if (path === "/api/catalogue/banner") return json(route, { ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
       if (path === "/api/watch") return json(route, { available: false, liveNow: [], primary: null, latest: null, upcoming: null });
@@ -91,6 +93,18 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     assert.match(await page.locator(".checkout-gate-message").innerText(), /Checkout is currently unavailable/);
     assert.doesNotMatch(await page.locator("body").innerText(), /11576|target-variant|printful|sync_variant|store_id|providerRateId/i);
 
+    await page.getByLabel("Country").selectOption("HK");
+    assert.equal(await page.getByRole("radio").count(), 0);
+    await page.getByLabel("Postal code").fill("");
+    await page.getByRole("button", { name: "Request shipping methods" }).click();
+    await page.getByRole("radio", { name: /Standard Shipping \(Worldwide\)/ }).waitFor();
+    assert.match(await page.locator(".checkout-summary").innerText(), /67\.03/);
+    await page.screenshot({ path: `${RESULTS}/worldwide-no-postal-${width}.png`, fullPage: true });
+    await page.getByLabel("Country").selectOption("CA");
+    await page.getByLabel("Province / territory").selectOption("ON");
+    await page.getByLabel("Postal code").fill("N6A 1A1");
+    await page.getByRole("button", { name: "Request shipping methods" }).click();
+    await page.getByRole("radio", { name: /Standard delivery/ }).waitFor();
     await page.getByLabel("Address line 1").fill("101 Changed Street");
     assert.equal(await page.getByRole("radio").count(), 0); assert.match(await page.locator(".shipping-unavailable").innerText(), /Delivery details changed/);
     await page.getByRole("button", { name: "Request shipping methods" }).click(); await page.getByRole("radio", { name: /Standard delivery/ }).waitFor();

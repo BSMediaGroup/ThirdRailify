@@ -575,7 +575,7 @@
   font: 1.4rem var(--display);
 }
 .poll-editor-options label b {
-  font-size: 0.62rem;
+  font-size: 11px;
   text-transform: uppercase;
 }
 .poll-editor-options .is-invalid {
@@ -728,7 +728,7 @@
 .poll-card { gap: 0; min-height: 460px; padding: 0; border-color: color-mix(in srgb, var(--poll-accent) 20%, #302e29); background:#0d0d0b; }
 .poll-card--open { box-shadow: 0 18px 58px rgba(0,0,0,.34), 0 0 32px color-mix(in srgb, var(--poll-accent) 7%, transparent); }
 .poll-card__signal { width:100%; align-self:flex-start; }
-.poll-card__signal > span { padding:5px 7px; border:1px solid rgba(255,255,255,.14); border-radius:999px; color:#d4cdc1; font:700 .52rem var(--font-mono,monospace); }
+.poll-card__signal > span { padding:5px 7px; border:1px solid rgba(255,255,255,.14); border-radius:999px; color:#d4cdc1; font:700 10px var(--font-mono,monospace); }
 .poll-card__identity { display:grid; align-content:start; min-height:145px; padding:18px 18px 8px; }
 .poll-card__identity h3 { margin:.2rem 0; }
 .poll-card__identity > p:last-child { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
@@ -788,9 +788,9 @@
 .poll-editor-option__description { grid-column:2/8; grid-row:2; }
 .poll-editor-option__media { grid-column:8/13; grid-row:2; display:flex; align-items:center; gap:8px; min-width:0; }
 .poll-editor-option__media > img,.poll-editor-option__media > span { width:54px; aspect-ratio:1; flex:0 0 auto; border:1px solid #3d3932; border-radius:8px; object-fit:cover; }
-.poll-editor-option__media > span { display:grid; place-items:center; padding:4px; color:#777168; font:700 .48rem var(--font-mono,monospace); text-align:center; }
+.poll-editor-option__media > span { display:grid; place-items:center; padding:4px; color:#aaa398; font:700 10px var(--font-mono,monospace); text-align:center; }
 .poll-editor-option__media label { min-width:0; flex:1; }
-.poll-editor-option__media input { padding:7px; font-size:.62rem; }
+.poll-editor-option__media input { padding:7px; font-size:11px; }
 .poll-editor-option__media button { min-height:36px; border:1px solid #50483d; border-radius:7px; background:#171410; color:#d8d0c4; }
 .poll-editor-option__order { grid-column:10/12; grid-row:1; }
 .poll-editor-option__remove { grid-column:12; grid-row:1; }

@@ -1,5 +1,7 @@
 # Third Railify V2 public site
 
+Readability regression files: `tests/readability-browser.test.mjs` checks populated account, delivery, product, cart and Poll editor typography at desktop/mobile widths. `tests/readability-fixtures.mjs` reuses the existing sanitized browser fixture factories without registering their suites. Run `node --test --test-concurrency=1 tests/readability-browser.test.mjs`. The source-derived cross-application route register and visual review evidence remain ignored under `.artifacts/readability-complete/`; they are not production assets.
+
 The September 6 catalogue image repair permits the three exact Printful image hosts selected by Admin reconciliation in `public/_headers` (`img-src` only). Public continues to consume Admin-owned images and independently eligible Featured products. The shop browser harness now applies the actual image policy to provider-host fixtures across shop, Featured, product detail, collections and cart. This change requires a Public deployment alongside Admin's repair; no Public catalogue logic, schema or provider credentials change.
 
 ## Public Polls V1.2 history and visibility (local implementation)
