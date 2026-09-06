@@ -1,5 +1,19 @@
 # Bump notes
 
+## 2026-09-07 - Cinematic Shop hero and Featured deck (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Extracted `src/components/ShopHero.tsx` with scoped `src/styles/shop-hero.css` and focused `tests/shop-hero-browser.test.mjs`; README records the component boundary. Existing Shop catalogue discovery, Featured eligibility/order/capacity, product routes, CAD amounts, runtime counts and cart action remain authoritative and unchanged. No files removed or dependencies added.
+- Added a matte black/gold environment, coherent rail-switch paths and transmission rings, cropped ghost lettering, architectural deck outlines, slow ambient light drift and a restrained signal trace. Dark charcoal product stages preserve original transparent imagery, contain fit and black/white garment artwork; no light/white presentation backgrounds or image processing. Broken images retain the current product link/title/price with a labelled fallback.
+- Refined the dominant front card and subdued previous/next cards, gold frame, information rail, direction-aware 720ms transitions and localized initial reveal. The console provides current/total, Previous/Next and manual Pause/Play. One seven-second timeout resets after navigation or resume; hover, keyboard focus, offscreen and hidden-document gates stop rotation. Rapid clicks during a transition are ignored. Timers, motion observer and listeners clean up on unmount.
+- Reduced motion disables ambient/entrance/progress animations and autoplay while preserving Previous/Next and a visible disabled Paused control explaining the reduced-motion preference. Zero/one Featured retains safe slots without controls or timers. Accessible region, labelled current-product link and controls, pressed pause state, contained artwork and visible keyboard outlines are retained without autoplay live announcements. CSS/SVG presentation adds no animation library, canvas or pointer loop.
+- Responsive geometry and real-catalogue screenshots cover 2560, 1920, 1440, 1024, 768 and 390px, including two distinct Featured slides on desktop/mobile. Visual review corrected mobile metric stacking and replaced the initial light image stages with dark charcoal following user direction. Evidence: `.artifacts/shop-hero/live-*-01.png`, `live-1440-02.png`, `live-390-02.png`, and `preview-dark-1440.png` / `preview-dark-390.png`. Real data was a read-only public catalogue snapshot (13 products/90 variants at capture); counts are not hardcoded.
+- Node 22.16.0: TypeScript and production build passed; Featured/storefront unit checks 15/15; existing Shop/product/cart and Featured empty/partial/error browser suites 3/3; new Shop hero browser acceptance passed with the captured real catalogue, exercising autoplay, pause/resume, hover/focus, keyboard, rapid clicks, synthetic document visibility, reduced motion and zero/one Featured. Repository lint excluding `.artifacts/**` passes with two existing Polls/WheelCanvas hook warnings. Plain `npm.cmd run lint` scans unrelated generated artifact trees and fails; production build retains the existing chunk-size warning. Physical devices, Safari/Firefox and screen-reader testing were not run.
+- Local Public only, starting `main` HEAD `86579763dce00175162a6328f738ada37ef13508`; pre-existing `.playwright-mcp` files and concurrent reference/Admin work preserved. No Admin/reference edits, catalogue/Featured/provider/payment/checkout mutation, deployment, Cloudflare/DNS change, commit or push. Public deployment remains required.
+
 ## 2026-09-07 - Checkout account avatar
 
 Checkout now uses the shared AccountAvatar component from the header instead of an initial-only mark, retaining the existing initials fallback when no account image is configured. The checkout avatar keeps a 44px circular frame.

@@ -1,0 +1,115 @@
+/* Shop-only presentation. Catalogue cards and shared site chrome retain their styles. */
+.shop-hero--cinema { background: radial-gradient(ellipse at 78% 70%, #282014 0, #100f0b 36%, #080908 72%); }
+.shop-hero--cinema::before { z-index: 1; background: linear-gradient(90deg, rgba(7,8,7,.75), transparent 65%); }
+.shop-hero--cinema::after { background: linear-gradient(180deg, transparent 85%, rgba(0,0,0,.45)); }
+.shop-hero--cinema .shop-hero__grid { min-height: 780px; max-width: 1600px; grid-template-columns: minmax(0,.95fr) minmax(0,1.05fr); gap: clamp(32px,5vw,90px); padding-block: 70px 60px; }
+.shop-hero--cinema .shop-hero__type { top: auto; bottom: 8%; left: 29%; right: auto; width: max-content; font-size: clamp(150px,22vw,410px); color: #b9954c; opacity: .035; transform: rotate(-9deg); mask-image: linear-gradient(90deg, transparent, #000 25%, transparent); }
+.shop-signal { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.shop-signal__light { position: absolute; inset: -10%; background: radial-gradient(ellipse at 75% 48%, rgba(211,166,65,.13), transparent 42%), radial-gradient(ellipse at 50% 95%, rgba(231,176,50,.08), transparent 45%); animation: shop-atmosphere 22s ease-in-out infinite alternate; }
+.shop-signal svg { width: 100%; height: 100%; opacity: .7; mask-image: linear-gradient(90deg, transparent 12%, #000 60%); }
+.shop-signal__paths { stroke: #ba974e; stroke-width: 1; opacity: .18; }
+.shop-signal__nodes { stroke: #d0ab62; fill: #67502b; opacity: .45; }
+.shop-signal__pulse { stroke: #e9c778; stroke-width: 1.5; stroke-dasharray: 3 97; opacity: 0; animation: shop-signal-pulse 18s linear infinite; }
+.shop-hero--cinema[data-motion="paused"] .shop-signal * { animation-play-state: paused; }
+.shop-hero--cinema .shop-hero__copy { animation: shop-copy-in 650ms cubic-bezier(.2,.8,.2,1) both; }
+.shop-hero--cinema .shop-hero__copy > .eyebrow { display: flex; align-items: center; gap: 12px; font-size: 10px; letter-spacing: .18em; }
+.shop-hero--cinema .shop-hero__copy > .eyebrow::before { content: ""; width: 25px; height: 1px; background: var(--gold); box-shadow: 0 0 12px #ca9b48; }
+.shop-hero--cinema .shop-hero__copy h1 { font-size: clamp(90px,8.7vw,156px); line-height: .88; letter-spacing: -.035em; margin-block: 30px 26px; }
+.shop-hero--cinema .hero-feature-text { display: inline-block; animation: shop-copy-in 750ms 100ms both; }
+.shop-hero--cinema .shop-hero__copy > p:not(.eyebrow) { max-width: 450px; color: #aaa99e; font-size: 16px; line-height: 1.8; }
+.shop-hero--cinema .button-row { gap: 12px; margin-top: 30px; }
+.shop-hero--cinema .button-row .button { min-height: 48px; padding-inline: 20px; font-size: 10px; letter-spacing: .075em; transition: border-color .25s, box-shadow .25s, background-color .25s; }
+.shop-hero--cinema .button--primary:hover { box-shadow: 0 0 28px #d7ab3e26; }
+.shop-hero--cinema .button--secondary { border-color: #ad8e4b55; background: #13130f80; }
+.shop-hero--cinema .shop-facts { max-width: 460px; margin-top: 38px; border-top-color: #b59a5e55; border-bottom: 0; }
+.shop-hero--cinema .shop-facts { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.shop-hero--cinema .shop-facts span { padding-block: 18px 0; border-bottom: 0; }
+.shop-hero--cinema .shop-facts strong { font-variant-numeric: tabular-nums; font-size: 30px; }
+.shop-hero--cinema .shop-facts small { font-size: 9px; letter-spacing: .08em; color: #a8a79b; }
+.shop-hero--cinema .featured-stage { width: 100%; min-height: 630px; perspective: 1400px; animation: shop-deck-reveal 850ms cubic-bezier(.2,.8,.2,1) both; }
+.shop-hero--cinema .featured-stage__caption { position: absolute; top: 0; left: 8%; right: 8%; display: flex; justify-content: space-between; gap: 15px; color: #a39371; font: 8px var(--mono); letter-spacing: .14em; }
+.shop-hero--cinema .featured-stage__rails { inset: 12% 9% 13%; transform: rotate(-8deg); background: linear-gradient(130deg, #bba56605, #0000); border-color: #d4b16d20; box-shadow: 0 0 0 20px #bba56603, 0 0 0 21px #bba5660d; }
+.shop-hero--cinema .featured-stage__rails::before { inset: auto -12% -18%; height: 80px; width: auto; border: 1px solid #c8a35720; background: linear-gradient(180deg, #ba8f3708, transparent); transform: perspective(400px) rotateX(65deg); animation: none; }
+.shop-hero--cinema .featured-stage__rails::after { display: none; }
+.shop-hero--cinema .featured-stage__active { top: 6%; right: 14%; width: 72%; height: 81%; border: 1px solid #bca36980; border-radius: 7px; background: #171714; box-shadow: 0 38px 70px #0009, 0 10px 20px #0006, 0 0 0 5px #b79e5110, inset 0 0 0 1px #f5dfad18; transition: border-color .3s, box-shadow .3s; }
+.shop-hero--cinema .featured-stage__active:hover { border-color: #e2c67d; box-shadow: 0 38px 70px #0009, 0 0 28px #c4a35a20; }
+.shop-hero--cinema .featured-stage__image { display: grid; place-items: center; min-height: 0; overflow: hidden; margin: 10px 10px 0; border-radius: 3px; background: radial-gradient(ellipse at 50% 35%, #33332c 0%, #1d1e19 48%, #12130f 90%); box-shadow: inset 0 0 35px #0003; }
+.shop-hero--cinema .featured-stage__image img { display: block; width: 100%; height: 100%; min-height: 0; padding: 12px; object-fit: contain; }
+.shop-hero--cinema .featured-stage__details { position: relative; padding: 19px 45px 20px 22px; gap: 9px; border-color: #aa956128; background: linear-gradient(120deg, #25231b, #10110f); }
+.shop-hero--cinema .featured-stage__details > small { font-size: 9px; color: #c8b17b; letter-spacing: .16em; }
+.shop-hero--cinema .featured-stage__details > strong { font-size: clamp(21px,2vw,29px); line-height: 1.08; overflow-wrap: anywhere; }
+.shop-hero--cinema .featured-stage__details .commerce-price strong { font-size: 20px; }
+.shop-hero--cinema .featured-stage__open { position: absolute; right: 18px; bottom: 20px; font-size: 24px; color: #c8b17b; }
+.shop-hero--cinema .featured-stage__support { top: 19%; bottom: auto; width: 42%; height: 58%; border-radius: 5px; opacity: .45; filter: brightness(.65) saturate(.6); pointer-events: none; background: #24231b; }
+.shop-hero--cinema .featured-stage__support .featured-stage__image { height: calc(100% - 20px); margin: 10px; }
+.shop-hero--cinema .featured-stage__support--1 { left: 0; transform: translateY(-8px) rotate(-9deg) rotateY(10deg) scale(.94); }
+.shop-hero--cinema .featured-stage__support--2 { right: 0; transform: translateY(18px) rotate(9deg) rotateY(-10deg) scale(.94); }
+.shop-hero--cinema .featured-empty-slot--support { opacity: .22; }
+.shop-hero--cinema .featured-stage__console { position: absolute; z-index: 6; bottom: 1%; left: 14%; right: 14%; display: flex; align-items: center; gap: 16px; min-height: 52px; padding: 6px 9px 6px 16px; border: 1px solid #ae966b35; border-radius: 4px; background: linear-gradient(130deg, #222019b3, #0c0d0b); box-shadow: 0 12px 25px #0003; }
+.shop-hero--cinema .featured-stage__index { color: #d2c6ab; font: 10px var(--mono); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.shop-hero--cinema .featured-stage__progress { flex: 1; height: 2px; overflow: hidden; background: #cab17b25; }
+.shop-hero--cinema .featured-stage__progress i { display: block; height: 100%; background: #d6b66a; transform: scaleX(0); transform-origin: left; }
+.shop-hero--cinema .featured-stage__progress .is-running { animation: shop-dwell var(--deck-dwell) linear forwards; }
+.shop-hero--cinema .featured-stage__controls { position: static; padding: 0; background: transparent; gap: 2px; }
+.shop-hero--cinema .featured-stage__controls button { min-width: 40px; min-height: 40px; padding: 0 8px; border-radius: 2px; background: transparent; color: #d6c9aa; font-size: 9px; }
+.shop-hero--cinema .featured-stage__controls button:first-child,
+.shop-hero--cinema .featured-stage__controls button:last-child { font-size: 20px; }
+.shop-hero--cinema .featured-stage__controls button:hover { background: #d6b66a20; }
+.shop-hero--cinema .featured-stage__controls button:disabled { color: #a99d83; background: transparent; cursor: default; }
+.shop-hero--cinema :is(a, button):focus-visible,
+.shop-hero--cinema .featured-stage__controls button:focus-visible { outline: 2px solid #ffe18a; outline-offset: 4px; }
+.shop-hero--cinema .featured-stage__frame--entering { animation: shop-frame-in var(--deck-transition) cubic-bezier(.22,1,.36,1) both; }
+.shop-hero--cinema .featured-stage__frame--entering .featured-stage__details { animation: shop-copy-in 450ms 120ms both; }
+.shop-hero--cinema .featured-stage__frame--exiting { animation: shop-frame-out var(--deck-transition) cubic-bezier(.4,0,.2,1) both; }
+@keyframes shop-frame-in { from { opacity: 0; transform: translate3d(calc(var(--deck-direction, 1) * 45px),22px,-65px) scale(.96); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
+@keyframes shop-frame-out { to { opacity: 0; transform: translate3d(calc(var(--deck-direction) * -40px),-6px,20px) scale(1.015); } }
+@keyframes shop-copy-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shop-deck-reveal { from { opacity: 0; transform: translateY(18px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes shop-atmosphere { to { transform: translate3d(-3%,2%,0) scale(1.06); opacity: .65; } }
+@keyframes shop-signal-pulse { 8%,65% { opacity: .4; } 85%,100% { stroke-dashoffset: -100; opacity: 0; } }
+@keyframes shop-dwell { to { transform: scaleX(1); } }
+@media (min-width: 1800px) { .shop-hero--cinema .shop-hero__grid { min-height: 870px; } .shop-hero--cinema .featured-stage { min-height: 700px; } }
+@media (max-width: 1150px) {
+  .shop-hero--cinema .shop-hero__grid { gap: 25px; min-height: 700px; padding-block: 60px; }
+  .shop-hero--cinema .shop-hero__copy h1 { font-size: 100px; }
+  .shop-hero--cinema .featured-stage { min-height: 550px; }
+  .shop-hero--cinema .featured-stage__console { left: 6%; right: 6%; }
+  .shop-hero--cinema .featured-stage__caption span:last-child { display: none; }
+}
+@media (max-width: 900px) {
+  .shop-hero--cinema .shop-hero__grid { grid-template-columns: minmax(0,1fr); gap: 48px; padding-block: 56px 44px; }
+  .shop-hero--cinema .shop-hero__copy { max-width: 600px; }
+  .shop-hero--cinema .featured-stage { max-width: 610px; min-height: 660px; margin-inline: auto; }
+  .shop-hero--cinema .featured-stage__console { left: 14%; right: 14%; }
+  .shop-hero--cinema .shop-hero__type { bottom: 30%; left: 0; }
+  .shop-signal svg { mask-image: linear-gradient(180deg, transparent 20%, #000 65%); }
+}
+@media (max-width: 540px) {
+  #main-content .shop-hero--cinema .shop-hero__copy h1 { line-height: .92; }
+  .shop-hero--cinema .shop-hero__grid { padding-block: 38px 30px; gap: 32px; }
+  .shop-hero--cinema .shop-hero__copy h1 { font-size: clamp(72px,23vw,110px); margin-block: 24px 20px; }
+  .shop-hero--cinema .shop-hero__copy > .eyebrow { font-size: 8px; letter-spacing: .12em; gap: 8px; }
+  .shop-hero--cinema .shop-hero__copy > p:not(.eyebrow) { font-size: 14px; line-height: 1.7; }
+  .shop-hero--cinema .button-row { margin-top: 24px; gap: 10px; }
+  .shop-hero--cinema .button-row .button { width: 100%; }
+  .shop-hero--cinema .shop-facts { margin-top: 26px; }
+  .shop-hero--cinema .shop-facts span { padding-left: 8px; }
+  .shop-hero--cinema .shop-facts strong { font-size: 27px; }
+  .shop-hero--cinema .shop-facts small { font-size: 8px; letter-spacing: .02em; }
+  .shop-hero--cinema .featured-stage { min-height: 500px; }
+  .shop-hero--cinema .featured-stage__active { right: 5%; width: 90%; height: 79%; }
+  .shop-hero--cinema .featured-stage__support { width: 45%; height: 56%; opacity: .25; }
+  .shop-hero--cinema .featured-stage__support--1 { transform: rotate(-4deg); }
+  .shop-hero--cinema .featured-stage__support--2 { transform: rotate(4deg); }
+  .shop-hero--cinema .featured-stage__details { padding: 16px 38px 16px 16px; }
+  .shop-hero--cinema .featured-stage__details > strong { font-size: 22px; }
+  .shop-hero--cinema .featured-stage__console { left: 5%; right: 5%; bottom: 2%; gap: 10px; }
+  .shop-hero--cinema .featured-stage__caption { left: 5%; font-size: 7px; }
+  .shop-hero--cinema .featured-stage__rails { box-shadow: none; }
+  .shop-signal__paths circle:nth-of-type(2), .shop-signal__nodes { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shop-hero--cinema *, .shop-hero--cinema *::before, .shop-hero--cinema *::after { animation: none !important; transition: none !important; }
+  .shop-hero--cinema .featured-stage__progress { display: none; }
+  .shop-hero--cinema .featured-stage__console { justify-content: space-between; }
+}

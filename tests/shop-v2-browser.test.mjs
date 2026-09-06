@@ -67,7 +67,7 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     await page.getByRole("button", { name: "Next featured product" }).click();
     assert.equal(await page.locator(".featured-stage__frame--entering").count(), 1); assert.equal(await page.locator(".featured-stage__frame--exiting").count(), 1);
     const animations = await page.locator(".featured-stage__frame--entering").evaluate((element) => ({ name: getComputedStyle(element).animationName, duration: getComputedStyle(element).animationDuration }));
-    assert.equal(animations.name, "featured-frame-in"); assert.notEqual(animations.duration, "0s");
+    assert.equal(animations.name, "shop-frame-in"); assert.notEqual(animations.duration, "0s");
     assert.notEqual(await page.locator(".featured-stage__frame--entering .featured-stage__details > strong").innerText(), before);
     await page.waitForTimeout(800); assert.equal(await page.locator(".featured-stage__frame--exiting").count(), 0); assert.deepEqual(errors, []); await context.close();
   }
