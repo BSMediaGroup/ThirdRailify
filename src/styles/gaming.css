@@ -263,11 +263,11 @@ html.theme-gaming .gaming-page *::-webkit-scrollbar-thumb { border: 2px solid #0
 .gaming-card:hover { z-index: 2; transform: translateY(-5px); border-color: rgba(105,242,148,.5); box-shadow: 0 28px 60px rgba(0,0,0,.36); }
 .gaming-card::before { position: absolute; z-index: 4; top: 0; right: 0; width: 32%; height: 1px; background: var(--gaming-accent); box-shadow: 0 0 14px var(--gaming-accent); content: ""; transform-origin: right; transform: scaleX(.25); transition: transform 300ms ease; }
 .gaming-card:hover::before { transform: scaleX(1); }
-.gaming-card__visual { position: relative; width: 100%; aspect-ratio: 2 / 3; align-self: start; overflow: hidden; border-right: 1px solid var(--gaming-line); background: #071009; isolation: isolate; }
+.gaming-card__visual { position: relative; width: 100%; aspect-ratio: 3 / 4; align-self: start; overflow: hidden; border-right: 1px solid var(--gaming-line); background: #071009; isolation: isolate; }
 .gaming-card__cover,
 .gaming-card__artwork-backdrop,
 .gaming-card__artwork-backdrop > img { position: absolute; inset: 0; width: 100%; height: 100%; }
-.gaming-card__cover { z-index: 1; object-fit: cover; }
+.gaming-card__cover { z-index: 1; object-fit: contain; }
 .gaming-card__artwork-backdrop { overflow: hidden; opacity: 0; }
 .gaming-card__artwork-backdrop > img { object-fit: cover; filter: blur(18px) brightness(.42) saturate(.7); transform: scale(1.12); }
 .gaming-card[data-artwork-shape="landscape"] .gaming-card__artwork-backdrop { opacity: 1; }
@@ -451,7 +451,7 @@ html.theme-gaming .gaming-page *::-webkit-scrollbar-thumb { border: 2px solid #0
   .gaming-card__visual { aspect-ratio: 3 / 4; border-right: 0; border-bottom: 1px solid var(--gaming-line); }
   .gaming-card__cover { object-position: center 24%; }
   .gaming-card[data-artwork-shape="poster"] .gaming-card__artwork-backdrop { opacity: 0; }
-  .gaming-card[data-artwork-shape="poster"] .gaming-card__cover { object-fit: cover; }
+  .gaming-card[data-artwork-shape="poster"] .gaming-card__cover { object-fit: contain; }
   .gaming-form { gap: 20px; }
   .gaming-form__steam-head { align-items: flex-end; }
   .gaming-form__submit { grid-template-columns: auto 1fr; }
