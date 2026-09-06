@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import snesIcon from "../../assets/icons/snes-0.svg";
 import switchIcon from "../../assets/icons/nintendo-switch-0.svg";
 import pcIcon from "../../assets/icons/windowsflat-0.svg";
@@ -28,14 +28,12 @@ export function GamingPage() {
 
   return <div className="gaming-page">
     <section ref={hero.ref} className={`gaming-hero${hero.active ? " is-active" : ""}`} data-motion={hero.active ? "active" : "static"} aria-labelledby="gaming-title">
-      <GamingField context="hero" />
+      <GamingHeroField />
       <div className="container gaming-hero__layout">
         <div className="gaming-hero__copy">
-          <p className="gaming-eyebrow"><i /> Sub-brand online / session rotation armed</p>
+          <p className="gaming-eyebrow"><i /> Third Railify / gaming channel</p>
           <div className="gaming-hero__title-lock">
-            <span className="gaming-hero__player-tag" aria-hidden="true">PLAYER / 01</span>
             <h1 id="gaming-title"><small>Third Railify</small><span>Gaming</span></h1>
-            <span className="gaming-hero__build" aria-hidden="true">BUILD 01.04 / LIVE</span>
           </div>
           <p className="gaming-hero__lede">A live managed rotation. Four weekly sessions. One green signal with absolutely no respect for the sensible route.</p>
           <div className="gaming-actions">
@@ -44,9 +42,9 @@ export function GamingPage() {
           </div>
           <GamingSchedule compact />
         </div>
-        <GamingSignalInstrument items={managedRotation.items} />
+        <GamingRotationDeck items={managedRotation.items} state={managedRotation.state} />
       </div>
-      <div className="gaming-hero__ticker" aria-hidden="true"><span>INPUT LOCKED</span><i /><span>{String(managedRotation.items.length).padStart(2, "0")} ACTIVE TITLES</span><i /><span>04 WEEKLY SESSIONS</span><i /><strong>THIRD RAILIFY GAMING / SIGNAL ROUTED</strong></div>
+      <div className="gaming-hero__ticker" aria-hidden="true"><span>TRG / SESSION ROUTER</span><i /><span>{managedRotation.state === "ready" ? `${String(managedRotation.items.length).padStart(2, "0")} TITLES IN ROTATION` : managedRotation.state === "loading" ? "READING ROTATION" : managedRotation.state === "empty" ? "ROTATION OPEN" : "SIGNAL UNAVAILABLE"}</span><i /><span>{String(GAMING_SCHEDULE.length).padStart(2, "0")} WEEKLY SESSIONS</span><i /><strong>PLAY / BROADCAST / REPEAT</strong></div>
     </section>
 
     <section ref={about.ref} className={`gaming-about${about.active ? " is-active" : ""}`} data-motion={about.active ? "active" : "static"} aria-labelledby="gaming-about-title">
@@ -107,51 +105,33 @@ function GamingSchedule({ compact = false }: { compact?: boolean }) {
   </div>;
 }
 
-function GamingSignalInstrument({ items }: { items: GamingRotationItem[] }) {
-  return <div className="gaming-instrument" aria-hidden="true">
-    <span className="gaming-instrument__corner gaming-instrument__corner--tl" />
-    <span className="gaming-instrument__corner gaming-instrument__corner--tr" />
-    <span className="gaming-instrument__corner gaming-instrument__corner--bl" />
-    <span className="gaming-instrument__corner gaming-instrument__corner--br" />
-    <header><span>TRG / WORLD INSTANCE 01</span><b><i /> SESSION READY</b></header>
-    <div className="gaming-instrument__viewport">
-      <span className="gaming-instrument__sky-grid" />
-      <span className="gaming-instrument__floor-grid" />
-      <span className="gaming-instrument__horizon" />
-      <svg className="gaming-instrument__world" viewBox="0 0 720 620" focusable="false">
-        <defs>
-          <linearGradient id="gaming-plane-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#a5ffbd" stopOpacity=".22"/><stop offset="1" stopColor="#45e37d" stopOpacity=".015"/></linearGradient>
-        </defs>
-        <g className="gaming-instrument__terrain">
-          <path d="M0 488 84 441 164 461 245 392 315 439 390 365 482 430 553 381 630 448 720 400" />
-          <path d="M0 531 92 477 174 503 257 431 320 479 399 408 487 472 558 421 638 490 720 443" />
-          <path d="M0 575 99 513 184 545 268 472 328 522 408 452 493 515 564 463 646 533 720 490" />
-          <path d="M84 441 92 477 99 513M164 461 174 503 184 545M245 392 257 431 268 472M315 439 320 479 328 522M390 365 399 408 408 452M482 430 487 472 493 515M553 381 558 421 564 463M630 448 638 490 646 533" />
-        </g>
-        <g className="gaming-instrument__shards">
-          <polygon points="119,167 196,124 184,222" />
-          <polygon points="566,134 635,201 543,217" />
-          <polygon points="88,302 145,277 127,343" />
-          <polygon points="598,301 665,276 634,350" />
-        </g>
-        <g className="gaming-instrument__portal">
-          <polygon className="gaming-instrument__portal-back" points="360,126 512,214 512,390 360,478 208,390 208,214" />
-          <polygon className="gaming-instrument__portal-mid" points="360,164 479,233 479,371 360,440 241,371 241,233" />
-          <polygon className="gaming-instrument__portal-front" points="360,206 443,254 443,350 360,398 277,350 277,254" />
-          <path className="gaming-instrument__axis" d="M360 126V478M208 214 512 390M512 214 208 390" />
-        </g>
-        <path className="gaming-instrument__route gaming-instrument__route--one" pathLength="1" d="M38 528C142 493 188 413 277 350" />
-        <path className="gaming-instrument__route gaming-instrument__route--two" pathLength="1" d="M682 526C576 490 528 416 443 350" />
-      </svg>
-      <span className="gaming-instrument__reticle"><i /><i /><i /><i /></span>
-      <div className="gaming-instrument__core"><div className="gaming-instrument__core-stack"><GamingControllerGlyph /><small>ACTIVE LOADOUT</small><strong>{String(items.length).padStart(2, "0")}</strong><span>TITLES ONLINE</span></div></div>
-      {items.slice(0, 4).map((game, index) => <span className={`gaming-instrument__slot gaming-instrument__slot--${index + 1}`} key={game.id}><i />{game.index} / {game.title}</span>)}
-      <span className="gaming-instrument__command gaming-instrument__command--move"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><b>MOVE</b></span>
-      <span className="gaming-instrument__command gaming-instrument__command--play"><kbd>▶</kbd><b>PLAY</b></span>
-      <span className="gaming-instrument__glitch">READY_PLAYER_01</span>
+type RotationState = ReturnType<typeof useGamingRotation>["state"];
+
+function GamingRotationDeck({ items, state }: { items: GamingRotationItem[]; state: RotationState }) {
+  const ready = state === "ready";
+  const slots = ready ? items.slice(0, 4) : [];
+  const status = ready ? "Rotation online" : state === "loading" ? "Reading rotation" : state === "empty" ? "Rotation open" : "Signal unavailable";
+  const summary = ready ? `Current Gaming rotation: ${items.length} titles.` : `Current Gaming rotation: ${status.toLowerCase()}.`;
+  return <div className="gaming-deck" role="img" aria-label={summary} data-state={state} key={state}>
+    <div aria-hidden="true">
+      <header className="gaming-deck__header"><div><span>TRG / SESSION ROUTER</span><h2>Rotation deck<span> / 01</span></h2></div><span className="gaming-deck__indicator"><i />{ready ? "INPUT READY" : "STANDBY"}</span></header>
+      <div className="gaming-deck__routing">
+        <div className="gaming-deck__inputs"><p className="gaming-deck__label">01 / CURRENT ROTATION</p>
+          <div className="gaming-deck__slots">{slots.map((game, index) => <div className="gaming-deck__slot" key={game.id} style={{ "--slot": index } as CSSProperties}><span>{String(index + 1).padStart(2, "0")}</span><b title={game.title}>{game.title}</b><i /><svg viewBox="0 0 100 20" preserveAspectRatio="none" focusable="false"><path pathLength="1" d="M0 10H100" vectorEffect="non-scaling-stroke" /></svg></div>)}
+            {!ready && <div className="gaming-deck__neutral"><span>{state === "loading" ? "Awaiting managed titles" : state === "empty" ? "Room for the next game" : "Rotation feed unavailable"}</span><small>{state === "loading" ? "Reading the current lineup..." : state === "empty" ? "The next lineup starts here." : "You can still watch on Rumble."}</small></div>}
+          </div>
+          <span className="gaming-deck__queue">{items.length > 4 && ready ? `+${items.length - 4} QUEUED` : "MANAGED GAME ROTATION"}</span>
+        </div>
+        <div className="gaming-deck__core"><p className="gaming-deck__label">02 / SESSION CORE</p><div className="gaming-deck__count"><GamingControllerGlyph /><strong>{ready ? String(items.length).padStart(2, "0") : state === "empty" ? "00" : "\u2014"}</strong><span>{ready ? "TITLES ONLINE" : "TITLES / STANDBY"}</span></div><b className="gaming-deck__status">{status}</b></div>
+      </div>
+      <div className="gaming-deck__output"><span className="gaming-deck__output-port" /><div><span className="gaming-deck__label">03 / BROADCAST DESTINATION</span><strong>RUMBLE <span>/ GAMING</span></strong></div><svg viewBox="0 0 180 36" focusable="false"><path d="M0 18H32l5-4 6 8 7-19 8 30 8-25 7 18 6-8h20l6-5 6 10 6-8 6 3h57" pathLength="1" /></svg><span className="gaming-deck__destination">CHANNEL OUTPUT</span></div>
+      <footer className="gaming-deck__footer"><span>ROTATION / SESSION / SIGNAL</span><span>THIRD RAILIFY GAMING</span></footer>
     </div>
-    <footer><span>GPU / ONLINE</span><i /><span>WORLD / LOADED</span><i /><span>QUEUE / OPEN</span></footer>
   </div>;
+}
+
+function GamingHeroField() {
+  return <div className="gaming-hero-field" aria-hidden="true"><div className="gaming-hero-field__grid" /><div className="gaming-hero-field__plane" /><svg viewBox="0 0 1600 900" preserveAspectRatio="none" focusable="false"><g className="gaming-hero-field__curves"><path d="M-80 780C360 780 420 870 800 800S1100 620 1680 700" /><path d="M-80 850C380 850 450 930 860 850S1150 700 1680 770" /><path d="M700 -40C1000 80 1220 -20 1680 180" /></g><path className="gaming-hero-field__signal" pathLength="1" d="M-80 780C360 780 420 870 800 800S1100 620 1680 700" /><g className="gaming-hero-field__nodes"><circle cx="800" cy="800" r="3" /><circle cx="1400" cy="700" r="3" /></g></svg></div>;
 }
 
 function GamingSessionLoop() {

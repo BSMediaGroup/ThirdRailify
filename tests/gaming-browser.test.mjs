@@ -18,7 +18,7 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
   const browser = await chromium.launch({ executablePath: CHROME, headless: true });
   t.after(() => browser.close());
 
-  for (const [width, height] of [[1920, 1080], [1440, 1000], [1024, 900], [768, 900], [390, 844]]) {
+  for (const [width, height] of [[1920, 1080], [1440, 900], [1365, 768], [1024, 900], [768, 900], [390, 844]]) {
     const context = await browser.newContext({ viewport: { width, height } });
     await installTurnstile(context);
     const page = await context.newPage();
@@ -33,18 +33,19 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.equal(await page.locator("html").evaluate((root) => root.classList.contains("theme-gaming")), true);
     assert.equal(await page.locator("html").evaluate((root) => root.scrollWidth <= root.clientWidth), true, `no overflow at ${width}x${height}`);
     assert.equal(await page.locator('.gaming-hero a[href="https://rumble.com/thirdrailifygaming"]').count(), 1);
-    assert.equal(await page.locator(".gaming-instrument__portal polygon").count(), 3, "hero has a layered wireframe game-world portal");
-    assert.equal(await page.locator(".gaming-instrument__terrain path").count(), 4, "hero has a planar terrain mesh");
-    assert.equal(await page.locator(".gaming-instrument__shards polygon").count(), 4, "hero has floating geometric shards");
-    assert.equal(await page.locator(".gaming-instrument__reticle").isVisible(), true, "hero targeting reticle is visible");
-    assert.equal(await page.locator(".gaming-instrument__core svg").count(), 1, "hero loadout core includes the game controller mark");
-    const heroGeometry = await page.locator(".gaming-hero").evaluate((element) => {
-      const heroBox = element.getBoundingClientRect();
-      const instrumentBox = element.querySelector(".gaming-instrument").getBoundingClientRect();
-      return { heroBox: { left: heroBox.left, right: heroBox.right }, instrumentBox: { left: instrumentBox.left, right: instrumentBox.right, width: instrumentBox.width } };
-    });
-    assert.ok(heroGeometry.instrumentBox.width >= Math.min(340, width - 40), `game-world instrument remains substantial at ${width}px`);
-    assert.ok(heroGeometry.instrumentBox.left >= heroGeometry.heroBox.left && heroGeometry.instrumentBox.right <= heroGeometry.heroBox.right, `game-world instrument stays inside the hero at ${width}px`);
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(2200);
+    await assertHeroGeometry(page, width, height);
+    assert.deepEqual(await page.locator(".gaming-deck__slot b").allTextContents(), gamingRotation().items.map(item => item.title));
+    assert.equal(await page.locator(".gaming-deck__count strong").textContent(), "04");
+    assert.equal(await page.getByRole("img", { name: "Current Gaming rotation: 4 titles.", exact: true }).count(), 1);
+    if (SCREENSHOTS) {
+      await page.evaluate(() => window.scrollTo({top:0,behavior:"instant"}));
+      await page.screenshot({path:path.join(ARTIFACTS, `hero-${width}x${height}.png`)});
+      const hideHeader = await page.addStyleTag({content:".site-header{visibility:hidden!important}"});
+      await page.locator(".gaming-hero").screenshot({path:path.join(ARTIFACTS, `hero-section-${width}x${height}.png`)});
+      await hideHeader.evaluate(style=>style.remove());
+    }
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > strong").allTextContents(), ["MON", "TUE", "THU", "FRI"]);
     assert.deepEqual(await page.locator(".gaming-schedule > div > span > small").allTextContents(), ["2 PM", "2 PM", "2 PM", "2 PM"]);
     assert.equal(await page.locator(".gaming-card").count(), 4);
@@ -83,8 +84,6 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     }
 
     if (SCREENSHOTS && [1920, 1440, 390].includes(width)) {
-      await page.screenshot({ path: path.join(ARTIFACTS, `hero-${width}x${height}.png`), fullPage: false });
-      await page.locator(".gaming-hero").screenshot({ path: path.join(ARTIFACTS, `hero-section-${width}x${height}.png`) });
       await page.locator(".gaming-about").scrollIntoViewIfNeeded();
       await page.screenshot({ path: path.join(ARTIFACTS, `about-${width}x${height}.png`), fullPage: false });
     }
@@ -226,8 +225,12 @@ test("Gaming motion respects reduced motion and the green root theme is removed 
   await page.goto("http://127.0.0.1:4209/gaming");
   await dismissPrivacy(page);
   assert.equal(await page.locator(".gaming-hero").getAttribute("data-motion"), "static");
-  assert.equal(await page.locator(".gaming-instrument__portal-back").evaluate((node) => getComputedStyle(node).animationName), "none");
-  assert.equal(await page.locator(".gaming-instrument__floor-grid").evaluate((node) => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".gaming-deck__slot").first().evaluate((node) => getComputedStyle(node).animationName), "none");
+  assert.equal(await page.locator(".gaming-hero-field__grid").evaluate((node) => getComputedStyle(node).animationName), "none");
+  await page.locator('.gaming-deck[data-state="ready"]').waitFor();
+  await assertHeroGeometry(page, 1280, 900);
+  assert.equal(await page.locator('.gaming-deck__slot path').first().evaluate(node => getComputedStyle(node).strokeDashoffset), "0px");
+  assert.equal(await page.locator('.gaming-deck').evaluate(node => getComputedStyle(node).opacity), "1");
   const gamingScrollbar = await page.locator("html").evaluate((node) => getComputedStyle(node).scrollbarColor);
   assert.match(gamingScrollbar, /69, 227, 125|rgb\(69 227 125\)/);
   if (SCREENSHOTS) { await mkdir(ARTIFACTS, { recursive: true }); await page.screenshot({ path: path.join(ARTIFACTS, "gaming-scrollbar-reduced-motion-1280x900.png"), fullPage: false }); }
@@ -361,4 +364,79 @@ test("IGDB-only card shows its canonical reference with no Steam row or runtime 
   const page=await browser.newPage({viewport:{width:390,height:844}});const providerRequests=[];page.on("request",request=>{if(["api.igdb.com","id.twitch.tv"].includes(new URL(request.url()).hostname))providerRequests.push(request.url());});
   const item={...gamingRotation().items[0],steam:null};await mockApis(page,[],{rotationItems:[item]});await page.goto(`${ORIGIN}/gaming`);await page.getByRole("link",{name:/Open THE WITCHER 3.* on IGDB/}).waitFor();assert.equal(await page.locator(".gaming-card footer > div").count(),1);assert.equal(await page.locator('.gaming-card a[href*="steampowered"]').count(),0);assert.equal(await page.locator("html").evaluate(element=>element.scrollWidth<=element.clientWidth),true);
   const ratio=await page.locator(".gaming-card__visual").evaluate(element=>{const box=element.getBoundingClientRect();return box.width/box.height;});assert.ok(ratio>=9/16);await page.reload();await page.getByRole("link",{name:/Open THE WITCHER 3.* on IGDB/}).waitFor();assert.deepEqual(providerRequests,[]);
+});
+
+async function assertHeroGeometry(page, width, height) {
+  const geometry = await page.locator('.gaming-hero').evaluate(hero => {
+    const box = node => { const r = node.getBoundingClientRect(); return {left:r.left, right:r.right, top:r.top, bottom:r.bottom, width:r.width, height:r.height}; };
+    const word = hero.querySelector('h1 > span');
+    const range = document.createRange(); range.selectNodeContents(word);
+    const pseudo = getComputedStyle(word, '::after');
+    const wordBox = box(word);
+    return {
+      hero: box(hero), title: box(hero.querySelector('h1')), word:wordBox, glyph:box(range),
+      decoration:{left:wordBox.left + parseFloat(pseudo.left), right:wordBox.right - parseFloat(pseudo.right), bottom:wordBox.bottom - parseFloat(pseudo.bottom), top:wordBox.bottom - parseFloat(pseudo.bottom) - parseFloat(pseudo.height)},
+      layout:box(hero.querySelector('.gaming-hero__layout')), deck:box(hero.querySelector('.gaming-deck')),
+      content:['.gaming-hero__lede','.gaming-actions','.gaming-schedule'].map(selector=>box(hero.querySelector(selector))),
+      labels:[...hero.querySelectorAll('.gaming-deck__slot b')].map(box),
+      overflow:document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    };
+  });
+  const inside = (a,b) => a.left >= b.left-1 && a.right <= b.right+1 && a.top >= b.top-1 && a.bottom <= b.bottom+1;
+  const overlaps = (a,b) => a.left < b.right-1 && a.right > b.left+1 && a.top < b.bottom-1 && a.bottom > b.top+1;
+  const label = `${width}x${height}: ${JSON.stringify(geometry)}`;
+  assert.equal(geometry.overflow,false,label);
+  assert.ok(inside(geometry.title,geometry.hero),label);
+  assert.ok(inside(geometry.glyph,geometry.word),'gradient contains the full font range: '+label);
+  assert.ok(inside(geometry.decoration,geometry.word),'intrinsic baseline stays within the word: '+label);
+  assert.ok(inside(geometry.deck,geometry.layout),label);
+  assert.ok(geometry.deck.width >= Math.min(340,width-40),label);
+  for(const content of [geometry.title,...geometry.content]) assert.equal(overlaps(content,geometry.deck),false,label);
+  for(const content of geometry.content) {
+    assert.equal(overlaps(geometry.word,content),false,label);
+    assert.equal(overlaps(geometry.decoration,content),false,label);
+  }
+  for(const labelBox of geometry.labels) assert.ok(inside(labelBox,geometry.deck),label);
+  if(width > 960) assert.ok(geometry.deck.bottom <= height+1, 'desktop deck fits below the header: '+label);
+  else assert.ok(geometry.deck.top >= geometry.content[2].bottom, 'stacked instrument follows schedule: '+label);
+}
+
+test('Rotation deck handles loading, empty, unavailable, long titles and overflow slots truthfully',async t=>{
+  const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4211'],{stdio:'ignore'});
+  t.after(()=>server.kill()); await waitForServer('http://127.0.0.1:4211');
+  const browser=await chromium.launch({executablePath:CHROME,headless:true});t.after(()=>browser.close());
+  if(SCREENSHOTS) await mkdir(ARTIFACTS,{recursive:true});
+  for(const [state,options,count] of [
+    ['loading',{},0],['empty',{rotationItems:[]},0],['unavailable',{failRotation:true},0],
+    ['ready',{rotationItems:[gamingRotation().items[0]]},1],
+    ['ready',{rotationItems:Array.from({length:6},(_,index)=>({...gamingRotation().items[0],id:`extra-${index}`,position:index+1,title:`${index+1} / A VERY LONG MANAGED ROTATION TITLE THAT MUST TRUNCATE SAFELY`}))},6],
+  ]) {
+    const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});await installTurnstile(context);const page=await context.newPage();await mockApis(page,[],options);
+    if(state==='loading') await page.route('**/api/gaming/rotation',()=>{});
+    await page.goto('http://127.0.0.1:4211/gaming');await dismissPrivacy(page);
+    await page.locator(`.gaming-deck[data-state="${state}"]`).waitFor();await page.evaluate(()=>document.fonts.ready);
+    assert.equal(await page.locator('.gaming-deck__slot').count(),Math.min(count,4));
+    assert.equal(await page.locator('.gaming-deck__count strong').textContent(),state==='ready'?String(count).padStart(2,'0'):state==='empty'?'00':'—');
+    assert.equal(await page.locator('.gaming-hero a[href="https://rumble.com/thirdrailifygaming"]').isVisible(),true);
+    if(count===6) assert.equal(await page.locator('.gaming-deck__queue').textContent(),'+2 QUEUED');
+    if(state!=='ready') assert.doesNotMatch(await page.locator('.gaming-deck').textContent(),/TITLES ONLINE|INPUT READY|THE WITCHER|LUMINARY/);
+    await assertHeroGeometry(page,390,844);
+    if(SCREENSHOTS) { const style=await page.addStyleTag({content:'.site-header{visibility:hidden!important}'});await page.locator('.gaming-hero').screenshot({path:path.join(ARTIFACTS,`hero-${state}-${count}-390-reduced.png`)});await style.evaluate(node=>node.remove()); }
+    await context.close();
+  }
+});
+
+test('Hero animation pauses offscreen and when hidden, then resumes without restarting',async t=>{
+  const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4212'],{stdio:'ignore'});t.after(()=>server.kill());await waitForServer('http://127.0.0.1:4212');
+  const browser=await chromium.launch({executablePath:CHROME,headless:true});t.after(()=>browser.close());const context=await browser.newContext({viewport:{width:1440,height:900}});await installTurnstile(context);const page=await context.newPage();await mockApis(page,[]);await page.goto('http://127.0.0.1:4212/gaming');await dismissPrivacy(page);
+  await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='active');await page.waitForTimeout(2200);
+  const animationTime=()=>page.locator('.gaming-hero-field__grid').evaluate(node=>node.getAnimations()[0].currentTime);
+  await page.locator('.gaming-close').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='static');
+  await page.waitForTimeout(100);const paused=await animationTime();await page.waitForTimeout(150);assert.ok(Math.abs(await animationTime()-paused)<2);
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='active');await page.waitForTimeout(100);assert.ok(await animationTime()>paused);
+  // Exercise the visibilitychange hook deterministically; Chrome headless has no operator tab switching.
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,get:()=>true});document.dispatchEvent(new Event('visibilitychange'));});
+  await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='static');await page.waitForTimeout(100);const hidden=await animationTime();await page.waitForTimeout(150);assert.ok(Math.abs(await animationTime()-hidden)<2);
+  await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='active');
+  assert.ok(await animationTime()>=hidden);
 });

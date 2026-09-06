@@ -1,5 +1,31 @@
 # Bump notes
 
+## 2026-09-07 - Gaming hero Rotation Deck and responsive title repair (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Rebuilt the Public Gaming hero in the existing GamingPage.tsx/gaming.css: fluid condensed headline, intrinsic green gradient/baseline, and a managed Rotation Deck connecting up to four real game labels through a session core to the Rumble broadcast destination. The total count and +N QUEUED reflect the existing managed client; loading, empty and unavailable states never invent titles or claim a live broadcast.
+- Root cause verified before editing at six widths: desktop line-height .68 provided a 92px paint box for a 161px font range at 1440px; shared mobile #main-content heading rules also tightened the painted span. The Gaming word now owns a 1.25 line box and word-relative decoration. Removed clipped portal/terrain/shards, fixed instrument minimum widths and absolute slot typography.
+- Added a restrained grid, routing plane, masked edge curves and slow signal trace with content safe zones. Frame/headline resolve, slots connect sequentially, then the core resolves into quiet idle. Existing useMotionGate drives persistent animation-play-state for offscreen/hidden pause and safe resume; reduced motion presents the static final composition. No new dependencies, canvas or animation loops.
+- Desktop/laptop columns adapt to width and short viewport height; tablet stacks and mobile uses a compact count/status panel above readable slots. Original introduction, CTA destinations, weekly MON/TUE/THU/FRI 2 PM schedule, shell, downstream content, card artwork proportions and green scrollbar lifecycle remain intact.
+- Node 22.16.0 validation: Gaming browser suite 7/7; Gaming content/API suite 9/9; TypeScript, ESLint (two existing Polls/WheelCanvas hook warnings), Vite production build (existing chunk-size warning), and git diff --check pass. Bounding-box checks include full font-range/gradient containment, intrinsic decoration, deck/content separation, no horizontal overflow, and preserved artwork ratios at 1920x1080, 1440x900, 1365x768, 1024x900, 768x900 and 390x844.
+- Screenshots actually inspected: all six resolved hero widths, reduced motion, loading/empty/unavailable, one/six-title fixtures, and downstream Current Rotation. Local evidence: .artifacts/gaming-public/ and .artifacts/gaming-hero/. Offscreen pause/resume is browser-tested; document visibilitychange is exercised deterministically in headless Chrome, not via a physical tab switch.
+- No tracked files created/removed; existing component helpers remain inside GamingPage.tsx, so README tree changes are unnecessary for this milestone. Starting worktree was clean; concurrent product-lightbox changes and their documentation were preserved. Only Public presentation/tests/this additive note were edited for Gaming. No Admin/reference-repository edits, backend/provider/schema/cache changes, remote writes, deployment, commit or push.
+
+## 2026-09-07 - Product fullscreen gallery (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added Public `ProductLightbox.tsx`, scoped `product-lightbox.css`, and `product-lightbox-browser.test.mjs`; updated product detail, package scripts and README tree documentation. No removed files or dependency additions.
+- Main-image expansion opens the actual displayed gallery/variant URL. Exact-URL deduplication preserves delivered order and distinct queries; current variant imagery is included without changing purchase state. Native fullscreen-sized dialog adds contain fit, previous/next, keyboard arrows, thumbnails, zoom/reset, bounded pan and fit-mode touch swipe. Focus, scroll restoration, route/unmount cleanup, mobile safe areas and scoped image failures are covered.
+- Node 22.16.0: gallery acceptance passes at 1440/768/390px and mobile landscape; storefront tests 9/9 and existing shop/product/cart browser regression pass. Combined SEO run: 6 pass, 1 fail for unchanged `/receipt` description length; route-specific SEO browser test and dynamic product metadata pass. Typecheck/build and gallery-scoped lint pass; build retains the chunk-size warning. Repository lint excluding generated `.artifacts` reports two undefined `assertHeroGeometry` calls in concurrent `tests/gaming-browser.test.mjs` edits, plus the existing Polls/WheelCanvas hook warnings. Those files were left untouched by this task. `git diff --check` passes.
+- Desktop/mobile screenshots visually inspected in `.artifacts/product-lightbox/`; acceptance checks selected URL, fit geometry, viewport coverage, control visibility, focus, scrolling, gestures, reduced motion, failure recovery and purchase/cart preservation. No physical-device, Safari/Firefox or screen-reader verification is claimed.
+- Starting Public worktree: `X:\GIT\ThirdRailify`, branch `main`, HEAD `6a246f94fc3291a31361861db0969bb98689ba3a`, clean status. Concurrent Gaming changes preserved. No Admin edits, provider/catalogue calls or data mutations, commit/push, deployment or remote mutation. Public deployment remains required.
+
 ## 2026-09-07 - Verified Printful gallery and variant image delivery (local)
 
 CURRENT VER=0.1.0-alpha.0
