@@ -1,4 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import snesIcon from "../../assets/icons/snes-0.svg";
+import switchIcon from "../../assets/icons/nintendo-switch-0.svg";
+import pcIcon from "../../assets/icons/windowsflat-0.svg";
+import playstationIcon from "../../assets/icons/playstation-0.svg";
 import { TurnstileWidget } from "../auth/TurnstileWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { ArrowIcon, BoltIcon, PlayIcon, RadioIcon } from "../components/Icons";
@@ -166,6 +170,21 @@ function GamingSessionLoop() {
 }
 
 function RotationCard({ item }: { item: GamingRotationItem }) {
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const [titleWrapped, setTitleWrapped] = useState(false);
+  useEffect(() => {
+    const title = titleRef.current;
+    if (!title) return;
+    const measure = () => setTitleWrapped(title.getBoundingClientRect().height > parseFloat(getComputedStyle(title).lineHeight) * 1.5);
+    const observer = new ResizeObserver(measure);
+    observer.observe(title);
+    measure();
+    return () => observer.disconnect();
+  }, [item.title]);
+  const platformIcon = /\b(snes|super nintendo|super famicom)\b/i.test(item.platform) ? snesIcon
+    : /\bswitch\b/i.test(item.platform) ? switchIcon
+    : /\b(pc|windows)\b/i.test(item.platform) ? pcIcon
+    : /\b(playstation|ps[1-5])\b/i.test(item.platform) ? playstationIcon : null;
   const [coverFailed, setCoverFailed] = useState(false);
   const [artworkShape, setArtworkShape] = useState<"pending" | "poster" | "landscape">("pending");
   const verifiedCover = Boolean(item.artworkUrl && !coverFailed);
@@ -179,8 +198,8 @@ function RotationCard({ item }: { item: GamingRotationItem }) {
       <span className="gaming-card__index">{item.index} / ACTIVE ROTATION</span>
       <span className="gaming-card__status"><i /> IN ROTATION</span>
     </div>
-    <div className="gaming-card__body">
-      <p>{item.genre}</p><h3>{item.title}</h3><span className="gaming-card__platform">{item.platform}</span><p className="gaming-card__description">{item.description}</p>
+    <div className="gaming-card__body" data-title-wrapped={titleWrapped}>
+      <p>{item.genre}</p><h3 ref={titleRef}>{item.title}</h3><span className="gaming-card__platform">{platformIcon && <span className="gaming-card__platform-icon" aria-hidden="true" style={{ maskImage: `url("${platformIcon}")`, WebkitMaskImage: `url("${platformIcon}")` }} />}{item.platform}</span><p className="gaming-card__description">{item.description}</p>
       {(item.steam||item.igdb)&&<footer className="gaming-card__providers">{item.steam&&<div><a href={item.steam.storeUrl} target="_blank" rel="noopener noreferrer">Official Steam listing <ArrowIcon /><span className="sr-only"> for {item.title} (opens in a new tab)</span></a><small>APP {item.steam.appId} / VERIFIED</small></div>}{item.igdb&&<div><a href={item.igdb.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${item.title} on IGDB (opens in a new tab)`}>IGDB listing <ArrowIcon /></a><small>IGDB {item.igdb.id} / VERIFIED</small></div>}</footer>}
     </div>
   </article>;
