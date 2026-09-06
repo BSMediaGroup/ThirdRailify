@@ -1,0 +1,56 @@
+[
+  {
+    "path": "/api/commerce/payment-config",
+    "status": 200,
+    "data": {
+      "ok": true,
+      "provider": "paypal",
+      "preferred": true,
+      "environment": "live",
+      "currency": "CAD",
+      "intent": "CAPTURE",
+      "clientId": "BAAiKF6MlxVphrZdeNCLzPvxgvY_7vTC0-k07Kd-BHbQOgGhUm_x-AWDFZ7PWj7JC9YjXQJi5EHyfK7nBg",
+      "configured": true,
+      "webhookConfigured": true,
+      "storeCheckoutEnabled": false,
+      "donationsEnabled": true,
+      "emergencyPaused": false,
+      "stripe": {
+        "configured": true,
+        "enabled": false,
+        "preferred": false
+      },
+      "message": null
+    }
+  },
+  {
+    "path": "/api/commerce/shipping-markets",
+    "status": 200,
+    "data": {
+      "destinations": 242
+    }
+  },
+  {
+    "path": "/api/commerce/catalogue",
+    "status": 200
+  },
+  {
+    "protectedLaunchStatus": 401
+  },
+  {
+    "width": 1440,
+    "checkoutRendered": true,
+    "headings": [
+      "Your cart is empty."
+    ],
+    "providerRequestsBlocked": 0
+  },
+  {
+    "width": 390,
+    "checkoutRendered": true,
+    "headings": [
+      "Your cart is empty."
+    ],
+    "providerRequestsBlocked": 0
+  }
+]
