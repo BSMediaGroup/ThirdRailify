@@ -32,7 +32,7 @@ export function PayPalPayment({ kind, disabled = false, createPayment, onCapture
   const captureState = useRef<"idle" | "inflight" | "terminal">("idle");
   const [state, setState] = useState<"idle" | "creating" | "approved" | "capturing" | "completed" | "pending" | "canceled" | "failed">("idle");
   const [message, setMessage] = useState("");
-  const enabled = Boolean(config?.clientId && config.preferred && config.configured && config.webhookConfigured && !config.emergencyPaused && (kind === "store" ? config.storeCheckoutEnabled : config.donationsEnabled));
+  const enabled = Boolean(config?.clientId && config.preferred && config.configured && config.webhookConfigured && (kind === "store" ? !config.emergencyPaused && config.storeCheckoutEnabled : config.donationsEnabled));
 
   const createOrder = async () => {
     if (!enabled || disabled || state === "creating" || state === "capturing") throw new Error("PayPal is not available for this payment.");

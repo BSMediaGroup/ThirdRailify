@@ -1,0 +1,64 @@
+[
+  {
+    "origin": "https://admin.thirdrailify.com",
+    "status": 200,
+    "exactEntryAssets": true,
+    "assets": [
+      "/assets/index-CpAmD_IE.js",
+      "/assets/index-DmXxOnZD.css"
+    ]
+  },
+  {
+    "origin": "https://thirdrailify.com",
+    "status": 200,
+    "exactEntryAssets": true,
+    "assets": [
+      "/assets/index-Bf7dZJS0.js",
+      "/assets/index-sJi9VNVm.css"
+    ]
+  },
+  {
+    "path": "/api/commerce/payment-config",
+    "status": 200,
+    "json": "application/json",
+    "privateMerchantFields": 0,
+    "checkoutEnabled": false,
+    "donationsEnabled": true
+  },
+  {
+    "path": "/api/commerce/catalogue",
+    "status": 200,
+    "json": "application/json",
+    "privateMerchantFields": 0,
+    "checkoutEnabled": false
+  },
+  {
+    "path": "/api/commerce/shipping-markets",
+    "status": 200,
+    "json": "application/json",
+    "privateMerchantFields": 0,
+    "marketCount": 242
+  },
+  {
+    "canonicalReadiness": {
+      "ready": true,
+      "hardBlockerCount": 0
+    },
+    "environment": "live",
+    "stripe": {
+      "configured": true,
+      "enabled": false,
+      "preferred": false
+    }
+  },
+  {
+    "url": "https://admin.thirdrailify.com/api/admin/commerce/launch",
+    "status": 401,
+    "contentType": "application/json; charset=utf-8"
+  },
+  {
+    "url": "https://thirdrailify.com/api/commerce/agreement",
+    "status": 404,
+    "contentType": "text/html; charset=utf-8"
+  }
+]

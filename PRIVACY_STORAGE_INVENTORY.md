@@ -51,3 +51,13 @@ The Public auth session, cart, privacy-choice cookie, same-origin APIs, security
 # Wheels custom media
 
 Wheel background and centre uploads are user-initiated account content. The Public browser does not persist the file, a base64 copy, an R2 key, or media authority. It sends the selected/locally normalized bytes through the authenticated same-origin Wheels Function; Admin validates and stores the active object in the existing Admin-owned R2 bucket and stores bounded metadata in Commerce D1. Public delivery uses only an opaque asset ID. This does not add an optional browser-storage category.
+
+## Store agreements and receipts - 6 September 2026
+
+Merchant legal name, phone and premises address remain encrypted in Admin Commerce D1. General Public profile, catalogue, payment configuration, pages and SEO exclude private merchant contact. After explicit Master owner attestation and transaction-only authorization, only the qualifying final checkout review projects necessary merchant facts. Review and acceptance tokens stay in component memory. They are never added to localStorage, analytics or query strings.
+
+Accepted agreements are immutable encrypted snapshots bound to order/customer/guest, profile/tax revisions, cart, delivery, CAD totals, policies and environment. The completed-order email contains the retainable copy. Branded receipt access uses an opaque fragment token removed immediately from the address bar and submitted by POST; receipt/token snapshots are encrypted server-side. Download is explicit, documents are sandbox rendered, and the protected route is not a public profile.
+
+Operator facts are CONFIGURED / OWNER CONFIRMED, never independently verified. Stripe is not used. No new browser storage key, analytics purpose or consent vendor is introduced. Full legal/policy text is versioned with each agreement.
+
+The owner confirmed worldwide shipping on 6 September 2026. Customer geography is independent of the Canadian merchant and CAD prices. Checkout obtains actual destination/item rates and retains the selected international address and applicable conditions in the encrypted agreement.

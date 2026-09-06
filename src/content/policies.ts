@@ -36,8 +36,8 @@ export type PolicyDocument = {
   sections: PolicySection[];
 };
 
-const updated = "30 August 2026";
-const revision = "2026.08-L1";
+const updated = "6 September 2026";
+const revision = "2026.09-store-agreement-2";
 
 export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
   terms: {
@@ -65,7 +65,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Scope",
         paragraphs: [
           "These Terms apply to the Third Railify and Third Railify Official website, accounts, Watch features, community features, and storefront. Third Railify is a Canadian business owned and operated by Shawn from London, Ontario, Canada. For personal safety, the owner is identified here by the established public professional name “Shawn”. In these Terms, “Third Railify”, “we”, “us”, and “our” refer to that business; “you” means a visitor, account holder, contributor, or customer.",
-          "The contracting identity and contact information presented at an enabled checkout or in an order confirmation form part of that sale and must be read with these Terms. Checkout is currently disabled.",
+          "Private merchant telephone and premises address are disclosed only in qualifying final transaction agreements, retained order confirmations and protected order evidence. They are not published on general pages. The contracting identity and contact information presented at an enabled checkout or in an order confirmation form part of that sale and must be read with these Terms. Checkout availability is controlled by the production store status.",
         ],
       },
       {
@@ -98,7 +98,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         bullets: [
           "Podcast, livestream, recorded video, editorial, and entertainment content.",
           "Approved GOATS submissions, comments, reactions, profiles, and public Discord information.",
-          "A CAD-authoritative merchandise catalogue and browser-local cart. Normal public checkout is currently disabled.",
+          "A CAD-authoritative merchandise catalogue and browser-local cart. Checkout is available only while the production store is active.",
           "Direct links to third-party platforms and services.",
         ],
         paragraphs: [
@@ -151,7 +151,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "Products, availability, and fulfilment",
         eyebrow: "Store",
         paragraphs: [
-          "The storefront displays a real catalogue, product variants, and CAD prices, but normal customer checkout is currently disabled. A cart is only a device-local selection and does not reserve stock, create an order, or guarantee availability.",
+          "The storefront displays a real catalogue, product variants, and CAD prices, with checkout available only while the production store is active. A cart is only a device-local selection and does not reserve stock, create an order, or guarantee availability.",
           "If checkout is enabled, the item, variant, quantity, authoritative CAD price, taxes, shipping costs, delivery information, and any other material term shown before confirmation form part of the order. We may reject or cancel an order for a genuine pricing error, unavailable item, security concern, or inability to fulfil it, and will provide any refund or remedy required in the circumstances.",
           "Merchandise may be produced and shipped by Printful or another disclosed production partner. Third Railify remains the storefront and customer support path; a fulfilment provider's policy does not replace rights you have against the seller.",
         ],
@@ -172,7 +172,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Checkout",
         paragraphs: [
           "When checkout is enabled, an order is accepted only through the confirmation shown by the authorised checkout flow. A return URL alone is not proof of payment. Payment credentials are handled by the payment provider; Third Railify does not store full payment-card numbers.",
-          "The current backend contains a controlled Stripe test workflow. It cannot create a live charge or start fulfilment and is not a public purchasing route.",
+          "PayPal is the enabled store payment provider. Stripe is not used for this store. You can review, correct or decline the transaction agreement before any PayPal order is created. After completed payment, order confirmation includes the retained agreement and eligible merchandise can enter fulfillment.",
         ],
         links: [{ label: "Read the Refund Policy", href: "/refunds" }],
       },
@@ -360,7 +360,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
           "The normal Public checkout is disabled. Cart selections remain in localStorage and consist only of product ID, variant ID, and quantity. Display-currency choices do not alter the authoritative CAD value.",
           "Signed-in customers may save delivery addresses for reuse. Checkout selects a default only when one is designated, and saving a newly entered address is an explicit optional action. Contact and address fields are not written to browser storage. Deleting a saved address removes that reusable current address but does not erase delivery evidence attached to an existing order where retention is still required.",
           "A controlled Stripe test workflow can create a sandbox Checkout Session and a local order-status record for operator acceptance. It cannot create a live charge or start fulfilment. Stripe handles card entry; Third Railify stores provider identifiers and status evidence, not full card numbers.",
-          "Printful is connected for a pre-cutover catalogue and planned fulfilment workflow. It does not currently receive a Public customer order because fulfilment submission is disabled. Before normal checkout is activated, the information collected for contact, shipping, taxes, payment, and fulfilment must be disclosed at the collection point and reflected in this policy.",
+          "For an enabled paid order, Printful receives the item and delivery information needed to fulfil it. Shipping is worldwide, subject to product, carrier and destination availability. Checkout requests destination-specific rates before agreement acceptance or payment. Unsupported destinations cannot proceed without an available shipping method.",
         ],
       },
       {
@@ -426,8 +426,9 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
             ["YouTube and Rumble", "Consent-gated players and public broadcast metadata", "Technical requests and provider-controlled player data after consent"],
             ["OpenFreeMap ecosystem", "Map resources", "Technical request information; approved locations are deliberately approximate"],
             ["Frankfurter", "Server-side public CAD exchange rates", "No cart or account data is intentionally sent"],
-            ["Stripe", "Controlled test checkout and future disclosed payment processing", "Order references, line totals, provider status; card entry stays with Stripe"],
-            ["Printful", "Pre-cutover catalogue and planned production/fulfilment", "Product mappings now; customer fulfilment data only after activation and notice"],
+            ["PayPal", "Store payment approval and capture", "Order items, totals, delivery address and payment evidence; payment credentials stay with PayPal"],
+            ["Stripe", "Historical evidence only; not used for store checkout", "No new store payment is sent to Stripe"],
+            ["Printful", "Catalogue and fulfillment of completed orders", "Product mappings and the minimum customer delivery data needed for eligible paid orders"],
           ],
         },
         paragraphs: [
@@ -445,7 +446,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "International processing and disclosure",
         eyebrow: "Data location",
         paragraphs: [
-          "The service has a Canada/CAD operating scope and uses providers with international infrastructure. Information may be processed or disclosed outside your location, including where a chosen provider, its subprocessors, or support personnel operate. Exact countries and provider regional settings are not fully confirmed, so this policy does not invent a fixed country list.",
+          "Third Railify is based in Canada, charges orders in CAD, ships worldwide where destination and product delivery are available, and uses providers with international infrastructure. Information may be processed or disclosed outside your location, including where a chosen provider, its subprocessors, or support personnel operate. Exact countries and provider regional settings are not fully confirmed, so this policy does not invent a fixed country list.",
           "Where PIPEDA applies, Third Railify remains accountable for personal information under its control when a provider processes it. Where EU or UK transfer rules apply, an appropriate lawful transfer mechanism must be used. We do not claim that every transfer uses Standard Contractual Clauses or another specific safeguard without confirming the relevant provider arrangement.",
         ],
       },
@@ -564,8 +565,8 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         title: "Current V2 checkout status",
         eyebrow: "No false transaction",
         paragraphs: [
-          "The V2 storefront currently provides a browser-local cart and normal customer checkout is disabled. The cart does not accept payment, reserve stock, or create an order. The separate operator-only Stripe test path uses sandbox funds and cannot start fulfilment.",
-          "If normal checkout is enabled later, the seller identity, product, variant, authoritative CAD amount, taxes, shipping, and other material terms shown before confirmation will apply to that order together with this policy.",
+          "The storefront provides a browser-local cart. The cart does not accept payment, reserve stock, or create an order. When the production store is active, PayPal payment follows explicit transaction-agreement review and acceptance.",
+          "When normal checkout is enabled, the seller identity, product, variant, authoritative CAD amount, taxes, shipping, and other material terms shown before confirmation will apply to that order together with this policy.",
         ],
       },
       {
@@ -594,7 +595,7 @@ export const policyDocuments: Record<PolicyKey, PolicyDocument> = {
         eyebrow: "Print on demand",
         paragraphs: [
           "Products may be made on demand and fulfilled by Printful or another disclosed production partner. Third Railify is the storefront and customer support route. Contacting the production provider directly is not required, and its policy does not replace Third Railify's obligations or your mandatory rights.",
-          "Production and shipping estimates shown at checkout are estimates unless expressly guaranteed. Do not send an item to a provider or return address without support instructions, because the correct resolution and destination depend on the issue.",
+          "We ship worldwide to supported destinations. Available methods and charges are calculated for your actual address and items before payment; some regions and products cannot be delivered. Customs duties, import taxes or carrier charges may apply at destination and are outside Third Railify's itemized charge. Production and shipping estimates shown at checkout are estimates unless expressly guaranteed. Do not send an item to a provider or return address without support instructions, because the correct resolution and destination depend on the issue.",
         ],
       },
       {

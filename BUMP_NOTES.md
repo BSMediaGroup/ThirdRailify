@@ -1,5 +1,13 @@
 # Bump notes
 
+## 2026-09-06 - Scoped store agreement and retained receipt
+
+- Added explicit final review/accept/decline before PayPal creation, bound to authoritative worldwide shipping and zero tax under not_collecting. Checkout edits invalidate acceptance.
+- Private merchant contact appears only in authorized qualifying transaction review and retained records; Public projections are allowlisted.
+- Added protected receipt POST and fragment-token document access, sandbox rendering and explicit retained-copy download.
+- Updated actual policy text/version and privacy operations inventory. Canadian flags appear once on a card total, with plain CAD item/subtotal/shipping amounts.
+
+
 ## 2026-09-01 - Address UX V2 human-readable geography
 
 CURRENT VER=0.1.0-alpha.0
@@ -798,3 +806,5 @@ When a listed provider is live, both homepage social rails now open that confirm
 - Applied the shared feedback surface to Poll voting, owner lifecycle actions, and the Poll editor, plus Wheel detail/share/spin actions, the full-page Wheel editor, Stage runtime/editor/import flows, and nested appearance, participant, transfer, and segment-style dialogs. Persistent loading, empty, validation, capacity, and confirmation states remain in context because they are not ephemeral notifications.
 - Updated browser acceptance to prove Poll error overlays and Wheel info overlays are portalled, fixed, above the sticky header, viewport-contained, dismissible, and time-bounded on production builds.
 - Follow-up legibility polish makes the notification body fully opaque beneath its subtle colour wash, raises backdrop blur and shadow separation, and limits entrance-opacity variation so underlying headings and controls cannot bleed through the card while it animates.
+
+The owner confirmed worldwide shipping on 6 September 2026. Customer geography is independent of the Canadian merchant and CAD prices. Checkout obtains actual destination/item rates and retains the selected international address and applicable conditions in the encrypted agreement.

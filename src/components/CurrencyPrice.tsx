@@ -10,7 +10,7 @@ export function ProductPrice({ price, formattedPrice, prominent = false }: { pri
   return <div className={`commerce-price commerce-price--cad${prominent ? " commerce-price--prominent" : ""}`}><strong>{available ? <><CurrencyFlag currency="CAD" />{from ? <small>FROM</small> : null}<span>{cad} CAD</span></> : "Price unavailable"}</strong></div>;
 }
 
-export function CadAmount({ minorUnits, className = "cad-amount" }: { minorUnits: number; className?: string }) { return <span className={className}><CurrencyFlag currency="CAD" /><span>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", currencyDisplay: "narrowSymbol" }).format(minorUnits / 100)} CAD</span></span>; }
+export function CadAmount({ minorUnits, className = "cad-amount", showFlag = true }: { minorUnits: number; className?: string; showFlag?: boolean }) { return <span className={className}>{showFlag && <CurrencyFlag currency="CAD" />}<span>{new Intl.NumberFormat("en-CA", { style: "currency", currency: "CAD", currencyDisplay: "narrowSymbol" }).format(minorUnits / 100)} CAD</span></span>; }
 
 export function ProductCurrencyComparison({ cadPrice }: { cadPrice: number }) {
   const { currency, currencies, rates, status, date, setCurrency } = useCurrency();

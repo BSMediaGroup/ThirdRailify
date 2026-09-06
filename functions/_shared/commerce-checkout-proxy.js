@@ -25,7 +25,7 @@ export async function proxyCommercePost(env, request, path, fetchImpl = fetch) {
     let payload;
     try { payload = await response.json(); } catch { throw new Error("upstream_json_invalid"); }
     if (!response.ok) return failure(response.status >= 400 && response.status < 500 ? response.status : 503, safeCode(payload?.error) || "commerce_unavailable", safeMessage(payload?.message) || "Commerce is temporarily unavailable.");
-    const normalized = path.endsWith("shipping-quotes") ? normalizeShippingQuote(payload) : normalizeCheckout(payload);
+    const normalized = path.endsWith("shipping-quotes") ? normalizeShippingQuote(payload) : path.endsWith("agreement") ? normalizeAgreement(payload) : normalizeCheckout(payload);
     return Response.json(normalized, { status: response.status, headers: noStoreHeaders() });
   } catch {
     return failure(503, "commerce_unavailable", "Commerce is temporarily unavailable.");
@@ -53,6 +53,32 @@ export function normalizeCheckout(input) {
   const url = new URL(checkoutUrl);
   if (url.protocol !== "https:" || url.hostname !== "checkout.stripe.com" || url.username || url.password) throw new Error("checkout_url_invalid");
   return { ok: true, orderId, sessionId, checkoutUrl: url.toString() };
+}
+
+export function normalizeAgreement(input) {
+  const agreement = input?.agreement;
+  const id = boundedText(agreement?.id,80);
+  const token = boundedText(input?.acceptanceToken,80);
+  if (input?.ok !== true || !/^agr_[A-Za-z0-9_-]+$/.test(id) || !/^[A-Za-z0-9_-]{43}$/.test(token) || agreement?.environment !== "live" || agreement?.version !== 1 || typeof agreement?.qualifyingInternetAgreement !== "boolean" || agreement?.totals?.currency !== "CAD") throw new Error("agreement_invalid");
+  for (const amount of [agreement.totals.productSubtotalAmount,agreement.totals.shippingAmount,agreement.totals.taxAmount,agreement.totals.totalAmount]) money(amount,0);
+  if (agreement.totals.totalAmount !== agreement.totals.productSubtotalAmount + agreement.totals.shippingAmount + agreement.totals.taxAmount || !Array.isArray(agreement.items) || !agreement.items.length || agreement.items.length > 100) throw new Error("agreement_totals_invalid");
+  if (!Number.isFinite(Date.parse(agreement.expiresAt)) || !agreement.merchant || !agreement.tax || !agreement.shipping || !agreement.payment || !agreement.fulfillment || !agreement.policies) throw new Error("agreement_projection_invalid");
+  const pick=(object,keys)=>Object.fromEntries(keys.filter(key=>Object.hasOwn(object||{},key)).map(key=>[key,object[key]]));
+  if(agreement.qualifyingInternetAgreement !== (agreement.totals.totalAmount>5000) || agreement.totals.taxAmount!==0)throw new Error("agreement_policy_invalid");
+  const policies={};
+  for(const key of ["terms","privacy","returns"]) {
+    const policy=agreement.policies[key];
+    policies[key]={...pick(policy,["version","url","title"]),sections:(policy?.sections||[]).map(section=>({...pick(section,["id","title","paragraphs","bullets","note"]),...(section.table?{table:pick(section.table,["caption","headers","rows"])}:{})}))};
+  }
+  return {ok:true,acceptanceToken:token,agreement:{...pick(agreement,["id","version","environment","qualifyingInternetAgreement","disclosureThresholdMinor","businessProfileRevision","offeredAt","expiresAt","conditions","additionalCharges","tradeIn"]),
+    merchant:pick(agreement.merchant,["tradingName","supportEmail","website",...(agreement.qualifyingInternetAgreement?["legalName","phone"]:[])]),
+    ...(agreement.qualifyingInternetAgreement?{merchant:{...pick(agreement.merchant,["tradingName","supportEmail","website","legalName","phone"]),address:pick(agreement.merchant.address,["line1","line2","city","province","postalCode","country"])}}:{}),
+    consumer:pick(agreement.consumer,["name","email"]),
+    items:agreement.items.map(item=>pick(item,["productId","variantId","name","description","variant","options","unitAmount","quantity","lineTotalAmount"])),
+    totals:pick(agreement.totals,["productSubtotalAmount","shippingAmount","taxAmount","totalAmount","currency"]),
+    tax:pick(agreement.tax,["policy","statement"]),
+    shipping:{...pick(agreement.shipping,["methodId","method","destinationCountryCode"]),delivery:agreement.shipping.delivery?pick(agreement.shipping.delivery,["minDays","maxDays","minDate","maxDate"]):null,destination:pick(agreement.shipping.destination,["recipientName","company","address1","address2","city","region","postalCode","countryCode"])},
+    payment:pick(agreement.payment,["provider","currency","terms"]),fulfillment:pick(agreement.fulfillment,["provider","method","statement"]),policies}};
 }
 
 function normalizeDeliveryEstimate(value) { const result = { minDays: optionalInteger(value?.minDays, 1, 365), maxDays: optionalInteger(value?.maxDays, 1, 365), minDate: isoDate(value?.minDate), maxDate: isoDate(value?.maxDate) }; if (Object.values(result).every((item) => item === null)) throw new Error("delivery_estimate_invalid"); return result; }

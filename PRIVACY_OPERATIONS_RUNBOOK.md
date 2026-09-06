@@ -31,3 +31,11 @@ Internal engineering/operations procedure as at 28 August 2026. This is not lega
 - GOATS: `POST /api/admin/goats/maintenance/cleanup-drafts` is Master-only, exact-origin and CSRF-protected. It removes only `status='draft'` rows whose existing `draft_expires_at` is earlier than the operation time and deletes their R2 objects before the database row.
 - Auth: `POST /api/admin/accounts/maintenance/cleanup-expired-auth` is Master-only, exact-origin and CSRF-protected. It deletes only sessions, handoffs, OAuth transactions, email-verification tokens and password-reset tokens whose existing `expires_at` is at or before the operation time. It writes a bounded auth audit event.
 - Neither action is a general privacy erasure tool. Do not run it against a preservation scope.
+
+## Transaction disclosure operations - 6 September 2026
+
+The permanent Admin Commerce launch action is the owner's explicit authorization boundary. It saves current edits, attests that revision and enables transaction-only disclosure atomically. Changing the merchant record invalidates store authority until re-attested. Never copy these private facts to a footer, general contact page, customer listing, audit metadata or provider configuration.
+
+For a completed-order request, locate the protected immutable agreement/receipt through existing order evidence. Do not render current merchant facts over historical agreements. Order confirmation delivers the original copy; retries reuse document and delivery idempotency. Emergency Pause closes future store checkout/capture/submission. Preserve retained records and donation authority. See Admin COMMERCE_SUPPORT_RUNBOOK.md for first-live-order monitoring.
+
+The owner confirmed worldwide shipping on 6 September 2026. Customer geography is independent of the Canadian merchant and CAD prices. Checkout obtains actual destination/item rates and retains the selected international address and applicable conditions in the encrypted agreement.

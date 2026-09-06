@@ -11013,3 +11013,14 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
   .ephemeral-notice { animation: none; }
   .ephemeral-notice__timer { animation: none; transform: none; }
 }
+
+.checkout-agreement { margin-top:1rem; padding:1rem; border:1px solid rgba(255,255,255,.25); border-radius:12px; overflow-wrap:anywhere; }
+.checkout-agreement__items p { display:flex; gap:.75rem; justify-content:space-between; }
+.checkout-agreement__items small { display:block; }
+.checkout-agreement__accept { display:flex; align-items:flex-start; gap:.75rem; margin:1rem 0; }
+.checkout-agreement input[type=checkbox] { width:20px; height:20px; flex:0 0 auto; }
+.checkout-agreement details { padding:.5rem 0; }
+.checkout-agreement .button { white-space:normal; }
+
+.checkout-agreement p, .checkout-agreement__items p { font-size: .95rem; line-height: 1.5; }
+.checkout-agreement__items small { font-size: .85rem; line-height: 1.4; }

@@ -1,3 +1,4 @@
+import { ReceiptPage } from "./pages/ReceiptPage";
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { SiteShell } from "./components/SiteShell";
@@ -48,6 +49,7 @@ export function App() {
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/:slug" element={<ProductDetailPage />} />
         <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+        <Route path="/receipt" element={<ReceiptPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/products/all" element={<ShopPage />} />

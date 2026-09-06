@@ -1,0 +1,19 @@
+[
+    "BUMP_NOTES.md",
+    "PRIVACY_OPERATIONS_RUNBOOK.md",
+    "PRIVACY_STORAGE_INVENTORY.md",
+    "functions/_shared/commerce-checkout-proxy.js",
+    "seo/site-seo.js",
+    "src/App.tsx",
+    "src/components/CurrencyPrice.tsx",
+    "src/components/PayPalPayment.tsx",
+    "src/content/policies.ts",
+    "src/pages/CartPage.tsx",
+    "src/pages/CheckoutPage.tsx",
+    "src/styles/global.css",
+    "functions/api/commerce/agreement.js",
+    "functions/api/commerce/document.js",
+    "src/pages/ReceiptPage.tsx",
+    "tests/store-agreement-browser.test.mjs",
+    "tests/store-policy-parity.test.mjs"
+]

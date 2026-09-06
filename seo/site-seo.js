@@ -111,6 +111,7 @@ const STATIC_ROUTES = [
     parent: ["Shop", "/shop"],
     index: false,
   }),
+  route("/receipt", "receipt", "Receipt & Agreement | Third Railify", "Access your protected retained order record.", { label: "Receipt", parent: ["Shop", "/shop"], index: false }),
   route("/community", "community", "Join the Third Railify Community", "Join the Third Railify community, find the official Discord, meet friends of the show, and explore GOATS in the Wild.", {
     label: "Community",
     schemaType: "CollectionPage",

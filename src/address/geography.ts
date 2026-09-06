@@ -19,7 +19,8 @@ const regionsByCountry = new Map<string, GeographyOption[]>(allCountries.map(([c
 export function countryOptions(allowedCodes?: readonly string[]) {
   if (!allowedCodes) return countries;
   const allowed = new Set(allowedCodes.map((code) => code.trim().toUpperCase()));
-  return countries.filter((country) => allowed.has(country.code));
+  const names = new Intl.DisplayNames(["en"], { type: "region" });
+  return [...allowed].map((code) => countryByCode.get(code) || { code, name: names.of(code) || code }).sort((left, right) => collator.compare(left.name, right.name));
 }
 
 export function regionOptions(countryValue: string) { return regionsByCountry.get(normalizeCountry(countryValue)) || []; }
