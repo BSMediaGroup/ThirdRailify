@@ -83,9 +83,12 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
       if (SCREENSHOTS) await page.screenshot({ path: path.join(ARTIFACTS, "show-dropdown-1440x1000.png"), fullPage: false });
     }
 
-    if (SCREENSHOTS && [1920, 1440, 390].includes(width)) {
-      await page.locator(".gaming-about").scrollIntoViewIfNeeded();
-      await page.screenshot({ path: path.join(ARTIFACTS, `about-${width}x${height}.png`), fullPage: false });
+    await page.locator('.gaming-about').scrollIntoViewIfNeeded();
+    await assertSessionGeometry(page, width);
+    if (SCREENSHOTS) {
+      const style=await page.addStyleTag({content:'.site-header,.skip-link,.community-dropdown{visibility:hidden!important}.community-dropdown{display:none!important}'});
+      await page.locator('.gaming-about').screenshot({path:path.join(ARTIFACTS, `about-section-${width}x${height}.png`)});
+      await style.evaluate(node=>node.remove());
     }
     if (SCREENSHOTS && [1920, 1440, 1024, 390].includes(width)) await captureRotationSection(page, path.join(ARTIFACTS, `rotation-section-${width}x${height}.png`));
     if (SCREENSHOTS && width === 1440) {
@@ -231,6 +234,12 @@ test("Gaming motion respects reduced motion and the green root theme is removed 
   await assertHeroGeometry(page, 1280, 900);
   assert.equal(await page.locator('.gaming-deck__slot path').first().evaluate(node => getComputedStyle(node).strokeDashoffset), "0px");
   assert.equal(await page.locator('.gaming-deck').evaluate(node => getComputedStyle(node).opacity), "1");
+  await page.locator('.gaming-about').scrollIntoViewIfNeeded();
+  await assertSessionGeometry(page,1280);
+  assert.equal(await page.locator('.gaming-session__step').first().evaluate(node=>getComputedStyle(node,'::after').animationName),'none');
+  assert.equal(await page.locator('.gaming-deck__packet').first().evaluate(node=>getComputedStyle(node).animationName),'none');
+  if(SCREENSHOTS) await page.locator('.gaming-about').screenshot({path:path.join(ARTIFACTS,'about-section-reduced-1280.png')});
+  await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
   const gamingScrollbar = await page.locator("html").evaluate((node) => getComputedStyle(node).scrollbarColor);
   assert.match(gamingScrollbar, /69, 227, 125|rgb\(69 227 125\)/);
   if (SCREENSHOTS) { await mkdir(ARTIFACTS, { recursive: true }); await page.screenshot({ path: path.join(ARTIFACTS, "gaming-scrollbar-reduced-motion-1280x900.png"), fullPage: false }); }
@@ -342,7 +351,7 @@ async function assertRotationGeometry(page, width, height) {
 }
 
 async function captureRotationSection(page, screenshotPath) {
-  const screenshotMode = await page.addStyleTag({ content: ".site-header,.skip-link,.community-dropdown{visibility:hidden!important}" });
+  const screenshotMode = await page.addStyleTag({ content: ".site-header,.skip-link,.community-dropdown{visibility:hidden!important}.community-dropdown{display:none!important}" });
   await page.locator(".gaming-rotation").screenshot({ path: screenshotPath });
   await screenshotMode.evaluate((style) => style.remove());
 }
@@ -421,7 +430,7 @@ test('Rotation deck handles loading, empty, unavailable, long titles and overflo
     if(count===6) assert.equal(await page.locator('.gaming-deck__queue').textContent(),'+2 QUEUED');
     if(state!=='ready') assert.doesNotMatch(await page.locator('.gaming-deck').textContent(),/TITLES ONLINE|INPUT READY|THE WITCHER|LUMINARY/);
     await assertHeroGeometry(page,390,844);
-    if(SCREENSHOTS) { const style=await page.addStyleTag({content:'.site-header{visibility:hidden!important}'});await page.locator('.gaming-hero').screenshot({path:path.join(ARTIFACTS,`hero-${state}-${count}-390-reduced.png`)});await style.evaluate(node=>node.remove()); }
+    if(SCREENSHOTS) { const style=await page.addStyleTag({content:'.site-header,.skip-link,.community-dropdown{visibility:hidden!important}.community-dropdown{display:none!important}'});await page.locator('.gaming-hero').screenshot({path:path.join(ARTIFACTS,`hero-${state}-${count}-390-reduced.png`)});await style.evaluate(node=>node.remove()); }
     await context.close();
   }
 });
@@ -439,4 +448,51 @@ test('Hero animation pauses offscreen and when hidden, then resumes without rest
   await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='static');await page.waitForTimeout(100);const hidden=await animationTime();await page.waitForTimeout(150);assert.ok(Math.abs(await animationTime()-hidden)<2);
   await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});await page.waitForFunction(()=>document.querySelector('.gaming-hero').dataset.motion==='active');
   assert.ok(await animationTime()>=hidden);
+});
+
+async function assertSessionGeometry(page,width) {
+  const geometry=await page.locator('.gaming-about').evaluate(section=>{
+    const box=node=>{const r=node.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height}};
+    return {section:box(section),title:box(section.querySelector('h2')),copy:box(section.querySelector('.gaming-section-copy')),panel:box(section.querySelector('.gaming-session')),steps:[...section.querySelectorAll('.gaming-session__step')].map(box),texts:[...section.querySelectorAll('.gaming-session__step b,.gaming-session__step p,.gaming-session__index')].map(box),overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth};
+  });
+  const inside=(a,b)=>a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
+  assert.ok(inside(geometry.title,geometry.copy),JSON.stringify(geometry));
+  assert.ok(inside(geometry.panel,geometry.section),JSON.stringify(geometry));
+  assert.ok(geometry.copy.right<=geometry.panel.left+1||geometry.copy.bottom<=geometry.panel.top+1,JSON.stringify(geometry));
+  assert.equal(geometry.overflow,false);
+  assert.equal(geometry.steps.length,3);
+  for(const item of [...geometry.steps,...geometry.texts])assert.ok(inside(item,geometry.panel),JSON.stringify(geometry));
+  assert.ok(geometry.steps[0].bottom<=geometry.steps[1].top&&geometry.steps[1].bottom<=geometry.steps[2].top);
+  if(width>=1024)assert.ok(geometry.title.height<300,'About heading no longer dominates the section');
+  assert.deepEqual(await page.locator('.gaming-session__step b').allTextContents(),['Input','Chaos','Broadcast']);
+}
+
+test('Gaming idle motion advances subtly without shifting content and About pauses offscreen', async t=>{
+  const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--host','127.0.0.1','--port','4213'],{stdio:'ignore'});t.after(()=>server.kill());await waitForServer('http://127.0.0.1:4213');
+  const browser=await chromium.launch({executablePath:CHROME,headless:true});t.after(()=>browser.close());
+  for(const width of [1440,390]) {
+    const context=await browser.newContext({viewport:{width,height:900}});await installTurnstile(context);const page=await context.newPage();await mockApis(page,[]);await page.goto('http://127.0.0.1:4213/gaming');await dismissPrivacy(page);await page.evaluate(()=>document.fonts.ready);
+    await page.locator('.gaming-deck[data-state="ready"]').waitFor();
+    await page.addStyleTag({content:'.site-header,.skip-link,.community-dropdown{visibility:hidden!important}.community-dropdown{display:none!important}'});
+    for(const section of ['.gaming-hero','.gaming-about']) {
+      await page.locator(section).scrollIntoViewIfNeeded();await page.waitForFunction(selector=>document.querySelector(selector).dataset.motion==='active',section);
+      const samples=[];
+      for(const time of [3000,8000]) {
+        // Sample the browser's CSS interpolation at repeatable idle phases.
+        samples.push(await page.locator(section).evaluate((root,time)=>{
+          root.getAnimations({subtree:true}).forEach(animation=>{animation.pause();animation.currentTime=time;});
+          const style=(selector,pseudo)=>getComputedStyle(root.querySelector(selector),pseudo);
+          const box=root.querySelector('h1,h2').getBoundingClientRect();
+          return {title:{x:box.x,y:box.y,width:box.width,height:box.height},motion:root.matches('.gaming-hero')?[style('.gaming-hero-field__plane').transform,style('.gaming-deck__packet').opacity]:[style('.gaming-session__step','::after').opacity,style('.gaming-session__meter i').transform]};
+        },time));
+        if(SCREENSHOTS)await page.locator(section).screenshot({path:path.join(ARTIFACTS,`idle-${section.slice(1)}-${width}-${time}.png`)});
+      }
+      assert.deepEqual(samples[0].title,samples[1].title,'decorative motion leaves text geometry stable');
+      assert.notDeepEqual(samples[0].motion,samples[1].motion,'idle scene visibly changes between phases');
+      if(section==='.gaming-about')await assertSessionGeometry(page,width);
+    }
+    await page.locator('.gaming-close').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('.gaming-about').dataset.motion==='static');
+    assert.equal(await page.locator('.gaming-session__step').first().evaluate(node=>getComputedStyle(node,'::after').animationPlayState),'paused');
+    await context.close();
+  }
 });

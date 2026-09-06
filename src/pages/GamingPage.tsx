@@ -51,7 +51,7 @@ export function GamingPage() {
       <div className="container gaming-about__layout">
         <div className="gaming-section-copy">
           <p className="gaming-eyebrow">About / another rail entirely</p>
-          <h2 id="gaming-about-title">Same signal.<br /><span>Different collision.</span></h2>
+          <h2 id="gaming-about-title">Same signal.<span>Different<br />collision.</span></h2>
           <p>Third Railify Gaming is the gaming arm of the show: live sessions, rotating worlds, co-op panic, solo detours, and the community watching a perfectly reasonable plan become evidence.</p>
           <dl className="gaming-about__facts"><div><dt>Format</dt><dd>Live play</dd></div><div><dt>Rotation</dt><dd>{managedRotation.state === "ready" ? `${managedRotation.items.length} titles` : managedRotation.state === "empty" ? "Queue open" : "Managed live"}</dd></div><div><dt>Destination</dt><dd>Rumble</dd></div></dl>
         </div>
@@ -117,14 +117,14 @@ function GamingRotationDeck({ items, state }: { items: GamingRotationItem[]; sta
       <header className="gaming-deck__header"><div><span>TRG / SESSION ROUTER</span><h2>Rotation deck<span> / 01</span></h2></div><span className="gaming-deck__indicator"><i />{ready ? "INPUT READY" : "STANDBY"}</span></header>
       <div className="gaming-deck__routing">
         <div className="gaming-deck__inputs"><p className="gaming-deck__label">01 / CURRENT ROTATION</p>
-          <div className="gaming-deck__slots">{slots.map((game, index) => <div className="gaming-deck__slot" key={game.id} style={{ "--slot": index } as CSSProperties}><span>{String(index + 1).padStart(2, "0")}</span><b title={game.title}>{game.title}</b><i /><svg viewBox="0 0 100 20" preserveAspectRatio="none" focusable="false"><path pathLength="1" d="M0 10H100" vectorEffect="non-scaling-stroke" /></svg></div>)}
+          <div className="gaming-deck__slots">{slots.map((game, index) => <div className="gaming-deck__slot" key={game.id} style={{ "--slot": index } as CSSProperties}><span>{String(index + 1).padStart(2, "0")}</span><b title={game.title}>{game.title}</b><i /><svg viewBox="0 0 100 20" preserveAspectRatio="none" focusable="false"><path pathLength="1" d="M0 10H100" vectorEffect="non-scaling-stroke" /><path className="gaming-deck__packet" pathLength="1" d="M0 10H100" vectorEffect="non-scaling-stroke" /></svg></div>)}
             {!ready && <div className="gaming-deck__neutral"><span>{state === "loading" ? "Awaiting managed titles" : state === "empty" ? "Room for the next game" : "Rotation feed unavailable"}</span><small>{state === "loading" ? "Reading the current lineup..." : state === "empty" ? "The next lineup starts here." : "You can still watch on Rumble."}</small></div>}
           </div>
           <span className="gaming-deck__queue">{items.length > 4 && ready ? `+${items.length - 4} QUEUED` : "MANAGED GAME ROTATION"}</span>
         </div>
         <div className="gaming-deck__core"><p className="gaming-deck__label">02 / SESSION CORE</p><div className="gaming-deck__count"><GamingControllerGlyph /><strong>{ready ? String(items.length).padStart(2, "0") : state === "empty" ? "00" : "\u2014"}</strong><span>{ready ? "TITLES ONLINE" : "TITLES / STANDBY"}</span></div><b className="gaming-deck__status">{status}</b></div>
       </div>
-      <div className="gaming-deck__output"><span className="gaming-deck__output-port" /><div><span className="gaming-deck__label">03 / BROADCAST DESTINATION</span><strong>RUMBLE <span>/ GAMING</span></strong></div><svg viewBox="0 0 180 36" focusable="false"><path d="M0 18H32l5-4 6 8 7-19 8 30 8-25 7 18 6-8h20l6-5 6 10 6-8 6 3h57" pathLength="1" /></svg><span className="gaming-deck__destination">CHANNEL OUTPUT</span></div>
+      <div className="gaming-deck__output"><span className="gaming-deck__output-port" /><div><span className="gaming-deck__label">03 / BROADCAST DESTINATION</span><strong>RUMBLE <span>/ GAMING</span></strong></div><svg viewBox="0 0 180 36" focusable="false"><path d="M0 18H32l5-4 6 8 7-19 8 30 8-25 7 18 6-8h20l6-5 6 10 6-8 6 3h57" pathLength="1" /><path className="gaming-deck__packet" d="M0 18H32l5-4 6 8 7-19 8 30 8-25 7 18 6-8h20l6-5 6 10 6-8 6 3h57" pathLength="1" /></svg><span className="gaming-deck__destination">CHANNEL OUTPUT</span></div>
       <footer className="gaming-deck__footer"><span>ROTATION / SESSION / SIGNAL</span><span>THIRD RAILIFY GAMING</span></footer>
     </div>
   </div>;
@@ -135,17 +135,24 @@ function GamingHeroField() {
 }
 
 function GamingSessionLoop() {
-  return <div className="gaming-loop" aria-label="Gaming session loop: input, chaos, broadcast, repeat">
-    <header><span>SESSION LOOP / CONTINUOUS</span><b>GREEN PATH</b></header>
-    <div className="gaming-loop__diagram" aria-hidden="true">
-      <svg viewBox="0 0 560 360" focusable="false"><path pathLength="1" d="M96 180C96 90 184 52 280 52s184 38 184 128-88 128-184 128S96 270 96 180Z" /><path className="gaming-loop__return" pathLength="1" d="M450 236c-62 83-268 86-339-4" /></svg>
-      <span className="gaming-loop__node gaming-loop__node--input"><i>01</i><b>INPUT</b><small>Controller armed</small></span>
-      <span className="gaming-loop__node gaming-loop__node--chaos"><i>02</i><b>CHAOS</b><small>Plan discarded</small></span>
-      <span className="gaming-loop__node gaming-loop__node--broadcast"><i>03</i><b>BROADCAST</b><small>Signal outbound</small></span>
-      <span className="gaming-loop__core"><GamingControllerGlyph /><b>TRG</b></span>
-      <span className="gaming-loop__packet" />
+  const steps = [
+    { title: "Input", caption: "Controller armed", detail: "SOLO + CO-OP", icon: <GamingControllerGlyph /> },
+    { title: "Chaos", caption: "Plan discarded", detail: "EXPECT DETOURS", icon: <svg viewBox="0 0 64 42" focusable="false"><path d="M4 10h14c14 0 14 22 28 22h14M4 32h14c14 0 14-22 28-22h14M53 4l7 6-7 6M53 26l7 6-7 6" /></svg> },
+    { title: "Broadcast", caption: "Signal outbound", detail: "ON RUMBLE", icon: <svg viewBox="0 0 64 42" focusable="false"><path d="M3 21h9l5-10 8 23 8-29 8 27 6-11h14" /></svg> },
+  ];
+  return <div className="gaming-session" role="img" aria-label="The Gaming session loop: input, chaos, broadcast, then repeat.">
+    <div aria-hidden="true">
+      <header className="gaming-session__header"><div><span>TRG / THE PLAYBOOK</span><h3>How a session unfolds</h3></div><span className="gaming-session__edition">01 / 03</span></header>
+      <div className="gaming-session__circuit">
+        <ol className="gaming-session__steps">{steps.map((step, index) => <li className="gaming-session__step" key={step.title} style={{ "--step": index } as CSSProperties}>
+          <span className="gaming-session__port" /><span className="gaming-session__glyph">{step.icon}</span>
+          <div><span className="gaming-session__index">0{index + 1} / {step.detail}</span><b>{step.title}</b><p>{step.caption}</p></div>
+          <span className="gaming-session__meter">{Array.from({ length: 5 }, (_, bar) => <i key={bar} style={{ "--bar": bar } as CSSProperties} />)}</span>
+        </li>)}</ol>
+        <span className="gaming-session__return"><span>REPEAT</span></span>
+      </div>
+      <footer className="gaming-session__footer"><span className="gaming-session__repeat">&#8634;</span><div><strong>Repeat until sensible.</strong><span>SAME SIGNAL. ANOTHER SESSION.</span></div><span className="gaming-session__signature">TRG</span></footer>
     </div>
-    <footer><span>SOLO + CO-OP</span><span>LIVE BY DEFAULT</span><span>REPEAT UNTIL SENSIBLE</span></footer>
   </div>;
 }
 
