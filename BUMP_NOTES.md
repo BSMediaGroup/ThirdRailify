@@ -1,5 +1,12 @@
 # Bump notes
 
+## 2026-09-07 - Separate product options and subtle image focus (local)
+
+- Product pages use canonical Size and Color fields as independent selectors, including mug capacity and one-size headwear. Other varying customer options remain separate; provider production metadata is not displayed as a purchase option.
+- Color changes preserve compatible selections; dependent unavailable combinations are disabled. Price, image and cart continue to use the selected authoritative variant ID.
+- Added a 2.5% main-image hover zoom for fine pointers, respecting reduced motion.
+- TypeScript and focused desktop/mobile checks passed, including all 13 current live catalogue products through local rendering. No deployment.
+
 ## 2026-09-07 - Product gallery navigation (local)
 
 - Added discreet previous/next image buttons and an image counter to multi-image product pages; thumbnails and fullscreen selection stay synchronized.

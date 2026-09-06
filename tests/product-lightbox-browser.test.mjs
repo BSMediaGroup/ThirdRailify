@@ -36,7 +36,10 @@ test("fullscreen product gallery selection, gestures, modality and responsive ge
     await page.getByRole("button", { name: "View 2", exact: true }).click(); await trigger.click();
     assert.equal(await slide.getAttribute("src"), BACK);
     await dialog.getByRole("button", { name: "Close fullscreen gallery" }).click();
-    await page.locator("#product-variant").selectOption("variant-2");
+    assert.equal(await page.getByLabel("Size", { exact: true }).inputValue(), "M");
+    assert.equal(await page.getByLabel("Size", { exact: true }).locator('option[value="L"]').isDisabled(), true);
+    await page.getByLabel("Color", { exact: true }).selectOption("Gold");
+    assert.equal(await page.getByLabel("Size", { exact: true }).inputValue(), "L");
     await page.waitForFunction(url => document.querySelector(".product-media__expand img")?.getAttribute("src") === url, VARIANT);
     const purchasePrice = await page.locator(".product-detail__copy .commerce-price--cad").first().innerText();
     const cartBefore = await page.evaluate(() => JSON.stringify(localStorage));
@@ -91,7 +94,7 @@ test("fullscreen product gallery selection, gestures, modality and responsive ge
     assert.equal(await page.evaluate(() => window.galleryEscape), 0);
     assert.equal(await page.locator(".product-detail__copy .commerce-price--cad").first().innerText(), purchasePrice);
     assert.equal(await page.evaluate(() => JSON.stringify(localStorage)), cartBefore);
-    assert.equal(await page.locator("#product-variant").inputValue(), "variant-2"); assert.equal(await page.locator("#product-quantity").inputValue(), "3");
+    assert.equal(await page.getByLabel("Color", { exact: true }).inputValue(), "Gold"); assert.equal(await page.getByLabel("Size", { exact: true }).inputValue(), "L"); assert.equal(await page.locator("#product-quantity").inputValue(), "3");
     assert.equal(await page.getByRole("button", { name: "View 5", exact: true }).getAttribute("aria-pressed"), "true");
     for (let n = 0; n < 3; n++) { await trigger.click(); await page.keyboard.press("Escape"); await dialog.waitFor({ state: "detached" }); }
     assert.equal(await page.evaluate(() => document.body.style.position), "");

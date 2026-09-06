@@ -51,7 +51,7 @@ test("Shop V2 is CAD-only in galleries and keeps comparison, purchase, drawer, a
     await page.keyboard.press("End"); await page.keyboard.press("Home"); await page.keyboard.press("ArrowDown"); await page.keyboard.press("Enter");
     assert.notEqual(await chooser.locator("span").innerText(), beforeCode); assert.equal(await primary.innerText(), primaryText);
     await chooser.click(); assert.equal(await page.getByRole("option", { name: "EUR" }).locator('img[data-currency-flag="eu"]').count(), 1); await page.keyboard.press("Escape");
-    const variantBox = await page.getByLabel("Variant").boundingBox(); const quantityBox = await page.getByLabel("Quantity").boundingBox();
+    const variantBox = await page.getByLabel("Color", { exact: true }).boundingBox(); const quantityBox = await page.getByLabel("Quantity").boundingBox();
     assert.ok(variantBox && quantityBox && Math.abs(variantBox.y - quantityBox.y) < 3, `variant and quantity share a row at ${width}x${height}`);
     const purchaseRowBox = await page.locator(".commerce-purchase-controls").boundingBox(); const addButtonBox = await page.getByRole("button", { name: "Add selected variant" }).boundingBox();
     assert.ok(purchaseRowBox && addButtonBox && addButtonBox.y - (purchaseRowBox.y + purchaseRowBox.height) >= 12, `purchase controls have breathing room before the add button at ${width}x${height}`);
