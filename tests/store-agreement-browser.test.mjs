@@ -9,8 +9,8 @@ const IMAGE="https://fixture.example.test/product.svg";
 const PHONE="Synthetic private telephone";
 const ADDRESS="Synthetic private premises";
 function offer(qualifying=true){return {ok:true,acceptanceToken:"a".repeat(43),agreement:{id:"agr_synthetic",version:1,environment:"live",qualifyingInternetAgreement:qualifying,merchant:{legalName:"Synthetic Merchant",tradingName:"Fixture",phone:PHONE,address:{line1:ADDRESS},supportEmail:"support@example.test",secret:"DO_NOT_PROJECT"},items:[{productId:"product-1",variantId:"variant-1",name:"BLEH Fixture",description:"Fixture product",unitAmount:qualifying?6000:3000,quantity:1,lineTotalAmount:qualifying?6000:3000}],totals:{productSubtotalAmount:qualifying?6000:3000,shippingAmount:895,taxAmount:0,totalAmount:qualifying?6895:3895,currency:"CAD"},tax:{policy:"not_collecting",statement:"Tax is not being collected."},shipping:{method:"Standard delivery",delivery:{minDays:3,maxDays:7},destination:{city:"London",countryCode:"CA"}},payment:{provider:"paypal",terms:"PayPal payment is due now in CAD."},fulfillment:{statement:"Made to order; delivery estimate below."},policies:Object.fromEntries(["terms","privacy","returns"].map(key=>[key,{url:key==="returns"?"/refunds":"/"+key,version:"2026.09",title:key,sections:[{title:"Agreement conditions",paragraphs:["Review these synthetic terms."]}]}])),conditions:["Worldwide shipping; destination availability confirmed before payment."],offeredAt:new Date().toISOString(),expiresAt:"2099-09-06T00:00:00Z",privateRecord:"DO_NOT_PROJECT"}};}
-test("scoped Public projection excludes extra fields and removes merchant contact below threshold",()=>{for(const qualifying of [true,false]){const result=normalizeAgreement(offer(qualifying));assert.doesNotMatch(JSON.stringify(result),/DO_NOT_PROJECT/);assert.equal(JSON.stringify(result).includes(PHONE),qualifying);assert.equal(JSON.stringify(result).includes(ADDRESS),qualifying);}const invalid=offer();invalid.agreement.totals.taxAmount=1;assert.throws(()=>normalizeAgreement(invalid));});
-test("checkout agreement is explicit, correctable and private at 1440, 768 and 390",async t=>{
+test("scoped Public projection excludes extra fields and removes private merchant contact at every threshold",()=>{for(const qualifying of [true,false]){const result=normalizeAgreement(offer(qualifying));assert.doesNotMatch(JSON.stringify(result),/DO_NOT_PROJECT/);assert.equal(JSON.stringify(result).includes(PHONE),false);assert.equal(JSON.stringify(result).includes(ADDRESS),false);}const invalid=offer();invalid.agreement.totals.taxAmount=1;assert.throws(()=>normalizeAgreement(invalid));});
+test("checkout stays private without a separate agreement gate at 1440, 768 and 390",async t=>{
  await mkdir("output/store-launch",{recursive:true});
  const server=spawn(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port","4217"],{stdio:"ignore"});t.after(()=>server.kill());await waitForServer();
  const browser=await chromium.launch({executablePath:"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",headless:true});t.after(()=>browser.close());
@@ -33,20 +33,18 @@ test("checkout agreement is explicit, correctable and private at 1440, 768 and 3
    if(path==="/api/watch")return json(route,{available:false,liveNow:[],primary:null,latest:null,upcoming:null});
    return json(route,{ok:false},404);
   });
-  await page.goto(ORIGIN+"/checkout");await page.getByRole("button",{name:/Continue as guest/}).click();await page.getByLabel("Customer email").fill("customer@example.test");await fillDelivery(page);
+  await page.goto(ORIGIN+"/checkout",{waitUntil:"domcontentloaded"});await page.getByRole("button",{name:/Continue as guest/}).click();await page.getByLabel("Customer email").fill("customer@example.test");await fillDelivery(page);
   await page.getByLabel("Country",{exact:true}).selectOption("GB");assert.equal(await page.getByLabel("Country",{exact:true}).inputValue(),"GB");await page.getByLabel("Country",{exact:true}).selectOption("CA");await page.getByLabel("Province / territory").selectOption("ON");
   assert.equal(offers,0);assert.doesNotMatch(await page.content(),new RegExp(PHONE+"|"+ADDRESS));
   await page.getByRole("button",{name:"Request shipping methods"}).click();await page.getByRole("radio",{name:/Standard delivery/}).waitFor();
-  await page.getByRole("button",{name:"Review transaction agreement"}).click();await page.getByRole("heading",{name:"Internet agreement",exact:true}).waitFor();assert.equal(offers,1);
-  const accept=page.getByRole("checkbox",{name:/I explicitly accept/});assert.equal(await accept.isChecked(),false);assert.match(await page.locator(".checkout-agreement").innerText(),new RegExp(PHONE));
-  await accept.check();assert.equal(payments,0);assert.doesNotMatch(await page.locator(".site-footer").innerText(),new RegExp(PHONE+"|"+ADDRESS));
+  assert.equal(await page.getByRole("button",{name:"Review transaction agreement"}).count(),0);
+  assert.equal(await page.getByRole("checkbox",{name:/I explicitly accept/}).count(),0);
+  assert.equal(await page.locator(".checkout-summary details").count(),0);
+  assert.equal(offers,0);assert.equal(payments,0);
+  assert.doesNotMatch(await page.content(),new RegExp(PHONE+"|"+ADDRESS));
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-  assert.equal(await page.locator(".checkout-agreement .currency-flag").count(),1);
-  const reject=page.getByRole("button",{name:"Reject non-essential",exact:true});if(await reject.isVisible())await reject.click();
-  await page.locator(".checkout-agreement").scrollIntoViewIfNeeded();await page.screenshot({path:`output/store-launch/worldwide-agreement-${width}.png`});
-  await page.getByRole("button",{name:"Decline / correct agreement"}).click();assert.equal(await accept.count(),0);
-  await page.getByRole("button",{name:"Review transaction agreement"}).click();await accept.waitFor();assert.equal(await accept.isChecked(),false);
-  await page.getByLabel("Address line 1").fill("101 Changed Street");assert.equal(await accept.count(),0);assert.equal(payments,0);
+  await page.getByLabel("Address line 1").fill("101 Changed Street");
+  assert.equal(offers,0);assert.equal(payments,0);
   assert.doesNotMatch(await page.evaluate(()=>JSON.stringify({storage:{...localStorage},url:location.href})),new RegExp(PHONE+"|"+ADDRESS+"|customer@example.test"));assert.deepEqual(errors,[]);
   await context.close();
  }

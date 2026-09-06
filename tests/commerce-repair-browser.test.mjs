@@ -28,7 +28,7 @@ test("active Cart to Australian delivery, shipping, agreement and PayPal boundar
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: "reduce" });
     await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: new Date(Date.now() + 86400000).toISOString(), categories: { preferences: true, externalMedia: false } })), url: origin, sameSite: "Lax" }]);
     await context.addInitScript(items => localStorage.setItem("thirdrailify-commerce-cart-v2", JSON.stringify(items)), items);
-    let mode = "active", quoteCalls = 0, transactions = 0;
+    let mode = "active", quoteCalls = 0, transactions = 0, agreementCalls = 0;
     const errors = [];
     const sdkRequests = [];
     const page = await context.newPage();
@@ -46,13 +46,23 @@ test("active Cart to Australian delivery, shipping, agreement and PayPal boundar
       if (path === "/api/commerce/shipping-markets") return json({ ok: true, markets: [{ countryCode: "AU", displayName: "Australia" }, { countryCode: "CA", displayName: "Canada" }] });
       if (path === "/api/commerce/payment-config") return json(payment);
       if (path === "/api/commerce/shipping-quotes") { quoteCalls++; const body = route.request().postDataJSON(); assert.equal(body.recipient.countryCode, "AU"); assert.equal(body.recipient.region, "NSW"); assert.deepEqual(body.items, items); return json({ ok: true, quote }); }
-      if (path === "/api/commerce/agreement") return json({ ok: true, agreement, acceptanceToken: "fixture-token" });
+      if (path === "/api/commerce/agreement") { agreementCalls++; return json({ ok: true, agreement, acceptanceToken: "fixture-token" }); }
       if (/paypal\/(store|capture)|commerce\/checkout/.test(path)) { transactions++; return route.abort(); }
       if (path === "/api/currency-rates") return json({ ok: true, base: "CAD", rates: { CAD: 1 }, date: "2026-09-07" });
       if (path === "/api/catalogue/banner") return json({ ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
       if (path === "/api/watch") return json({ available: false, liveNow: [], primary: null });
       return json({ ok: true, items: [], available: false });
     });
+    await page.goto(origin + "/cart");
+    await page.getByRole("button", { name: /Open cart,/ }).click();
+    const drawer = page.getByRole("dialog", { name: "Your cart" });
+    const drawerCheckout = drawer.getByRole("link", { name: "Proceed to checkout" });
+    await drawerCheckout.waitFor();
+    assert.equal(await drawerCheckout.getAttribute("class"), "button button--primary");
+    await page.screenshot({ path: `${output}/drawer-${width}.png`, fullPage: true });
+    await drawerCheckout.click();
+    await page.waitForURL(origin + "/checkout");
+    assert.equal(await drawer.count(), 0);
     await page.goto(origin + "/cart");
     const cta = page.getByRole("link", { name: "Proceed to checkout" }); await cta.waitFor();
     await page.getByText("Australian delivery", { exact: true }).waitFor();
@@ -66,22 +76,55 @@ test("active Cart to Australian delivery, shipping, agreement and PayPal boundar
     await page.getByRole("button", { name: "Request shipping methods" }).click();
     await page.getByRole("radio", { name: /Flat Rate/ }).waitFor(); assert.equal(quoteCalls, 1);
     await page.screenshot({ path: `${output}/shipping-${width}.png`, fullPage: true });
-    await page.getByRole("button", { name: "Review transaction agreement" }).click();
-    const acceptance = page.getByRole("checkbox", { name: /I explicitly accept/ }); await acceptance.check();
+    assert.equal(await page.getByRole("button", { name: "Review transaction agreement" }).count(), 0);
+    assert.equal(await page.getByRole("checkbox", { name: /I explicitly accept/ }).count(), 0);
+    assert.equal(await page.locator(".checkout-summary details").count(), 0);
     await page.getByText("Secure PayPal payment", { exact: true }).waitFor();
     await page.locator(".paypal-payment").scrollIntoViewIfNeeded();
     const paypalButton = page.locator(".paypal-payment").getByRole("button").first();
     await paypalButton.waitFor({ state: "visible" }).catch(async error => { throw new Error(JSON.stringify({ errors, sdkRequests, html: await page.locator(".paypal-payment").evaluate(e => e.querySelector("paypal-button")?.shadowRoot?.innerHTML || e.innerHTML), message: error.message })); });
     await page.waitForFunction(() => document.querySelector(".paypal-payment paypal-button")?.shadowRoot?.querySelector("button")?.disabled === false);
     assert.equal(await paypalButton.isEnabled(), true);
+    const notice = page.locator(".paypal-payment__acceptance");
+    await notice.waitFor();
+    assert.match(await notice.innerText(), /By clicking PayPal Checkout/);
+    for (const link of await notice.getByRole("link").all()) {
+      assert.equal(await link.getAttribute("target"), "_blank");
+      assert.equal(await link.getAttribute("rel"), "noopener noreferrer");
+    }
+    assert.doesNotMatch(await page.locator(".checkout-summary").innerText(), /Fixture phone|Synthetic business address|Business premises/);
     assert.match(await page.locator(".checkout-summary").innerText(), /83\.28 CAD/);
     assert.match(await page.locator(".checkout-summary").innerText(), /Not collecting/);
     assert.equal(await page.locator('input[autocomplete="cc-number"]').count(), 0);
     await check(page); await page.screenshot({ path: `${output}/review-${width}.png`, fullPage: true });
     assert.equal(transactions, 0); assert.deepEqual(errors, []);
+    assert.equal(agreementCalls, 0, "Simply reviewing checkout does not offer or accept an agreement");
     if (width === 390) {
+      // All application API calls are intercepted fixtures. Stop the click at
+      // the application create boundary, before any provider transaction.
+      let acceptedRequest;
+      await page.route("**/api/commerce/paypal/store", async route => {
+        acceptedRequest = route.request().postDataJSON();
+        return route.fulfill({ status: 409, contentType: "application/json", body: JSON.stringify({ ok: false, message: "Synthetic acceptance verified; no order created." }) });
+      });
+      const attempted = page.waitForResponse(response => response.url().endsWith("/api/commerce/paypal/store"));
+      await paypalButton.click();
+      await attempted;
+      assert.equal(agreementCalls, 1);
+      assert.equal(acceptedRequest.agreementAccepted, true);
+      assert.equal(acceptedRequest.agreementId, agreement.id);
+      assert.equal(acceptedRequest.agreementToken, "fixture-token");
+      assert.deepEqual(acceptedRequest.items, items);
+      assert.equal(transactions, 0);
       for (const [next, button] of [["paused", "Store paused"], ["invalid", "Remove unavailable items"], ["destination", "Choose another destination"]]) {
         mode = next; await page.goto(origin + "/cart"); await page.getByRole("button", { name: button, exact: true }).waitFor(); assert.equal(await page.getByRole("button", { name: button, exact: true }).isDisabled(), true); await check(page);
+        if (next !== "destination") {
+          await page.getByRole("button", { name: /Open cart,/ }).click();
+          const blockedDrawer = page.getByRole("dialog", { name: "Your cart" });
+          await blockedDrawer.getByRole("button", { name: button, exact: true }).waitFor();
+          assert.equal(await blockedDrawer.getByRole("button", { name: button, exact: true }).isDisabled(), true);
+          await blockedDrawer.getByRole("button", { name: "Close cart", exact: true }).click();
+        }
       }
       mode = "guest"; await page.goto(origin + "/cart"); await page.getByRole("link", { name: "Proceed to checkout" }).click(); await page.getByRole("button", { name: /Continue as guest/ }).waitFor();
       await page.evaluate(() => localStorage.removeItem("thirdrailify-commerce-cart-v2")); await context.clearCookies();

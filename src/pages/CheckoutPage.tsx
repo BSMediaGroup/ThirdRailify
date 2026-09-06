@@ -19,9 +19,6 @@ type Delivery = { name: string; company: string; address1: string; address2: str
 type Rate = { id: string; name: string; amount: number; currency: "CAD"; totalAmount: number; delivery: null | { text?: string; minDays?: number | null; maxDays?: number | null; minDate?: string | null; maxDate?: string | null } };
 type Quote = { id: string; expiresAt: string; currency: "CAD"; subtotalAmount: number; requiresShipping: boolean; checkoutAvailable: boolean; options: Rate[] };
 type ShippingMarket = { countryCode: string; displayName: string };
-type Agreement = { id:string; qualifyingInternetAgreement:boolean; merchant:{legalName?:string;tradingName:string;phone?:string;address?:Record<string,string>;supportEmail:string;website?:string}; items:Array<{productId:string;variantId:string;name:string;variant:string|null;description?:string;unitAmount:number;quantity:number;lineTotalAmount:number}>; totals:{productSubtotalAmount:number;shippingAmount:number;taxAmount:number;totalAmount:number;currency:"CAD"}; tax:{statement:string}; shipping:{method:string;delivery:Rate["delivery"];destination?:Record<string,string>}; payment:{terms:string}; fulfillment:{statement:string}; policies:{terms:AgreementPolicy;privacy:AgreementPolicy;returns:AgreementPolicy};additionalCharges?:string;tradeIn?:string;consumer?:{name:string;email:string};conditions:string[];offeredAt:string;expiresAt:string };
-type AgreementPolicy={url:string;version:string;title?:string;sections?:Array<{title:string;paragraphs?:string[];bullets?:string[];note?:string}>};
-type AgreementOffer = { agreement:Agreement; acceptanceToken:string };
 
 const EMPTY_DELIVERY: Delivery = { name: "", company: "", address1: "", address2: "", city: "", region: "", postalCode: "", countryCode: "CA", phone: "" };
 const REGION_REQUIRED = new Set(["AU", "CA", "US"]);
@@ -46,9 +43,6 @@ export function CheckoutPage() {
   const [selectedRateId, setSelectedRateId] = useState("");
   const [quoteBusy, setQuoteBusy] = useState(false);
   const [message, setMessage] = useState("Shipping calculation is not available yet.");
-  const [agreementOffer, setAgreementOffer] = useState<AgreementOffer | null>(null);
-  const [agreementAccepted, setAgreementAccepted] = useState(false);
-  const [agreementBusy, setAgreementBusy] = useState(false);
   const checkoutRequestId = useRef(crypto.randomUUID());
   const agreementRequestVersion=useRef(0);
   const addressInitialized = useRef(false);
@@ -108,7 +102,7 @@ export function CheckoutPage() {
   const selectedRate = quote?.options.find((rate) => rate.id === selectedRateId) || null;
   const displayedSubtotal = quote?.subtotalAmount ?? rows.reduce((sum, row) => sum + row.variant.unitAmount * row.item.quantity, 0);
   const agreementIdentity = JSON.stringify({ cart:cart.items,delivery,customerMode,customerEmail,quoteId:quote?.id||null,selectedRateId });
-  useEffect(() => { agreementRequestVersion.current+=1; setAgreementOffer(null); setAgreementAccepted(false); }, [agreementIdentity]);
+  useEffect(() => { agreementRequestVersion.current+=1;  }, [agreementIdentity]);
 
   const change = (field: keyof Delivery, value: string) => {
     setDelivery((current) => ({ ...current, [field]: field === "countryCode" ? normalizeCountry(value) : field === "region" ? normalizeRegion(current.countryCode, value) : value }));
@@ -145,26 +139,17 @@ export function CheckoutPage() {
     setTouched(true); setMessage("");
     if (unavailable.length) throw new Error("Remove unavailable catalogue items before payment.");
     if (!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length || !customerMode) throw new Error("Complete the customer, delivery, and current shipping selections before payment.");
-    if (!agreementOffer || !agreementAccepted) throw new Error("Review and explicitly accept the current internet agreement before payment.");
-    const response = await fetch("/api/commerce/paypal/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ checkoutRequestId: checkoutRequestId.current, items: cart.items, recipient: delivery, quoteId: quote.id, shippingOptionId: selectedRate.id, customer: { mode: customerMode, name: delivery.name, email: customerEmail }, agreementId:agreementOffer.agreement.id,agreementToken:agreementOffer.acceptanceToken,agreementAccepted:true }) });
+    // The PayPal Checkout click is the acceptance action described beside it.
+    const version = agreementRequestVersion.current;
+    const checkout = { checkoutRequestId: checkoutRequestId.current, items: cart.items, recipient: delivery, quoteId: quote.id, shippingOptionId: selectedRate.id, customer: { mode: customerMode, name: delivery.name, email: customerEmail } };
+    const offerResponse = await fetch("/api/commerce/agreement", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(checkout) });
+    const offer = await offerResponse.json() as { ok?: boolean; agreement?: { id: string }; acceptanceToken?: string; message?: string };
+    if (!offerResponse.ok || offer.ok !== true || !offer.agreement?.id || !offer.acceptanceToken) throw new Error(offer.message || "Checkout could not be prepared. Please try again.");
+    if (version !== agreementRequestVersion.current) throw new Error("Your checkout details changed. Review the updated total and press PayPal Checkout again.");
+    const response = await fetch("/api/commerce/paypal/store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...checkout, agreementId: offer.agreement.id, agreementToken: offer.acceptanceToken, agreementAccepted: true }) });
     const payload = await response.json() as PayPalCreateResult & { message?: string };
     if (!response.ok || payload.ok !== true || payload.provider !== "paypal") throw new Error(payload.message || "PayPal checkout is unavailable.");
     return payload;
-  };
-
-  const requestAgreement = async () => {
-    setTouched(true); setMessage("");
-    if (!quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length || !customerMode) { setMessage("Complete the customer, delivery, and current shipping selections before reviewing the agreement."); return; }
-    setAgreementBusy(true);
-    const version=agreementRequestVersion.current;
-    try {
-      const response=await fetch("/api/commerce/agreement",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({checkoutRequestId:checkoutRequestId.current,items:cart.items,recipient:delivery,quoteId:quote.id,shippingOptionId:selectedRate.id,customer:{mode:customerMode,name:delivery.name,email:customerEmail}})});
-      const payload=await response.json() as {ok?:boolean;agreement?:Agreement;acceptanceToken?:string;message?:string};
-      if(!response.ok||payload.ok!==true||!payload.agreement||!payload.acceptanceToken)throw new Error(payload.message||"The current agreement could not be prepared.");
-      if(version!==agreementRequestVersion.current)return;
-      setAgreementOffer({agreement:payload.agreement,acceptanceToken:payload.acceptanceToken});setAgreementAccepted(false);
-    } catch(reason){setAgreementOffer(null);setAgreementAccepted(false);setMessage(reason instanceof Error?reason.message:"The current agreement could not be prepared.");}
-    finally{setAgreementBusy(false);}
   };
 
   if (!cart.items.length) return <section className="checkout-page"><div className="container"><div className="empty-state empty-state--cart-page"><BagIcon /><p className="eyebrow">Checkout</p><h1>Your cart is empty.</h1><p>Add a product variant before entering delivery details.</p><Link className="button button--primary" to="/shop">Browse the shop</Link></div></div></section>;
@@ -202,17 +187,14 @@ export function CheckoutPage() {
       <aside className="checkout-summary" aria-labelledby="checkout-summary-title"><p className="eyebrow">04 · Order review & secure payment</p><h2 id="checkout-summary-title">Your order.</h2><div className="checkout-summary__items">{rows.map(({ item, product, variant }) => <article key={`${product.id}:${variant.id}`}>{(variant.image || product.image) ? <img src={variant.image || product.image} alt="" /> : <span className="checkout-summary__placeholder">TR</span>}<div><strong>{product.name}</strong><span>{variant.label} · Qty {item.quantity}</span></div><CadAmount showFlag={false} minorUnits={variant.unitAmount * item.quantity} /></article>)}</div>
         {delivery.address1 && <div className="checkout-summary__delivery"><span>Delivery</span><strong>{delivery.name}</strong><small>{formatGeography(delivery.city, delivery.region, delivery.countryCode)}</small></div>}
         <dl><div><dt>Product subtotal</dt><dd><CadAmount showFlag={false} minorUnits={displayedSubtotal} /></dd></div><div><dt>Shipping</dt><dd>{selectedRate ? <CadAmount showFlag={false} minorUnits={selectedRate.amount} /> : "Calculated at checkout"}</dd></div><div><dt>Tax</dt><dd>Not collecting / CA$0.00</dd></div><div className="checkout-summary__total"><dt>Order total</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.totalAmount} /> : "Pending authoritative amounts"}</dd></div></dl>
-        {!agreementOffer?<button className="button button--primary checkout-agreement-button" type="button" onClick={()=>void requestAgreement()} disabled={agreementBusy||!quote||!selectedRate||!quote.checkoutAvailable||Object.keys(errors).length>0||!customerMode}>{agreementBusy?"Preparing current agreement…":"Review transaction agreement"}</button>:<AgreementReview offer={agreementOffer} accepted={agreementAccepted} onAccepted={setAgreementAccepted} onDecline={()=>{setAgreementOffer(null);setAgreementAccepted(false);setMessage("Agreement declined. Correct your checkout details or return to the cart.");}} />}
-        <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="store" disabled={unavailable.length > 0 || !quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode || !agreementOffer || !agreementAccepted} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
+        <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment acceptanceNotice={<span>By clicking PayPal Checkout, you agree to the <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Use &amp; Sale</Link>, <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>, and <Link to="/refunds" target="_blank" rel="noopener noreferrer">Returns &amp; Refunds</Link> for the order and total shown above.</span>} kind="store" disabled={unavailable.length > 0 || !quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
         <p className="checkout-gate-message">{quote?.checkoutAvailable ? "PayPal handles payment approval. Third Railify creates and captures the order on the server and never stores raw payment credentials." : readiness?.blockers[0]?.message || (quote ? "Payment is not ready for this shipping quote. Request current shipping methods or try again later." : "Enter delivery details and request shipping methods to review your final CAD total before PayPal.")}</p>
-        <p className="checkout-policy-links">Review the <Link to="/terms">Terms of Use &amp; Sale</Link>, <Link to="/privacy">Privacy Policy</Link>, <Link to="/terms">shipping terms</Link>, and <Link to="/refunds">Returns &amp; Refund Policy</Link> before payment.</p>
         {message && quote ? <div className="checkout-error" role="alert">{message}</div> : null}
       </aside>
     </div>
   </div></section>;
 }
 
-function AgreementReview({offer,accepted,onAccepted,onDecline}:{offer:AgreementOffer;accepted:boolean;onAccepted:(value:boolean)=>void;onDecline:()=>void}){const a=offer.agreement;const address=a.merchant.address?Object.values(a.merchant.address).filter(Boolean).join(", "):"";return <section className="checkout-agreement" aria-labelledby="checkout-agreement-title"><p className="eyebrow">Required review</p><h3 id="checkout-agreement-title">Internet agreement</h3><p>Review every detail. You can edit customer, delivery, shipping, or cart information before accepting; any change requires a fresh agreement.</p>{a.qualifyingInternetAgreement&&<dl><div><dt>Legal supplier</dt><dd>{a.merchant.legalName}</dd></div><div><dt>Trading name</dt><dd>{a.merchant.tradingName}</dd></div><div><dt>Telephone</dt><dd>{a.merchant.phone}</dd></div><div><dt>Business premises</dt><dd>{address}</dd></div><div><dt>Contact</dt><dd>{a.merchant.supportEmail}</dd></div></dl>}<div className="checkout-agreement__items">{a.items.map((item)=><p key={`${item.productId}:${item.variantId}`}><span>{item.name}{item.variant?` - ${item.variant}`:""} x {item.quantity}<small>{item.description} - Unit price <CadAmount showFlag={false} minorUnits={item.unitAmount}/></small></span><CadAmount showFlag={false} minorUnits={item.lineTotalAmount}/></p>)}</div><dl><div><dt>Products</dt><dd><CadAmount showFlag={false} minorUnits={a.totals.productSubtotalAmount}/></dd></div><div><dt>Shipping ({a.shipping.method})</dt><dd><CadAmount showFlag={false} minorUnits={a.totals.shippingAmount}/></dd></div><div><dt>Tax</dt><dd>Not collecting / CA$0.00</dd></div><div><dt>Total</dt><dd><CadAmount minorUnits={a.totals.totalAmount}/></dd></div></dl><p>{a.payment.terms}</p><p>{a.fulfillment.statement}</p><p>Deliver to: {Object.values(a.shipping.destination||{}).filter(Boolean).join(", ")}</p><p>Delivery estimate: {deliveryLabel(a.shipping.delivery)}. Estimates are not guaranteed.</p><p>{a.additionalCharges}</p><p>{a.tradeIn}</p>{Object.values(a.policies).map(policy=><details key={policy.url}><summary>{policy.title || policy.url} - {policy.version}</summary>{policy.sections?.map(section=><section key={section.title}><h4>{section.title}</h4>{[...(section.paragraphs||[]),...(section.bullets||[]),...(section.note?[section.note]:[])].map((text,index)=><p key={index}>{text}</p>)}</section>)}</details>)}{a.conditions.map((condition)=><p key={condition}>{condition}</p>)}<p><Link to={a.policies.terms.url}>Terms of Use &amp; Sale</Link> · <Link to={a.policies.privacy.url}>Privacy Policy</Link> · <Link to={a.policies.returns.url}>Returns &amp; Refunds</Link></p><label className="checkout-agreement__accept"><input type="checkbox" checked={accepted} onChange={(event)=>onAccepted(event.target.checked)}/><span>I explicitly accept this reviewed agreement and authorize Third Railify to create the PayPal order.</span></label><button type="button" className="button button--secondary" onClick={onDecline}>Decline / correct agreement</button><small>Offer expires {new Date(a.expiresAt).toLocaleString()}.</small></section>}
 
 function CheckoutField({ label, name, value, change, error, autoComplete, maxLength, hint }: { label: string; name: keyof Delivery; value: string; change: (name: keyof Delivery, value: string) => void; error?: string; autoComplete: string; maxLength?: number; hint?: string }) {
   const errorId = `checkout-${name}-error`; const hintId = `checkout-${name}-hint`;

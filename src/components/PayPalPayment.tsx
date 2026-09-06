@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { PayPalOneTimePaymentButton, PayPalProvider } from "@paypal/react-paypal-js/sdk-v6";
 import type { PayPalCapturedPayment, PayPalCaptureResult, PayPalConfig, PayPalCreateResult } from "../payments/paypal-types";
 
 type Props = {
   kind: "store" | "donation";
+  acceptanceNotice?: ReactNode;
   disabled?: boolean;
   createPayment: () => Promise<PayPalCreateResult>;
   onCaptured: (result: PayPalCapturedPayment) => void;
@@ -26,7 +27,7 @@ function usePayPalConfiguration() {
   return { config, error };
 }
 
-export function PayPalPayment({ kind, disabled = false, createPayment, onCaptured }: Props) {
+export function PayPalPayment({ kind, disabled = false, createPayment, onCaptured, acceptanceNotice }: Props) {
   const { config, error: configError } = usePayPalConfiguration();
   const attempt = useRef<PayPalCreateResult | null>(null);
   const captureState = useRef<"idle" | "inflight" | "terminal">("idle");
@@ -76,6 +77,7 @@ export function PayPalPayment({ kind, disabled = false, createPayment, onCapture
     <PayPalProvider clientId={config.clientId} environment={config.environment === "live" ? "production" : "sandbox"} components={["paypal-payments"]} pageType="checkout">
       <PayPalOneTimePaymentButton type={kind === "donation" ? "donate" : "checkout"} disabled={disabled || state === "creating" || state === "capturing" || state === "completed" || state === "pending"} createOrder={createOrder} onApprove={approve} onCancel={() => { captureState.current = "idle"; setState("canceled"); setMessage("PayPal checkout was canceled. No payment was confirmed."); }} onError={(reason) => { captureState.current = "idle"; setState("failed"); setMessage(reason?.message || "PayPal checkout could not be opened."); }} />
     </PayPalProvider>
+    {acceptanceNotice && <p className="paypal-payment__acceptance">{acceptanceNotice}</p>}
     <p className="paypal-payment__status" aria-live="polite">{message || (config.environment === "sandbox" ? "PayPal sandbox — no real charge" : "Secure PayPal payment")}</p>
     <p className="paypal-payment__card-note">Card payments temporarily unavailable</p>
   </div>;

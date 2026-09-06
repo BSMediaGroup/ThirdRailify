@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
-import type { CatalogueProduct } from "../types/catalogue";
+import type { CatalogueProduct, CheckoutReadiness } from "../types/catalogue";
 import { BagIcon, CloseIcon, MinusIcon, PlusIcon, TrashIcon } from "./Icons";
 import { CadAmount } from "./CurrencyPrice";
 
@@ -13,8 +13,27 @@ export function CartDrawer() {
   const [products, setProducts] = useState<CatalogueProduct[]>([]);
   const [catalogueError, setCatalogueError] = useState(false);
   const [catalogueReady, setCatalogueReady] = useState(false);
+  const [checkoutEnabled, setCheckoutEnabled] = useState(false);
+  const [readiness, setReadiness] = useState<CheckoutReadiness>();
 
-  useEffect(() => { const controller = new AbortController(); catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueError(false); setCatalogueReady(true); }).catch(() => { setCatalogueError(true); setCatalogueReady(false); }); return () => controller.abort(); }, []);
+  useEffect(() => {
+    if (!cart.isOpen) return;
+    const controller = new AbortController();
+    const load = async () => {
+      setCatalogueReady(false);
+      try {
+        const snapshot = await catalogueProvider.load(controller.signal);
+        if (controller.signal.aborted) return;
+        setProducts(snapshot.products); setCheckoutEnabled(snapshot.checkoutEnabled === true);
+        setReadiness(snapshot.checkoutReadiness); setCatalogueError(false); setCatalogueReady(true);
+      } catch {
+        if (!controller.signal.aborted) { setCatalogueError(true); setCatalogueReady(false); }
+      }
+    };
+    void load();
+    window.addEventListener("focus", load);
+    return () => { controller.abort(); window.removeEventListener("focus", load); };
+  }, [cart.isOpen]);
 
   useEffect(() => {
     if (!cart.isOpen) return;
@@ -53,10 +72,12 @@ export function CartDrawer() {
   const rows = cart.items.flatMap((item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
     const variant = product?.variants?.find((candidate) => candidate.id === item.variantId);
-    return product && variant ? [{ item, product, variant }] : [];
+    return product && product.available !== false && variant?.availability === "active" ? [{ item, product, variant }] : [];
   });
   const subtotal = rows.reduce((sum, row) => sum + row.variant.unitAmount * row.item.quantity, 0);
   const unavailable = catalogueReady ? cart.items.filter((item) => !rows.some((row) => row.item.productId === item.productId && row.item.variantId === item.variantId)) : [];
+  const canCheckout = catalogueReady && checkoutEnabled && rows.length > 0 && !unavailable.length;
+  const blocker = catalogueError ? "Current catalogue details are unavailable. Close and reopen your cart to retry." : !catalogueReady ? "Checking current checkout availability..." : !cart.items.length ? "Choose a product variant to start your order." : unavailable.length ? "Remove unavailable items before continuing." : !checkoutEnabled ? readiness?.blockers[0]?.message || "The store is not open for checkout. Please try again later." : "Selections stay on this device. Confirm delivery and shipping at checkout.";
 
   return (
     <div className="cart-layer">
@@ -66,8 +87,7 @@ export function CartDrawer() {
           <div><span className="eyebrow">Commerce catalogue</span><h2 id="cart-title">Your cart</h2></div>
           <button ref={closeRef} className="icon-button" type="button" onClick={cart.close} aria-label="Close cart"><CloseIcon /></button>
         </div>
-        <p className="cart-boundary">Selections stay on this device. Checkout remains disabled until its production gates are cleared.</p>
-        {catalogueError ? <p className="cart-boundary" role="alert">Current catalogue details are unavailable. Retry from the shop before continuing.</p> : null}
+        <p className="cart-boundary" role={catalogueError ? "alert" : undefined}>{blocker}</p>
         <div className="cart-drawer__items">
           {rows.length ? rows.map(({ item, product, variant }) => (
             <article className="cart-row" key={`${product.id}:${variant.id}`}>
@@ -92,7 +112,7 @@ export function CartDrawer() {
         </div>
         <div className="cart-drawer__footer">
           <div><span>Cart subtotal</span><CadAmount minorUnits={subtotal} /></div>
-          <button className="button button--disabled" type="button" disabled>Checkout unavailable</button>
+          {canCheckout ? <Link className="button button--primary" to="/checkout" onClick={cart.close}>Proceed to checkout</Link> : <button className="button button--primary" type="button" disabled>{!catalogueReady && !catalogueError ? "Checking checkout" : unavailable.length ? "Remove unavailable items" : !cart.items.length ? "Cart is empty" : readiness?.paused ? "Store paused" : "Checkout unavailable"}</button>}
           <Link className="button button--secondary" to="/cart" onClick={cart.close}>View full cart</Link>
           {cart.items.length ? <button className="text-button" type="button" onClick={cart.clear}>Clear local cart</button> : null}
         </div>

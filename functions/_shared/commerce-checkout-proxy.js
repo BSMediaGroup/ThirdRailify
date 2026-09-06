@@ -71,8 +71,7 @@ export function normalizeAgreement(input) {
     policies[key]={...pick(policy,["version","url","title"]),sections:(policy?.sections||[]).map(section=>({...pick(section,["id","title","paragraphs","bullets","note"]),...(section.table?{table:pick(section.table,["caption","headers","rows"])}:{})}))};
   }
   return {ok:true,acceptanceToken:token,agreement:{...pick(agreement,["id","version","environment","qualifyingInternetAgreement","disclosureThresholdMinor","businessProfileRevision","offeredAt","expiresAt","conditions","additionalCharges","tradeIn"]),
-    merchant:pick(agreement.merchant,["tradingName","supportEmail","website",...(agreement.qualifyingInternetAgreement?["legalName","phone"]:[])]),
-    ...(agreement.qualifyingInternetAgreement?{merchant:{...pick(agreement.merchant,["tradingName","supportEmail","website","legalName","phone"]),address:pick(agreement.merchant.address,["line1","line2","city","province","postalCode","country"])}}:{}),
+    merchant:pick(agreement.merchant,["tradingName","supportEmail","website"]),
     consumer:pick(agreement.consumer,["name","email"]),
     items:agreement.items.map(item=>pick(item,["productId","variantId","name","description","variant","options","unitAmount","quantity","lineTotalAmount"])),
     totals:pick(agreement.totals,["productSubtotalAmount","shippingAmount","taxAmount","totalAmount","currency"]),
