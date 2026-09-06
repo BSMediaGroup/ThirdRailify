@@ -1,4 +1,4 @@
-import type { CatalogueProvider } from "../types/catalogue";
+import type { CatalogueProvider, CheckoutReadiness } from "../types/catalogue";
 
 /**
  * Same-origin read boundary to the sanitized Admin-owned Commerce D1 projection.
@@ -10,7 +10,7 @@ export const catalogueProvider: CatalogueProvider = {
     const payload = await response.json() as CommerceCataloguePayload;
     if (payload.ok !== true || payload.source !== "commerce-d1" || !Array.isArray(payload.collections) || !Array.isArray(payload.products)) throw new Error("catalogue_invalid");
     if (payload.authority?.reconciled === true && payload.products.length > payload.authority.currentProducts) throw new Error("catalogue_authority_invalid");
-    return { source: "commerce-d1", checkoutEnabled: payload.checkoutEnabled === true, capturedAt: payload.updatedAt || new Date(0).toISOString(), totalProductsReported: payload.authority?.reconciled ? payload.authority.currentProducts : payload.products.length, collections: payload.collections, products: payload.products.map(toCatalogueProduct) };
+    return { source: "commerce-d1", checkoutEnabled: payload.checkoutEnabled === true, checkoutReadiness: payload.checkoutReadiness, capturedAt: payload.updatedAt || new Date(0).toISOString(), totalProductsReported: payload.authority?.reconciled ? payload.authority.currentProducts : payload.products.length, collections: payload.collections, products: payload.products.map(toCatalogueProduct) };
   },
   async loadProduct(slug, signal) {
     const response = await fetch(`/api/commerce/products/${encodeURIComponent(slug)}`, { signal, headers: { Accept: "application/json" } });
@@ -25,7 +25,7 @@ export const catalogueProvider: CatalogueProvider = {
 type CommerceVariant = { id: string; label: string; image?: string | null; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
 type CommerceProduct = { id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; collectionSlugs: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
 type CommerceCollection = { title: string; slug: string; description: string; displayOrder: number; productCount: number; productIds: string[] };
-type CommerceCataloguePayload = { ok?: boolean; source?: string; checkoutEnabled?: boolean; updatedAt?: string | null; authority?: { currentProducts: number; reconciled: boolean }; collections: CommerceCollection[]; products: CommerceProduct[] };
+type CommerceCataloguePayload = { ok?: boolean; source?: string; checkoutEnabled?: boolean; checkoutReadiness?: CheckoutReadiness; updatedAt?: string | null; authority?: { currentProducts: number; reconciled: boolean }; collections: CommerceCollection[]; products: CommerceProduct[] };
 function toCatalogueProduct(product: CommerceProduct) {
   const optionTypes = [...new Set(product.variants.flatMap((variant) => Object.keys(variant.options)))];
   return { id: product.id, slug: product.slug, name: product.title, price: product.price.minUnitAmount / 100, formattedPrice: product.price.label, currency: "CAD" as const, optionTypes, image: product.images[0] || "", images: product.images, categories: product.categories, collectionSlugs: product.collectionSlugs, description: product.description, featured: product.featured, featuredOrder: product.featuredOrder, displayOrder: product.displayOrder, tags: product.tags, priceMinUnitAmount: product.price.minUnitAmount, priceMaxUnitAmount: product.price.maxUnitAmount, maxQuantity: product.maxQuantity, available: product.available, variants: product.variants };

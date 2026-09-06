@@ -1,5 +1,18 @@
 # Bump notes
 
+## 2026-09-07 - Production checkout projection repair
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Root cause proven against live endpoints: Admin catalogue returned checkoutEnabled=true; Public normalizeCatalogue and normalizeProductPayload unconditionally replaced it with false. Activation was complete, with no drift in the stored launch settings.
+- Public now preserves the strict boolean and safe readiness projection, supplies specific Cart blockers and a gold Proceed to checkout action, and refreshes readiness on window focus. Checkout requests delivery and shipping before displaying an unavailable-payment condition.
+- Catalogue/product payloads containing dynamic checkout authority use no-store; shipping-market caching remains scoped and unchanged. Address UX V2 and server price, ownership, agreement and PayPal validation are preserved.
+- Both named products (medium variants) reached a real Printful Australian estimate: CAD 71.50 products + 11.78 shipping + 0 tax = 83.28. No payment/order/fulfillment was created; quote and unaccepted agreement offer only.
+- Validation/deployment evidence: docs/COMMERCE_CHECKOUT_REPAIR.md. No commit, push, schema migration, resource or provider-account change.
+
+
 ## 2026-09-07 - Gaming hero Rotation Deck and responsive title repair (local)
 
 CURRENT VER=0.1.0-alpha.0

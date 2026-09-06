@@ -4,7 +4,7 @@ import { CadAmount } from "../components/CurrencyPrice";
 import { BagIcon } from "../components/Icons";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
-import type { CatalogueProduct } from "../types/catalogue";
+import type { CatalogueProduct, CheckoutReadiness } from "../types/catalogue";
 import { useAuth } from "../auth/AuthProvider";
 import { createAccountAddress, useAccountCommerce } from "../account/client";
 import type { AccountAddress } from "../account/types";
@@ -34,6 +34,7 @@ export function CheckoutPage() {
   const [shippingMarkets, setShippingMarkets] = useState<ShippingMarket[]>([]);
   const [catalogueError, setCatalogueError] = useState("");
   const [catalogueReady, setCatalogueReady] = useState(false);
+  const [readiness, setReadiness] = useState<CheckoutReadiness>();
   const [delivery, setDelivery] = useState<Delivery>(EMPTY_DELIVERY);
   const [customerMode, setCustomerMode] = useState<"guest" | "account" | null>(null);
   const [customerEmail, setCustomerEmail] = useState("");
@@ -55,7 +56,7 @@ export function CheckoutPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setCatalogueReady(true); setCatalogueError(""); }).catch(() => { setCatalogueReady(false); setCatalogueError("Current catalogue details are unavailable."); });
+    catalogueProvider.load(controller.signal).then((snapshot) => { setProducts(snapshot.products); setReadiness(snapshot.checkoutReadiness); setCatalogueReady(true); setCatalogueError(""); }).catch(() => { setCatalogueReady(false); setCatalogueError("Current catalogue details are unavailable."); });
     return () => controller.abort();
   }, []);
 
@@ -203,7 +204,7 @@ export function CheckoutPage() {
         <dl><div><dt>Product subtotal</dt><dd><CadAmount showFlag={false} minorUnits={displayedSubtotal} /></dd></div><div><dt>Shipping</dt><dd>{selectedRate ? <CadAmount showFlag={false} minorUnits={selectedRate.amount} /> : "Calculated at checkout"}</dd></div><div><dt>Tax</dt><dd>Not collecting / CA$0.00</dd></div><div className="checkout-summary__total"><dt>Order total</dt><dd>{selectedRate ? <CadAmount minorUnits={selectedRate.totalAmount} /> : "Pending authoritative amounts"}</dd></div></dl>
         {!agreementOffer?<button className="button button--primary checkout-agreement-button" type="button" onClick={()=>void requestAgreement()} disabled={agreementBusy||!quote||!selectedRate||!quote.checkoutAvailable||Object.keys(errors).length>0||!customerMode}>{agreementBusy?"Preparing current agreement…":"Review transaction agreement"}</button>:<AgreementReview offer={agreementOffer} accepted={agreementAccepted} onAccepted={setAgreementAccepted} onDecline={()=>{setAgreementOffer(null);setAgreementAccepted(false);setMessage("Agreement declined. Correct your checkout details or return to the cart.");}} />}
         <Suspense fallback={<div className="paypal-payment is-unavailable" role="status"><strong>Loading PayPal availability</strong></div>}><PayPalPayment kind="store" disabled={unavailable.length > 0 || !quote || !selectedRate || !quote.checkoutAvailable || Object.keys(errors).length > 0 || !customerMode || !agreementOffer || !agreementAccepted} createPayment={createPayPalPayment} onCaptured={(result) => window.location.assign(`/checkout/success?attempt_id=${encodeURIComponent(result.attemptId)}`)} /></Suspense>
-        <p className="checkout-gate-message">{quote?.checkoutAvailable ? "PayPal handles payment approval. Third Railify creates and captures the order on the server and never stores raw payment credentials." : "Checkout is currently unavailable. No order or payment can be created."}</p>
+        <p className="checkout-gate-message">{quote?.checkoutAvailable ? "PayPal handles payment approval. Third Railify creates and captures the order on the server and never stores raw payment credentials." : readiness?.blockers[0]?.message || (quote ? "Payment is not ready for this shipping quote. Request current shipping methods or try again later." : "Enter delivery details and request shipping methods to review your final CAD total before PayPal.")}</p>
         <p className="checkout-policy-links">Review the <Link to="/terms">Terms of Use &amp; Sale</Link>, <Link to="/privacy">Privacy Policy</Link>, <Link to="/terms">shipping terms</Link>, and <Link to="/refunds">Returns &amp; Refund Policy</Link> before payment.</p>
         {message && quote ? <div className="checkout-error" role="alert">{message}</div> : null}
       </aside>

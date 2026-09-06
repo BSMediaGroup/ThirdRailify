@@ -92,7 +92,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     assert.match(await page.locator(".checkout-summary").innerText(), /\$8\.95 CAD/); assert.match(await page.locator(".checkout-summary").innerText(), /\$39\.45 CAD/);
     assert.match(await page.locator(".paypal-payment").innerText(), /PayPal unavailable[\s\S]*credentials are not configured/i);
     assert.match(await page.locator(".paypal-payment").innerText(), /Card payments temporarily unavailable/i);
-    assert.match(await page.locator(".checkout-gate-message").innerText(), /Checkout is currently unavailable/);
+    assert.match(await page.locator(".checkout-gate-message").innerText(), /Payment is not ready for this shipping quote/);
     assert.doesNotMatch(await page.locator("body").innerText(), /11576|target-variant|printful|sync_variant|store_id|providerRateId/i);
 
     await page.getByLabel("Country").selectOption("HK");

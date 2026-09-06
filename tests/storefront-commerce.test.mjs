@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { configuredRatesUrl, normalizeCurrencyRates, onRequestGet as currencyRatesRequest } from "../functions/api/currency-rates.js";
 import { normalizeMerchandising, onRequestGet as merchandisingRequest } from "../functions/api/catalogue/merchandising.js";
-import { normalizeCatalogue, proxyCommerceCatalogue } from "../functions/_shared/commerce-catalogue-proxy.js";
+import { normalizeCatalogue, normalizeProductPayload, proxyCommerceCatalogue } from "../functions/_shared/commerce-catalogue-proxy.js";
 import { convertCad, formatMoney, resolveInitialCurrency } from "../src/currency/math.js";
 
 test("currency responses normalize CAD and reject malformed or non-positive rates", () => {
@@ -52,6 +52,16 @@ test("commerce catalogue proxy preserves safe local variant identity and exclude
   const response = await proxyCommerceCatalogue({ THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" }, "/api/public/commerce/catalogue", async (url) => { assert.equal(url, "https://thirdrailify-admin.pages.dev/api/public/commerce/catalogue"); return Response.json(upstream); });
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store"); assert.equal((await response.json()).products.length, 1);
   const failed = await proxyCommerceCatalogue({}, "/api/public/commerce/catalogue", async () => { throw new Error("must not fetch"); }); assert.equal(failed.status, 503); assert.equal(failed.headers.get("cache-control"), "no-store");
+});
+
+test("activation and pause propagate on the next uncached catalogue read; only boolean true opens checkout", async () => {
+  for (const value of [false, true, false, undefined, null, "true", 1]) {
+    const input = { ok: true, source: "commerce-d1", checkoutEnabled: value, collections: [], products: [commerceProduct], product: commerceProduct };
+    const response = await proxyCommerceCatalogue({ THIRDRAILIFY_ADMIN_ORIGIN: "https://admin.thirdrailify.com" }, "/api/public/commerce/catalogue", async () => Response.json(input));
+    assert.equal(response.headers.get("cache-control"), "no-store");
+    assert.equal((await response.json()).checkoutEnabled, value === true);
+    assert.equal(normalizeProductPayload(input).checkoutEnabled, value === true);
+  }
 });
 
 test("replacement storefront source uses product plus variant cart identity and has no runtime Wix fallback", async () => {

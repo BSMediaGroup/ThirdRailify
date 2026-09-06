@@ -10,7 +10,7 @@ export async function proxyCommerceCatalogue(env, path, fetchImpl = fetch) {
     if (!response.ok) throw new Error("catalogue_upstream_unavailable");
     const catalogue = path.endsWith("/catalogue");
     const normalized = catalogue ? normalizeCatalogue(await response.json()) : normalizeProductPayload(await response.json());
-    return Response.json(normalized, { headers: catalogue ? noStoreHeaders() : publicCacheHeaders() });
+    return Response.json(normalized, { headers: noStoreHeaders() });
   } catch {
     return Response.json({ ok: false, error: "catalogue_unavailable", message: "The shop catalogue is temporarily unavailable." }, { status: 503, headers: noStoreHeaders() });
   } finally { clearTimeout(timeout); }
@@ -45,14 +45,28 @@ export function normalizeCatalogue(input) {
   const collections = requiredArray(input.collections, 200).map(normalizeCollection);
   if (new Set(products.map((product) => product.id)).size !== products.length || new Set(products.map((product) => product.slug)).size !== products.length) throw new Error("catalogue_duplicate");
   if (new Set(collections.map((collection) => collection.slug)).size !== collections.length) throw new Error("catalogue_collection_duplicate");
-  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, authority, collections, products, updatedAt: boundedText(input.updatedAt, 80) || null };
+  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: input.checkoutEnabled === true, ...readinessProjection(input), authority, collections, products, updatedAt: boundedText(input.updatedAt, 80) || null };
 }
 
 export function normalizeProductPayload(input) {
   if (!input || input.ok !== true || input.source !== "commerce-d1") throw new Error("catalogue_product_invalid");
   const authority = normalizeCatalogueAuthority(input.authority, 1);
   if (authority.reconciled && authority.currentProducts < 1) throw new Error("catalogue_authority_count_invalid");
-  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, authority, product: normalizeProduct(input.product) };
+  return { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: input.checkoutEnabled === true, ...readinessProjection(input), authority, product: normalizeProduct(input.product) };
+}
+
+function readinessProjection(input) {
+  const r = input.checkoutReadiness;
+  if (r === undefined) return {};
+  if (!r || !["active", "paused", "preflight", "degraded"].includes(r.state) || typeof r.checkoutEnabled !== "boolean" || r.checkoutEnabled !== input.checkoutEnabled || !/^[a-f0-9]{64}$/.test(r.revision || "")) throw new Error("checkout_readiness_invalid");
+  const blockers = requiredArray(r.blockers, 12).map(b => {
+    const code = boundedText(b?.code, 80);
+    if (!/^[a-z_]+$/.test(code)) throw new Error("checkout_blocker_invalid");
+    return { code, message: boundedText(b.message, 240) };
+  });
+  const destinations = requiredArray(r.destinations, 250).map(c => { if (!/^[A-Z]{2}$/.test(c)) throw new Error("checkout_destination_invalid"); return c; });
+  if (r.checkoutEnabled && (r.paused !== false || r.paymentReady !== true || r.fulfillmentReady !== true || blockers.length)) throw new Error("checkout_readiness_inconsistent");
+  return { checkoutReadiness: { state: r.state, storeActive: r.storeActive === true, paused: r.paused === true, checkoutEnabled: r.checkoutEnabled, paymentReady: r.paymentReady === true, fulfillmentReady: r.fulfillmentReady === true, paymentProvider: "paypal", destinations, blockers, revision: r.revision } };
 }
 
 function normalizeCatalogueAuthority(input, fallbackCount) { if (input === undefined) return { currentProducts: fallbackCount, reconciled: false }; if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("catalogue_authority_invalid"); const currentProducts = integer(input.currentProducts, 0, 100000, null); if (currentProducts === null || typeof input.reconciled !== "boolean") throw new Error("catalogue_authority_invalid"); return { currentProducts, reconciled: input.reconciled }; }

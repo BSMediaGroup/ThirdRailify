@@ -31,11 +31,14 @@ export type CatalogueCollection = { title: string; slug: string; description: st
 export type CatalogueSnapshot = {
   source: "legacy-wix-snapshot" | "commerce-d1";
   checkoutEnabled?: boolean;
+  checkoutReadiness?: CheckoutReadiness;
   capturedAt: string;
   totalProductsReported: number;
   collections?: CatalogueCollection[];
   products: CatalogueProduct[];
 };
+
+export type CheckoutReadiness = { state: "active" | "paused" | "preflight" | "degraded"; storeActive: boolean; paused: boolean; checkoutEnabled: boolean; paymentReady: boolean; fulfillmentReady: boolean; paymentProvider: "paypal"; destinations: string[]; blockers: Array<{ code: string; message: string }>; revision: string };
 
 export interface CatalogueProvider {
   load(signal?: AbortSignal): Promise<CatalogueSnapshot>;
