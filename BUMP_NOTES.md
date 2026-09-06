@@ -1,5 +1,17 @@
 # Bump notes
 
+## 2026-09-06 - Micro-typography legibility audit (local visual review)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Measured Home, About, Shop, Community and both host routes at 1920/1440/768/390px. Retained the existing heading/body/navigation/button scale and already-readable 10px eyebrows and full Community directory. Decorative artwork annotations remain subordinate.
+- Scoped changes in `src/styles/global.css`: hero/platform secondary labels 10→11px; hero portrait annotations 6–7→9px; ticker 8.8→9.8px; host roles, broadcast metadata and product labels generally +1–2px, with 6→9px About host indexes. The shared `--micro-label-size` applies only to the existing 8px component roles selected by the audit. Compact Home Discord labels/descriptions/statuses gain 2px; important dim secondary copy uses the existing muted color. Price prefixes 7→9px; compact mobile product utility/badge exceptions gain 2px.
+- Browser regression checks pass for the responsive Home rail, Featured inventory/utility rows and compact/full Community (6 tests). The final paired Public/Admin visual audit has 32 route/viewport conditions, zero horizontal overflow and zero application exceptions. Product-card heights are unchanged; major heading sizes remain identical. Public screenshots cover hero/transmission, latest broadcast, Featured cards, compact community and About host cards in `.artifacts/micro-legibility/`.
+- Node 22.16.0: `npm run lint -- --ignore-pattern .artifacts/**` passes with the existing Polls/WheelCanvas hook warnings; `npm run typecheck`, `npm run build` and `git diff --check` pass. Production build retains its large-chunk warning. Focused browser command: `node --test --test-concurrency=1 tests/home-rail-browser.test.mjs tests/featured-merchandising-browser.test.mjs tests/community-typography-browser.test.mjs`. Broad unrelated suites and unrestricted generated-artifact lint were not run.
+- No new tracked Public files or README architecture change. Browser fixtures are local examples, not production records. No deployment, remote mutation, unrelated feature change or commit; awaiting Daniel's screenshot approval.
+
 ## 2026-09-06 - Reconciled provider image CSP delivery
 
 CURRENT VER=0.1.0-alpha.0

@@ -41,6 +41,15 @@ test("Home and Shop keep fixed Featured slots with zero and partial authoritativ
     const { context, page, errors } = await fixturePage(browser, width, height, partialCatalogue);
     await page.goto(`${ORIGIN}/`); await page.locator(".merch-preview .product-card").waitFor();
     assert.equal(await page.locator(".merch-preview .product-card").count(), 1);
+    const microcopy = await page.locator(".merch-preview .product-card").evaluate((card) => {
+      const meta = card.querySelector(".product-card__meta");
+      const action = card.querySelector(".product-card__view");
+      const footer = card.querySelector(".product-card__footer");
+      return { metadataSize: parseFloat(getComputedStyle(meta).fontSize), actionSize: parseFloat(getComputedStyle(action).fontSize), footerFits: footer.scrollWidth <= footer.clientWidth + 1 };
+    });
+    assert.ok(microcopy.metadataSize >= 10, "category and variant metadata remain readable");
+    assert.ok(microcopy.actionSize >= 8, "compact mobile utility label retains its corrected floor");
+    assert.equal(microcopy.footerFits, true, `product utility row fits at ${width}px`);
     assert.equal(await page.locator('.merch-preview [data-featured-state="empty"]').count(), 2);
     assert.deepEqual(await featuredSlugs(page, ".merch-preview"), ["featured-one"]);
     assert.equal(await noOverflow(page), true, `Homepage partial Featured overflow at ${width}`);

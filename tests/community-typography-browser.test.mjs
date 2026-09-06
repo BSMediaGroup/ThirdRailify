@@ -66,6 +66,23 @@ test("the full Community Discord directory keeps all content text readable witho
   }
 });
 
+test("Home compact community metadata stays legible without overflowing", async () => {
+  for (const width of [1920, 1440, 768, 390]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
+    const page = await context.newPage();
+    await mockApis(page);
+    await page.goto(ORIGIN);
+    await page.locator('.discord-widget--compact[data-state="ready"]').waitFor();
+    const sizes = await page.locator(".discord-widget--compact").evaluate((widget) => {
+      const size = (selector) => parseFloat(getComputedStyle(widget.querySelector(selector)).fontSize);
+      return { brand: size(".discord-widget__brand small"), description: size(".discord-widget__channel-description"), status: size(".discord-widget__members small"), overflow: document.documentElement.scrollWidth > innerWidth };
+    });
+    assert.ok(sizes.brand >= 9 && sizes.description >= 10 && sizes.status >= 10, JSON.stringify(sizes));
+    assert.equal(sizes.overflow, false, `compact directory fits at ${width}px`);
+    await context.close();
+  }
+});
+
 test("the Community hero runs its dedicated signal network responsively and respects reduced motion", async () => {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport, reducedMotion: "no-preference" });

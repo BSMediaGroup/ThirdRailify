@@ -72,7 +72,7 @@ test("managed homepage rail is gapless, responsive, and uses the triple-zap divi
       return { duration, repetitions: spans.length / 4, itemGap: second.left - first.right, justify: getComputedStyle(segments[0]).justifyContent, fontSize: getComputedStyle(spans[0]).fontSize, glyphSize: element.querySelector("i").getBoundingClientRect().width, widths, trackWidth: track.getBoundingClientRect().width, snapshots };
     });
     assert.equal(geometry.duration / geometry.repetitions, LIVE ? 28_000 : 18_000);
-    assert.equal(geometry.fontSize, "8.8px"); assert.equal(geometry.glyphSize, LIVE ? 10 : 14);
+    assert.ok(parseFloat(geometry.fontSize) >= 9.8 && parseFloat(geometry.fontSize) <= 11, "local microcopy stays legible without enlarging the rail"); assert.equal(geometry.glyphSize, LIVE ? 10 : 14);
     assert.equal(geometry.justify, "flex-start"); assert.ok(geometry.itemGap >= 29 && geometry.itemGap <= 31, `editorial items keep the intended 30px spacing, received ${geometry.itemGap}px`);
     assert.ok(Math.abs(geometry.widths[0] - geometry.widths[1]) < 1, "duplicate segments must have identical widths");
     assert.ok(Math.abs(geometry.trackWidth - geometry.widths[0] * 2) < 1, "track must be exactly two identical segments");
