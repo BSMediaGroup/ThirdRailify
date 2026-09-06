@@ -315,7 +315,7 @@ export function productSeo(product, origin) {
   const minimum = minorUnits(product?.price?.minUnitAmount ?? product?.priceMinUnitAmount ?? (Number(product?.price) * 100));
   const maximum = minorUnits(product?.price?.maxUnitAmount ?? product?.priceMaxUnitAmount ?? minimum);
   const variants = Array.isArray(product?.variants) ? product.variants : [];
-  const offer = minimum !== null ? {
+  const offer = minimum !== null && product?.saleRestriction?.enabled !== true ? {
     "@type": "AggregateOffer",
     priceCurrency: "CAD",
     lowPrice: money(minimum),

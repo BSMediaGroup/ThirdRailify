@@ -1,0 +1,76 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdir } from "node:fs/promises";
+import { chromium } from "playwright-core";
+import { normalizeCatalogue, normalizeProductPayload } from "../functions/_shared/commerce-catalogue-proxy.js";
+import { productSeo } from "../seo/site-seo.js";
+
+const origin = process.env.SHOP_BROWSER_ORIGIN || "http://127.0.0.1:4199";
+const output = process.env.SPECIAL_PRODUCT_SCREENSHOTS || "output/special-products";
+
+test("restricted products remain discoverable with consistent banners and cannot enter checkout", async t => {
+  const live = await (await fetch("https://thirdrailify.com/api/commerce/catalogue")).json();
+  const mug = live.products.find(p => p.slug === "third-railify-black-glossy-mug-466989584") || live.products.find(p => /black glossy mug/i.test(p.title));
+  assert.ok(mug);
+  const imageResponse = await fetch(mug.images[0]);
+  const imageBytes = Buffer.from(await imageResponse.arrayBuffer());
+  const normal = live.products.find(p => p.id !== mug.id && p.variants.length);
+  const restricted = { ...mug, featured: true, saleRestriction: { enabled: true, reason: "competition_prize" } };
+  const catalogue = { ...live, products: [restricted, normal] };
+  assert.equal(normalizeCatalogue(catalogue).products.find(p => p.id === mug.id).saleRestriction.enabled, true);
+  assert.equal(normalizeProductPayload({ ...live, product: restricted }).product.saleRestriction.enabled, true);
+  assert.equal(productSeo(restricted, origin).jsonLd["@graph"].find(p => p["@type"] === "Product").offers, undefined);
+  await mkdir(output, { recursive: true });
+  const browser = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", headless: true }); t.after(() => browser.close());
+  for (const width of (process.env.SPECIAL_PRODUCT_WIDTH ? [Number(process.env.SPECIAL_PRODUCT_WIDTH)] : [1920, 1440, 768, 390])) {
+    const context = await browser.newContext({ viewport: { width, height: 950 }, reducedMotion: "reduce" });
+    await context.addCookies([{ name: "thirdrailify_consent", value: encodeURIComponent(JSON.stringify({ version: 1, timestamp: new Date().toISOString(), expiry: "2099-01-01T00:00:00Z", categories: { preferences: true, externalMedia: false } })), url: origin }]);
+    const page = await context.newPage(), errors = [];
+    page.setDefaultTimeout(12000); page.setDefaultNavigationTimeout(20000);
+    await page.route(mug.images[0], route => route.fulfill({ contentType: "image/png", body: imageBytes }));
+    page.on("pageerror", e => errors.push(e.message));
+    let enabled = true;
+    await page.route("**/api/**", async route => {
+      const path = new URL(route.request().url()).pathname;
+      const json = value => route.fulfill({ contentType: "application/json", body: JSON.stringify(value) });
+      const product = { ...restricted, saleRestriction: { enabled, reason: width === 768 ? "display_only" : "competition_prize" } };
+      if (path === "/api/commerce/catalogue") return json({ ...catalogue, products: [product, normal] });
+      if (path.startsWith("/api/commerce/products/")) return json({ ...live, product: path.endsWith(normal.slug) ? normal : product });
+      if (path === "/api/auth/config") return json({ configured: true, oauthProviders: [], oauthProviderStates: [], publicOrigin: origin, adminOrigin: origin });
+      if (path === "/api/auth/session") return json({ ok: true, authenticated: false, account: null, access: { isAdmin: false, isMasterAdmin: false } });
+      if (path === "/api/currency-rates") return json({ ok: true, base: "CAD", rates: { CAD: 1 }, date: "2026-09-07" });
+      if (path === "/api/catalogue/banner") return json({ ok: true, normal: { enabled: false, messages: [] }, live: { enabled: false } });
+      if (path === "/api/watch") return json({ available: false, liveNow: [] });
+      return json({ ok: true, items: [], markets: [] });
+    });
+    await page.goto(origin + "/shop", { waitUntil: "domcontentloaded" });
+    const card = page.locator(".product-card").filter({ has: page.getByRole("heading", { name: mug.title, exact: true }) });
+    await card.locator(".product-special-status").waitFor();
+    const consent = page.getByRole("button", { name: "Reject non-essential", exact: true });
+    if (await consent.isVisible()) await consent.click();
+    await card.scrollIntoViewIfNeeded();
+    await card.locator("img").first().evaluate(img => img.decode().catch(() => {}));
+    assert.match(await card.innerText(), /Not for sale/i);
+    await card.screenshot({ path: `${output}/card-${width}.png` });
+    await card.getByRole("link", { name: "View product", exact: true }).click();
+    await page.getByRole("button", { name: "Not for sale", exact: true }).waitFor();
+    assert.equal(await page.getByRole("button", { name: "Not for sale", exact: true }).isDisabled(), true);
+    await page.locator(".product-detail__copy .product-special-status").waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await page.locator(".product-media__stage img").first().evaluate(img => img.decode().catch(() => {}));
+    await page.screenshot({ path: `${output}/detail-${width}.png`, fullPage: true });
+    await page.goto(origin + "/shop/" + normal.slug, { waitUntil: "domcontentloaded" });
+    await page.locator(".related-products .product-special-status").waitFor();
+    await page.evaluate(item => localStorage.setItem("thirdrailify-commerce-cart-v2", JSON.stringify([item])), { productId: mug.id, variantId: mug.variants[0].id, quantity: 1 });
+    await page.goto(origin + "/cart", { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Remove unavailable items", exact: true }).waitFor();
+    assert.equal(await page.getByRole("button", { name: "Remove unavailable items", exact: true }).isDisabled(), true);
+    enabled = false;
+    await page.goto(origin + "/shop/" + mug.slug, { waitUntil: "domcontentloaded" });
+    await page.getByRole("button", { name: "Add selected variant", exact: true }).waitFor();
+    assert.equal(await page.getByRole("button", { name: "Add selected variant", exact: true }).isEnabled(), true);
+    assert.equal(await page.locator(".product-detail__copy .product-special-status").count(), 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+});

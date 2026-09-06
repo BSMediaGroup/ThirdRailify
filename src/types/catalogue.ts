@@ -19,6 +19,7 @@ export type CatalogueProduct = {
   priceMaxUnitAmount?: number;
   maxQuantity?: number;
   available?: boolean;
+  saleRestriction?: { enabled: boolean; reason: "competition_prize" | "display_only" };
   displayOrder?: number;
   tags?: string[];
   variants?: CatalogueVariant[];

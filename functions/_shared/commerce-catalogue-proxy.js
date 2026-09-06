@@ -82,6 +82,7 @@ function normalizeProduct(input) {
     featuredOrder: input.featured === true && Number.isSafeInteger(Number(input.featuredOrder)) ? Number(input.featuredOrder) : null,
     displayOrder: integer(input.displayOrder, 0, 999999, 1000), requiresShipping: input.requiresShipping === true,
     maxQuantity: integer(input.maxQuantity, 1, 20, 20), price, variants, available: input.available === true,
+    saleRestriction: { enabled: input.saleRestriction?.enabled === true, reason: input.saleRestriction?.reason === "display_only" ? "display_only" : "competition_prize" },
     updatedAt: boundedText(input.updatedAt, 80),
   };
 }

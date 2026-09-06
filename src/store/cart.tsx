@@ -53,6 +53,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: items.reduce((total, item) => total + item.quantity, 0),
       isOpen,
       add(product, variant, quantity = 1) {
+        if (product.saleRestriction?.enabled || product.available === false || variant.availability !== "active") return;
         setItems((current) => {
           const existing = current.find((item) => item.productId === product.id && item.variantId === variant.id);
           if (existing) {

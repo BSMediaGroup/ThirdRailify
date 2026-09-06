@@ -5,6 +5,7 @@ import { BagIcon } from "../components/Icons";
 import { catalogueProvider } from "../lib/catalogueProvider";
 import { useCart } from "../store/cart";
 import type { CatalogueProduct, CheckoutReadiness } from "../types/catalogue";
+import { AccountAvatar } from "../auth/AccountWidget";
 import { useAuth } from "../auth/AuthProvider";
 import { createAccountAddress, useAccountCommerce } from "../account/client";
 import type { AccountAddress } from "../account/types";
@@ -92,7 +93,7 @@ export function CheckoutPage() {
   const rows = cart.items.flatMap((item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
     const variant = product?.variants?.find((candidate) => candidate.id === item.variantId);
-    return product && variant ? [{ item, product, variant }] : [];
+    return product && !product.saleRestriction?.enabled && product.available !== false && variant?.availability === "active" ? [{ item, product, variant }] : [];
   });
   const unavailable = catalogueReady ? cart.items.filter((item) => !rows.some((row) => row.item.productId === item.productId && row.item.variantId === item.variantId)) : [];
   const cartKey = JSON.stringify(cart.items);
@@ -161,7 +162,7 @@ export function CheckoutPage() {
     <div className="checkout-layout">
       <form className="checkout-form" onSubmit={requestRates} noValidate>
         <section className="checkout-panel checkout-identity" aria-labelledby="checkout-identity-title"><p className="eyebrow">01 · Customer</p><h2 id="checkout-identity-title">How would you like to purchase?</h2>
-          {authLoading ? <div className="shipping-unavailable" role="status"><strong>Checking your account…</strong></div> : account ? <div className="checkout-account-identity"><div><span className="checkout-account-identity__mark" aria-hidden="true">{account.displayName.trim().charAt(0).toUpperCase() || "T"}</span><p><strong>Purchasing as {account.displayName}</strong><span>{account.emailVerified && account.email ? account.email : "A checkout email is still required"}</span></p></div><small>Your signed-in Account will be linked server-side. Checkout edits do not change your Account profile.</small></div> : <div className="checkout-choice" role="group" aria-label="Choose guest or account checkout"><button type="button" className={customerMode === "guest" ? "is-selected" : ""} aria-pressed={customerMode === "guest"} onClick={() => setCustomerMode("guest")}><strong>Continue as guest</strong><span>No Account required. Your order remains available to commerce operations only.</span></button><button type="button" aria-pressed="false" onClick={() => openAuth("signin")}><strong>Sign in to purchase</strong><span>Use your Third Railify Account and return here with this cart intact.</span></button></div>}
+          {authLoading ? <div className="shipping-unavailable" role="status"><strong>Checking your account…</strong></div> : account ? <div className="checkout-account-identity"><div><AccountAvatar account={account} /><p><strong>Purchasing as {account.displayName}</strong><span>{account.emailVerified && account.email ? account.email : "A checkout email is still required"}</span></p></div><small>Your signed-in Account will be linked server-side. Checkout edits do not change your Account profile.</small></div> : <div className="checkout-choice" role="group" aria-label="Choose guest or account checkout"><button type="button" className={customerMode === "guest" ? "is-selected" : ""} aria-pressed={customerMode === "guest"} onClick={() => setCustomerMode("guest")}><strong>Continue as guest</strong><span>No Account required. Your order remains available to commerce operations only.</span></button><button type="button" aria-pressed="false" onClick={() => openAuth("signin")}><strong>Sign in to purchase</strong><span>Use your Third Railify Account and return here with this cart intact.</span></button></div>}
           {customerMode && <div className="checkout-fields checkout-contact-fields"><CheckoutEmailField value={customerEmail} change={setCustomerEmail} error={touched ? errors.email : undefined} readOnly={Boolean(account?.emailVerified && account.email)} /><p className="checkout-panel__note">{account?.emailVerified && account.email ? "Your verified primary account email is used for this purchase." : "This email is protected commerce contact identity. Editing it here does not change your Account profile."}</p></div>}
         </section>
         <section className="checkout-panel" aria-labelledby="delivery-title"><p className="eyebrow">02 · Delivery details</p><h2 id="delivery-title">Where should it go?</h2><p className="checkout-panel__note">Worldwide shipping. Available methods and rates are confirmed for your destination and items.</p>

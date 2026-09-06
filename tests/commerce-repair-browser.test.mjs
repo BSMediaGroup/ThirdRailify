@@ -5,7 +5,7 @@ import { chromium } from "playwright-core";
 
 const origin = process.env.CHECKOUT_BROWSER_ORIGIN || "http://127.0.0.1:4199";
 const output = process.env.REPAIR_SCREENSHOTS || "output/commerce-repair";
-const account = { id: "fixture-account", email: "checkout@example.test", displayName: "Checkout Fixture", emailVerified: true, providers: ["email"], role: "user", adminLevel: "none", status: "active" };
+const account = { avatarUrl: "https://cdn.thirdrailify.com/profile-media/checkout-avatar-fixture.png", id: "fixture-account", email: "checkout@example.test", displayName: "Checkout Fixture", emailVerified: true, providers: ["email"], role: "user", adminLevel: "none", status: "active" };
 const address = { id: "adr_fixture", label: "Australian delivery", recipientName: "Checkout Fixture", company: "", address1: "1 Martin Place", address2: "", city: "Sydney", region: "NSW", countryCode: "AU", postalCode: "2000", phone: "", isDefault: true, revision: 1 };
 const products = [
   { id: "product-393307261", slug: "gina-fixture", title: "Just Gina™ Icon | Unisex tee", amount: 3050, variantId: "variant-4974991984" },
@@ -32,6 +32,7 @@ test("active Cart to Australian delivery, shipping, agreement and PayPal boundar
     const errors = [];
     const sdkRequests = [];
     const page = await context.newPage();
+    await page.route(account.avatarUrl, route => route.fulfill({ contentType: "image/png", path: "assets/logos/thirdrail-logo4.png" }));
     page.on("pageerror", e => errors.push(e.message));
     page.on("requestfailed", r => sdkRequests.push({ url: r.url().split("?")[0], failure: r.failure()?.errorText }));
     page.on("request", r => { if (/paypal/.test(r.url())) sdkRequests.push(r.url().split("?")[0]); });
@@ -72,6 +73,11 @@ test("active Cart to Australian delivery, shipping, agreement and PayPal boundar
     await page.waitForFunction(() => document.querySelector('input[name="address1"]')?.value === "1 Martin Place");
     assert.equal(await page.getByLabel("Country", { exact: true }).inputValue(), "AU");
     assert.equal(await page.getByLabel("State / territory", { exact: true }).inputValue(), "NSW");
+    const checkoutAvatar = page.locator(".checkout-account-identity img.account-avatar");
+    await checkoutAvatar.waitFor();
+    assert.equal(await checkoutAvatar.getAttribute("src"), account.avatarUrl);
+    assert.equal(await page.locator(".account-widget img.account-avatar").first().getAttribute("src"), account.avatarUrl);
+    await checkoutAvatar.evaluate(img => img.decode());
     await check(page); await page.screenshot({ path: `${output}/delivery-${width}.png`, fullPage: true });
     await page.getByRole("button", { name: "Request shipping methods" }).click();
     await page.getByRole("radio", { name: /Flat Rate/ }).waitFor(); assert.equal(quoteCalls, 1);

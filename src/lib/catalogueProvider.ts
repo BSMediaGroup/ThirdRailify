@@ -1,4 +1,4 @@
-import type { CatalogueProvider, CheckoutReadiness } from "../types/catalogue";
+import type { CatalogueProduct, CatalogueProvider, CheckoutReadiness } from "../types/catalogue";
 
 /**
  * Same-origin read boundary to the sanitized Admin-owned Commerce D1 projection.
@@ -23,12 +23,12 @@ export const catalogueProvider: CatalogueProvider = {
 };
 
 type CommerceVariant = { id: string; label: string; image?: string | null; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
-type CommerceProduct = { id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; collectionSlugs: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
+type CommerceProduct = { saleRestriction?: CatalogueProduct["saleRestriction"]; id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; collectionSlugs: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
 type CommerceCollection = { title: string; slug: string; description: string; displayOrder: number; productCount: number; productIds: string[] };
 type CommerceCataloguePayload = { ok?: boolean; source?: string; checkoutEnabled?: boolean; checkoutReadiness?: CheckoutReadiness; updatedAt?: string | null; authority?: { currentProducts: number; reconciled: boolean }; collections: CommerceCollection[]; products: CommerceProduct[] };
 function toCatalogueProduct(product: CommerceProduct) {
   const optionTypes = [...new Set(product.variants.flatMap((variant) => Object.keys(variant.options)))];
-  return { id: product.id, slug: product.slug, name: product.title, price: product.price.minUnitAmount / 100, formattedPrice: product.price.label, currency: "CAD" as const, optionTypes, image: product.images[0] || "", images: product.images, categories: product.categories, collectionSlugs: product.collectionSlugs, description: product.description, featured: product.featured, featuredOrder: product.featuredOrder, displayOrder: product.displayOrder, tags: product.tags, priceMinUnitAmount: product.price.minUnitAmount, priceMaxUnitAmount: product.price.maxUnitAmount, maxQuantity: product.maxQuantity, available: product.available, variants: product.variants };
+  return { id: product.id, slug: product.slug, name: product.title, price: product.price.minUnitAmount / 100, formattedPrice: product.price.label, currency: "CAD" as const, optionTypes, image: product.images[0] || "", images: product.images, categories: product.categories, collectionSlugs: product.collectionSlugs, description: product.description, featured: product.featured, featuredOrder: product.featuredOrder, displayOrder: product.displayOrder, tags: product.tags, priceMinUnitAmount: product.price.minUnitAmount, priceMaxUnitAmount: product.price.maxUnitAmount, maxQuantity: product.maxQuantity, available: product.available, saleRestriction: product.saleRestriction, variants: product.variants };
 }
 
 export function categorySlug(value: string) {

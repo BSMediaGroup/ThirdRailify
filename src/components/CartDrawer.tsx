@@ -72,7 +72,7 @@ export function CartDrawer() {
   const rows = cart.items.flatMap((item) => {
     const product = products.find((candidate) => candidate.id === item.productId);
     const variant = product?.variants?.find((candidate) => candidate.id === item.variantId);
-    return product && product.available !== false && variant?.availability === "active" ? [{ item, product, variant }] : [];
+    return product && !product.saleRestriction?.enabled && product.available !== false && variant?.availability === "active" ? [{ item, product, variant }] : [];
   });
   const subtotal = rows.reduce((sum, row) => sum + row.variant.unitAmount * row.item.quantity, 0);
   const unavailable = catalogueReady ? cart.items.filter((item) => !rows.some((row) => row.item.productId === item.productId && row.item.variantId === item.variantId)) : [];
