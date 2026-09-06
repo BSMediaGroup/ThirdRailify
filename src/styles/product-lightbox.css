@@ -2,6 +2,13 @@
 .product-media__expand-label { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #10110f; border: 1px solid var(--gold); font: 12px var(--mono); }
 .product-media__expand-label svg { width: 18px; height: 18px; }
 .product-media__expand:focus-visible { outline: 3px solid var(--gold); outline-offset: -4px; }
+.product-media__nav { position: absolute; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 44px; height: 44px; padding: 10px; border: 1px solid rgba(243,240,231,.22); border-radius: 50%; background: rgba(9,10,9,.72); color: #f3f0e7; cursor: pointer; }
+.product-media__nav--previous { left: 12px; }
+.product-media__nav--next { right: 12px; }
+.product-media__nav svg { width: 22px; height: 22px; }
+.product-media__nav:hover { border-color: var(--gold); color: var(--gold); background: #10110f; }
+.product-media__nav:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.product-media__position { position: absolute; bottom: 18px; left: 16px; color: #c7c5ba; font: 11px var(--mono); letter-spacing: .08em; pointer-events: none; }
 .product-gallery-error { display: grid; width: 48px; height: 48px; place-items: center; font-size: 12px; }
 dialog.product-lightbox { position: fixed; inset: 0; box-sizing: border-box; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none; margin: 0; padding: max(8px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); border: 0; background: #090a09; color: #f3f0e7; overflow: hidden; overscroll-behavior: contain; }
 .product-lightbox[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 8px; }

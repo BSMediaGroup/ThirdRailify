@@ -1,5 +1,11 @@
 # Bump notes
 
+## 2026-09-07 - Product gallery navigation (local)
+
+- Added discreet previous/next image buttons and an image counter to multi-image product pages; thumbnails and fullscreen selection stay synchronized.
+- Standardized inline and fullscreen gallery navigation on matching left/right chevrons.
+- Verified desktop/mobile navigation, keyboard activation, wrapping, single-image hiding and layout; TypeScript passed. Not deployed.
+
 ## 2026-09-07 - Cinematic Shop hero and Featured deck (local)
 
 CURRENT VER=0.1.0-alpha.0

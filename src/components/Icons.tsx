@@ -2,6 +2,9 @@ import type { SVGProps } from "react";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
+export function ChevronLeftIcon(props: IconProps) { return <svg {...base} {...props}><path d="m14 6-6 6 6 6" /></svg>; }
+export function ChevronRightIcon(props: IconProps) { return <svg {...base} {...props}><path d="m10 6 6 6-6 6" /></svg>; }
+
 const base = {
   viewBox: "0 0 24 24",
   fill: "none",

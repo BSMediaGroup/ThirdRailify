@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type PointerEvent } from "react";
-import { ArrowIcon, BackIcon, CloseIcon, MinusIcon, PlusIcon } from "./Icons";
+import { ChevronRightIcon, ChevronLeftIcon, CloseIcon, MinusIcon, PlusIcon } from "./Icons";
 import "../styles/product-lightbox.css";
 
 type Props = { name: string; images: string[]; selected: string; onSelect: (url: string) => void; onClose: () => void };
@@ -52,9 +52,9 @@ export function ProductLightbox({ name, images, selected, onSelect, onClose }: P
     <header className="product-lightbox__header"><h2 id={title}>{name}</h2><span role="status" aria-live="polite" aria-atomic="true">{index + 1} / {images.length}</span><button ref={close} type="button" aria-label="Close fullscreen gallery" onClick={onClose}><CloseIcon /></button></header>
     <ImageInspection key={selected} url={selected} name={`${name} — image ${index + 1} of ${images.length}`} onSwipe={move} />
     <footer className="product-lightbox__footer">
-      {images.length > 1 && <button type="button" aria-label="Previous image" onClick={() => move(-1)}><BackIcon /></button>}
+      {images.length > 1 && <button type="button" aria-label="Previous image" onClick={() => move(-1)}><ChevronLeftIcon /></button>}
       <div className="product-lightbox__rail" aria-label="Fullscreen product views">{images.map((url, slide) => <button type="button" key={url} aria-label={`Show image ${slide + 1} of ${images.length}`} aria-pressed={url === selected} onClick={() => onSelect(url)}><GalleryThumbnail url={url} index={slide} /></button>)}</div>
-      {images.length > 1 && <button type="button" aria-label="Next image" onClick={() => move(1)}><ArrowIcon /></button>}
+      {images.length > 1 && <button type="button" aria-label="Next image" onClick={() => move(1)}><ChevronRightIcon /></button>}
     </footer>
   </dialog>;
 }
