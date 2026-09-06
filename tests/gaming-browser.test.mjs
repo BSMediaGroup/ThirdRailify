@@ -316,7 +316,7 @@ async function assertRotationGeometry(page, width, height) {
     assert.ok(item.heading.left >= item.card.left - 1 && item.heading.right <= item.card.right + 1 && item.heading.top >= item.card.top - 1 && item.heading.bottom <= item.card.bottom + 1, `${item.title} heading remains inside its card at ${width}x${height}`);
     if (item.footer) assert.ok(item.footer.left >= item.card.left - 1 && item.footer.right <= item.card.right + 1 && item.footer.bottom <= item.card.bottom + 1, `${item.title} footer remains reachable inside its card at ${width}x${height}`);
     if (width > 1180) {
-      assert.ok(Math.abs(ratio - 2 / 3) <= .01, `${item.title} uses the preferred 2:3 poster frame at ${width}x${height}`);
+      assert.ok(Math.abs(ratio - 3 / 4) <= .01, `${item.title} uses the preferred 3:4 poster frame at ${width}x${height}`);
       assert.ok(item.visual.width / item.card.width >= .38 && item.visual.width / item.card.width <= .45, `${item.title} artwork occupies a substantial desktop card fraction at ${width}x${height}`);
       assert.ok(item.visual.right <= item.body.left + 1, `${item.title} artwork and details do not overlap at ${width}x${height}`);
     } else if (width > 620) {
@@ -332,7 +332,7 @@ async function assertRotationGeometry(page, width, height) {
   assert.equal(geometry.find((item) => item.title === "PARTY ANIMALS")?.shape, "landscape", "Party Animals landscape art is detected");
   assert.equal(geometry.find((item) => item.title === "LUMINARY")?.shape, "poster", "Luminary poster art is detected");
   assert.equal(await page.locator('.gaming-card[data-artwork-shape="landscape"] .gaming-card__cover').evaluateAll((images) => images.every((image) => getComputedStyle(image).objectFit === "contain")), true, "landscape covers avoid catastrophic poster cropping");
-  const expectedPosterFit = width > 620 && width <= 1180 ? "contain" : "cover";
+  const expectedPosterFit = "contain";
   assert.equal(await page.locator('.gaming-card[data-artwork-shape="poster"] .gaming-card__cover').evaluateAll((images, expected) => images.every((image) => getComputedStyle(image).objectFit === expected), expectedPosterFit), true, "poster covers use the breakpoint-appropriate fit");
   const cardsOverlap = geometry.some((item, index) => geometry.slice(index + 1).some((other) => item.card.left < other.card.right - 1 && item.card.right > other.card.left + 1 && item.card.top < other.card.bottom - 1 && item.card.bottom > other.card.top + 1));
   assert.equal(cardsOverlap, false, `rotation cards do not overlap at ${width}x${height}`);
