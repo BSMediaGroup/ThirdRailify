@@ -7,6 +7,7 @@ export type GamingRotationItem = {
   description: string;
   visual: string;
   artworkUrl: string | null;
+  igdb?: {id:string;url:string}|null;
   steam: null | {
     appId: string;
     storeUrl: string;

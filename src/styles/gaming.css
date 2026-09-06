@@ -514,3 +514,5 @@ html.theme-gaming .gaming-page *::-webkit-scrollbar-thumb { border: 2px solid #0
   .gaming-instrument__shards polygon { opacity: .72; }
   .gaming-loop__packet { opacity: .75; }
 }
+
+.gaming-card__providers > div { display: grid; gap: 7px; min-width: 0; }

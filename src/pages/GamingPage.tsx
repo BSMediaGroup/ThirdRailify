@@ -176,7 +176,7 @@ function RotationCard({ item }: { item: GamingRotationItem }) {
     </div>
     <div className="gaming-card__body">
       <p>{item.genre}</p><h3>{item.title}</h3><span className="gaming-card__platform">{item.platform}</span><p className="gaming-card__description">{item.description}</p>
-      <footer>{item.steam ? <a href={item.steam.storeUrl} target="_blank" rel="noopener noreferrer">Official Steam listing <ArrowIcon /><span className="sr-only"> for {item.title} (opens in a new tab)</span></a> : <span>Store mapping pending verification</span>}<small>{item.steam ? `APP ${item.steam.appId} / VERIFIED` : "BRANDED ART / NO STORE LINK"}</small></footer>
+      {(item.steam||item.igdb)&&<footer className="gaming-card__providers">{item.steam&&<div><a href={item.steam.storeUrl} target="_blank" rel="noopener noreferrer">Official Steam listing <ArrowIcon /><span className="sr-only"> for {item.title} (opens in a new tab)</span></a><small>APP {item.steam.appId} / VERIFIED</small></div>}{item.igdb&&<div><a href={item.igdb.url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${item.title} on IGDB (opens in a new tab)`}>IGDB listing <ArrowIcon /></a><small>IGDB {item.igdb.id} / VERIFIED</small></div>}</footer>}
     </div>
   </article>;
 }

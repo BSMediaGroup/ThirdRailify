@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequest } from "../functions/api/gaming/suggestions.js";
-import { onRequestGet as getRotation, normalizeGamingRotation } from "../functions/api/gaming/rotation.js";
+import { onRequestGet as getRotation, normalizeGamingRotation, normalizeIgdbMapping } from "../functions/api/gaming/rotation.js";
 import { hmacSha256, sha256 } from "../functions/_shared/public-auth.js";
 
 const env = {
@@ -10,6 +10,18 @@ const env = {
   THIRDRAILIFY_COMMUNITY_API_SECRET: "gaming-signing-fixture",
   THIRDRAILIFY_AUTH_RATE_LIMIT_SECRET: "gaming-rate-fixture",
 };
+
+test("Public IGDB projection allowlists persisted references and never makes provider requests", async () => {
+  const igdb = { id: "1942", url: "https://www.igdb.com/games/the-witcher-3-wild-hunt", token: "secret", raw: { private: true } };
+  const upstream = { ok: true, schema: "thirdrailify-gaming-rotation-v1", items: [{ id: "one", title: "Witcher", position: 1, igdb }] };
+  const calls = [];
+  const response = await getRotation({ env, data: { fetchImpl: async url => { calls.push(url); return Response.json(upstream); } } });
+  assert.equal(response.status, 200); const body = await response.json(); assert.deepEqual(body.items[0].igdb, { id: igdb.id, url: igdb.url }); assert.doesNotMatch(JSON.stringify(body), /secret|private|token/);
+  assert.deepEqual(calls, ["https://thirdrailify-admin.pages.dev/api/gaming/rotation"]);
+  for (const url of ["http://www.igdb.com/games/game", "https://u:p@www.igdb.com/games/game", "https://www.igdb.com:444/games/game", "https://www.igdb.com.evil.test/games/game", "https://www.igdb.com/games/game?x=y", "https://www.igdb.com/"]) assert.equal(normalizeIgdbMapping({ id: "1", url }), null);
+  assert.equal(normalizeIgdbMapping({ id: "bad", url: igdb.url }), null); assert.equal(normalizeIgdbMapping(null), null);
+  assert.equal(normalizeIgdbMapping({ id: { toString: "invalid" }, url: igdb.url }), null);
+});
 
 test("Public Gaming rotation relay preserves server order, verified mappings, and truthful failure", async () => {
   const upstream = { ok:true, schema:"thirdrailify-gaming-rotation-v1", updatedAt:"2026-09-01T00:00:00.000Z", items:[

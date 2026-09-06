@@ -1,5 +1,13 @@
 # Bump notes
 
+## 2026-09-06 - IGDB lookup and references (0.1.0-alpha.0)
+
+- Extended the managed Gaming response with a validated optional IGDB ID/canonical listing URL and compact accessible provider reference rows. Both mappings coexist; absent providers leave no empty footer.
+- Public remains a consumer of curated Admin records, with no IGDB/Twitch API requests or credentials. Selected covers use the documented image CDN host in img-src only. No additional attribution statement was added.
+- Preserved card artwork sizing and added reference/security/browser coverage alongside the existing >= 9:16 geometry checks. README describes the managed response extension.
+- Local validation (Node 22.16.0): 9 Gaming API/content tests and all 5 Gaming browser cases passed, including artwork geometry, reduced motion and no provider API requests. TypeScript, production build and Functions compile passed. ESLint passed with --ignore-pattern .artifacts/** and two existing unrelated hook warnings; the unrestricted command scans old release artifacts and fails.
+
+
 ## 2026-09-06 - Scoped store agreement and retained receipt
 
 - Added explicit final review/accept/decline before PayPal creation, bound to authoritative worldwide shipping and zero tax under not_collecting. Checkout edits invalidate acceptance.
@@ -18,6 +26,13 @@ PENDING VER=0.1.0-alpha.0
 - Preserved canonical ISO alpha-2 country and subdivision payload values, market-filtered checkout destinations, saved-address revisions/encryption, immutable order snapshots, and disabled checkout/payment/fulfilment gates.
 - Added legacy code/name normalization, unknown-region compatibility notices, country-change region invalidation, country-aware postal labels, friendly address summaries, and stacked mobile selector geometry with no runtime geography request or migration.
 - Added representative dataset/parity tests and Account/Checkout browser coverage at 1920, 1440, 1024, 768, 430, and 390px.
+- Address UX V2 release 2026-09-06: isolated unchanged production source `7c38d2fe100a80cf9bd22eb078ba1c9c2d28982c`, including the existing Account/Checkout shared selectors, Cart friendly formatting and current destination authority. No unrelated source delta.
+- Preview `e8c1697b-326f-47a7-9513-aa3f3c6bc309`: https://e8c1697b.thirdrailify.pages.dev (address-ux-v2). Account/Checkout immutable-fixture acceptance passed at 1440/390px, including saved CA/ON hydration, Canada/US reset, Add another address, restricted destinations and canonical countryCode/region request values.
+- Identical artifact promoted without rebuild: production `68ed449f-b68a-4af5-ad12-63a4be0a73d3`, https://68ed449f.thirdrailify.pages.dev . Full artifact SHA-256 `ebeb8626c38b0aab7dede4fa24ff65cbede19e040da7cf3b632b0c914c8c9ad7`; entry JS/CSS hashes match preview, immutable production and thirdrailify.com.
+- Authenticated live /account/delivery and /checkout: HTTP 200, human-readable native Country/Province controls, CA/US region reset, mobile reflow and no horizontal overflow at 1440/390px. Real account had zero addresses: no live legacy hydration claim; fixtures and Admin supplied that proof. Live Checkout matched all 242 authoritative destinations and checkoutEnabled=false. Temporary browser-local cart restored; no Save, shipping quote, order or payment action.
+- Acceptance caveat: existing Cloudflare beacon integrity/CSP errors and a live catalogue Printful image CSP block remain. No Address application exception or geography/provider request. Console-clean acceptance is qualified by those unrelated resource errors.
+- Dataset: country-region-data@4.1.0, 249 countries, 4,387 regions, ESM module 130,488 bytes raw / 45,947 gzip / 36,923 Brotli. No runtime geocoding, geolocation permission, new consent category, schema change or migration.
+- Final isolated gates: Node 22.16.0 typecheck/build/scoped Address lint/diff check, geography 2/2, focused Account Delivery and Checkout desktop/mobile acceptance. Only narrow harness corrections were retried; broad generated-artifact lint, Functions account-menu failure and unrelated route suites were not rerun. No live PII save, payment, order, fulfilment, provider, D1/R2, secret, binding, DNS or custom-domain changes.
 
 ## 2026-09-01 - Gaming Current Rotation poster-card repair
 

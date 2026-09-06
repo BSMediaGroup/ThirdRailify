@@ -22,6 +22,8 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     const context = await browser.newContext({ viewport: { width, height } });
     await installTurnstile(context);
     const page = await context.newPage();
+    const providerRequests = [];
+    page.on("request", request => { if (["api.igdb.com", "id.twitch.tv"].includes(new URL(request.url()).hostname)) providerRequests.push(request.url()); });
     const errors = collectBrowserErrors(page);
     await mockApis(page, []);
     await page.goto(`${ORIGIN}/gaming`);
@@ -54,6 +56,11 @@ test("Gaming route is responsive, accessible, content-complete, and theme-scoped
     assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1648360/"]').count(), 1);
     assert.equal(await page.locator('.gaming-card a[href="https://store.steampowered.com/app/1260320/"]').count(), 1);
     assert.equal(await page.locator('.gaming-card a[href*="store.steampowered.com/app/"]').count(), 3);
+    assert.equal(await page.getByRole("link", { name: /Open THE WITCHER 3.* on IGDB/ }).getAttribute("href"), "https://www.igdb.com/games/the-witcher-3-wild-hunt");
+    assert.equal(await page.locator('.gaming-card--runes footer > div').count(), 2);
+    assert.equal(await page.locator('.gaming-card--luminary footer > div').count(), 1);
+    assert.equal(await page.locator('.gaming-card--world footer').count(), 0);
+    assert.deepEqual(providerRequests, []);
     assert.equal(await page.locator('.gaming-card[data-cover="fallback"]').count(), 1);
     assert.equal(await page.title(), "Third Railify Gaming | Third Railify");
     assert.equal(await page.locator('link[rel="canonical"]').getAttribute("href"), `${ORIGIN}/gaming`);
@@ -280,7 +287,7 @@ async function mockApis(page, submissions, options = {}) {
 }
 
 function gamingRotation(){return{ok:true,schema:"thirdrailify-gaming-rotation-v1",updatedAt:"2026-09-01T00:00:00.000Z",items:[
-  {id:"gaming-witcher",title:"THE WITCHER 3: WILD HUNT - COMPLETE EDITION",platform:"PC via Steam",description:"You are Geralt of Rivia, mercenary monster slayer. Before you stands a war-torn, monster-infested continent you can explore at will. Your current contract is tracking down Ciri, the Child of Prophecy, a living weapon that can alter the shape of the world.",genre:"RPG GAMES",artworkUrl:"https://gaming-fixture.test/witcher.svg",steam:{appId:"292030",storeUrl:"https://store.steampowered.com/app/292030/"},position:1},
+  {id:"gaming-witcher",title:"THE WITCHER 3: WILD HUNT - COMPLETE EDITION",platform:"PC via Steam",description:"You are Geralt of Rivia, mercenary monster slayer. Before you stands a war-torn, monster-infested continent you can explore at will. Your current contract is tracking down Ciri, the Child of Prophecy, a living weapon that can alter the shape of the world.",genre:"RPG GAMES",artworkUrl:"https://gaming-fixture.test/witcher.svg",igdb:{id:"1942",url:"https://www.igdb.com/games/the-witcher-3-wild-hunt"},steam:{appId:"292030",storeUrl:"https://store.steampowered.com/app/292030/"},position:1},
   {id:"gaming-luminary",title:"LUMINARY",platform:"PC via Steam",description:"Solo or co-op exploration, character progression, and a campaign built around pushing back the dark with light.",genre:"ACTION RPG / CO-OP",artworkUrl:"https://gaming-fixture.test/luminary.svg",steam:{appId:"1648360",storeUrl:"https://store.steampowered.com/app/1648360/"},position:2},
   {id:"gaming-super-mario-world",title:"SUPER MARIO WORLD",platform:"PC via Steam",description:"Classic platforming rhythm, secret routes, and one more level turning into an entire night.",genre:"PLATFORMER",artworkUrl:null,steam:null,position:3},
   {id:"gaming-party-animal",title:"PARTY ANIMALS",platform:"PC via Steam",description:"Fight your friends as puppies, kittens and other fuzzy creatures in PARTY ANIMALS! Paw it out with your friends remotely, or huddle together for chaotic fun on the same screen. Interact with the world under a realistic physics engine.",genre:"ACTION GAMES",artworkUrl:"https://gaming-fixture.test/party-animals.svg",steam:{appId:"1260320",storeUrl:"https://store.steampowered.com/app/1260320/"},position:4},
@@ -295,7 +302,7 @@ async function assertRotationGeometry(page, width, height) {
       visual: rect(card.querySelector(".gaming-card__visual")),
       body: rect(card.querySelector(".gaming-card__body")),
       heading: rect(card.querySelector("h3")),
-      footer: rect(card.querySelector("footer")),
+      footer: card.querySelector("footer") ? rect(card.querySelector("footer")) : null,
       cover: card.getAttribute("data-cover"),
       shape: card.getAttribute("data-artwork-shape"),
       objectFit: getComputedStyle(card.querySelector(".gaming-card__cover") || card.querySelector(".gaming-card__fallback")).objectFit,
@@ -307,7 +314,7 @@ async function assertRotationGeometry(page, width, height) {
     assert.ok(ratio + tolerance >= 9 / 16, `${item.title} artwork ratio ${ratio.toFixed(4)} is at least 9:16 at ${width}x${height}`);
     assert.ok(item.visual.width > 0 && item.visual.height > 0, `${item.title} artwork remains visible at ${width}x${height}`);
     assert.ok(item.heading.left >= item.card.left - 1 && item.heading.right <= item.card.right + 1 && item.heading.top >= item.card.top - 1 && item.heading.bottom <= item.card.bottom + 1, `${item.title} heading remains inside its card at ${width}x${height}`);
-    assert.ok(item.footer.left >= item.card.left - 1 && item.footer.right <= item.card.right + 1 && item.footer.bottom <= item.card.bottom + 1, `${item.title} footer remains reachable inside its card at ${width}x${height}`);
+    if (item.footer) assert.ok(item.footer.left >= item.card.left - 1 && item.footer.right <= item.card.right + 1 && item.footer.bottom <= item.card.bottom + 1, `${item.title} footer remains reachable inside its card at ${width}x${height}`);
     if (width > 1180) {
       assert.ok(Math.abs(ratio - 2 / 3) <= .01, `${item.title} uses the preferred 2:3 poster frame at ${width}x${height}`);
       assert.ok(item.visual.width / item.card.width >= .38 && item.visual.width / item.card.width <= .45, `${item.title} artwork occupies a substantial desktop card fraction at ${width}x${height}`);
@@ -348,3 +355,10 @@ function json(route, body, status = 200) { return route.fulfill({ status, conten
 async function dismissPrivacy(page) { const dock = page.locator(".privacy-dock"); if (await dock.isVisible()) await dock.getByRole("button", { name: "Reject non-essential" }).click(); }
 async function waitForServer(origin = ORIGIN) { for (let attempt = 0; attempt < 100; attempt += 1) { try { if ((await fetch(origin)).ok) return; } catch { /* Vite is starting. */ } await new Promise((resolve) => setTimeout(resolve, 100)); } throw new Error(`Vite Gaming test server did not start at ${origin}.`); }
 async function assertEventually(assertion) { for (let attempt = 0; attempt < 80; attempt += 1) { if (await assertion()) return; await new Promise((resolve) => setTimeout(resolve, 25)); } assert.fail("condition did not become true"); }
+
+test("IGDB-only card shows its canonical reference with no Steam row or runtime API dependency",async t=>{
+  const server=spawn(process.execPath,["node_modules/vite/bin/vite.js","--host","127.0.0.1","--port","4207"],{stdio:"ignore"});t.after(()=>server.kill());await waitForServer();const browser=await chromium.launch({executablePath:CHROME,headless:true});t.after(()=>browser.close());
+  const page=await browser.newPage({viewport:{width:390,height:844}});const providerRequests=[];page.on("request",request=>{if(["api.igdb.com","id.twitch.tv"].includes(new URL(request.url()).hostname))providerRequests.push(request.url());});
+  const item={...gamingRotation().items[0],steam:null};await mockApis(page,[],{rotationItems:[item]});await page.goto(`${ORIGIN}/gaming`);await page.getByRole("link",{name:/Open THE WITCHER 3.* on IGDB/}).waitFor();assert.equal(await page.locator(".gaming-card footer > div").count(),1);assert.equal(await page.locator('.gaming-card a[href*="steampowered"]').count(),0);assert.equal(await page.locator("html").evaluate(element=>element.scrollWidth<=element.clientWidth),true);
+  const ratio=await page.locator(".gaming-card__visual").evaluate(element=>{const box=element.getBoundingClientRect();return box.width/box.height;});assert.ok(ratio>=9/16);await page.reload();await page.getByRole("link",{name:/Open THE WITCHER 3.* on IGDB/}).waitFor();assert.deepEqual(providerRequests,[]);
+});

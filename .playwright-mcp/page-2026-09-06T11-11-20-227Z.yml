@@ -1,0 +1,155 @@
+- generic [ref=e3]:
+  - link "Skip to content" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - link "Third Railify home" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e9]:
+          - strong [ref=e10]: THIRD RAILIFY
+          - generic [ref=e11]: OFFICIAL
+      - navigation "Primary navigation" [ref=e12]:
+        - list [ref=e13]:
+          - listitem [ref=e14]:
+            - link "Home" [ref=e15] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e16]:
+            - link "Watch" [ref=e17] [cursor=pointer]:
+              - /url: /watch
+          - listitem [ref=e18]:
+            - link "The show" [ref=e20] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e21]:
+            - link "Shop" [ref=e22] [cursor=pointer]:
+              - /url: /shop
+          - listitem [ref=e23]:
+            - link "Community" [ref=e25] [cursor=pointer]:
+              - /url: /community
+          - listitem [ref=e26]:
+            - link "VIP" [ref=e27] [cursor=pointer]:
+              - /url: /vip
+      - generic [ref=e28]:
+        - button "Open cart, 0 items" [ref=e29] [cursor=pointer]:
+          - generic [ref=e33]: "0"
+        - generic "Loading account" [ref=e34]
+  - generic [ref=e35]:
+    - link [ref=e37] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e38]: "01"
+      - text: Home
+    - link [ref=e40] [cursor=pointer]:
+      - /url: /watch
+      - generic [ref=e41]: "02"
+      - text: Watch
+    - generic [ref=e42]:
+      - link [ref=e43] [cursor=pointer]:
+        - /url: /about
+        - generic [ref=e44]: "03"
+        - text: The show
+      - generic [ref=e45]:
+        - link [ref=e46] [cursor=pointer]:
+          - /url: /shawn
+          - text: Shawn
+        - link [ref=e49] [cursor=pointer]:
+          - /url: /gina
+          - text: Gina
+        - link [ref=e52] [cursor=pointer]:
+          - /url: /gaming
+          - text: Gaming
+    - link [ref=e56] [cursor=pointer]:
+      - /url: /shop
+      - generic [ref=e57]: "04"
+      - text: Shop
+    - generic [ref=e58]:
+      - link [ref=e59] [cursor=pointer]:
+        - /url: /community
+        - generic [ref=e60]: "05"
+        - text: Community
+      - generic [ref=e61]:
+        - link [ref=e62] [cursor=pointer]:
+          - /url: /friends
+          - text: Friends
+        - link [ref=e65] [cursor=pointer]:
+          - /url: /goats
+          - text: GOATS in the Wild
+        - link [ref=e68] [cursor=pointer]:
+          - /url: /wheels
+          - text: Wheels
+        - link [ref=e71] [cursor=pointer]:
+          - /url: /polls
+          - text: Polls
+    - link [ref=e75] [cursor=pointer]:
+      - /url: /vip
+      - generic [ref=e76]: "06"
+      - text: VIP
+    - button [ref=e77] [cursor=pointer]:
+      - generic [ref=e78]: "07"
+      - text: Log in
+  - main [ref=e79]:
+    - generic [ref=e81]:
+      - paragraph [ref=e82]: Third Railify account
+      - heading "Checking your account" [level=1] [ref=e83]
+      - status [ref=e84]: Loading your secure session…
+  - contentinfo [ref=e85]:
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - generic [ref=e90]:
+          - strong [ref=e91]: THIRD RAILIFY
+          - generic [ref=e92]: OFFICIAL
+        - paragraph [ref=e93]: A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.
+        - link "info@thirdrailify.com" [ref=e94] [cursor=pointer]:
+          - /url: mailto:info@thirdrailify.com
+      - generic [ref=e95]:
+        - heading "Explore" [level=2] [ref=e96]
+        - link "Watch" [ref=e97] [cursor=pointer]:
+          - /url: /watch
+        - link "Gaming" [ref=e98] [cursor=pointer]:
+          - /url: /gaming
+        - link "Wheels" [ref=e99] [cursor=pointer]:
+          - /url: /wheels
+        - link "Shawn" [ref=e100] [cursor=pointer]:
+          - /url: /shawn
+        - link "Gina" [ref=e101] [cursor=pointer]:
+          - /url: /gina
+        - link "Shop" [ref=e102] [cursor=pointer]:
+          - /url: /shop
+      - generic [ref=e103]:
+        - heading "Community" [level=2] [ref=e104]
+        - link "Friends" [ref=e105] [cursor=pointer]:
+          - /url: /friends
+        - link "Wild Goats" [ref=e106] [cursor=pointer]:
+          - /url: /goats
+        - link "Competition wheels" [ref=e107] [cursor=pointer]:
+          - /url: /wheels
+        - link "Live Polls" [ref=e108] [cursor=pointer]:
+          - /url: /polls
+        - link "VIP" [ref=e109] [cursor=pointer]:
+          - /url: /vip
+        - link "Donate" [ref=e110] [cursor=pointer]:
+          - /url: /donate
+      - generic [ref=e111]:
+        - heading "Policies" [level=2] [ref=e112]
+        - link "Terms" [ref=e113] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e114] [cursor=pointer]:
+          - /url: /privacy
+        - link "Refunds" [ref=e115] [cursor=pointer]:
+          - /url: /refunds
+        - link "Accessibility" [ref=e116] [cursor=pointer]:
+          - /url: /accessibility
+        - link "Policy Library" [ref=e117] [cursor=pointer]:
+          - /url: /policies
+    - generic [ref=e118]:
+      - generic [ref=e119]: Third Railify · 2026
+      - button "Privacy choices" [ref=e121]
+  - region [ref=e122]:
+    - generic [ref=e126]:
+      - strong [ref=e127]: Privacy choices
+      - paragraph [ref=e128]:
+        - text: We use essential storage to keep the site working. Optional technologies are off until you choose otherwise.
+        - link "Details" [ref=e129] [cursor=pointer]:
+          - /url: /privacy#cookies-local-storage
+    - generic [ref=e130]:
+      - button "Accept all" [ref=e131]
+      - button "Reject non-essential" [ref=e132]
+      - button "Manage" [ref=e133]
