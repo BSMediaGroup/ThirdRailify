@@ -292,7 +292,7 @@ html.theme-gaming .gaming-page *::-webkit-scrollbar-thumb { border: 2px solid #0
 .gaming-card__body > p:first-child { margin-bottom: 9px; color: var(--gaming-accent); font: 700 .5rem/1 var(--mono); letter-spacing: .1em; }
 .gaming-card h3 { max-width: 100%; margin-bottom: 12px; overflow-wrap: anywhere; color: #f1f7f2; font: 400 clamp(2rem,2.45vw,2.75rem)/.92 var(--display); letter-spacing: .01em; text-wrap: balance; }
 .gaming-card__platform { width: fit-content; margin-bottom: 18px; padding: 5px 7px; border: 1px solid rgba(69,227,125,.25); color: var(--gaming-accent-bright); font: 700 .48rem/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-.gaming-card__description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; max-height: calc(4 * 1.48em); overflow: hidden; overflow-wrap: anywhere; margin-bottom: 0; color: #a7b9ab; font-size: .94rem; line-height: 1.48; }
+.gaming-card__description { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; max-height: calc(6 * 1.48em); overflow: hidden; overflow-wrap: anywhere; margin-bottom: 0; color: #a7b9ab; font-size: .94rem; line-height: 1.48; }
 .gaming-card footer { display: grid; gap: 10px; margin-top: clamp(20px,2vw,28px); padding-top: 16px; border-top: 1px solid var(--gaming-line); }
 .gaming-card footer a { display: flex; align-items: center; gap: 7px; color: var(--gaming-accent-bright); font: 750 .56rem/1 var(--mono); letter-spacing: .055em; text-transform: uppercase; }
 .gaming-card footer a svg { width: 13px; }
