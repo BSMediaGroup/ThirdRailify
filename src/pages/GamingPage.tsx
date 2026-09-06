@@ -81,11 +81,16 @@ export function GamingPage() {
     <section ref={close.ref} className={`gaming-close${close.active ? " is-active" : ""}`} data-motion={close.active ? "active" : "static"} aria-labelledby="gaming-close-title">
       <GamingQueueField />
       <div className="container gaming-close__inner">
-        <p className="gaming-eyebrow">Next session / queue open</p>
-        <span className="gaming-close__load">SESSION LOADING <i><b /></i> 76%</span>
-        <h2 id="gaming-close-title">Controllers ready.<br /><em>Good judgement pending.</em></h2>
-        <p>Catch the Gaming signal on Rumble, or put another title into the request queue.</p>
-        <div className="gaming-actions"><a className="gaming-button gaming-button--primary" href={GAMING_RUMBLE_URL} target="_blank" rel="noopener noreferrer">Watch on Rumble <PlayIcon /><span className="sr-only"> (opens in a new tab)</span></a><a className="gaming-button gaming-button--secondary" href="#suggest">Suggest a game <ArrowIcon /></a></div>
+        <header className="gaming-close__header"><p className="gaming-eyebrow"><i /> Next session / queue open</p><span>THIRD RAILIFY / GAMING</span></header>
+        <div className="gaming-close__layout">
+          <div className="gaming-close__copy">
+            <h2 id="gaming-close-title">Controllers ready.<br /><em>Good judgement pending.</em></h2>
+            <p>Catch the Gaming signal on Rumble, or put another title into the request queue.</p>
+            <div className="gaming-actions"><a className="gaming-button gaming-button--primary" href={GAMING_RUMBLE_URL} target="_blank" rel="noopener noreferrer">Watch on Rumble <PlayIcon /><span className="sr-only"> (opens in a new tab)</span></a><a className="gaming-button gaming-button--secondary" href="#suggest">Suggest a game <ArrowIcon /></a></div>
+          </div>
+          <div className="gaming-close__console" aria-hidden="true"><span className="gaming-close__orbit" /><span className="gaming-close__orbit gaming-close__orbit--inner" /><div className="gaming-close__controller"><GamingControllerGlyph /></div><span className="gaming-close__console-label">PLAYER / YOU</span><span className="gaming-close__console-caption">TAKE THE NEXT TURN</span></div>
+        </div>
+        <footer className="gaming-close__footer"><span>SOLO DETOURS. CO-OP CHAOS.</span><div aria-hidden="true">{Array.from({ length: 12 }, (_, index) => <i key={index} />)}</div><span>YOUR NEXT SESSION STARTS HERE <ArrowIcon /></span></footer>
       </div>
     </section>
   </div>;
@@ -246,7 +251,7 @@ function GamingField({ context }: { context: "hero" | "request" }) {
 }
 
 function GamingQueueField() {
-  return <div className="gaming-queue-field" aria-hidden="true"><span className="gaming-queue-field__grid" /><div>{Array.from({ length: 7 }, (_, index) => <i key={index} />)}</div><svg viewBox="0 0 1400 540" preserveAspectRatio="none"><path pathLength="1" d="M-50 412H218L290 338H524L611 247H832L901 180h232l88-93h230"/><path pathLength="1" d="M-20 475h330l56-55h285l70-73h273l61-64h382"/></svg></div>;
+  return <div className="gaming-queue-field" aria-hidden="true"><span className="gaming-queue-field__grid" /><svg viewBox="0 0 1400 540" preserveAspectRatio="none"><path pathLength="1" d="M-50 412H218L290 338H524L611 247H832L901 180h232l88-93h230"/><path pathLength="1" d="M-20 475h330l56-55h285l70-73h273l61-64h382"/></svg></div>;
 }
 
 function GamingControllerGlyph() {
