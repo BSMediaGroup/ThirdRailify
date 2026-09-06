@@ -304,3 +304,7 @@ The consent manager stores only schema version 1, decision/expiry timestamps, an
 See `CLOUDFLARE_SETUP.md` for the proven `thirdrailify` Pages project, the internal `thirdrailify-public-state` Worker binding, rollback constraints, and read-only verifier. The dedicated Worker is required because Pages can bind to but cannot host a Durable Object class. `https://thirdrailify.com` is now the canonical production origin; `www` and the stable Pages hostname redirect to it.
 
 See `CLOUDFLARE_AUTH_SETUP.md` for the Public side of the shared D1 account setup. The real D1 ID is not present locally, so no account binding or live account acceptance is claimed.
+
+## Verified catalogue variant imagery
+
+The Admin-owned catalogue supplies merchant-only product/gallery images and an optional sanitized variant image. `functions/_shared/commerce-catalogue-proxy.js`, `src/types/catalogue.ts` and `src/lib/catalogueProvider.ts` preserve this contract; `ProductDetailPage` provides gallery/variant selection, and cart drawer/page and checkout retain the selected variant image. The relay accepts at most 25 gallery images and never projects provider provenance or artwork. Regression coverage lives in `tests/storefront-commerce.test.mjs`; coupled captured-state browser evidence and the operator rollout guide are in the Admin repository (`docs/PRINTFUL_MOCKUP_PUBLICATION_REPAIR.md`). No Public storage/provider authority or schema was added.

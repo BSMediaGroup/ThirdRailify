@@ -47,7 +47,7 @@ const commerceProduct = { id: "product-local-1", slug: "real-product", title: "R
 
 test("commerce catalogue proxy preserves safe local variant identity and excludes internal business contact data", async () => {
   const upstream = { ok: true, source: "commerce-d1", currency: "CAD", checkoutEnabled: false, businessAddress: { line1: "Happy Birthday" }, businessPhone: "operator-only", publicAddress: { line1: "legacy-internal" }, publicPhone: "legacy-internal", updatedAt: "2026-08-28T00:00:00.000Z", collections: [{ title: "Apparel", slug: "apparel", description: "Wear it.", displayOrder: 10, productCount: 1, productIds: ["product-local-1"], updatedAt: "2026-08-28T00:00:00.000Z" }], products: [commerceProduct] };
-  const normalized = normalizeCatalogue(upstream); assert.equal(normalized.products[0].price.minUnitAmount, 3050); assert.equal(normalized.products[0].variants[1].unitAmount, 3450); assert.deepEqual(Object.keys(normalized.products[0].variants[0]).sort(), ["availability", "color", "currency", "id", "label", "options", "size", "unitAmount"]);
+  const normalized = normalizeCatalogue(upstream); assert.equal(normalized.products[0].price.minUnitAmount, 3050); assert.equal(normalized.products[0].variants[1].unitAmount, 3450); assert.deepEqual(Object.keys(normalized.products[0].variants[0]).sort(), ["availability", "color", "currency", "id", "image", "label", "options", "size", "unitAmount"]);
   assert.doesNotMatch(JSON.stringify(normalized), /printful|legacy|migration|sku|provider|Happy Birthday|operator-only|businessAddress|businessPhone|publicAddress|publicPhone/i);
   const response = await proxyCommerceCatalogue({ THIRDRAILIFY_ADMIN_ORIGIN: "https://thirdrailify-admin.pages.dev" }, "/api/public/commerce/catalogue", async (url) => { assert.equal(url, "https://thirdrailify-admin.pages.dev/api/public/commerce/catalogue"); return Response.json(upstream); });
   assert.equal(response.status, 200); assert.equal(response.headers.get("cache-control"), "no-store"); assert.equal((await response.json()).products.length, 1);
@@ -58,6 +58,17 @@ test("replacement storefront source uses product plus variant cart identity and 
   const [providerSource, cartSource] = await Promise.all([import("node:fs/promises").then((fs) => fs.readFile(new URL("../src/lib/catalogueProvider.ts", import.meta.url), "utf8")), import("node:fs/promises").then((fs) => fs.readFile(new URL("../src/store/cart.tsx", import.meta.url), "utf8"))]);
   assert.match(providerSource, /\/api\/commerce\/catalogue/); assert.doesNotMatch(providerSource, /wixSnapshot|legacy-wix-snapshot/);
   assert.match(cartSource, /variantId: string/); assert.match(cartSource, /productId: product\.id, variantId: variant\.id/); assert.doesNotMatch(cartSource, /unitPrice|formattedPrice/);
+});
+
+test("Public relay preserves variant-specific merchant images and all 25 gallery slots without forwarding provenance", () => {
+  const image = "https://cdn.thirdrailify.com/commerce-media/" + "a".repeat(64) + ".png";
+  const product = { ...commerceProduct, images: Array.from({ length: 25 }, (_, i) => `https://images.example.test/view-${i}.png`), variants: commerceProduct.variants.map((v) => ({ ...v, image, providerImageSource: { private: true } })) };
+  const input = { ok: true, source: "commerce-d1", collections: [], products: [product] };
+  const projected = normalizeCatalogue(input).products[0];
+  assert.equal(projected.images.length, 25); assert.equal(projected.variants[0].image, image);
+  assert.equal("providerImageSource" in projected.variants[0], false);
+  product.variants[0].image = "javascript:alert(1)";
+  assert.equal(normalizeCatalogue(input).products[0].variants[0].image, null);
 });
 
 test("Shop gallery is CAD-only while product detail owns flagged comparison and same-row purchase controls", async () => {

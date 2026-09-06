@@ -71,7 +71,7 @@ export function CartDrawer() {
         <div className="cart-drawer__items">
           {rows.length ? rows.map(({ item, product, variant }) => (
             <article className="cart-row" key={`${product.id}:${variant.id}`}>
-              <img src={product.image} alt="" />
+              <img src={variant.image || product.image} alt="" />
               <div>
                 <h3>{product.name}</h3>
                 <p className="cart-row__variant">{variant.label}</p>

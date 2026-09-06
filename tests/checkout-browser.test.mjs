@@ -1,3 +1,4 @@
+import { checkLocalityAutocomplete } from "./helpers/locality-browser.mjs";
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -68,6 +69,7 @@ test("customer checkout is responsive, ephemeral, accessible, and bound to serve
     assert.equal(await page.getByLabel("Province / territory").inputValue(), "");
     await page.getByRole("button", { name: "Request shipping methods" }).click();
     await page.getByText("Enter the recipient name.").waitFor(); assert.equal(quoteCalls, 0);
+    if ([1440, 390].includes(width)) await checkLocalityAutocomplete(page, `${RESULTS}/guest-locality-${width}.png`);
     await fillDelivery(page);
     await page.getByLabel("Province / territory").selectOption("");
     await page.getByRole("button", { name: "Request shipping methods" }).click(); await page.getByText("State, province, or region is required for this country.").waitFor(); assert.equal(quoteCalls, 0);

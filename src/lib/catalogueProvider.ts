@@ -22,7 +22,7 @@ export const catalogueProvider: CatalogueProvider = {
   },
 };
 
-type CommerceVariant = { id: string; label: string; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
+type CommerceVariant = { id: string; label: string; image?: string | null; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
 type CommerceProduct = { id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; collectionSlugs: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
 type CommerceCollection = { title: string; slug: string; description: string; displayOrder: number; productCount: number; productIds: string[] };
 type CommerceCataloguePayload = { ok?: boolean; source?: string; checkoutEnabled?: boolean; updatedAt?: string | null; authority?: { currentProducts: number; reconciled: boolean }; collections: CommerceCollection[]; products: CommerceProduct[] };

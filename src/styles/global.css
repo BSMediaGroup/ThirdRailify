@@ -11026,3 +11026,7 @@ label.privacy-category:hover { border-color: rgba(255, 209, 47, .25); }
 
 .checkout-agreement p, .checkout-agreement__items p { font-size: .95rem; line-height: 1.5; }
 .checkout-agreement__items small { font-size: .85rem; line-height: 1.4; }
+.product-media__gallery { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.product-media__gallery button { padding: 4px; border: 1px solid currentColor; border-radius: 6px; background: transparent; cursor: pointer; }
+.product-media__gallery button[aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 2px; }
+.product-media__gallery img { display: block; object-fit: contain; }

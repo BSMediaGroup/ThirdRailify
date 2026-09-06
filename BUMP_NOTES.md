@@ -1,5 +1,16 @@
 # Bump notes
 
+## 2026-09-07 - Verified Printful gallery and variant image delivery (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Public catalogue relay preserves Admin's sanitized variant image and full 25-image gallery bound. Product detail starts with the curated primary, offers gallery selection and switches to the selected variant's merchant image. Cart drawer, cart and checkout retain that image.
+- Coupled Admin repair provides explicit media/publication Preview/Apply, shared publication diagnostics and immutable first-party media. Public receives no provenance metadata, artwork URLs or provider credentials. See the Admin repository's `docs/PRINTFUL_MOCKUP_PUBLICATION_REPAIR.md` for per-product findings and rollout requirements.
+- Validation: storefront projection tests 9/9; actual Admin handler/Public relay local browser pipeline passed with captured current provider data (13 products / 91 variants), real local D1/R2, persisted reloads and 1440/768/390px screenshots. Lint passes with two existing hook warnings; TypeScript-inclusive production build and Pages Functions compilation pass, retaining the build chunk-size warning.
+- No schema change, removed files, deployment or remote writes. Concurrent locality/address/icon work is preserved. Production repair, publication and authenticated stable-origin acceptance remain pending separate authorization.
+
 ## 2026-09-06 - Readability coverage continuation (local; acceptance incomplete)
 
 CURRENT VER=0.1.0-alpha.0
