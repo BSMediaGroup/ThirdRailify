@@ -1,5 +1,15 @@
 # Bump notes
 
+## 2026-09-08 - Entrant appearance production status verified
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Read-only release audit confirms active production deployment `080ffcfa-237f-4ef6-803c-970ae12165cc`, source `9eb509a`, contains approved entrant appearance commit `a443c11`. Coupled Admin source includes `ca099ff`; migration 0040 is already applied. No repeated feature deployment or migration is required.
+- Public source, renderer, mechanics and participant authority are unchanged. Authenticated saved-appearance acceptance remains unverified because the dedicated browser could not complete sign-in verification. README clarifies historical local-only notes.
+
+
 ## 2026-09-08 - Wheel identity migration 0042 applied live
 
 CURRENT VER=0.1.0-alpha.0
