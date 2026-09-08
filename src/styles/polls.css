@@ -889,3 +889,19 @@
   .poll-card--open .poll-state--open { animation:poll-live-breathe 2.8s ease-in-out infinite; }
   @keyframes poll-live-breathe { 50% { box-shadow:0 0 15px rgba(85,215,145,.18); } }
 }
+
+
+/* Keep appearance previews above their controls, with typography sized to the preview. */
+.poll-appearance .poll-cover-editor { grid-template-columns:minmax(0,1fr) auto; gap:16px; align-items:start; }
+.poll-appearance .poll-cover-editor > div { grid-column:1 / -1; width:100%; min-width:0; container-type:inline-size; }
+.poll-appearance .poll-cover-editor > label { min-width:0; }
+.poll-appearance .poll-cover-editor > small { grid-column:1 / -1; color:var(--muted); }
+.poll-appearance .poll-cover-editor input[type=file] { width:100%; min-width:0; }
+.poll-appearance .poll-cover-editor > div > img { height:clamp(180px,26vw,320px); object-fit:contain; background:#0a0a08; }
+.poll-appearance .poll-cover-editor .poll-cover { display:block; width:100%; padding:0; min-height:180px; }
+.poll-appearance .aboot-subjects { width:100%; grid-template-columns:repeat(2,minmax(0,1fr)); min-height:220px; }
+.poll-appearance .aboot-subject { padding:24px clamp(12px,3cqi,28px); }
+.poll-appearance .aboot-subject strong { font-size:clamp(1rem,3.5cqi,2rem); line-height:1.2; overflow-wrap:break-word; word-break:normal; }
+.poll-appearance .aboot-subject small { font-size:clamp(.7rem,1.8cqi,.9rem); }
+.poll-appearance .aboot-vs { font-size:clamp(.7rem,2cqi,1rem); }
+@media(max-width:600px) { .poll-appearance .poll-cover-editor { grid-template-columns:minmax(0,1fr); } }

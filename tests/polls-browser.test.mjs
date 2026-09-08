@@ -18,6 +18,17 @@ test("Public Poll gallery, modal, detail, vote, editor, popout, and responsive s
   for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }]) {
     const context = await browser.newContext({ viewport }); await consent(context); const page = await context.newPage(); const errors = [];
     page.on("console", (entry) => { if (entry.type() === "error") errors.push(entry.text()); }); page.on("pageerror", (error) => errors.push(error.message)); await page.route("**/api/**", respond);
+    await page.route('**/api/polls/appearance-regression', route => {
+      const value=poll('closed');value.slug='appearance-regression';value.presentationType='abootnothing';value.options[0].label='Batman: The Animated Series';value.options[1].label='Spider-Man: The Animated Series';value.options.forEach(o=>o.image=null);
+      return json(route,{ok:true,poll:value,access:{canManage:true,canManageAll:true,isOwner:true}});
+    });
+    await page.goto(`${ORIGIN}/polls/appearance-regression/edit`,{waitUntil:'networkidle'});
+    const appearance=page.locator('.poll-appearance');await appearance.waitFor();await appearance.scrollIntoViewIfNeeded();
+    const layout=await appearance.evaluate(n=>{const preview=n.querySelector('.poll-cover-editor > div').getBoundingClientRect();const editor=n.querySelector('.poll-cover-editor').getBoundingClientRect();const text=n.querySelector('.aboot-subject strong').getBoundingClientRect();return {preview:preview.width,available:editor.width,height:preview.height,textHeight:text.height};});
+    assert.ok(layout.preview>=layout.available-2,JSON.stringify(layout));assert.ok(layout.height<500 && layout.textHeight<180,JSON.stringify(layout));assert.equal(await fits(page),true);
+    await appearance.screenshot({path:`${ARTIFACTS}/appearance-${viewport.width}.png`});
+    await appearance.getByRole('button',{name:'Violet',exact:true}).click();assert.ok((await appearance.getByRole('button',{name:'Violet',exact:true}).getAttribute('class')).includes('is-selected'));
+    await appearance.locator('input[type=file]').setInputFiles({name:'cover.png',mimeType:'image/png',buffer:PNG});await appearance.getByAltText('Poll cover preview').waitFor();
     await page.goto(`${ORIGIN}/polls`, { waitUntil: "networkidle" }); await page.getByRole("heading", { level: 1, name: /READ THE/ }).waitFor(); await page.getByText("Open audience choice").waitFor();
     await page.screenshot({ path: `${ARTIFACTS}/gallery-${viewport.width}.png`, fullPage: true }); assert.equal(await fits(page), true);
     if (viewport.width === 1440) { await page.getByRole("button", { name: "Quick view", exact: true }).first().click(); await page.getByRole("dialog").waitFor(); assert.equal(await page.evaluate(() => document.activeElement?.getAttribute("aria-label")), "Close Poll quick view"); await page.screenshot({ path: `${ARTIFACTS}/quick-view-modal.png` }); await page.getByRole("button", { name: "Close Poll quick view" }).click(); }

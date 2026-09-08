@@ -1164,3 +1164,6 @@ PENDING VER=0.1.0-alpha.0
 - Existing Public canvas, styles and browser test updated. No new files, Admin behavior, backend, publication or user result changes.
 
 - Deployed and verified at 2026-09-08 13:36 UTC: Public `199792c`, Pages `304eb5ed.thirdrailify.pages.dev`; stable JS/CSS match immutable artifacts. Read-only live Chrome validation shows initial 132% fit (tree 1557.94px / viewport 1560px), two highlighted incoming paths on hover, Reset at 100%, and successful refit. Evidence/screenshot: `.artifacts/public-fit-live/`. Concurrent Poll edits preserved; no data changed.
+
+
+Poll editor Appearance layout (2026-09-09): moved the cover preview to a full-width row above upload/help controls, sized matchup typography to its container and retained a two-column matchup at mobile widths. Uploaded covers use a bounded contain preview. Regression checks cover long Batman/Spider-Man names, preview width/height, upload selection and feature tint at 390/768/1440/1920; screenshots reviewed. Build/typecheck and public Poll browser tests pass. CSS and existing browser test updated; no new files, data or authority changes.
