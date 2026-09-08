@@ -1,0 +1,13 @@
+.poll-options>article>.poll-increment[role=group] { position:relative; z-index:2; display:flex; grid-column:1/-1; flex-wrap:nowrap; align-items:center; justify-content:flex-end; gap:4px; flex-basis:100%; opacity:0; pointer-events:none; transition:opacity .15s ease; }
+.poll-options>article:hover .poll-increment,.poll-options>article:focus-within .poll-increment { opacity:1; pointer-events:auto; }
+.poll-options>article>.poll-increment[role=group] button { width:auto; min-width:32px; min-height:32px; margin:0; padding:5px 9px; font:600 .75rem var(--font-mono,monospace); border:1px solid #f3c92860; border-radius:6px; background:#18170f; color:#f5d657; }
+.poll-options>article>.poll-increment[role=group] input { width:64px; min-height:32px; padding:4px; text-align:center; font-size:.8rem; border:1px solid #f3c92860; border-radius:6px; background:#101114; color:#f5ead1; }
+.poll-options>article>.poll-increment[role=group] button:focus-visible,.poll-increment input:focus-visible { outline:2px solid #ffde52; outline-offset:2px; }
+@media(prefers-reduced-motion:reduce) { .poll-options>article>.poll-increment[role=group] { transition:none; } }
+
+@media(max-width:700px) {
+ .poll-options>article>.poll-increment[role=group] { display:grid; grid-template-columns:28px minmax(0,1fr) 28px; width:100%; }
+ .poll-options>article>.poll-increment[role=group] input { width:100%; min-width:0; box-sizing:border-box; }
+ .poll-options>article>.poll-increment[role=group] button { min-width:0; padding:5px; }
+ .poll-options>article>.poll-increment[role=group] button:last-child { grid-column:1/-1; width:100%; }
+}

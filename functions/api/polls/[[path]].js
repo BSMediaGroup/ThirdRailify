@@ -62,7 +62,7 @@ async function write(request, env, path, session, fetchImpl) {
   if (!path && request.method === "POST") internal = "create";
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{0,79}$/i.test(path)) internal = `${path}/save`;
   else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/lifecycle$/i.test(path)) internal = path;
-  else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/visibility$/i.test(path)) internal = path;
+  else if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{0,79}\/(?:visibility|increment)$/i.test(path)) internal = path;
   else if (request.method === "DELETE" && mediaPath) internal = path;
   else throw failure(404, "poll_route_not_found", "The Poll action was not found.");
   return signedRelay(env, fetchImpl, request.method, `/api/polls/internal/${encodePath(internal)}`, { accountId: session.accountId, input });

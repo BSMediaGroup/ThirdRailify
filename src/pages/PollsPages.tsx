@@ -1,3 +1,4 @@
+import { PollIncrement } from '../components/PollIncrement';
 import { AbootNothingHero } from '../components/AbootNothingHero';
 import { RoadmapShelf } from '../brackets/Roadmaps';
 import {
@@ -421,7 +422,7 @@ function PollQuickView({
           </button>
         </PollCover>
         {poll.state === "closed" ? <div className="poll-modal__summary"><strong>{pollOutcome(poll).tied ? "Tied top result" : poll.totalVotes ? poll.credits?.unresolved ? "Current top result" : "Final top result" : "No votes recorded"}</strong><span>{poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}</span></div> : null}
-        <ResultOptions poll={poll} busy={busy} vote={vote} />
+        <ResultOptions poll={poll} busy={busy} vote={vote} onChanged={onChanged} />
         <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
           <Link to={`/polls/${poll.slug}`}>Full Poll</Link>
@@ -595,6 +596,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
           poll={poll}
           busy={busy}
           vote={popout ? undefined : vote}
+          onChanged={popout ? undefined : setPoll}
         />
         {poll.totalVotes === 0 ? (
           <p className="poll-zero">
@@ -628,11 +630,16 @@ function ResultOptions({
   poll,
   busy,
   vote,
+  onChanged,
 }: {
   poll: Poll;
   busy: string;
   vote?: (optionId: string) => void;
+  onChanged?: (poll: Poll) => void;
 }) {
+  const { account } = useAuth();
+  const [approved, setApproved] = useState(false);
+  useEffect(() => { let active = true; setApproved(false); if (account) void getCreatorAccess().then(access => { if (active) setApproved(access.canCreate); }).catch(() => undefined); return () => { active = false; }; }, [account]);
   const outcome = pollOutcome(poll);
   return (
     <><CreditStatus poll={poll} detail /><div className={`poll-options${poll.presentationType === "abootnothing" ? " aboot-vote-cards" : ""}`}>
@@ -661,7 +668,8 @@ function ResultOptions({
             </div>
             <b>{percentage.toFixed(poll.totalVotes ? 1 : 0)}%</b>
             <em>{option.votes} votes</em>
-            <small className="poll-option-breakdown">Trigger: {option.trigger}{option.bonusVotes ? ` · ${option.ordinaryVotes || 0} ordinary + ${option.bonusVotes} additional` : ""}</small>
+            {account && approved && onChanged && poll.state === "open" ? <PollIncrement poll={poll} option={option} disabled={Boolean(busy)} onChanged={onChanged} /> : null}
+            <small className="poll-option-breakdown">Trigger: {option.trigger}{option.manualVotes ? ` / ${option.manualVotes} account-added` : ""}{option.bonusVotes ? ` · ${option.ordinaryVotes || 0} ordinary + ${option.bonusVotes} additional` : ""}</small>
             {vote && poll.state === "open" ? (
               <button
                 type="button"
