@@ -1,0 +1,36 @@
+﻿.match-showcase{padding-top:22px}
+.match-showcase__intro{position:relative;padding:0 0 24px}
+.match-showcase__intro .bracket-eyebrow{max-width:75%;line-height:1.6;margin:0 0 10px}
+.bracket-lightbox .match-showcase__intro h2{font-size:clamp(2.5rem,5vw,4rem);line-height:1;margin:0 0 16px}
+.match-showcase__status{display:inline-flex;padding:7px 12px;border:1px solid #ffffff20;border-radius:30px;color:#bdb7a9;font-size:.8rem}
+.match-showcase__status.is-decided{color:#dec5ff;border-color:#ab74ec66;background:#8354ba22}
+.match-showcase__description{color:#bdb7a9;max-width:700px;line-height:1.6;white-space:pre-wrap}
+.match-verdict{position:relative;overflow:hidden;display:flex;align-items:center;gap:18px;padding:22px 26px;margin-bottom:24px;border:1px solid #f3c92877;border-radius:12px;background:radial-gradient(ellipse at left,#f3c92825,transparent 75%),linear-gradient(115deg,#27210c,#15130c);box-shadow:inset 0 1px #fff0b02b,0 0 30px #f3c9280d}
+.match-verdict__icon{width:48px;height:48px;color:#f3c928;flex:none;filter:drop-shadow(0 0 12px #f3c92888)}
+.match-verdict h3{font-size:clamp(1.6rem,3vw,2.5rem);line-height:1.15;margin:6px 0 0;color:#fff0ac;overflow-wrap:anywhere}
+.match-verdict__sparkles{margin-left:auto;color:#ffe799;letter-spacing:10px;font-size:1.1rem;animation:match-verdict-shimmer 3s ease-in-out infinite alternate}
+@keyframes match-verdict-shimmer{from{opacity:.3;filter:drop-shadow(0 0 2px #f3c928)}to{opacity:1;filter:drop-shadow(0 0 10px #f3c928)}}
+.match-showcase__duel{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;position:relative}
+.match-showcase__vs{position:absolute;z-index:2;left:50%;top:120px;transform:translate(-50%,-50%) rotate(-8deg);display:grid;place-items:center;width:52px;height:52px;border:1px solid #ae7ae977;border-radius:50%;background:#20132b;color:#e7caff;font-family:'American Captain',sans-serif;font-size:1.5rem;box-shadow:0 0 25px #9f59df30}
+.match-contender{min-width:0;border:1px solid #ffffff20;border-radius:12px;overflow:hidden;background:#0c0c09;display:flex;flex-direction:column}
+.match-contender.is-winner{border-color:#f3c92899;background:linear-gradient(145deg,#29220e,#11100a);box-shadow:0 0 0 1px #f3c92822,0 8px 32px #f3c9280c}
+.match-contender__art{position:relative;height:240px;padding:18px 18px 40px;display:grid;place-items:center;background:radial-gradient(ellipse at center,#ffffff0a,transparent 75%);border-bottom:1px solid #ffffff12}
+.match-contender__art img{width:100%;height:100%;min-height:0;object-fit:contain;filter:drop-shadow(0 8px 12px #0008)}
+.match-contender__monogram{font-family:'American Captain',sans-serif;font-size:8rem;color:#b091cc55;line-height:1}
+.match-contender__label{position:absolute;left:18px;bottom:12px;display:inline-flex;gap:7px;align-items:center;font:600 .65rem var(--font-mono,monospace);letter-spacing:.13em;color:#bab2a0}
+.is-winner .match-contender__label{padding:6px 10px;background:#f3c928;color:#201a05;border-radius:4px;box-shadow:0 0 18px #f3c92830}
+.match-contender svg{width:20px;height:20px;flex:none}
+.match-contender__body{padding:22px;display:flex;flex-direction:column;flex:1}
+.match-contender__body h3{font-size:clamp(1.5rem,2.7vw,2.3rem);line-height:1.15;margin:0 0 14px;overflow-wrap:anywhere}
+.match-contender__body>p{font-size:.95rem;color:#bdb7a9;line-height:1.6;white-space:pre-wrap}
+.match-contender__score{margin-top:auto;display:flex;justify-content:space-between;align-items:center;gap:15px;padding-top:20px;border-top:1px solid #ffffff16}
+.match-contender__score>span{font-size:.8rem;color:#bdb7a9}
+.match-contender__score strong{display:flex;align-items:center;gap:8px;font:700 2rem var(--font-mono,monospace)}
+.is-winner .match-contender__score strong{color:#ffe799;text-shadow:0 0 18px #f3c92840}
+.match-showcase__footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:24px;margin-top:24px;border-top:1px solid #ffffff18}
+.match-showcase__footer p{max-width:400px;color:#aaa493;font-size:.85rem;line-height:1.6}
+.match-showcase__footer>div{display:flex;flex-wrap:wrap;gap:10px}
+.match-showcase__poll{display:inline-flex;align-items:center;justify-content:center;gap:22px;padding:12px 18px;border-radius:8px;background:#f3c928;color:#141005!important;text-decoration:none;font-weight:700;min-height:44px}
+.match-showcase :focus-visible{outline:3px solid #f3c928;outline-offset:4px}
+@media(max-width:600px){.match-showcase__duel{grid-template-columns:1fr;gap:22px}.match-showcase__vs{display:none}.match-verdict{padding:18px;gap:12px}.match-verdict__icon{width:34px;height:34px}.match-verdict__sparkles{display:none}.match-contender__art{height:200px}.match-showcase__footer{flex-direction:column;align-items:stretch}.match-showcase__footer>div>*{flex:1}.match-showcase__intro .bracket-eyebrow{max-width:100%}}
+@media(prefers-reduced-motion:reduce){.match-verdict__sparkles{animation:none}}

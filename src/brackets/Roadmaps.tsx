@@ -5,9 +5,9 @@ import './roadmap-gallery.css';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { BracketCanvas } from './BracketCanvas';
-import { statusLabel } from './status';
+import { MatchDetail } from './MatchDetail';
 import { Lightbox } from './Lightbox';
-import { opponents, type Match, type Presentation } from './model.mjs';
+import { type Match, type Presentation } from './model.mjs';
 import type { Bracket } from './types';
 const ROOT = '/polls/abootnothing/brackets';
 type Item = Presentation & { id: string };
@@ -38,7 +38,7 @@ export function Roadmaps() {
   const load = useCallback(async () => { try { if (slug) { const p = await read<{ bracket: Bracket }>(`/${encodeURIComponent(slug)}`); setBracket(p.bracket); } else setItems((await read<{ items: Item[] }>('')).items); setError(''); } catch (e) { setError(e instanceof Error ? e.message : 'Roadmap unavailable.'); setBracket(null); setItems([]); } finally { setLoading(false); } }, [slug]);
   useEffect(() => { void load(); const tick = setInterval(() => { if (!document.hidden) void load(); }, 15000); const visible = () => { if (!document.hidden) void load(); }; document.addEventListener('visibilitychange', visible); return () => { clearInterval(tick); document.removeEventListener('visibilitychange', visible); }; }, [load]);
   const graph = bracket?.graph, final = graph?.matches.find(m => m.round === Math.log2(graph.size) - 1), winner = bracket?.finalized ? bracket.decisions.find(d => d.matchId === final?.id)?.winnerId : null, champion = graph?.contenders.find(c => c.id === winner);
-  const match = graph?.matches.find(m => m.id === selected?.id), pair = graph && match ? opponents(graph, match, bracket?.decisions) : [], result = bracket?.decisions.find(d => d.matchId === match?.id), source = bracket?.sources[match?.id || ''];
+  const match = graph?.matches.find(m => m.id === selected?.id);
   if (!slug) {
     const filtered = items.filter(item => `${item.title} ${item.season}`.toLowerCase().includes(search.toLowerCase()));
     return <main className="season-landing"><SeasonHero /><section className="container season-directory" id="season-directory"><header className="season-directory__heading"><div><p className="eyebrow">THE MATCHUP COLLECTION</p><h2>Pick your season.</h2><p>Every rivalry has a beginning. Follow it all the way.</p></div>{items.length ? <label className="season-search">Find a season<input type="search" placeholder="Search seasons..." value={search} onChange={e => setSearch(e.target.value)} /></label> : null}</header>
@@ -47,6 +47,6 @@ export function Roadmaps() {
     </section></main>;
   }
   return <main className="roadmap-page"><Link to={slug ? ROOT : '/polls/abootnothing'}>← {slug ? 'All Season Roadmaps' : 'Aboot Nothing'}</Link>{error ? <section className="bracket-panel" role="status"><h1>Roadmap unavailable</h1><p>{error}</p><p>Only intentionally published seasons can be viewed here.</p></section> : graph && bracket ? <><header className="roadmap-hero">{graph.presentation.cover ? <img src={`/api/brackets/media/${graph.presentation.cover}`} alt="" /> : null}<span className="bracket-eyebrow">{graph.presentation.season || 'Aboot Nothing · Season Roadmap'}</span><h1>{graph.presentation.title}</h1><p>{graph.presentation.intro}</p></header>{graph.presentation.description ? <p>{graph.presentation.description}</p> : null}{bracket.needsReview.length ? <div className="bracket-alert">A result is under review. Later-round participants have been preserved pending an explicit correction.</div> : null}{champion ? <section className="roadmap-champion"><span className="bracket-eyebrow">Confirmed season champion</span><h2>{champion.name}</h2><p>The required rounds are complete.</p></section> : null}<BracketCanvas bracket={bracket} selected={selected?.id} onSelect={setSelected} /><p>Scores marked manual or historical are separately recorded bracket results. Voting takes place in the linked Poll.</p></> : <p role="status">Loading Season Roadmap…</p>}
-    {match && graph && bracket && selected ? <Lightbox title={`Round ${match.round + 1} · Match ${match.position + 1}`} onClose={() => setSelected(null)}><div className="bracket-public-detail"><h2>{pair.map(c => c?.name || 'Awaiting opponent').join(' vs ')}</h2><p>{match.description}</p><div className="pair">{pair.map((c,i) => <section key={i}>{c?.image ? <img src={`/api/brackets/media/${c.image}`} alt={`${c.name} artwork`} /> : null}<h3>{c?.name || 'Unresolved upstream winner'}</h3><p>{c?.description}</p><p>Score: {source?.scores && c ? source.scores[c.id] ?? 'Unknown' : result?.scores[i] ?? 'Unknown'}</p>{result?.winnerId === c?.id && !bracket.needsReview.includes(match.id) ? <strong>WINNER · {result?.source === 'poll' ? 'Confirmed Poll result' : result?.source === 'bye' ? 'Explicit bye' : 'Manual bracket result'}</strong> : null}</section>)}</div><p>{source ? statusLabel(source.state) : result ? `${result.source} result` : 'Upcoming matchup'}</p>{source?.slug ? <Link to={`/polls/${source.slug}`}>Open Poll →</Link> : null}</div></Lightbox> : null}
+    {match && graph && bracket && selected ? <Lightbox title={`Round ${match.round + 1} · Match ${match.position + 1}`} onClose={() => setSelected(null)}><MatchDetail bracket={bracket} match={match} onClose={() => setSelected(null)} /></Lightbox> : null}
   </main>;
 }

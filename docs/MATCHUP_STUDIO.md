@@ -89,3 +89,15 @@ PENDING VER=0.1.0-alpha.0
 - Build/typecheck and scoped lint pass. The new browser test covers empty/published collections at 390/768/1440, search, error/retry, whole-card navigation, keyboard focus, reduced motion and the client-side alias. Existing connected Admin/Public publication, bracket interaction and privacy browser coverage passes. Screenshots inspected in `.artifacts/roadmap-gallery-1788872401040/` (published desktop/mobile and empty desktop).
 
 - Released and verified at 2026-09-08 13:02 UTC: Public commit `9a08cd0`, Pages `20337c94.thirdrailify.pages.dev`. Stable JS/CSS match immutable release hashes. Both short URL variants return HTTP 301 with Location `/polls/abootnothing/brackets`. Real public Chrome checks passed at 1440 and 390 with no horizontal overflow; stable screenshots and evidence in `.artifacts/roadmap-gallery-live/`. No user season was published or modified.
+
+
+## 2026-09-08 - Match result presentation and violet completion headers
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Completed match headers now use a violet gradient, inset highlight and purple sparkles on hover/focus in Admin and Public. Existing green checkmarks retain #6dc98d. Reduced-motion keeps static highlights.
+- Public match details now present large artwork panels, a gold winner banner/trophy, winner badges and prominent scores, with a clear related-Poll link when the sanitized source exposes one and a Back to bracket action. Under-review matches suppress winner treatments. Manual/historical score provenance remains explicit.
+- Public adds `src/brackets/MatchDetail.tsx` and `src/brackets/match-detail.css`; existing Roadmaps, canvas/styles and public gallery browser tests extended. Admin changes only the existing canvas and styles. No schema, authority, vote or publication changes.
+- Both builds/typechecks pass. Public scoped lint and responsive detail tests pass: winner/review state, Poll URL, violet gradient, original green tick and no horizontal overflow at 390/1440. Viewed local detail screenshots under Public `.artifacts/roadmap-gallery-1788874064189/`. Existing coupled bracket/editor browser coverage retained.
