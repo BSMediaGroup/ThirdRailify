@@ -1087,3 +1087,16 @@ PENDING VER=0.1.0-alpha.0
 - No schema migration, Bot action, live bracket mutation or provider/paid-voting change. Source is integrated with current main before release; deployment evidence is appended separately.
 
 - Canvas repair deployed and verified at 10:13 UTC: Admin e12bcab / 524037c2 (direct f1c91ba3), Public 15b6314 / 93559ffb. Stable assets match immutable deployments; 2/2 final local browser suites pass. Exact evidence and remaining authenticated acceptance limitation are recorded in `docs/MATCHUP_STUDIO.md`.
+
+## 2026-09-08 - Partial-season editing, page scrolling and image sources
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Removed the bracket-wide identity lock. Linked or decided matches protect their own inputs and all upstream matches; other branches can select existing ideas, type new contenders and rename unprotected contenders. Server comparisons preserve protected identities and tree topology, including attempted swaps across protected inputs. Finalization still protects the full graph.
+- Outside fullscreen, the map grows vertically with the page and scrolls horizontally only, with a 3px scrollbar in Chromium and thin native fallback. Fullscreen retains bounded two-axis scrolling. Focus now scrolls the page vertically outside fullscreen. The desktop Ideas bench sticks below the Admin header and scrolls independently without a visible scrollbar.
+- A discreet expand button opens the same Ideas/contender controls in a larger lightbox using the same working draft. The matchup modal supports each opponent's saved image upload, preview and removal.
+- Both the bench and opponent editor accept an image URL as an alternative to file upload. Authenticated same-origin/CSRF-protected import downloads a bounded public HTTPS PNG/JPG/WebP, validates bytes and stores the existing private R2 asset. URLs cannot bypass publication/media ownership checks; redirects, credentialed/internal/IP URLs, non-images and oversized streams are rejected. No browser hotlinks or external credentials are persisted.
+- Six focused tests pass: the connected canvas/editor/browser workflow, connected Poll/publication/privacy browser workflow, and four real-D1/model cases including partial-branch protections and URL import failures. Both production builds/typechecks and scoped lint pass. Desktop modal screenshots reviewed; evidence is in Admin `.artifacts/matchup-studio/browser-1788864815258/` and `browser-1788864837407/`. No production bracket mutation or authenticated production acceptance is claimed.
+- No new files, schema migration, Bot action or provider/paid-voting change. Current main's manual-Poll count work is retained.

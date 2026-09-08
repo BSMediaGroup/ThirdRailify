@@ -41,3 +41,16 @@ PENDING VER=0.1.0-alpha.0
 - Both stable domains' JS/CSS match their respective immutable deployment bytes. Winner feature, measured connectors and fullscreen CSS are present. Admin anonymous brackets API returns JSON 401; Public library JSON 200 with zero publications, unknown roadmap JSON 404; all use no-store. Evidence: Admin `.artifacts/matchup-studio/live/canvas-release-verified.json`.
 - Both production builds/typechecks and scoped maintained-source lint pass. Both Pages Functions bundles compiled successfully during deployment. Final serial browser run: 2/2 suites pass. Viewed winner hover, full-height/Fit view, fullscreen editor and improved library screenshots. Current local evidence: Admin `.artifacts/matchup-studio/browser-1788862231273/` and `browser-1788862245242/`.
 - No production Studio records were created or changed for this UI release. Authenticated stable-domain end-to-end acceptance remains incomplete; asset parity and local browser tests are not represented as that acceptance.
+
+## 2026-09-08 - Partial-season editing, page scrolling and image sources
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Removed the bracket-wide identity lock. Linked or decided matches protect their own inputs and all upstream matches; other branches can select existing ideas, type new contenders and rename unprotected contenders. Server comparisons preserve protected identities and tree topology, including attempted swaps across protected inputs. Finalization still protects the full graph.
+- Outside fullscreen, the map grows vertically with the page and scrolls horizontally only, with a 3px scrollbar in Chromium and thin native fallback. Fullscreen retains bounded two-axis scrolling. Focus now scrolls the page vertically outside fullscreen. The desktop Ideas bench sticks below the Admin header and scrolls independently without a visible scrollbar.
+- A discreet expand button opens the same Ideas/contender controls in a larger lightbox using the same working draft. The matchup modal supports each opponent's saved image upload, preview and removal.
+- Both the bench and opponent editor accept an image URL as an alternative to file upload. Authenticated same-origin/CSRF-protected import downloads a bounded public HTTPS PNG/JPG/WebP, validates bytes and stores the existing private R2 asset. URLs cannot bypass publication/media ownership checks; redirects, credentialed/internal/IP URLs, non-images and oversized streams are rejected. No browser hotlinks or external credentials are persisted.
+- Six focused tests pass: the connected canvas/editor/browser workflow, connected Poll/publication/privacy browser workflow, and four real-D1/model cases including partial-branch protections and URL import failures. Both production builds/typechecks and scoped lint pass. Desktop modal screenshots reviewed; evidence is in Admin `.artifacts/matchup-studio/browser-1788864815258/` and `browser-1788864837407/`. No production bracket mutation or authenticated production acceptance is claimed.
+- No new files, schema migration, Bot action or provider/paid-voting change. Current main's manual-Poll count work is retained.
