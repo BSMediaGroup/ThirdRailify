@@ -32,6 +32,10 @@ async function read(request, env, path, session, fetchImpl) {
     if (!session) throw failure(401, "authentication_required", "Sign in to view your Polls.");
     return signedRelay(env, fetchImpl, "POST", "/api/polls/internal/mine", { accountId: session.accountId, input: { type: url.searchParams.get("type"), search: url.searchParams.get("search"), page: url.searchParams.get("page"), pageSize: url.searchParams.get("pageSize") } });
   }
+  if (/^[a-z0-9][a-z0-9-]{0,79}\/stream-links$/i.test(path)) {
+    if (!session) throw failure(401, 'authentication_required', 'Sign in to detect Poll streams.');
+    return signedRelay(env, fetchImpl, 'POST', `/api/polls/internal/${encodePath(path)}`, { accountId: session.accountId });
+  }
   if (path && session) return signedRelay(env, fetchImpl, "POST", `/api/polls/internal/${encodePath(path)}/read`, { accountId: session.accountId });
   const target = `/api/polls${path ? `/${encodePath(path)}` : ""}${url.search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, target), { method: request.method, headers: { Accept: "application/json" } });

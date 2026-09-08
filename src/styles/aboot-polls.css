@@ -20,7 +20,7 @@
 .aboot-cover>img { opacity:.18; }
 .aboot-subjects { display:grid; grid-template-columns:1fr 1fr; position:relative; min-height:220px; isolation:isolate; }
 .aboot-subject { position:relative; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; padding:2rem 1.6rem; overflow:hidden; background:linear-gradient(145deg,color-mix(in srgb,var(--subject-tint),transparent 84%),#101014 85%); border-bottom:3px solid var(--subject-tint); }
-.aboot-subject:nth-child(2) { text-align:right; }
+.aboot-subject:nth-of-type(2) { text-align:right; }
 .aboot-subject img { position:absolute; width:100%; height:100%; object-fit:cover; inset:0; z-index:-2; }
 .aboot-subject:after { content:""; position:absolute; inset:0; background:linear-gradient(transparent,#0a0a10ed); z-index:-1; }
 .aboot-subject strong { color:var(--subject-tint); font-size:clamp(1.3rem,3.5vw,3.5rem); line-height:1.08; overflow-wrap:anywhere; text-shadow:0 2px 12px #000; }
@@ -70,7 +70,7 @@
 .aboot-vote-cards .is-runner-up>b,.aboot-vote-cards .is-runner-up em { color:#a5a7ac; text-shadow:none; }
 .aboot-subject.is-winner { border-bottom-color:#ffe16b; background:radial-gradient(ellipse at 25% 10%,#f3c92850,transparent 75%),#1b180e; box-shadow:inset 0 0 0 2px #ffe16bb3,inset 0 0 38px #f3c92820; }
 .aboot-subject.is-winner strong { color:#fff0aa; text-shadow:0 0 22px #f3c92866,0 2px 8px #000; }
-.aboot-subject.is-winner:nth-child(2) .aboot-winner-badge { align-self:flex-end; }
+.aboot-subject.is-winner:nth-of-type(2) .aboot-winner-badge { align-self:flex-end; }
 .aboot-subject.is-runner-up { border-bottom-color:#45474c; background:#141518; }
 .aboot-subject.is-runner-up img { filter:grayscale(.85) brightness(.55); }
 .aboot-subject.is-runner-up strong { color:#aeb0b6; }
@@ -94,3 +94,13 @@
  .aboot-vote-cards article>b { font-size:1.5rem; }
 }
 @media(prefers-reduced-motion:reduce) { .aboot-gallery-hero__mark { animation:none; } }
+
+/* Entrant artwork must paint above its own fallback, including settled results. */
+.aboot-subject { isolation:isolate; }
+.aboot-subject.is-winner:after { background:linear-gradient(180deg,rgba(243,201,40,.08),rgba(16,14,5,.88)),radial-gradient(ellipse at top,#f3c92830,transparent 70%); }
+.aboot-subject.is-runner-up img { filter:grayscale(.5) brightness(.7); }
+.aboot-subjects>.aboot-match-cover { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1; }
+.aboot-subjects.has-match-cover>.aboot-subject { background:transparent; }
+.aboot-subjects.has-match-cover>.aboot-subject.is-runner-up:after { background:linear-gradient(transparent,#0a0a10ed),#10101433; }
+
+.aboot-subject.is-winner:after { box-shadow:inset 0 0 0 2px #ffe16b99,inset 0 0 30px #f3c92822; }

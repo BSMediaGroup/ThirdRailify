@@ -1,3 +1,5 @@
+import { PollStreamField } from '../polls/PollStreamField';
+import rumbleIcon from '../../assets/icons/rumble.svg';
 import { PollIncrement } from '../components/PollIncrement';
 import { AbootNothingHero } from '../components/AbootNothingHero';
 import { RoadmapShelf } from '../brackets/Roadmaps';
@@ -77,6 +79,11 @@ function PublicPollManagement({ children, onChanged }: { children: React.ReactNo
     {children}
     <EphemeralNotices notice={notice} error={error} noticeTitle="Poll updated" errorTitle="Poll update unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
   </PollLifecycleContext.Provider>;
+}
+
+function WatchPollStream({ poll }: { poll: Poll }) {
+  if (!poll.streamUrl) return null;
+  return <a className="poll-watch-stream" href={poll.streamUrl} target="_blank" rel="noopener noreferrer" onClick={event => event.stopPropagation()}><img src={rumbleIcon} alt="" aria-hidden="true" />Watch stream</a>;
 }
 
 function PollLifecycleButton({ poll, disabled = false }: { poll: Poll; disabled?: boolean }) {
@@ -322,9 +329,9 @@ function CreditStatus({ poll, detail = false }: { poll: Poll; detail?: boolean }
   if (!poll.credits?.unresolved) return null;
   return <aside className="poll-credit-status" role="status"><strong>{poll.credits.unresolved} votes awaiting allocation</strong>{detail ? <p>{poll.credits.waiting} awaiting a message · {poll.credits.review} requiring review. These credits are excluded from current totals.</p> : null}</aside>;
 }
-function MatchupSubjects({ poll }: { poll: Poll }) {
+function MatchupSubjects({ poll, coverUrl, onCoverFailure }: { poll: Poll; coverUrl?: string; onCoverFailure?: () => void }) {
   const { winnerId } = pollOutcome(poll);
-  return <div className="aboot-subjects">{poll.options.slice(0, 2).map((option, index) => <div className={`aboot-subject${winnerId ? winnerId === option.id ? " is-winner" : " is-runner-up" : ""}`} key={option.id} style={{ "--subject-tint": poll.presentation?.colors?.[index] || (index ? "#a9b7da" : "#f3c928") } as React.CSSProperties}>{option.image ? <ResilientImage src={option.image.url} alt="" /> : <span className="aboot-subject__letter" aria-hidden="true">{option.label.slice(0, 1)}</span>}{winnerId === option.id ? <span className="aboot-winner-badge">Winner</span> : null}<strong>{option.label}</strong>{option.description ? <small>{option.description}</small> : null}</div>)}<b className="aboot-vs" aria-label="versus">VS</b></div>;
+  return <div className={`aboot-subjects${coverUrl ? " has-match-cover" : ""}`}>{coverUrl ? <ResilientImage className="aboot-match-cover" src={coverUrl} alt="" onFailure={onCoverFailure} /> : null}{poll.options.slice(0, 2).map((option, index) => <div className={`aboot-subject${winnerId ? winnerId === option.id ? " is-winner" : " is-runner-up" : ""}`} key={option.id} style={{ "--subject-tint": poll.presentation?.colors?.[index] || (index ? "#a9b7da" : "#f3c928") } as React.CSSProperties}>{coverUrl ? null : option.image ? <ResilientImage src={option.image.url} alt="" /> : <span className="aboot-subject__letter" aria-hidden="true">{option.label.slice(0, 1)}</span>}{winnerId === option.id ? <span className="aboot-winner-badge">Winner</span> : null}<strong>{option.label}</strong>{option.description ? <small>{option.description}</small> : null}</div>)}<b className="aboot-vs" aria-label="versus">VS</b></div>;
 }
 function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: boolean; children?: React.ReactNode }) {
   const aboot = poll.presentationType === "abootnothing";
@@ -334,8 +341,8 @@ function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: 
   const showBanner = Boolean(bannerUrl && failedBannerUrl !== bannerUrl);
   return (
     <div className={`poll-cover${aboot ? " aboot-cover" : ""}${compact ? " poll-cover--compact" : ""}${showBanner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
-      {aboot ? <>{poll.presentation?.context ? <p className="aboot-context eyebrow">{poll.presentation.context}</p> : null}<MatchupSubjects poll={poll} /></> : null}
-      {showBanner ? <img src={bannerUrl} alt={`${poll.title} cover`} onError={() => setFailedBannerUrl(bannerUrl)} /> : aboot ? null : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
+      {aboot ? <>{poll.presentation?.context ? <p className="aboot-context eyebrow">{poll.presentation.context}</p> : null}<MatchupSubjects poll={poll} coverUrl={showBanner ? bannerUrl : undefined} onCoverFailure={() => setFailedBannerUrl(bannerUrl)} /></> : null}
+      {showBanner && !aboot ? <img src={bannerUrl} alt={`${poll.title} cover`} onError={() => setFailedBannerUrl(bannerUrl)} /> : aboot ? null : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
       <div className="poll-cover__shade" />
       {children}
     </div>
@@ -389,7 +396,7 @@ function PollCard({
       </div>
       {poll.state === "closed" ? <div className="poll-card__finals" aria-label={`${poll.credits?.unresolved ? "Current" : "Final"} results for ${poll.title}`}>{ranked.slice(0, 3).map((option) => { const percentage = poll.totalVotes ? (option.votes / poll.totalVotes) * 100 : 0; return <div key={option.id}><span><b>{option.label}</b><em>{percentage.toFixed(poll.totalVotes ? 1 : 0)}% · {option.votes}</em></span><i aria-hidden="true"><i style={{ width: `${percentage}%` }} /></i></div>; })}</div> : null}
       {!preview ? <footer>
-        <PollLifecycleButton poll={poll} />
+        <WatchPollStream poll={poll} /><PollLifecycleButton poll={poll} />
         <span>
           By {poll.owner.displayName} ·{" "}
           {poll.closedAt
@@ -495,7 +502,7 @@ function PollQuickView({
         <ResultOptions poll={poll} busy={busy} vote={vote} onChanged={onChanged} />
         <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
-          <PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
+          <WatchPollStream poll={poll} /><PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
           <Link to={`/polls/${poll.slug}`}>Full Poll</Link>
           <a
             href={`/polls/${poll.slug}/popout`}
@@ -588,7 +595,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
     finally { setBusy(""); }
   };
   const manageVisibility = async () => {
-    if (!poll || !access.isOwner || !csrfToken || poll.state !== "closed") return;
+    if (!poll || !access.canManage || !csrfToken || !(poll.state === "closed" || poll.upcoming)) return;
     const nextPublic = !poll.public;
     if (!nextPublic && !window.confirm(`Hide “${poll.title}” from the public Poll gallery? Its owner management view will remain available.`)) return;
     setBusy("visibility"); setError("");
@@ -635,15 +642,15 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
                   Edit Poll
                 </Link>
               ) : null}
-              <PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
+              <WatchPollStream poll={poll} /><PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
               {access.isOwner && !access.canManageAll && poll.state === "open" ? (
                 <button className="button poll-owner-close" type="button" disabled={Boolean(busy)} onClick={() => void closeOwnedPoll()}>
                   {busy === "close" ? "Closing…" : "Close Poll"}
                 </button>
               ) : null}
-              {access.isOwner && poll.state === "closed" ? (
-                <button className="button button--secondary poll-owner-visibility" type="button" disabled={Boolean(busy)} onClick={() => void manageVisibility()} aria-label={poll.public ? "Hide this closed Poll from the gallery" : "Show this closed Poll in the gallery"}>
-                  {busy === "visibility" ? "Updating…" : poll.public ? "Hide from gallery" : "Show in gallery"}
+              {access.canManage && (poll.state === "closed" || poll.upcoming) ? (
+                <button className="button button--secondary poll-owner-visibility" type="button" disabled={Boolean(busy)} onClick={() => void manageVisibility()} aria-label={poll.public ? "Hide from gallery" : poll.upcoming ? "Publish Upcoming" : "Publish results"}>
+                  {busy === "visibility" ? "Updating…" : poll.public ? "Hide from gallery" : poll.upcoming ? "Publish Upcoming" : "Publish results"}
                 </button>
               ) : null}
               <button
@@ -804,6 +811,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   );
   const [streamChoice, setStreamChoice] = useState<"automatic" | "detected" | "custom">("automatic");
   const [livestreamId, setLivestreamId] = useState("");
+  const [streamUrl, setStreamUrl] = useState('');
   const [themeAccent, setThemeAccent] = useState("#f3c928");
   const [customTint, setCustomTint] = useState(false);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -836,6 +844,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
           setSource(poll);
           setTitle(poll.title);
           setPresentationType(poll.presentationType || "regular"); setSubjectColors(poll.presentation?.colors || ["#f3c928", "#a9b7da"]); setEpisodeContext(poll.presentation?.context || "");
+          setStreamUrl(poll.streamUrl || '');
           setDescription(poll.description || "");
           setWebVotingMode(poll.webVotingMode);
           setRumbleEnabled(poll.rumbleEnabled);
@@ -885,7 +894,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   const streamNeedsChoice = rumbleEnabled && streamChoice === "automatic" && liveStreams.length > 1;
   const sourceInvalid = rumbleEnabled && !/^(?:user|channel):[A-Za-z0-9_-]{1,180}$/.test(sourceScope);
   const payload = () => ({
-    presentationType, presentation: { colors: subjectColors, context: episodeContext, featuredOrder: source?.presentation?.featuredOrder || 0 },
+    streamUrl, presentationType, presentation: { colors: subjectColors, context: episodeContext, featuredOrder: source?.presentation?.featuredOrder || 0 },
     title,
     description,
     webVotingMode,
@@ -937,7 +946,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     if (!source || !csrfToken || !option.id) return; setBusy(true); try { await removePollMedia(source.slug, "option", csrfToken, option.id); const poll = (await getPoll(source.slug)).poll; setSource(poll); setOptions(poll.options.map((item) => ({ id: item.id, label: item.label, description: item.description || "", trigger: item.trigger, image: item.image || null }))); setNotice("Option image removed."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
   };
   const previewPoll: Poll = {
-    presentationType, presentation: { colors: subjectColors, context: episodeContext }, credits: source?.credits,
+    streamUrl, presentationType, presentation: { colors: subjectColors, context: episodeContext }, credits: source?.credits,
     id: source?.id || "preview", slug: source?.slug || "preview", title: title || "Your Poll title", description: description || "A polished audience choice, ready for the live signal.", state: source?.state || "draft", public: source?.public || false,
     webVotingMode, rumbleEnabled, rumbleSourceScope: sourceScope || null, livestreamMode, livestreamId: livestreamId || null, revision: source?.revision || 1, totalVotes: source?.totalVotes || 0,
     options: options.map((option, index) => ({ id: option.id || `preview-${index}`, position: index, label: option.label || `Option ${index + 1}`, description: option.description || null, trigger: option.trigger, normalizedTrigger: normalizePollTrigger(option.trigger), votes: source?.options[index]?.votes || 0, image: option.imagePreview ? { id: `preview-image-${index}`, purpose: "option", optionId: option.id, url: option.imagePreview, contentType: option.imageFile?.type || "image/png", byteSize: option.imageFile?.size || 0, width: 1, height: 1, createdAt: new Date().toISOString() } : option.image || null })),
@@ -1024,7 +1033,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
         <div>
           <section className="poll-editor-panel">
             <p className="eyebrow">01 · POLL IDENTITY</p>
-            <label><span>Collection</span><select value={presentationType} disabled={structuralLocked || options.length !== 2} onChange={event => setPresentationType(event.target.value as "regular" | "abootnothing")}><option value="regular">Regular Poll</option><option value="abootnothing">Aboot Nothing</option></select></label>
+            <PollStreamField value={streamUrl} onChange={setStreamUrl} slug={source?.slug} disabled={busy} /><label><span>Collection</span><select value={presentationType} disabled={structuralLocked || options.length !== 2} onChange={event => setPresentationType(event.target.value as "regular" | "abootnothing")}><option value="regular">Regular Poll</option><option value="abootnothing">Aboot Nothing</option></select></label>
             {presentationType === "abootnothing" ? <><label><span>Episode / context</span><input value={episodeContext} maxLength={160} onChange={event => setEpisodeContext(event.target.value)} /></label><div className="aboot-editor-colors">{subjectColors.map((color, index) => <label key={index}><span>Side {index + 1} colour</span><input type="color" value={color} onChange={event => setSubjectColors(values => values.map((value, i) => i === index ? event.target.value : value))} /></label>)}</div></> : null}
             <label>
               <span>Title</span>
