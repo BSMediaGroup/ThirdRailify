@@ -78,6 +78,9 @@ const STATIC_ROUTES = [
   route("/polls/abootnothing", "polls:abootnothing", "Aboot Nothing | Third Railify", "Two sides. One loud opinion. Pick your side in Aboot Nothing matchups and revisit every past debate.", {
     label: "Aboot Nothing", parent: ["Polls", "/polls"], schemaType: "CollectionPage",
   }),
+  route("/polls/abootnothing/brackets", "polls:roadmaps", "Season Roadmaps | Aboot Nothing | Third Railify", "Follow published Aboot Nothing matchups from the opening round to the final decision.", {
+    label: "Season Roadmaps", parent: ["Aboot Nothing", "/polls/abootnothing"], schemaType: "CollectionPage",
+  }),
   route("/polls/new", "polls:new", "Build a Live Poll | Third Railify", "Create a versioned Third Railify audience Poll with exact whole-message chat triggers and server-owned results.", {
     label: "Build a Poll",
     parent: ["Polls", "/polls"],
@@ -258,6 +261,10 @@ export function staticSeoForPath(pathname, origin) {
     pageType: "article",
     imagePath: "/social/farm1.webp",
     imageAlt: "GOATS in the Wild community story",
+  }), origin);
+
+  if (/^\/polls\/abootnothing\/brackets\/[a-z0-9-]+$/.test(path)) return createSeoDocument(route(path, "polls:roadmap-detail", "Season Roadmap | Aboot Nothing | Third Railify", "Follow the reviewed public matchups and recorded results for this Aboot Nothing season.", {
+    label: "Season Roadmap", parent: ["Season Roadmaps", "/polls/abootnothing/brackets"], index: false, schemaType: "WebPage",
   }), origin);
 
   const poll = path.match(/^\/polls\/([a-z0-9][a-z0-9-]{1,78}[a-z0-9])(?:\/(edit|popout))?$/);
