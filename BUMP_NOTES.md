@@ -6,7 +6,7 @@ CURRENT VER=0.1.0-alpha.0
 
 PENDING VER=0.1.0-alpha.0
 
-- Read-only release audit confirms active production deployment `080ffcfa-237f-4ef6-803c-970ae12165cc`, source `9eb509a`, contains approved entrant appearance commit `a443c11`. Coupled Admin source includes `ca099ff`; migration 0040 is already applied. No repeated feature deployment or migration is required.
+- Read-only release audit confirms active production deployment `35cf5575-2684-4342-8038-16549c9e1f8e`, source `e78130c`, contains approved entrant appearance commit `a443c11`. Coupled Admin source includes `ca099ff`; migration 0040 is already applied. No repeated feature deployment or migration is required.
 - Public source, renderer, mechanics and participant authority are unchanged. Authenticated saved-appearance acceptance remains unverified because the dedicated browser could not complete sign-in verification. README clarifies historical local-only notes.
 
 
@@ -1063,3 +1063,13 @@ PENDING VER=0.1.0-alpha.0
 - Matchup Studio reuses the existing black-and-gold surfaces and dialog styling. Turnstile keeps its widget on errors and provides explicit retry; verification remains mandatory. The operator confirmed failure was limited to the separate automated browser.
 
 - Production release recorded in `docs/MATCHUP_STUDIO.md`: Admin 4083ee10 / 9dd9c44, Public 6861272d / 738a24e. Stable assets/API/public-library checks pass. Authenticated Studio acceptance remains blocked by browser transport failure; no acceptance records created.
+
+## 2026-09-08 - Entrant release focused acceptance update
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Fresh isolated Public typecheck, build and Functions compilation pass; maintained-source lint has zero errors and two existing warnings. Mechanics/driver checks: 16 passed, one optional baseline skipped; protected mechanics/engine/render-plan hashes remain unchanged.
+- Maintained entrant browser assertions pass against the fresh build with an isolated local D1 fixture: appearance saves and hard-reload persistence, manual precedence, detail/Presentation/Stage compatibility, one-line glyph/name truncation. Participant controls and Stage screenshots were inspected. No live Wheel mutation was used.
+- Stable JS/CSS match immutable deployment `35cf5575-2684-4342-8038-16549c9e1f8e`; existing Wheel JSON reads expose appearance. Authenticated live save acceptance remains blocked by sign-in verification. No repeated Public application deployment.

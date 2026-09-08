@@ -2,7 +2,7 @@
 
 ## Entrant appearance release verification ? 2026-09-08
 
-The approved entrant feature commit `a443c11` is included in production source `9eb509a`, deployment `080ffcfa-237f-4ef6-803c-970ae12165cc`. Admin production also includes its coupled authority; migration 0040 was verified already applied at 06:39:33 UTC. Earlier local-only notes below are historical. This audit changed no Public application code or Wheel mechanics. Authenticated controlled appearance-save acceptance remains blocked by browser sign-in verification; deployment identity alone does not prove that acceptance.
+The approved entrant feature commit `a443c11` is included in production source `e78130c`, deployment `35cf5575-2684-4342-8038-16549c9e1f8e`. Admin production also includes its coupled authority; migration 0040 was verified already applied at 06:39:33 UTC. Earlier local-only notes below are historical. This audit changed no Public application code or Wheel mechanics. Authenticated controlled appearance-save acceptance remains blocked by browser sign-in verification; deployment identity alone does not prove that acceptance.
 ## Aboot Nothing Season Roadmaps
 
 Read-only `/polls/abootnothing/brackets` and `/:slug` follow intentionally published Admin seasons, with responsive rounds, winner paths, eligible Poll links and match lightboxes. A new shelf links from the existing Aboot gallery. Private drafts and hidden Poll data remain protected. See [authority and release evidence](docs/MATCHUP_STUDIO.md).
