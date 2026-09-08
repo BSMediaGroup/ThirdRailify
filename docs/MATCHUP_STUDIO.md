@@ -116,3 +116,5 @@ PENDING VER=0.1.0-alpha.0
 - Manual zoom or Reset view disables automatic fitting; Reset stays at 100% until Fit view is selected again. Vertical page scrolling remains intact.
 - Build/typecheck, scoped lint, extended gallery/detail browser checks and connected publication/roadmap browser checks pass. Coverage includes initial fit, enlargement, fullscreen, resize, reset persistence, incoming hover paths, keyboard paths, and existing responsive/privacy behavior. Viewed `.artifacts/roadmap-gallery-1788874466597/fitted-hover-paths.png`.
 - Existing Public canvas, styles and browser test updated. No new files, Admin behavior, backend, publication or user result changes.
+
+- Deployed and verified at 2026-09-08 13:36 UTC: Public `199792c`, Pages `304eb5ed.thirdrailify.pages.dev`; stable JS/CSS match immutable artifacts. Read-only live Chrome validation shows initial 132% fit (tree 1557.94px / viewport 1560px), two highlighted incoming paths on hover, Reset at 100%, and successful refit. Evidence/screenshot: `.artifacts/public-fit-live/`. Concurrent Poll edits preserved; no data changed.
