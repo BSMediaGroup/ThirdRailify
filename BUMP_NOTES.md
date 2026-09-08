@@ -1,5 +1,15 @@
 # Bump notes
 
+## 2026-09-09 - Animated vector show feature cards (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Recreated all three homepage feature illustrations in SVG/CSS: microphone duel with an animated signal, gloves feinting around a retro colour-bar TV, and a news desk with broadcast rings, steam and indicator lights. Removed the three raster imports from HomePage.
+- Made each entire card a keyboard-accessible link: Aboot Nothing ? `/polls/abootnothing`; Pop Culture Beat Down and News Hangout ? `/about`. Added focus/hover treatments and preserved show descriptions and schedules.
+- Reused visibility/reduced-motion gating; unique SVG IDs prevent paint-server collisions. Build, scoped lint, and browser checks at 1920/1440/768/390 passed, including motion progression, offscreen pause, reduced motion, overflow, keyboard activation and all destinations. Screenshots and geometry: `.artifacts/show-features/`. No deployment performed.
+
 ## 2026-09-08 - Entrant appearance production status verified
 
 CURRENT VER=0.1.0-alpha.0

@@ -1,3 +1,4 @@
+import { ShowFeatureArt } from "../components/ShowFeatureArt";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import goatField from "../../assets/backgrounds/farm1.webp";
@@ -9,9 +10,6 @@ import tiktokIcon from "../../assets/icons/tiktok.svg";
 import twitterIcon from "../../assets/icons/twitter.svg";
 import youtubeIcon from "../../assets/icons/youtube.svg";
 import shawnGinaHero from "../../assets/illustrations/shawn-gina-hero.webp";
-import abootNothingFeature from "../../assets/illustrations/universe-aboot-nothing.webp";
-import newsHangoutFeature from "../../assets/illustrations/universe-news-hangout.webp";
-import popCultureFeature from "../../assets/illustrations/universe-pop-culture-beat-down.webp";
 import ginaPortrait from "../../assets/people/gina1x.webp";
 import shawnPortrait from "../../assets/people/shawn1x.webp";
 import { ProductCard } from "../components/ProductCard";
@@ -125,20 +123,26 @@ export function HomePage() {
       <section className="section section--panel universe-section">
         <div className="container split-heading">
           <div><p className="eyebrow">The show universe</p><h2>Three ways off the rail.</h2></div>
-          <p>Recurring live-site formats, brought forward as a cleaner editorial system.</p>
+          <p>Big opinions. Culture collisions. The stories that keep us talking.</p>
         </div>
         <div className="container universe-grid">
           <article>
-            <div className="universe-card__art"><img src={abootNothingFeature} alt="" loading="lazy" decoding="async" /></div>
+            <Link className="show-feature-link" to="/polls/abootnothing" aria-label="Aboot Nothing">
+            <ShowFeatureArt scene="debate" />
             <div className="universe-card__body"><span>01 / DEBATE</span><h3>Aboot Nothing</h3><p>Head-to-head arguments over the questions nobody else thought to ask.</p><b>Sunday + Wednesday</b></div>
+          </Link>
           </article>
           <article>
-            <div className="universe-card__art"><img src={popCultureFeature} alt="" loading="lazy" decoding="async" /></div>
+            <Link className="show-feature-link" to="/about" aria-label="Pop Culture Beat Down">
+            <ShowFeatureArt scene="culture" />
             <div className="universe-card__body"><span>02 / CULTURE</span><h3>Pop Culture Beat Down</h3><p>Monday-night collisions with entertainment, culture, and whatever started the argument.</p><b>Monday</b></div>
+          </Link>
           </article>
           <article>
-            <div className="universe-card__art"><img src={newsHangoutFeature} alt="" loading="lazy" decoding="async" /></div>
+            <Link className="show-feature-link" to="/about" aria-label="News Hangout">
+            <ShowFeatureArt scene="news" />
             <div className="universe-card__body"><span>03 / CURRENT</span><h3>News Hangout</h3><p>The day's stories, live commentary, and a community that never stays in its lane.</p><b>Tuesday + Thursday + Friday</b></div>
+          </Link>
           </article>
         </div>
       </section>

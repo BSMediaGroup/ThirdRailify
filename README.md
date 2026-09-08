@@ -1,5 +1,9 @@
 # Third Railify V2 public site
 
+## Animated homepage show cards
+
+The three show illustrations use native SVG geometry and CSS animation in `src/components/ShowFeatureArt.tsx` and `src/styles/show-feature-art.css`. Duelling microphones, a retro TV with boxing gloves, and the news desk retain the original scenes without raster artwork. `useMotionGate` pauses them offscreen or in a hidden tab and respects reduced motion. Whole-card links lead to `/polls/abootnothing` (Aboot Nothing) and `/about` (Pop Culture Beat Down and News Hangout). Responsive browser evidence is in `.artifacts/show-features/`; run `node --test tests/show-features-browser.test.mjs` after building. Local implementation; not deployed by this task.
+
 ## Entrant appearance release verification ? 2026-09-08
 
 The approved entrant feature commit `a443c11` is included in production source `e78130c`, deployment `35cf5575-2684-4342-8038-16549c9e1f8e`. Admin production also includes its coupled authority; migration 0040 was verified already applied at 06:39:33 UTC. Earlier local-only notes below are historical. This audit changed no Public application code or Wheel mechanics. Authenticated controlled appearance-save acceptance remains blocked by browser sign-in verification; deployment identity alone does not prove that acceptance.
