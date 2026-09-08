@@ -383,3 +383,6 @@ Authorized Poll increments: src/components/PollIncrement.tsx and src/styles/poll
 Matchup scrolling/editing update (2026-09-08): the page handles vertical map overflow outside fullscreen; horizontal map scrollbars are 3px in Chromium. Admin has a sticky, independently scrollable Ideas bench and expanded bench lightbox. Unrelated unfinished matches stay editable after other results are recorded. Each opponent supports image upload and HTTPS URL import through the existing private image storage, with save/reload and publication boundaries covered by the focused bracket tests. No new files or migrations.
 
 Admin and Public bracket presentation (2026-09-08): unresolved matchups dim to 70% until hovered/focused; confirmed results show a green check and header tint; smaller winner trophies prefix the score. Shared presentation files and existing browser tests updated; no files added or removed.
+
+
+Unconfigured match dimming (2026-09-08): increased the visible difference by lowering incomplete match opacity from 70% to 40% on Admin and Public. Hover, keyboard focus and print restore full opacity. Existing transition and reduced-motion behavior retained. CURRENT VER=0.1.0-alpha.0; PENDING VER=0.1.0-alpha.0. No new files or data changes.
