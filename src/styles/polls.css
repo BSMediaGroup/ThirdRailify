@@ -905,3 +905,20 @@
 .poll-appearance .aboot-subject small { font-size:clamp(.7rem,1.8cqi,.9rem); }
 .poll-appearance .aboot-vs { font-size:clamp(.7rem,2cqi,1rem); }
 @media(max-width:600px) { .poll-appearance .poll-cover-editor { grid-template-columns:minmax(0,1fr); } }
+.poll-state--upcoming { color:#f9d961; border-color:#f3c92870; background:#f3c92815; }
+.poll-result-history { margin:2rem 0; padding:1.5rem; border:1px solid #f3c92840; border-radius:12px; }
+.poll-result-history h2 { font-size:2rem; margin:0 0 .5rem; }
+.poll-result-history details { padding:1rem 0; border-top:1px solid #ffffff18; }
+.poll-result-history details p { display:flex; justify-content:space-between; gap:1rem; }
+
+/* Keep management actions above the card quick-view hit area. */
+.poll-card footer { flex-wrap: wrap; justify-content: flex-start; gap: 12px; }
+.poll-card footer > span { flex-basis: 100%; order: -1; }
+.poll-card footer .poll-admin-lifecycle,
+.poll-admin-lifecycle { position: relative; z-index: 3; min-height: 40px; padding: 10px 16px; }
+.poll-card footer .poll-admin-open,
+.poll-admin-open { border: 1px solid rgba(108, 217, 164, .55); background: rgba(42, 136, 89, .16); color: #b2f3d0; }
+.poll-admin-open:hover { border-color: #6cd9a4; background: rgba(42, 136, 89, .3); }
+.poll-admin-lifecycle:disabled { opacity: .55; cursor: wait; }
+
+.poll-card footer .poll-owner-close { border: 1px solid rgba(224,77,96,.62); background: rgba(224,77,96,.14); color: #ffd7dc; }

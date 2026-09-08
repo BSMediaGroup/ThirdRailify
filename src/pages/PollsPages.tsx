@@ -2,6 +2,8 @@ import { PollIncrement } from '../components/PollIncrement';
 import { AbootNothingHero } from '../components/AbootNothingHero';
 import { RoadmapShelf } from '../brackets/Roadmaps';
 import {
+  createContext,
+  useContext,
   useCallback,
   useEffect,
   useRef,
@@ -37,10 +39,59 @@ import "../styles/polls.css";
 import "../styles/aboot-polls.css";
 import "../styles/gallery-heroes.css";
 
+type PollLifecycleControls = { allowed: boolean; busy: boolean; change: (poll: Poll) => void };
+const PollLifecycleContext = createContext<PollLifecycleControls>({ allowed: false, busy: false, change: () => undefined });
+
+function PublicPollManagement({ children, onChanged }: { children: React.ReactNode; onChanged: (poll: Poll) => void }) {
+  const { account, csrfToken } = useAuth();
+  const [adminAccount, setAdminAccount] = useState<unknown>(null);
+  const [busy, setBusy] = useState(false);
+  const pending = useRef(false);
+  const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    setAdminAccount(null);
+    if (account) void getCreatorAccess().then(access => {
+      if (!cancelled && access.canManageAll) setAdminAccount(account);
+    }).catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [account]);
+  const allowed = Boolean(account && adminAccount === account);
+  const change = async (poll: Poll) => {
+    if (!allowed || !csrfToken || pending.current || !["draft", "closed", "open"].includes(poll.state)) return;
+    const action = poll.state === "open" ? "close" : "open";
+    if (action === "close" && !window.confirm(`Close ?${poll.title}? and stop new votes?`)) return;
+    pending.current = true;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const result = await lifecyclePoll(poll.slug, poll.revision, action, csrfToken);
+      onChanged(result.poll);
+      setNotice(action === "open" ? `?${poll.title}? is open for voting.` : `?${poll.title}? is closed.`);
+    } catch (reason) {
+      setError(message(reason));
+      try { onChanged((await getPoll(poll.slug)).poll); } catch { /* Keep the actionable lifecycle error. */ }
+    } finally { pending.current = false; setBusy(false); }
+  };
+  return <PollLifecycleContext.Provider value={{ allowed, busy, change: poll => void change(poll) }}>
+    {children}
+    <EphemeralNotices notice={notice} error={error} noticeTitle="Poll updated" errorTitle="Poll update unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
+  </PollLifecycleContext.Provider>;
+}
+
+function PollLifecycleButton({ poll, disabled = false }: { poll: Poll; disabled?: boolean }) {
+  const { allowed, busy, change } = useContext(PollLifecycleContext);
+  if (!allowed || !["draft", "closed", "open"].includes(poll.state)) return null;
+  return <button className={`button poll-admin-lifecycle ${poll.state === "open" ? "poll-owner-close" : "poll-admin-open"}`} type="button" disabled={busy || disabled} onClick={event => { event.stopPropagation(); change(poll); }}>
+    {poll.state === "open" ? "Close Poll" : "Open Poll"}
+  </button>;
+}
+
 export function PollsPage({ aboot = false }: { aboot?: boolean }) {
   const collection = aboot ? "abootnothing" : "";
   const { account, openAuth } = useAuth();
   const hero = useMotionGate<HTMLElement>();
+  const [lifecycleVersion, setLifecycleVersion] = useState(0);
   const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
   const [openItems, setOpenItems] = useState<Poll[]>([]);
@@ -60,6 +111,15 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
   const [openPage, setOpenPage] = useState(1), [openPages, setOpenPages] = useState(0);
   const quietOpenPage = useRef(1);
   const quietPastPage = useRef(1);
+  const [upcomingItems, setUpcomingItems] = useState<Poll[]>([]), [upcomingError,setUpcomingError] = useState(''), [upcomingLoading,setUpcomingLoading] = useState(true);
+  const upcomingPageItems = useRef(new Map<number, Poll[]>()), quietUpcomingPage = useRef(1);
+  const [upcomingPage,setUpcomingPage] = useState(1), [upcomingPages,setUpcomingPages] = useState(0);
+  const loadUpcoming = useCallback(async (page = 1, append = false, quiet = false) => {
+    if (!quiet) setUpcomingLoading(true);
+    try { const payload = await listPolls('upcoming',search,page,24,collection); if (!quiet && !append) upcomingPageItems.current.clear(); upcomingPageItems.current.set(page,payload.items); setUpcomingItems([...upcomingPageItems.current.values()].reduce((all,items)=>mergePolls(all,items),[])); if (!quiet) setUpcomingPage(page); setUpcomingPages(payload.totalPages); setUpcomingError(''); }
+    catch (reason) { setUpcomingError(message(reason)); } finally { setUpcomingLoading(false); }
+  },[search,collection]);
+  useEffect(() => { if (view === 'all' || view === 'upcoming') void loadUpcoming(); },[view,loadUpcoming]);
   const loadPast = useCallback(async (page = 1, append = false, quiet = false) => {
     if (!quiet) setPastLoading(true);
     try {
@@ -79,7 +139,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
     try {
       const payload = await listPolls("open", search, page, 24, collection);
       const nextIds = payload.items.map((item) => item.id);
-      if (quiet && (openPageItems.current.get(page) || []).some((item) => !nextIds.includes(item.id))) await loadPast(1, false, true);
+      if (quiet && (openPageItems.current.get(page) || []).some((item) => !nextIds.includes(item.id))) { await loadPast(1, false, true); await loadUpcoming(1,false,true); }
       if (!quiet && !append) openPageItems.current.clear();
       openPageItems.current.set(page, payload.items);
       setOpenItems([...openPageItems.current.values()].reduce((all, items) => mergePolls(all, items), []));
@@ -91,7 +151,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
     } finally {
       if (!quiet) setOpenLoading(false);
     }
-  }, [loadPast, search, collection]);
+  }, [loadPast, loadUpcoming, search, collection]);
   const loadMine = useCallback(async () => {
     setMineLoading(true);
     try {
@@ -115,6 +175,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
   }, [account]);
   useCoordinatedPollRefresh(
     useCallback(() => {
+      if (upcomingItems.length) { const page = Math.min(quietUpcomingPage.current, upcomingPage); quietUpcomingPage.current = page >= upcomingPage ? 1 : page + 1; void loadUpcoming(page,false,true); void loadOpen(true); }
       if (openItems.length) {
         const page = Math.min(quietOpenPage.current, Math.max(1, openPage));
         quietOpenPage.current = page >= openPage ? 1 : page + 1;
@@ -125,16 +186,23 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
         quietPastPage.current = page >= pastPage ? 1 : page + 1;
         void loadPast(page, false, true);
       }
-    }, [loadOpen, loadPast, openItems.length, openPage, pastItems, pastPage]),
-    ((view === "all" || view === "open") && openItems.length > 0) || pastItems.some(p => Boolean(p.credits?.unresolved)),
+    }, [loadUpcoming, upcomingItems.length, upcomingPage, loadOpen, loadPast, openItems.length, openPage, pastItems, pastPage]),
+    ((view === "all" || view === "upcoming") && upcomingItems.length > 0) || ((view === "all" || view === "open") && openItems.length > 0) || pastItems.some(p => Boolean(p.credits?.unresolved)),
   );
   const changed = (poll: Poll) => {
-    setSelected(poll);
+    setSelected(current => current?.id === poll.id ? poll : current);
     setOpenItems((current) => current.map((item) => item.id === poll.id ? poll : item));
     setPastItems((current) => current.map((item) => item.id === poll.id ? poll : item));
     setMineItems((current) => current.map((item) => item.id === poll.id ? poll : item));
   };
+  const lifecycleChanged = (poll: Poll) => {
+    changed(poll);
+    setLifecycleVersion(version => version + 1);
+    void loadOpen(); void loadUpcoming(); void loadPast();
+    if (view === "mine") void loadMine();
+  };
   return (
+    <PublicPollManagement onChanged={lifecycleChanged}>
     <div className="polls-page">
       {aboot ? <AbootNothingHero /> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
         <GalleryHeroAtmosphere variant="polls" />
@@ -174,15 +242,14 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
         <div className="polls-trust-rail"><span><i aria-hidden="true" /><b>WEB</b> Direct audience choice</span><span><i aria-hidden="true" /><b>RUMBLE</b> Live chat signal</span><span><i aria-hidden="true" /><b>AUTHORITATIVE</b> One current vote per source</span></div>
       </section>
       }
-      {!aboot ? <AbootFeature onQuickView={setSelected} /> : null}
+      {!aboot ? <AbootFeature onQuickView={setSelected} refreshVersion={lifecycleVersion} /> : null}
       <section id="poll-directory" className="container poll-directory">
         <header>
           <div>
             <p className="eyebrow">PUBLIC SIGNALS</p>
             <h2>{aboot ? "Aboot Nothing matchups" : "Poll directory"}</h2>
             <p>
-              Open Polls refresh together. Closed results settle into a quieter,
-              cache-friendly state.
+              See what is coming up, vote in open Polls, and revisit completed results.
             </p>
           </div>
           <div className="poll-directory__tools">
@@ -193,7 +260,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
                 onChange={(event) => setView(event.target.value)}
               >
                 <option value="all">All</option>
-                <option value="open">Open</option>
+                <option value="open">Open</option><option value="upcoming">Upcoming</option>
                 <option value="closed">Closed</option>
                 {account ? <option value="mine">Mine</option> : null}
               </select>
@@ -210,6 +277,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
           </div>
         </header>
         {aboot ? <RoadmapShelf /> : null}{view === "all" || view === "open" ? <PollDirectorySection title={aboot ? "Current Matchups" : "Open Polls"} eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} footer={openPage < openPages ? <button className="button button--ghost poll-history-more" type="button" disabled={openLoading} onClick={() => void loadOpen(false, openPage + 1, true)}>Load more Open Polls</button> : null} /> : null}
+        {view === "all" || view === "upcoming" ? <PollDirectorySection title={aboot ? "Upcoming Matchups" : "Upcoming Polls"} eyebrow="COMING UP" items={upcomingItems} loading={upcomingLoading} error={upcomingError} empty="No upcoming Polls yet." onQuickView={setSelected} footer={upcomingPage < upcomingPages ? <button className="button button--ghost" disabled={upcomingLoading} onClick={() => void loadUpcoming(upcomingPage+1,true)}>More upcoming Polls</button> : null} /> : null}
         {view === "all" || view === "closed" ? <PollDirectorySection title={aboot ? "Past Matchups" : "Past Polls"} eyebrow="POLL HISTORY" items={pastItems} loading={pastLoading} error={pastError} empty="No completed Polls yet." onQuickView={setSelected} footer={pastPage < pastPages ? <button className="button button--ghost poll-history-more" type="button" disabled={pastLoading} onClick={() => void loadPast(pastPage + 1, true)}>{pastLoading ? "Loading…" : "Load more Past Polls"}</button> : null} /> : null}
         {view === "mine" ? <PollDirectorySection title="Your Polls" eyebrow="CREATOR LIBRARY" items={mineItems} loading={mineLoading} error={mineError} empty="You have not created a Poll yet." onQuickView={setSelected} /> : null}
       </section>
@@ -223,6 +291,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
         />
       ) : null}
     </div>
+    </PublicPollManagement>
   );
 }
 
@@ -241,11 +310,11 @@ function mergePolls(current: Poll[], incoming: Poll[]) {
   return [...items.values()];
 }
 
-function AbootFeature({ onQuickView }: { onQuickView: (poll: Poll) => void }) {
+function AbootFeature({ onQuickView, refreshVersion }: { onQuickView: (poll: Poll) => void; refreshVersion: number }) {
   const [items, setItems] = useState<Poll[]>([]); const [error, setError] = useState("");
   const load = useCallback(() => { void listPolls("recent", "", 1, 4, "abootnothing").then(p => { setItems(p.items.filter(item => item.presentationType === "abootnothing")); setError(""); }).catch(() => setError("Matchups are temporarily unavailable.")); }, []);
-  useEffect(load, [load]);
-  useCoordinatedPollRefresh(load, items.some(p => p.state === "open" || Boolean(p.credits?.unresolved)));
+  useEffect(load, [load, refreshVersion]);
+  useCoordinatedPollRefresh(load, items.some(p => p.state === "open" || Boolean(p.upcoming) || Boolean(p.credits?.unresolved)));
   return <section className="container aboot-feature"><header><div><p className="eyebrow">PICK A SIDE</p><h2>Aboot Nothing</h2></div><Link to="/polls/abootnothing">See all</Link></header>{error ? <p role="status">{error}</p> : items.length ? <div className="aboot-feature__row">{items.map(p => <PollCard key={p.id} poll={p} onQuickView={onQuickView} />)}</div> : <p>New matchups will appear here. <Link to="/polls/abootnothing">Explore Aboot Nothing</Link></p>}</section>;
 }
 function CreditStatus({ poll, detail = false }: { poll: Poll; detail?: boolean }) {
@@ -313,13 +382,14 @@ function PollCard({
           }}
         />
         {leading?.image ? <ResilientImage src={leading.image.url} alt="" /> : null}
-        <strong>{leading ? `${poll.state === "closed" && poll.totalVotes ? outcome.tied ? "TIED TOP RESULT · " : "TOP RESULT · " : ""}${outcome.tied ? outcome.leaders.map((option) => option.label).join(" + ") : leading.label}` : "Awaiting first vote"}</strong>
+        <strong>{poll.upcoming ? "Voting opens soon" : leading ? `${poll.state === "closed" && poll.totalVotes ? outcome.tied ? "TIED TOP RESULT · " : "TOP RESULT · " : ""}${outcome.tied ? outcome.leaders.map((option) => option.label).join(" + ") : leading.label}` : "Awaiting first vote"}</strong>
         <b>
           {poll.totalVotes} vote{poll.totalVotes === 1 ? "" : "s"}
         </b>
       </div>
       {poll.state === "closed" ? <div className="poll-card__finals" aria-label={`${poll.credits?.unresolved ? "Current" : "Final"} results for ${poll.title}`}>{ranked.slice(0, 3).map((option) => { const percentage = poll.totalVotes ? (option.votes / poll.totalVotes) * 100 : 0; return <div key={option.id}><span><b>{option.label}</b><em>{percentage.toFixed(poll.totalVotes ? 1 : 0)}% · {option.votes}</em></span><i aria-hidden="true"><i style={{ width: `${percentage}%` }} /></i></div>; })}</div> : null}
       {!preview ? <footer>
+        <PollLifecycleButton poll={poll} />
         <span>
           By {poll.owner.displayName} ·{" "}
           {poll.closedAt
@@ -365,7 +435,7 @@ function PollQuickView({
   const close = useRef<HTMLButtonElement>(null);
   useModalDialog(root, close, onClose);
   const { csrfToken } = useAuth();
-  useCoordinatedPollRefresh(useCallback(() => { void getPoll(poll.slug).then(p => onChanged(p.poll)).catch(() => undefined); }, [poll.slug, onChanged]), poll.state === "open" || Boolean(poll.credits?.unresolved));
+  useCoordinatedPollRefresh(useCallback(() => { void getPoll(poll.slug).then(p => onChanged(p.poll)).catch(() => undefined); }, [poll.slug, onChanged]), poll.state === "open" || Boolean(poll.upcoming) || Boolean(poll.credits?.unresolved));
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -425,6 +495,7 @@ function PollQuickView({
         <ResultOptions poll={poll} busy={busy} vote={vote} onChanged={onChanged} />
         <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
+          <PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
           <Link to={`/polls/${poll.slug}`}>Full Poll</Link>
           <a
             href={`/polls/${poll.slug}/popout`}
@@ -469,9 +540,9 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   }, [load]);
   useCoordinatedPollRefresh(
     useCallback(() => {
-      if (poll?.state === "open" || poll?.credits?.unresolved) void load(true);
-    }, [load, poll?.state, poll?.credits?.unresolved]),
-    poll?.state === "open" || Boolean(poll?.credits?.unresolved),
+      if (poll?.state === "open" || poll?.upcoming || poll?.credits?.unresolved) void load(true);
+    }, [load, poll?.state, poll?.upcoming, poll?.credits?.unresolved]),
+    poll?.state === "open" || Boolean(poll?.upcoming) || Boolean(poll?.credits?.unresolved),
   );
   usePageSeo(poll ? pollSeo(poll, popout) : null);
   const vote = async (optionId: string) => {
@@ -529,6 +600,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   if (!poll)
     return <State kind="error" title="Poll unavailable" copy={error} />;
   return (
+    <PublicPollManagement onChanged={setPoll}>
     <div className={popout ? "poll-popout" : "poll-detail-page"}>
       <section className="poll-stage" style={{ "--poll-accent": poll.theme?.accent || "#f3c928" } as React.CSSProperties}>
         <PollCover poll={poll}>
@@ -563,7 +635,8 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
                   Edit Poll
                 </Link>
               ) : null}
-              {access.isOwner && poll.state === "open" ? (
+              <PollLifecycleButton poll={poll} disabled={Boolean(busy)} />
+              {access.isOwner && !access.canManageAll && poll.state === "open" ? (
                 <button className="button poll-owner-close" type="button" disabled={Boolean(busy)} onClick={() => void closeOwnedPoll()}>
                   {busy === "close" ? "Closing…" : "Close Poll"}
                 </button>
@@ -598,12 +671,13 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
           vote={popout ? undefined : vote}
           onChanged={popout ? undefined : setPoll}
         />
-        {poll.totalVotes === 0 ? (
+        {poll.upcoming ? <p className="poll-zero">Voting has not opened yet. Come back when this Poll opens to choose your side.</p> : poll.totalVotes === 0 ? (
           <p className="poll-zero">
             Zero votes is a valid live result. The first authoritative choice
             will animate this stage.
           </p>
         ) : null}
+        {poll.history?.length ? <section className="poll-result-history"><h2>Previous results</h2><p>Results saved before this Poll was reset to Upcoming.</p>{poll.history.map(round => <details key={round.id}><summary>{round.title} / {round.totalVotes} votes / Reset {new Date(round.resetAt).toLocaleDateString()}</summary>{round.options.map(option => <p key={option.id}><strong>{option.label}</strong><span>{option.votes} votes</span></p>)}{round.unallocatedDiscarded ? <small>{round.unallocatedDiscarded} unallocated credits were discarded during reset.</small> : null}</details>)}</section> : null}
         <EphemeralNotices notice={notice} error={error} noticeTitle="Poll updated" errorTitle="Poll action unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
           <strong>
@@ -612,7 +686,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
           <span>
             {poll.state === "open"
               ? "Refreshing every 7 seconds while visible"
-              : poll.credits?.unresolved ? "Results awaiting reconciliation" : poll.credits === null ? "Reconciliation status unavailable" : "Final result"}
+              : poll.upcoming ? "Upcoming / Voting has not opened" : poll.credits?.unresolved ? "Results awaiting reconciliation" : poll.credits === null ? "Reconciliation status unavailable" : "Final result"}
           </span>
           {poll.ordinaryVoterIdentities !== undefined ? <span>{poll.ordinaryVoterIdentities} ordinary voting identities</span> : null}
           <span>
@@ -623,6 +697,7 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
         </footer>
       </section>
     </div>
+    </PublicPollManagement>
   );
 }
 
@@ -670,13 +745,13 @@ function ResultOptions({
             <em>{option.votes} votes</em>
             {account && approved && onChanged && poll.state === "open" ? <PollIncrement poll={poll} option={option} disabled={Boolean(busy)} onChanged={onChanged} /> : null}
             <small className="poll-option-breakdown">Trigger: {option.trigger}{option.manualVotes ? ` / ${option.manualVotes} account-added` : ""}{option.bonusVotes ? ` · ${option.ordinaryVotes || 0} ordinary + ${option.bonusVotes} additional` : ""}</small>
-            {vote && poll.state === "open" ? (
+            {vote && (poll.state === "open" || poll.upcoming) ? (
               <button
                 type="button"
-                disabled={Boolean(busy)}
+                disabled={Boolean(busy) || poll.upcoming}
                 onClick={() => vote(option.id)}
               >
-                {busy === option.id
+                {poll.upcoming ? "Voting opens soon" : busy === option.id
                   ? "Recording…"
                   : current
                     ? "Your vote"
@@ -1205,7 +1280,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
 
 function Status({ poll }: { poll: Poll }) {
   return (
-    <span className={`poll-state poll-state--${poll.state}`}>{poll.state === "closed" && poll.credits?.unresolved ? "Voting closed · Results awaiting reconciliation" : poll.state}</span>
+    <span className={`poll-state poll-state--${poll.upcoming ? "upcoming" : poll.state}`}>{poll.upcoming ? "Upcoming" : poll.state === "closed" && poll.credits?.unresolved ? "Voting closed · Results awaiting reconciliation" : poll.state}</span>
   );
 }
 function State({

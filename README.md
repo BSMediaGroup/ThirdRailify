@@ -391,3 +391,6 @@ Public Roadmaps (2026-09-08): new full-width hero and searchable, fully clickabl
 
 
 Poll editor Appearance layout (2026-09-09): moved the cover preview to a full-width row above upload/help controls, sized matchup typography to its container and retained a two-column matchup at mobile widths. Uploaded covers use a bounded contain preview. Regression checks cover long Batman/Spider-Man names, preview width/height, upload selection and feature tint at 390/768/1440/1920; screenshots reviewed. Build/typecheck and public Poll browser tests pass. CSS and existing browser test updated; no new files, data or authority changes.
+Upcoming Polls: regular and Aboot Nothing galleries include searchable Upcoming sections; saved never-opened Polls show an Upcoming badge and disabled voting. Poll detail retains Previous results after an Admin reset. Migration 0044 and Admin/Public/Media deployments are complete; production browser checks and screenshots are under .artifacts/poll-upcoming.
+
+Public Admin lifecycle controls: logged-in full/master Admins can open draft or closed Polls and close open Polls from gallery cards, quick view and detail, for both regular Polls and Aboot Nothing. The existing signed lifecycle API remains authoritative; gallery sections refresh after changes and ephemeral notifications report success or errors.
