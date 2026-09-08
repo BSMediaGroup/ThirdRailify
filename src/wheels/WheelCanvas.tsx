@@ -1,6 +1,6 @@
 import { WheelAvatarLayer } from "./EntrantAvatar";
-import { useEffect, useMemo, useRef } from "react";
-import { countSegmentBoundaryCrossings, entryAtPointer, hitTestWheel, segmentBoundaryRotations } from "./engine.mjs";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { countSegmentBoundaryCrossings, entryAngles, hitTestWheel, normalizeTurn, segmentBoundaryRotations } from "./engine.mjs";
 import type { WheelSpinPlan } from "./engine.mjs";
 import { progressAt, spinRotationAtTime } from "./mechanics.mjs";
 import type { WheelConfig, WheelEntry, WheelMediaAsset } from "./types";
@@ -30,12 +30,29 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
   const boundaryCallback = useRef(onBoundaryCrossing);
   const active = useMemo(() => entries.filter((entry) => entry.state === "active"), [entries]);
   const boundaries = useMemo(() => segmentBoundaryRotations(active), [active]);
+  const pointerSegments = useMemo(() => entryAngles(active), [active]);
+  const renderedRotation = useRef(rotation);
   const shades = useMemo(() => pointerAccentShades(config.pointerAccent), [config.pointerAccent]);
   const imageCache = useRef(new Map<string, SegmentCanvasImage>()); const gifCache = useRef(new Map<string, GifState>());
 
   targetCallback.current = onPointerTargetChange;
   spinEndCallback.current = onSpinEnd;
   boundaryCallback.current = onBoundaryCrossing;
+
+  // The renderer already owns the exact angle. Reading its CSS matrix forces a
+  // style flush and loses precision; rebuilding weighted segments also allocates
+  // needlessly each frame. Keep this lookup scoped to the current entry snapshot.
+  const publishPointerTarget = useCallback((degrees: number) => {
+    const target = normalizeTurn(-degrees * Math.PI / 180);
+    const entry = (pointerSegments.find((segment) => target >= segment.start && target < segment.end) || pointerSegments[pointerSegments.length - 1])?.entry || null;
+    const id = entry?.id || null;
+    if (id !== lastTarget.current) { lastTarget.current = id; targetCallback.current?.(entry); }
+  }, [pointerSegments]);
+
+  const renderRotation = useCallback((rotorElement: HTMLDivElement, element: InstrumentedCanvas, degrees: number) => {
+    renderedRotation.current = degrees;
+    setRotorRotation(rotorElement, element, degrees);
+  }, []);
 
   useEffect(() => {
     const hostElement = host.current; const frameElement = frame.current; const element = canvas.current; const mechanicsElement = mechanics.current; const rotorElement = rotor.current; if (!hostElement || !frameElement || !element || !mechanicsElement || !rotorElement) return;
@@ -93,25 +110,21 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
   }, [active, config, segmentMedia, segmentPreviewUrls]);
 
   useEffect(() => {
-    let frame = 0; let stopped = false;
-    const publish = (degrees: number) => { const element = canvas.current; const rotorElement = rotor.current; if (element?.__wheelRendererV19) element.__wheelRendererV19.currentRotation = degrees; if (rotorElement) rotorElement.dataset.wheelRotation = String(degrees); const entry = entryAtPointer(active, degrees); const id = entry?.id || null; if (id !== lastTarget.current) { lastTarget.current = id; targetCallback.current?.(entry); } };
-    const sample = () => { if (stopped) return; const transform = rotor.current ? getComputedStyle(rotor.current).transform : "none"; const matrix = transform === "none" ? null : new DOMMatrixReadOnly(transform); publish(matrix ? Math.atan2(matrix.b, matrix.a) * 180 / Math.PI : rotation); frame = requestAnimationFrame(sample); };
-    if (spinning) frame = requestAnimationFrame(sample); else publish(rotation);
-    return () => { stopped = true; cancelAnimationFrame(frame); };
-  }, [active, rotation, spinning]);
+    if (!spinning) publishPointerTarget(rotation);
+  }, [publishPointerTarget, rotation, spinning]);
 
   useEffect(() => {
     const element = canvas.current; const rotorElement = rotor.current;
-    if (!element || !rotorElement || !spinning || !animation) { if (element && rotorElement && !spinning) setRotorRotation(rotorElement, element, rotation); return; }
+    if (!element || !rotorElement || !spinning || !animation) { if (element && rotorElement && !spinning) renderRotation(rotorElement, element, rotation); return; }
     let frame = 0; let stopped = false; let completed = false;
     const startAt = Number.isFinite(animation.startAt) ? Number(animation.startAt) : performance.now();
     const duration = Math.max(0, animation.durationMs); const id = animation.id || `${animation.winnerId}:${startAt}`;
     let lastBoundaryRotation = animation.startRotation;
     const metrics: SpinMetrics = { version: "wheel-spin-v2", id, startAt, firstFrameAt: null, durationMs: duration, startRotation: animation.startRotation, finalRotation: animation.finalRotation, frameCount: 0, lastFrameAt: startAt, lastFrameRotation: animation.startRotation, finalFrameRotation: null, expectedFinalFrameDelta: null, actualFinalFrameDelta: null, settledAt: null, completed: false, reducedMotion, mechanicsVersion: animation.mechanics.mechanicsVersion, curveProfile: animation.mechanics.curveProfile, mechanicsRevision: animation.mechanicsRevision };
-    element.__wheelSpinV110 = metrics; setRotorRotation(rotorElement, element, animation.startRotation);
+    element.__wheelSpinV110 = metrics; renderRotation(rotorElement, element, animation.startRotation);
     const finish = (now: number, expectedDelta: number) => {
       if (completed || stopped) return; completed = true;
-      const before = metrics.lastFrameRotation; setRotorRotation(rotorElement, element, animation.finalRotation);
+      const before = metrics.lastFrameRotation; renderRotation(rotorElement, element, animation.finalRotation);
       if (!reducedMotion) { const crossings = countSegmentBoundaryCrossings(boundaries, lastBoundaryRotation, animation.finalRotation); if (crossings) boundaryCallback.current?.(crossings); }
       metrics.finalFrameRotation = animation.finalRotation; metrics.expectedFinalFrameDelta = expectedDelta; metrics.actualFinalFrameDelta = animation.finalRotation - before; metrics.lastFrameAt = now; metrics.settledAt = now; metrics.completed = true;
       spinEndCallback.current?.();
@@ -119,15 +132,18 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     if (reducedMotion || duration === 0) { frame = requestAnimationFrame((now) => finish(now, animation.finalRotation - animation.startRotation)); return () => { stopped = true; cancelAnimationFrame(frame); }; }
     const sample = (now: number) => {
       if (stopped) return;
+      // Preserve the HUD's existing previous-frame sampling order, before the
+      // next accepted trajectory angle is written, using the same frame owner.
+      publishPointerTarget(renderedRotation.current);
       if (now < startAt) { frame = requestAnimationFrame(sample); return; }
       metrics.firstFrameAt ??= now; const elapsed = Math.min(duration, now - startAt); const nextRotation = spinRotationAtTime(animation, elapsed);
       if (elapsed >= duration) { const previousElapsed = Math.max(0, metrics.lastFrameAt - startAt); const expectedDelta = animation.totalTravel * (1 - progressAt(animation.compiledMechanics, previousElapsed / duration)); finish(now, expectedDelta); return; }
       const crossings = countSegmentBoundaryCrossings(boundaries, lastBoundaryRotation, nextRotation); if (crossings) boundaryCallback.current?.(crossings); lastBoundaryRotation = nextRotation;
-      setRotorRotation(rotorElement, element, nextRotation); metrics.frameCount += 1; metrics.lastFrameAt = now; metrics.lastFrameRotation = nextRotation; frame = requestAnimationFrame(sample);
+      renderRotation(rotorElement, element, nextRotation); metrics.frameCount += 1; metrics.lastFrameAt = now; metrics.lastFrameRotation = nextRotation; frame = requestAnimationFrame(sample);
     };
     frame = requestAnimationFrame(sample);
     return () => { stopped = true; cancelAnimationFrame(frame); };
-  }, [animation, boundaries, reducedMotion, rotation, spinning]);
+  }, [animation, boundaries, publishPointerTarget, reducedMotion, renderRotation, rotation, spinning]);
 
   const alternative = active.length ? `Wheel with ${active.length} active participants: ${active.slice(0, 12).map((entry) => entry.label).join(", ")}${active.length > 12 ? ", and more" : ""}.` : "Wheel with no active participants.";
   const geometryStyle = { "--wheel-rim-outer-inset": `${WHEEL_GEOMETRY.outerRimInsetRatio * 100}%`, "--wheel-rim-inner-inset": `${WHEEL_GEOMETRY.innerRimInsetRatio * 100}%`, "--wheel-hub-inset": `${(1 - WHEEL_GEOMETRY.hubToOuterRatio) * 50}%`, "--wheel-hub-padding": `${WHEEL_GEOMETRY.hubPaddingRatio * 100}%`, "--wheel-pointer-width": `${WHEEL_GEOMETRY.pointerWidthRatio * 100}%`, "--wheel-pointer-height": `${WHEEL_GEOMETRY.pointerHeightRatio * 100}%`, "--wheel-pointer-top": `${WHEEL_GEOMETRY.pointerTopRatio * 100}%`, "--pointer": shades.base, "--pointer-dark": shades.dark, "--pointer-light": shades.light, "--pointer-glow": shades.glow } as React.CSSProperties;

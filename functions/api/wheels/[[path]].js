@@ -67,7 +67,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
   const session = await resolveSession(env, request);
   if (!session) throw failure(401, "authentication_required", "Sign in to manage or officially spin a wheel.");
   await requireCsrf(request, session);
-  const media = path.match(/^([a-z0-9][a-z0-9-]{1,78}[a-z0-9])\/media\/(background|centre|segment-fill)$/i);
+  const media = path.match(/^([a-z0-9][a-z0-9-]{1,78}[a-z0-9])\/media\/(background|centre|segment-fill|avatar)$/i);
   if (media && request.method === "POST") return proxyMediaUpload(request, env, fetchImpl, path, session.accountId);
   const raw = await readBody(request);
   let input;

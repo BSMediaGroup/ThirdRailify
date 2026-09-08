@@ -46,6 +46,7 @@
     "test:wheels:v17": "node --test tests/wheels-v17.test.mjs",
     "test:wheels:v18": "node --test tests/wheels-v18.test.mjs",
     "test:wheels:v19": "node --test tests/wheels-v19.test.mjs",
+    "test:wheels:render": "node --test tests/wheels-render-driver.test.mjs",
     "test:wheels:v113": "node --test tests/wheels-v113.test.mjs",
     "test:wheels:v114": "node --test tests/wheels-v114.test.mjs",
     "test:wheels:hotfix": "node --test tests/wheels-palette-normalization.test.mjs",

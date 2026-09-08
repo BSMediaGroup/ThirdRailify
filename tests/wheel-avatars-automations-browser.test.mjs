@@ -32,6 +32,7 @@ test('public Wheel avatar modes, fallback card, and automation CRUD persist thro
       try {
         if (path === '/api/auth/config') return json({ configured: true, publicOrigin: origin, adminOrigin: origin, oauthProviders: [], oauthProviderStates: [], environment: 'test' });
         if (path === '/api/auth/session') return json({ ok: true, authenticated: true, csrfToken: 'fixture', access: { isAdmin: false, isMasterAdmin: false }, account: { id: 'creator', email: 'creator@example.test', displayName: 'Creator', avatarUrl: null, providers: ['email'], role: 'user', status: 'active', emailVerified: true } });
+        if (path === `/api/wheels/${slug}/media/avatar`) return json({ok:true,asset:{id:'fixture-upload',url:'https://cdn.thirdrailify.com/fixture-avatar.svg?upload='+width}});
         if (path === '/api/wheels/mechanics') return json(await getPublicWheelMechanics(env));
         if (path === '/api/wheels/access') return json({ ok: true, authenticated: true, canCreate: true });
         if (path === `/api/wheels/${slug}`) return json(method === 'PUT' ? await saveWheel(env, 'creator', slug, route.request().postDataJSON()) : await getPublicWheel(env, slug, 'creator'));
@@ -83,6 +84,9 @@ test('public Wheel avatar modes, fallback card, and automation CRUD persist thro
     await page.getByRole('button', { name: 'Manage participants', exact: true }).click();
     const manager = page.locator('.participant-manager');
     await manager.getByRole('button', { name: 'Manage avatar for Gamma', exact: true }).click();
+    await manager.getByLabel('Upload custom avatar', {exact:false}).setInputFiles({name:'avatar.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64')});
+    await page.getByText('Image uploaded. Save participants to apply it.', {exact:true}).waitFor();
+    assert.equal(await manager.getByLabel('Custom avatar image URL (optional)').inputValue(), 'https://cdn.thirdrailify.com/fixture-avatar.svg?upload='+width);
     await manager.getByLabel('Custom avatar image URL (optional)').fill(`https://cdn.thirdrailify.com/fixture-avatar.svg?width=${width}`);
     await manager.screenshot({ path: `${output}/participant-avatars-${width}.png` });
     await manager.getByRole('button', { name: 'Save participants', exact: true }).click();

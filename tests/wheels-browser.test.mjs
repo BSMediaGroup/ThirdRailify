@@ -222,7 +222,8 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
         await page
           .getByRole("heading", { level: 1, name: "Third Railify Demo Draw" })
           .waitFor();
-        assert.equal(await page.locator("canvas").count(), 1);
+        assert.equal(await page.locator(".wheel-stage__face").count(), 1);
+        assert.equal(await page.locator(".wheel-stage__mechanics").count(), 1);
         const box = await page.locator(".wheel-stage").boundingBox();
         assert.ok(box && Math.abs(box.width - box.height) < 1);
         assert.equal(
@@ -266,7 +267,7 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
           await page
             .getByRole("button", { name: "Close participant details" })
             .click();
-          const canvas = page.locator(".wheel-control-stage canvas");
+          const canvas = page.locator(".wheel-control-stage .wheel-stage__face");
           const canvasBox = await canvas.boundingBox();
           assert.ok(canvasBox);
           await canvas.click({
@@ -457,10 +458,11 @@ test("Wheels directory, demo result, editor, and presentation are responsive and
           "wheel detail remains mounted beneath editor",
         );
         assert.equal(
-          await page.locator("canvas").count(),
+          await page.locator(".wheel-stage__face").count(),
           2,
           "one underlying wheel and one compact editor preview",
         );
+        assert.equal(await page.locator(".wheel-stage__mechanics").count(), 2);
         assert.equal(
           await page
             .getByRole("button", { name: "Save changes" })

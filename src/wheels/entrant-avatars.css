@@ -50,4 +50,9 @@
 
 @media(max-width:600px) { .participant-manager .participant-row__order { display: flex; flex-direction: column; gap: 4px; } .participant-manager .participant-row__order button { width: 30px; min-width: 0; padding: 0; } .participant-manager .participant-row__order span { display: none; } }
 
-.participant-detail .entrant-avatar { width: 45px; height: 45px; }
+.participant-detail .entrant-avatar { width: 38px; height: 38px; flex: 0 0 38px; }
+
+.participant-detail__identity { margin-top: 12px; align-items: center; }
+.participant-detail .participant-detail__identity h2 { margin: 0; line-height: 1; }
+
+.participant-avatar-upload { grid-column: 1 / -1; padding: 12px; border: 1px dashed #75632c; border-radius: 8px; }
