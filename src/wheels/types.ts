@@ -3,7 +3,7 @@ import type { SegmentStyle } from "./segmentStyles.mjs";
 export type WheelEntry = {
   id: string;
   label: string;
-  avatarUrl?: string | null;
+  avatarUrl?: string | null; customAvatarUrl?: string | null; sourceAvatarUrl?: string | null;
   order: number;
   weight: number;
   colour: string | null;

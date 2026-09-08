@@ -82,7 +82,8 @@ test('public Wheel avatar modes, fallback card, and automation CRUD persist thro
     await page.getByRole('button', { name: 'Close participant details' }).click();
     await page.getByRole('button', { name: 'Manage participants', exact: true }).click();
     const manager = page.locator('.participant-manager');
-    await manager.getByLabel('Avatar image URL (optional)').last().fill(`https://cdn.thirdrailify.com/fixture-avatar.svg?width=${width}`);
+    await manager.getByRole('button', { name: 'Manage avatar for Gamma', exact: true }).click();
+    await manager.getByLabel('Custom avatar image URL (optional)').fill(`https://cdn.thirdrailify.com/fixture-avatar.svg?width=${width}`);
     await manager.screenshot({ path: `${output}/participant-avatars-${width}.png` });
     await manager.getByRole('button', { name: 'Save participants', exact: true }).click();
     await page.getByText('Authoritative participant revision saved.', { exact: true }).waitFor();
