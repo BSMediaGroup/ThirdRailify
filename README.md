@@ -388,3 +388,7 @@ Admin and Public bracket presentation (2026-09-08): unresolved matchups dim to 7
 Unconfigured match dimming (2026-09-08): increased the visible difference by lowering incomplete match opacity from 70% to 40% on Admin and Public. Hover, keyboard focus and print restore full opacity. Existing transition and reduced-motion behavior retained. CURRENT VER=0.1.0-alpha.0; PENDING VER=0.1.0-alpha.0. No new files or data changes.
 
 Public Roadmaps (2026-09-08): new full-width hero and searchable, fully clickable season gallery, designed loading/empty/error states, and `/abootnothing/roadmap` permanent alias. New scoped styles: `src/brackets/roadmap-gallery.css`; responsive/navigation coverage: `tests/roadmap-gallery-browser.test.mjs`. Existing published-only API boundary retained.
+
+Upcoming Polls: regular and Aboot Nothing galleries include searchable Upcoming sections; saved never-opened Polls show an Upcoming badge and disabled voting. Poll detail retains Previous results after an Admin reset. Migration 0044 and Admin/Public/Media deployments are complete; production browser checks and screenshots are under .artifacts/poll-upcoming.
+
+Public Admin lifecycle controls: logged-in full/master Admins can open draft or closed Polls and close open Polls from gallery cards, quick view and detail, for both regular Polls and Aboot Nothing. The existing signed lifecycle API remains authoritative; gallery sections refresh after changes and ephemeral notifications report success or errors.
