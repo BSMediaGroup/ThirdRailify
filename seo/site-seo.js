@@ -75,6 +75,9 @@ const STATIC_ROUTES = [
     schemaType: "CollectionPage",
     imageAlt: "Third Railify live audience Polls",
   }),
+  route("/polls/abootnothing", "polls:abootnothing", "Aboot Nothing | Third Railify", "Two sides. One loud opinion. Pick your side in Aboot Nothing matchups and revisit every past debate.", {
+    label: "Aboot Nothing", parent: ["Polls", "/polls"], schemaType: "CollectionPage",
+  }),
   route("/polls/new", "polls:new", "Build a Live Poll | Third Railify", "Create a versioned Third Railify audience Poll with exact whole-message chat triggers and server-owned results.", {
     label: "Build a Poll",
     parent: ["Polls", "/polls"],
@@ -208,7 +211,7 @@ const STATIC_ROUTES = [
 const STATIC_BY_PATH = new Map(STATIC_ROUTES.map((item) => [item.path, item]));
 
 export function staticSeoForPath(pathname, origin) {
-  const path = normalizePath(pathname);
+  const path = normalizePath(pathname) === "/abootnothing" ? "/polls/abootnothing" : normalizePath(pathname);
   const exact = STATIC_BY_PATH.get(path);
   if (exact) return createSeoDocument(exact, origin);
 

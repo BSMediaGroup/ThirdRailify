@@ -1,3 +1,4 @@
+import { AbootNothingHero } from '../components/AbootNothingHero';
 import {
   useCallback,
   useEffect,
@@ -133,7 +134,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
   };
   return (
     <div className="polls-page">
-      {aboot ? <header className="aboot-gallery-hero container"><Link to="/polls">← Back to Polls</Link><p className="eyebrow">THE THIRD RAIL · ABOOT NOTHING</p><h1>Two sides.<br /><em>One loud opinion.</em></h1><p>Pick your side. Follow the live matchups and revisit every past debate.</p><div className="aboot-gallery-hero__mark" aria-hidden="true"><span>A</span><b>VS</b><span>B</span></div></header> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
+      {aboot ? <AbootNothingHero /> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
         <GalleryHeroAtmosphere variant="polls" />
         <div className="container polls-hero__grid">
           <div className="polls-hero__copy">
