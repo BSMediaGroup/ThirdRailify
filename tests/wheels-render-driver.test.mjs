@@ -1,3 +1,4 @@
+import { effectiveAppearance } from '../src/lib/entrant-appearance.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
@@ -8,6 +9,18 @@ import * as mechanics from '../src/wheels/mechanics.mjs';
 import * as renderPlan from '../src/wheels/wheelRenderPlan.mjs';
 
 const source = await readFile(new URL('../src/wheels/WheelCanvas.tsx', import.meta.url), 'utf8');
+test('feature glyphs reserve one radial line and long names truncate without hiding configured glyphs', async () => {
+  const drawing = await readFile(new URL('../src/lib/entrant-feature-drawing.ts', import.meta.url), 'utf8');
+  const compiled = ts.transpileModule(drawing.replace(/^import .*;\r?\n/gm, '').replace(/^export /gm, ''), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const { featureGlyphLayout, fitFeatureLabel } = vm.runInNewContext(`${compiled}\n({featureGlyphLayout,fitFeatureLabel})`, { effectiveAppearance });
+  const feature = { icons: ['gift', 'star'] }; const layout = featureGlyphLayout(feature, 0, .6, 360, 90);
+  assert.equal(layout.positions.length, 2); assert.ok(layout.textStart < 315);
+  assert.equal(featureGlyphLayout(feature, 0, .02, 360, 90), null, 'tiny slice cannot hold a legible glyph');
+  const measure = text => Array.from(text).length * 9;
+  const text = fitFeatureLabel('A very long entrant name\nwith more words', 315 - layout.textStart, measure);
+  assert.ok(text.endsWith('…')); assert.ok(measure(text) <= 315 - layout.textStart); assert.doesNotMatch(text, /[\r\n]/);
+  assert.equal(fitFeatureLabel('Short name', 200, measure), 'Short name');
+});
 const entries = [1, 8, 3, 2].map((weight, i) => ({ id: `entry-${i}`, label: `Participant ${i}`, state: 'active', weight, order: i }));
 const config = { pointerAccent: '#F3C928', entrantDisplay: 'names' };
 const plan = { ...engine.spinPlan(entries, entries[2].id, 10000, 73.25, { landingFraction: .318, turnRandom: .64 }), startAt: 100, id: 'deterministic-local' };
@@ -24,7 +37,7 @@ function mount(componentSource = source, overrides = {}) {
     return node;
   };
   const context = {
-    ...engine, ...mechanics, ...renderPlan, React: { createElement },
+    effectiveAppearance, ...engine, ...mechanics, ...renderPlan, React: { createElement },
     WheelAvatarLayer: () => null, WheelsBrandMark: () => null,
     pointerAccentShades: () => ({}),
     useRef: value => { const ref = { current: value }; refs.push(ref); return ref; },

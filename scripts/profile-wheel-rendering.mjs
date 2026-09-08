@@ -42,7 +42,26 @@ try {
       let body = { ok: true };
       const payload = publicFixture ? structuredClone(publicFixture) : fixture.payload();
       if (publicFixture) payload.wheel.media.centre.url = `${origin}/local-wheel-centre.jpg`;
-      else payload.wheel.config.spinDurationMs = 10000;
+      else payload.wheel.config.spinDurationMs = Number(process.env.WHEEL_PROFILE_DURATION || 10000);
+      if (process.env.WHEEL_FEATURE_CASE) {
+        const { FEATURE_PRESETS } = await import('../src/lib/entrant-appearance.mjs');
+        payload.wheel.title = 'Donations-style local feature fixture';
+        payload.wheel.entries.forEach((entry, index) => {
+          entry.weight = index === 0 ? 150 : index === 1 ? 1 : 20;
+          if (process.env.WHEEL_FEATURE_CASE !== 'off') {
+            const preset = Object.values(FEATURE_PRESETS)[index % 4].components;
+            entry.appearance = { version: 1, manual: { ...preset, effects: { kinds: process.env.WHEEL_FEATURE_CASE === 'heavy' ? ['sparkles', 'shine', 'dazzle', 'pulse'] : [ ['sparkles', 'shine', 'dazzle', 'pulse'][index % 4] ], intensity: .45, speed: 1, density: 3 } } };
+            // Keep GIF/image fills present; exercise independent icon-only/effect-only mixes.
+            if (entry.style?.mode === 'image') delete entry.appearance.manual.fill;
+            if (process.env.WHEEL_FEATURE_CASE === 'mixed') {
+              if (index === 1 || index === 4) { entry.appearance.manual.icons = []; entry.appearance.manual.effects = null; }
+              if (index === 2 || index === 3) { delete entry.appearance.manual.fill; delete entry.appearance.manual.edge; }
+              if (index === 2) entry.appearance.manual.effects = null;
+              if (index === 3) entry.appearance.manual.icons = [];
+            }
+          }
+        });
+      }
       // Preserve the fixture's appearance; exercise an ordinary and a larger supported list.
       if (scenario === 'large') {
         payload.wheel.entries = Array.from({ length: 250 }, (_, i) => ({ ...payload.wheel.entries[i % 8], id: `entrant-${i}`, order: i, label: `Participant ${i + 1}` }));
@@ -123,7 +142,7 @@ try {
     for (let repeat = 0; repeat < (traced ? 1 : Number(process.env.WHEEL_REPEATS || 3)); repeat++) {
       const before = await session.send('Performance.getMetrics');
       const startTrace = () => session.send('Tracing.start', { categories: 'devtools.timeline,v8,blink,cc,gpu,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame,disabled-by-default-v8.gc', transferMode: 'ReturnAsStream' });
-      if (traced && !publicFixture) await startTrace();
+      if (traced && !publicFixture && process.env.WHEEL_PROFILE_DURATION !== '60000') await startTrace();
       await page.evaluate(() => window.__beginWheelProbe());
       if (process.argv.includes('--centre') && scenario !== 'stage') await centerWheel();
       const button = scenario === 'stage' ? page.getByRole('button', { name: /spin all/i }).first() : process.argv.includes('--centre') ? page.getByRole('button', { name: 'Spin wheel from centre', exact: true }) : page.getByRole('button', { name: 'Start demo spin' });
@@ -137,14 +156,14 @@ try {
         await session.send('IO.close', { handle: stream }); await writeFile(`${output}/${scenario}-trace.json`, trace);
         traceSaved = true;
       };
-      if (traced && publicFixture) {
+      if (traced && (publicFixture || process.env.WHEEL_PROFILE_DURATION === '60000')) {
         await page.waitForTimeout(36000); await startTrace();
         await page.waitForTimeout(14000); await saveTrace();
       }
       await page.waitForFunction(() => [...document.querySelectorAll('.wheel-stage canvas')].filter(c => c.__wheelSpinV110).every(c => c.__wheelSpinV110.completed), null, { timeout: 70000 });
       const evidence = await page.evaluate(() => {
         window.__wheelProbe.running = false;
-        return { probe: window.__wheelProbe, spins: [...document.querySelectorAll('.wheel-stage canvas')].filter(c => c.__wheelSpinV110).map(c => ({ spin: c.__wheelSpinV110, renderer: c.__wheelRendererV19 })), heap: performance.memory?.usedJSHeapSize };
+        return { probe: window.__wheelProbe, spins: [...document.querySelectorAll('.wheel-stage canvas')].filter(c => c.__wheelSpinV110).map(c => ({ spin: c.__wheelSpinV110, renderer: c.__wheelRendererV19 })), features: [...document.querySelectorAll(".wheel-stage__feature-effects")].map(c => c.__wheelFeatureMetrics), heap: performance.memory?.usedJSHeapSize };
       });
       if (traced && !traceSaved) await saveTrace();
       const after = await session.send('Performance.getMetrics');

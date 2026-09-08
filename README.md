@@ -1,5 +1,12 @@
 # Third Railify V2 public site
 
+## Automation cards and entrant appearance (local)
+
+Optional entrant features now share a versioned contract, normalized Canvas preview and reusable automation cards across Admin/Public. Target-ID grouping, accessible row-local switches, future-award appearance and manual participant overrides preserve the existing Wheel/receipt authority. Public's cached renderer draws gradients, vector marks and bounded annular effects across detail, Presentation, Stage and editors; safe content refresh waits while spins or editors hold the current snapshot.
+
+Architecture and file inventory: [`docs/WHEEL_ENTRANT_APPEARANCE.md`](docs/WHEEL_ENTRANT_APPEARANCE.md). New shared files live in `src/lib/entrant-appearance.*`, `src/lib/entrant-feature-drawing.ts`, `src/lib/automation-rule-store.ts`, `src/components/AutomationRuleList.tsx`, `src/components/EntrantAppearanceControls.tsx`, and their two scoped stylesheets. Public adds `src/wheels/useWheelRefresh.ts`; Admin adds the storage validator and additive migration `0040_wheel_entrant_appearance.sql`. Apply the migration, then release Admin before Public. Existing rules/entrants remain opt-out; this milestone is local-only.
+
+
 Wheel rendering profiling is documented in `docs/WHEEL_RENDER_PERFORMANCE.md`. The shared `src/wheels/WheelCanvas.tsx` keeps one spin frame owner, reuses weighted pointer geometry for the current entry snapshot, and consumes the accepted rotation directly without reading back a CSS matrix. Canvas artwork, DPR, mechanics and result authority are unchanged. `tests/wheels-render-driver.test.mjs` exercises the actual animation effects with deterministic clocks; `scripts/profile-wheel-rendering.mjs` is an opt-in, headed, loopback-only production-preview probe, and `scripts/summarize-wheel-rendering.mjs` summarizes its local traces and callback intervals. Evidence is ignored beneath `.artifacts/wheel-render-performance/`; no production telemetry is added and no files are removed.
 
 Shop hero presentation lives in `src/components/ShopHero.tsx` and scoped `src/styles/shop-hero.css`; `ShopPage.tsx` continues to own catalogue loading and discovery. The hero reuses the canonical Featured selector and `useMotionGate`, with local deck state and image-failure handling. Focused coverage is `node --test tests/shop-hero-browser.test.mjs`; optional `SHOP_HERO_SNAPSHOT` points to a saved public catalogue response for real-artwork visual QA. Screenshots are written beneath `.artifacts/shop-hero/`. No files were removed.

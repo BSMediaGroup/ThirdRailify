@@ -16,7 +16,7 @@ for (const dir of await readdir(root, { withFileTypes: true })) {
     const { frames, callbacks, reads, commits } = run.evidence.probe;
     const refresh = stats(frames.map(f => f[1])).median;
     const portions = {};
-    for (const [name, from, to] of [['startup', 0, .2], ['middle', .2, .8], ['final', .8, 1], ['reported-window', .6, .85], ['whole', 0, 1]]) {
+    for (const [name, from, to] of [['startup', 0, .2], ['middle', .2, .8], ['final', .8, 1], ['reported-window', .6, .85], ['seconds-36-50', 36000 / spin.durationMs, 50000 / spin.durationMs], ['whole', 0, 1]]) {
       const lo = from * spin.durationMs; const hi = to * spin.durationMs;
       const subset = frames.filter(([at]) => at >= lo && at < hi);
       const work = new Map();

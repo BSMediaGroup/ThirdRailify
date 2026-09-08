@@ -35,7 +35,7 @@ async function proxyRead(request, env, path, fetchImpl) {
   }
   if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/automations$/.test(path)) {
     if (!session) throw failure(401, "authentication_required", "Sign in to manage automations.");
-    return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId });
+    return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId, input: { ruleId: new URL(request.url).searchParams.get("ruleId") || "" } });
   }
   if (path === "access" || path.endsWith("/access")) {
     if (!session) throw failure(401, "authentication_required", "Sign in to view wheel access.");
@@ -56,7 +56,7 @@ async function proxyRead(request, env, path, fetchImpl) {
     const response = await boundedFetch(fetchImpl, adminUrl(env, "/api/wheels/mechanics"), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
     return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
   }
-  if (path && session) return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId });
+  if (path && session) return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId, input: { ruleId: new URL(request.url).searchParams.get("ruleId") || "" } });
   const targetPath = `/api/wheels${path ? `/${encodePath(path)}` : ""}${new URL(request.url).search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
   return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");

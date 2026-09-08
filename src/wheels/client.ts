@@ -1,3 +1,4 @@
+import { publishWheelRefresh } from "./useWheelRefresh";
 import type { AccessibleWheelSummary, OwnedStageSummary, Stage, StageAccess, StageSummary, Wheel, WheelAccess, WheelMediaAsset, WheelSummary } from "./types";
 import { cloneDefaultWheelMechanics, normalizeWheelMechanics } from "./mechanics.mjs";
 import type { WheelMechanics } from "./mechanics.mjs";
@@ -30,7 +31,7 @@ export function getWheelMechanics(options: { force?: boolean } = {}) {
 }
 export function invalidateWheelMechanics() { mechanicsCache = null; }
 export async function createWheel(input: Record<string, unknown>, csrfToken: string) { return request<{ ok: true; wheel: Wheel; access: WheelAccess }>("/api/wheels", { method: "POST", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
-export async function saveWheel(slug: string, input: Record<string, unknown>, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}`, { method: "PUT", headers: csrf(csrfToken), body: JSON.stringify(input) }); }
+export async function saveWheel(slug: string, input: Record<string, unknown>, csrfToken: string) { invalidateWheel(slug); const saved = await request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}`, { method: "PUT", headers: csrf(csrfToken), body: JSON.stringify(input) }); publishWheelRefresh(); return saved; }
 export type OfficialAnimationPlan = { version: "spin-plan-v1"; landingFraction: number; turnRandom: number };
 export async function officialSpin(slug: string, revision: number, idempotencyKey: string, csrfToken: string) { return request<{ ok: true; spin: { id: string; winningEntryId: string; winningLabel: string; createdAt: string; animationPlan: OfficialAnimationPlan }; idempotent: boolean }>(`/api/wheels/${encodeURIComponent(slug)}/spins`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ revision, idempotencyKey }) }); }
 export async function winnerAction(slug: string, entryId: string, action: string, csrfToken: string) { invalidateWheel(slug); return request<WheelPayload>(`/api/wheels/${encodeURIComponent(slug)}/winner-action`, { method: "POST", headers: csrf(csrfToken), body: JSON.stringify({ entryId, action }) }); }

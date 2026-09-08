@@ -1,3 +1,4 @@
+import { useWheelRefresh } from "../wheels/useWheelRefresh";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Link,
@@ -201,6 +202,8 @@ export function WheelStagePage({
   const focused = normalizeFocus(params.get("focus"), available.length);
   const view: "overview" | "focus" = focused == null ? "overview" : "focus";
   const batchBusy = phase !== "idle";
+  useWheelRefresh(create ? '' : slug, loading || create || editorRequested || batchBusy || Object.values(spins).some(spin => spin.spinning || spin.requesting || Boolean(spin.result)),
+    () => getStage(slug), payload => { if (JSON.stringify(stage) !== JSON.stringify(payload.stage)) { setStage(payload.stage); setAccess(payload.access); } });
   const officialAllEligible = Boolean(
     account &&
     stage?.revision &&

@@ -1,3 +1,4 @@
+import { normalizeAppearance, portableAppearance } from "../lib/entrant-appearance.mjs";
 /* eslint-disable no-control-regex */
 import { convertWheelOfNames } from "./wheelOfNames.mjs";
 import { normalizeImportedPalette, normalizeImportedSegmentStyle } from "./paletteNormalization.mjs";
@@ -21,7 +22,7 @@ export async function createPortableWheel(input, options = {}) {
   const sourceStyles = Array.isArray(input.config.paletteStyles) && input.config.paletteStyles.length === input.config.palette.length ? input.config.paletteStyles : undefined;
   const settings = { ...input.config, paletteStyles: normalizePaletteStyles(sourceStyles, input.config.palette).map((style) => portableStyle(style, refs)) };
   const portableMedia = { background: media.background, center: media.center, segments: (media.segments || []).map((item) => { const portable = { ...item }; delete portable.sourceAssetId; delete portable.runtimeId; return portable; }) };
-  const wheel = normalizePortableWheel({ title: input.title, description: input.description || "", settings, entries: input.entries.map((entry) => ({ label: entry.label, avatarUrl: entry.avatarUrl || null, weight: entry.weight, color: entry.colour, style: entry.style ? portableStyle(entry.style, refs) : null, active: entry.state !== "hidden", order: entry.order })), media: portableMedia });
+  const wheel = normalizePortableWheel({ title: input.title, description: input.description || "", settings, entries: input.entries.map((entry) => ({ label: entry.label, ...(entry.appearance ? { appearance: portableAppearance(entry) } : {}), avatarUrl: entry.avatarUrl || null, weight: entry.weight, color: entry.colour, style: entry.style ? portableStyle(entry.style, refs) : null, active: entry.state !== "hidden", order: entry.order })), media: portableMedia });
   const digest = await sha256Hex(canonicalStringify(wheel));
   return { format: WHEEL_FILE_FORMAT_ID, formatVersion: WHEEL_FILE_FORMAT_VERSION, exportedAt: options.exportedAt || new Date().toISOString(), generator: { name: "Third Railify", version: String(options.generatorVersion || "unknown") }, source: { slug: safeSourceSlug(options.sourceSlug) }, wheel, integrity: { algorithm: "SHA-256", wheelPayload: digest } };
 }
@@ -62,7 +63,7 @@ async function parseCanonical(document, sourceName, defaults) {
   }
   const runtimeRefs = new Map(wheel.media.segments.map((item) => [item.assetRef, newId()])); const media = { ...wheel.media, segments: wheel.media.segments.map((item) => ({ ...item, runtimeId: runtimeRefs.get(item.assetRef) })) };
   const config = { ...wheel.settings, paletteStyles: wheel.settings.paletteStyles.map((style) => runtimeStyle(style, runtimeRefs)) };
-  const proposal = { title: wheel.title, description: wheel.description, config, entries: wheel.entries.map((entry) => ({ id: newId(), label: entry.label, avatarUrl: entry.avatarUrl || null, order: entry.order, weight: entry.weight, colour: entry.color, style: entry.style ? runtimeStyle(entry.style, runtimeRefs) : null, state: entry.active ? "active" : "hidden" })), media, messages: [info("integrity", integrityStatus === "verified" ? "verified" : "absent", integrityStatus === "verified" ? "SHA-256 matched the canonical wheel payload. This detects corruption; it is not a signature." : "This supported file has no integrity hash."), info("entry identity", "fresh local IDs", "Portable entries never control authoritative entry identity."), info("official history and access", "never imported", "Portable files contain creator-editable content only."), ...paletteMessages(wheel._paletteWarnings)], sourceIndex: 0 };
+  const proposal = { title: wheel.title, description: wheel.description, config, entries: wheel.entries.map((entry) => ({ id: newId(), label: entry.label, ...(entry.appearance ? { appearance: portableAppearance(entry) } : {}), avatarUrl: entry.avatarUrl || null, order: entry.order, weight: entry.weight, colour: entry.color, style: entry.style ? runtimeStyle(entry.style, runtimeRefs) : null, state: entry.active ? "active" : "hidden" })), media, messages: [info("integrity", integrityStatus === "verified" ? "verified" : "absent", integrityStatus === "verified" ? "SHA-256 matched the canonical wheel payload. This detects corruption; it is not a signature." : "This supported file has no integrity hash."), info("entry identity", "fresh local IDs", "Portable entries never control authoritative entry identity."), info("official history and access", "never imported", "Portable files contain creator-editable content only."), ...paletteMessages(wheel._paletteWarnings)], sourceIndex: 0 };
   return { detectedFormat: "thirdrailify", formatLabel: "Third Railify wheel", version: document.formatVersion, sourceName, proposals: [finalizeProposal(proposal, integrityStatus)] };
 }
 
@@ -85,7 +86,7 @@ function normalizePortableWheel(value, defaults = THIRD_RAIL_GOLD_CONFIG) {
   if (!Array.isArray(value.entries) || !value.entries.length) throw new Error("The wheel must contain at least one entry.");
   if (value.entries.length > WHEEL_FILE_LIMITS.entries) throw new Error(`The wheel exceeds the ${WHEEL_FILE_LIMITS.entries}-entry limit.`);
   const entryWarnings = [];
-  const entries = value.entries.map((entry, index) => normalizePortableEntry(entry, index, availableImageAssetRefs, entryWarnings)).sort((a, b) => a.order - b.order || a._sourceOrder - b._sourceOrder).map((entry, order) => ({ label: entry.label, avatarUrl: entry.avatarUrl || null, weight: entry.weight, color: entry.color, style: entry.style, active: entry.active, order }));
+  const entries = value.entries.map((entry, index) => normalizePortableEntry(entry, index, availableImageAssetRefs, entryWarnings)).sort((a, b) => a.order - b.order || a._sourceOrder - b._sourceOrder).map((entry, order) => ({ label: entry.label, ...(entry.appearance ? { appearance: portableAppearance(entry) } : {}), avatarUrl: entry.avatarUrl || null, weight: entry.weight, color: entry.color, style: entry.style, active: entry.active, order }));
   const result = { title, description, settings, entries, media };
   Object.defineProperty(result, "_paletteWarnings", { value: [...settings._paletteWarnings, ...entryWarnings], enumerable: false });
   return result;
@@ -93,14 +94,14 @@ function normalizePortableWheel(value, defaults = THIRD_RAIL_GOLD_CONFIG) {
 
 function normalizePortableEntry(entry, index, availableImageAssetRefs, warnings) {
   if (!isRecord(entry)) throw new Error(`Entry ${index + 1} is invalid.`);
-  rejectUnknown(entry, new Set(["label", "avatarUrl", "weight", "color", "style", "active", "order"]), `entry ${index + 1}`);
+  rejectUnknown(entry, new Set(["label", "avatarUrl", "appearance", "weight", "color", "style", "active", "order"]), `entry ${index + 1}`);
   const weight = finiteInteger(entry.weight ?? 1, 1, WHEEL_FILE_LIMITS.weight, `Entry ${index + 1} weight`);
   const order = finiteInteger(entry.order ?? index, 0, WHEEL_FILE_LIMITS.entries - 1, `Entry ${index + 1} order`);
   const color = entry.color == null || entry.color === "" ? null : normalizeHex(entry.color, `Entry ${index + 1} colour`);
   const normalized = entry.style == null ? null : normalizeImportedSegmentStyle(entry.style, color || "#F3C928", { availableImageAssetRefs });
   const style = normalized?.style || null;
   if (normalized?.repair) warnings.push({ code: `entry-${normalized.repair}-fallback`, severity: "warning", reason: normalized.repair === "image" ? `Entry ${index + 1} segment image could not be imported; its fallback colour will be used.` : `Entry ${index + 1} segment style was replaced with its fallback colour.` });
-  return { label: boundedText(entry.label, 1, WHEEL_FILE_LIMITS.entryLabel, `Entry ${index + 1} label`), avatarUrl: portableAvatar(entry.avatarUrl), weight, color: style?.color || color, style, active: entry.active !== false, order, _sourceOrder: index };
+  return { ...(entry.appearance ? { appearance: portableAppearance({ appearance: normalizeAppearance(entry.appearance) }) } : {}), label: boundedText(entry.label, 1, WHEEL_FILE_LIMITS.entryLabel, `Entry ${index + 1} label`), avatarUrl: portableAvatar(entry.avatarUrl), weight, color: style?.color || color, style, active: entry.active !== false, order, _sourceOrder: index };
 }
 
 function normalizeSettings(value, availableImageAssetRefs) {

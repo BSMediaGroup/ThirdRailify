@@ -1,6 +1,7 @@
 import type { SegmentStyle } from "./segmentStyles.mjs";
 
 export type WheelEntry = {
+  appearance?: import("../lib/entrant-appearance.mjs").Appearance | null;
   id: string;
   label: string;
   avatarUrl?: string | null; customAvatarUrl?: string | null; sourceAvatarUrl?: string | null;

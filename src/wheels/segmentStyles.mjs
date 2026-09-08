@@ -1,3 +1,4 @@
+import { effectiveAppearance } from "../lib/entrant-appearance.mjs";
 const HEX = /^#[0-9a-f]{6}$/i;
 const ASSET_ID = /^[a-f0-9-]{16,80}$/i;
 
@@ -88,6 +89,7 @@ export function applyPaletteStylesToEntries(entries, paletteStyles) {
   const ordered = [...entries].sort((left, right) => left.order - right.order || left.id.localeCompare(right.id));
   const assignments = new Map(ordered.map((entry, index) => [entry.id, styles[index % styles.length]]));
   return entries.map((entry) => {
+    if (entry.appearance?.automatic?.fill || Object.hasOwn(entry.appearance?.manual || {}, 'fill')) return entry;
     const style = { ...assignments.get(entry.id) };
     return { ...entry, colour: style.color, style };
   });
@@ -96,6 +98,9 @@ export function applyPaletteStylesToEntries(entries, paletteStyles) {
 export function resolvedEntryStyle(entry, config) {
   const palette = normalizePaletteStyles(config?.paletteStyles, config?.palette);
   const assigned = palette[Math.max(0, Number(entry?.order) || 0) % palette.length];
+  const feature = effectiveAppearance(entry);
+  if (feature.fill) return solidSegmentStyle(feature.fill.colors[0]);
+  if (entry?.appearance?.manual && Object.hasOwn(entry.appearance.manual, 'fill') && entry.appearance.manual.fill === null) return assigned;
   return entry?.style ? normalizeSegmentStyle(entry.style, entry.colour || assigned.color) : entry?.colour ? solidSegmentStyle(entry.colour) : assigned;
 }
 
@@ -132,4 +137,10 @@ function normalizeStyleHex(value, label) {
   const source = String(value || "").trim();
   if (!HEX.test(source)) throw new Error(`${label} must be a six-digit hex colour.`);
   return source.toUpperCase();
+}
+
+// The existing Solid/Pattern/Image editor is an explicit manual fill selection.
+export function withLegacyEntryStyle(entry, style) {
+  const manual = { ...entry.appearance?.manual }; delete manual.fill;
+  return { ...entry, colour: style.color, style, ...(entry.appearance ? { appearance: { ...entry.appearance, manual } } : {}) };
 }

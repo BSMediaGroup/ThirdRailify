@@ -17,7 +17,7 @@ export function applyPaletteToEntries(entries, colors) {
   const palette = normalizeCustomPalette(colors, "#000000").colors;
   const ordered = [...entries].sort((left, right) => left.order - right.order);
   const assignments = new Map(ordered.map((entry, index) => [entry.id, palette[index % palette.length]]));
-  return entries.map((entry) => ({ ...entry, colour: assignments.get(entry.id) }));
+  return entries.map((entry) => entry.appearance?.automatic?.fill || Object.hasOwn(entry.appearance?.manual || {}, 'fill') ? entry : ({ ...entry, colour: assignments.get(entry.id) }));
 }
 
 export function normalizeCustomPaletteStyles(styles, accent) {

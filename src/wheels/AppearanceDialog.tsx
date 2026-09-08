@@ -1,3 +1,5 @@
+import { withLegacyEntryStyle } from "./segmentStyles.mjs";
+import { EntrantAppearanceControls } from '../components/EntrantAppearanceControls';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { EphemeralNotices } from "../components/EphemeralNotices";
@@ -418,7 +420,7 @@ export function AppearanceDialog({
       : entries;
   const updateStyle = (id: string, style: SegmentStyle) => {
     setEntries((current) =>
-      current.map((entry) => (entry.id === id ? { ...entry, colour: style.color, style } : entry)),
+      current.map((entry) => (entry.id === id ? withLegacyEntryStyle(entry, style) : entry)),
     );
     if (customPreviewing && customDirty)
       setCustomOverrides((current) => new Set(current).add(id));
@@ -716,6 +718,7 @@ export function AppearanceDialog({
                               >
                                 Reset
                               </button>
+                              <details className="participant-feature-controls"><summary>Entrant features</summary><EntrantAppearanceControls value={entry.appearance?.manual || {}} automatic={entry.appearance?.automatic} legacyFill={Boolean(entry.style || entry.colour)} onClearLegacy={() => setEntries(current => current.map(e => e.id === entry.id ? { ...e, style: null, colour: null } : e))} onChange={manual => setEntries(current => current.map(e => e.id === entry.id ? { ...e, appearance: { ...e.appearance, version: 1, manual } } : e))} /></details>
                             </article>
                           );
                         })}

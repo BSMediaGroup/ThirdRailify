@@ -15,3 +15,5 @@ export function segmentImageAssetIds(config: { palette: string[]; paletteStyles?
 export function normalizeSpinSoundPreset(value: unknown): string;
 export function normalizeWinnerSoundPreset(value: unknown): string;
 export function pointerAccentShades(value: string): Readonly<{ dark: string; base: string; light: string; glow: string }>;
+
+export function withLegacyEntryStyle(entry: import("./types").WheelEntry, style: SegmentStyle): import("./types").WheelEntry;

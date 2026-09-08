@@ -162,3 +162,39 @@ Optional `WHEEL_RENDER_BASELINE=.artifacts/wheel-render-performance/baseline/Whe
 ## Release boundary
 
 Local implementation only. No deployment, push, commit, migration, production spin/result mutation, provider/DNS/payment/secret change, Bot restart or reference-repository edit. The stronger intermittent symptom remains unverified on affected physical machines.
+
+## 2026-09-08: optional entrant features
+
+Local milestone at Public `354a8ac` / Admin `959dc67` plus uncommitted implementation. Node 22.16.0, production Vite preview, foreground headed Brave Chromium 152.0.7977.83, NVIDIA RTX 3070 Ti driver 32.0.15.9186, Windows virtual display 1680x1050 at approximately 144 Hz, viewport 1440x900, DPR/zoom 1. No concurrent builds or tests during timing, tracing or recording. Synthetic Donations-style fixture: 60 seconds, eight entrants, weights 150/1/20/20/20/20/20/20, dominant 55.35% wedge and 0.369% narrow wedge, 820 CSS/backing-pixel Wheel, retained GIF and static image fills. This is not a production Donations event or official draw.
+
+Two foreground runs per principal case, with matching fixture, size and media. Baseline used the saved latest optimized production renderer. Mixed includes gradient-only, icon-only, effects-only and full combinations; heavy includes all four effects on all eight entries, intensity .45, speed 1, density 3. Heavy is a valid demanding combination, not a claim about all 1000-entrant/max-DPR workloads.
+
+| Case | 36-50s interval p95, runs 1 / 2 | interval p99 | maximum interval | gaps >1.5 refresh | combined RAF work p95 |
+| --- | --- | --- | --- | --- | --- |
+| Optimized baseline | 7.1 / 7.1 ms | 7.1 / 7.1 ms | 7.2 / 7.2 ms | 0 / 0 | 0.1 / 0.1 ms |
+| New effects off | 7.1 / 7.1 ms | 7.2 / 7.1 ms | 13.9 / 7.2 ms | 6 / 0 | 0.2 / 0.2 ms |
+| Mixed | 7.1 / 7.1 ms | 7.1 / 7.1 ms | 7.3 / 7.3 ms | 0 / 0 | 0.2 / 0.2 ms |
+| All four effects | 7.1 / 7.1 ms | 7.2 / 7.1 ms | 7.3 / 7.2 ms | 0 / 0 | 0.3 / 0.2 ms |
+
+All eight runs completed, with zero final-angle error and final-delta numerical error below 6e-12 degrees. Each retained four initial static/cache plan builds and one Canvas resize; angle changes and decorative frames did not rebuild static artwork. All had zero rotor computed-style reads and no page errors. Effects-off adds no decorative Canvas or scheduler. Mixed has five decorated segments; heavy has eight. Approximate aggregate decorative draw averages were .06 ms mixed and .10-.11 ms heavy (cumulative instrumentation includes short idle periods); maxima .30 ms and 1.10 ms respectively. End heap values were 8.2-8.8 MB; these snapshots do not establish a long-duration leak bound. Browser acceptance separately verifies offscreen stop/resume and reduced-motion static output.
+
+The full first spins had startup/outside-window gaps: maxima 55.4 ms baseline, 55.6 ms off, 62.4 ms mixed and 62.5 ms heavy; warm repeats peaked at 7.3 ms. The first heavy run had 21 intervals above 1.5 refresh over the whole spin. Thus results support comparable no-effects cadence and low measured decorative CPU work in this fixture, not universal elimination of the historical intermittent hitch.
+
+A separate all-effects trace captured approximately seconds 36-50: 2017 DrawFrame markers, zero DroppedFrame markers, **zero FramePresented markers**; 4103 Paint events (maximum .618 ms), 10154 RasterTask events (maximum .190 ms), 4329 RendererRasterWorker events (maximum 2.531 ms), and 21 MajorGC events (maximum 1.290 ms). Trace durations overlap across threads and must not be summed into per-frame wall time. This virtual display still provides no reliable physical presentation proof. RAF cadence and DrawFrame markers do not prove every frame reached a physical screen.
+
+Timing data is retained in `.artifacts/wheel-render-performance/features-{baseline-donations,off,mixed,heavy}/normal-{0,1}.json`; summaries in `summary.json`. Trace and summary are in `features-heavy-traced/`. Separate 60-second videos are in `features-mixed-recorded/` and `features-inline-recorded/`; recording measurements are excluded above. The first video exposed a long-label/glyph overlap, fixed by reserving glyph space on the same radial baseline and truncating the name to the remaining width, with geometry-based glyph sizing. This final static placement correction does not change the measured effect loop, trajectory, cache invalidation or no-effects path. The final recording uses the whole Wheel centred in view. Selected decoded video frames at 10, 40 and 50 seconds were inspected; no claim of physical-screen or exhaustive human video review is made.
+
+Reproduce with the existing profiler, after a production build and local preview:
+
+```powershell
+$env:WHEEL_PROFILE_DURATION='60000'
+$env:WHEEL_SCENARIO='normal'
+$env:WHEEL_REPEATS='2'
+$env:WHEEL_FEATURE_CASE='mixed' # off / mixed / heavy
+node scripts/profile-wheel-rendering.mjs features-mixed
+node scripts/profile-wheel-rendering.mjs features-heavy-traced --trace
+node scripts/profile-wheel-rendering.mjs features-inline-recorded --record --centre
+node scripts/summarize-wheel-rendering.mjs features-heavy-traced
+```
+
+Set `WHEEL_FEATURE_CASE='heavy'` explicitly for the heavy trace. Record separately with `WHEEL_REPEATS='1'`. Browser evidence and authority/compatibility details are in `WHEEL_ENTRANT_APPEARANCE.md`. The local additive migration is a release prerequisite; no remote migration or release occurred.

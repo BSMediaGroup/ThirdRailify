@@ -1,5 +1,22 @@
 # Bump notes
 
+## 2026-09-08 - Grouped automation cards and entrant feature treatments (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Shared target-type/ID groups and compact cards cover Automations, Wheels Overview, scoped Wheel detail and the Public editor modal. Accessible switches lock only the pending rule, reconcile authoritative responses, roll back errors and refresh 409 conflicts. Saved configuration and runtime readiness stay distinct; raid evidence remains chat-derived.
+- Added opt-in rule appearance and independently selectable crimson subscriber, emerald raid, violet gift and golden Rant gradients, curated vector icons, inner/outer edges, Cruciform Sparkles, Gentle Shine, Dazzle and Soft Pulse. Manual controls cover normal participant management, new-Wheel editing and Appearance's entrant rows, including component-level clears and explicit None.
+- Manual component overrides precede stored automation values and Wheel defaults. Existing explicit colours/images stay manual. Future successful awards update bounded automatic snapshots by provider event time and a stable tie-break, atomically with weight, receipts, revision and audit. Replay, skip/zero awards and rejection are visual no-ops; cosmetic rule edits retain activation. Positive amount evidence is required for automatic subscriber decoration without changing zero-value award eligibility.
+- New optional metadata survives omission by older clients, text/weight/order edits, hard reload and portable import/export as decorative manual values. Public projection excludes event/rule provenance details. Visible Public/Stage content refresh waits during accepted spins, results and editing.
+- Preserved the cached Canvas/DOM rotor architecture, accepted spin RAF effect, cached pointer sampler and protected mechanics/result functions. Static fills/marks are cached; bounded effects use annular paths, a separate rotor Canvas, foreground label protection and one visible-Wheel phase driver. Reduced motion has static equivalents. Exact timing results and virtual-display limitations are in Public `docs/WHEEL_RENDER_PERFORMANCE.md`.
+- Two 60-second runs per case measured combined RAF work p95 in seconds 36-50 at 0.1 ms baseline, 0.2 ms effects-off/mixed, and 0.2-0.3 ms heavy. Rotor readbacks stayed zero. Recording/trace runs are separate; virtual-display and intermittent-hitch limitations remain documented in the Public performance report.
+- Glyphs and names remain on one radial line: reserve glyph space, truncate long names, and hide glyphs only when slice geometry cannot fit them. The clicked details card retains full names and settings.
+- Added contract/migration/atomicity/precedence tests and real local D1-to-Public browser acceptance, plus responsive card/switch tests at 1920/1440/768/390. Build, lint, Functions and regression evidence lives in `.artifacts/entrant-features/`; README and the shared architecture document list new files. No files removed or dependencies added.
+- Release dependency: migration `0040_wheel_entrant_appearance.sql` after `0039`, then Admin authority/serializer, then Public controls/renderer. Missing appearance storage fails before writes; old unstyled rules continue. All migration/event/participant tests use isolated local data. No deployment, commit/push, live rule/result mutation, Bot restart, reference edit, secret/DNS/provider/payment change.
+
+
 ## 2026-09-07 - Separate product options and subtle image focus (local)
 
 - Product pages use canonical Size and Color fields as independent selectors, including mug capacity and one-size headwear. Other varying customer options remain separate; provider production metadata is not displayed as a purchase option.

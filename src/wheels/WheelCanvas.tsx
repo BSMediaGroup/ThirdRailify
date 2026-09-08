@@ -1,3 +1,5 @@
+import { effectiveAppearance } from '../lib/entrant-appearance.mjs';
+import { buildFeatureEffects, drawFeatureEffects, drawFeatureFill, drawFeatureMarks, fitFeatureLabel } from '../lib/entrant-feature-drawing';
 import { WheelAvatarLayer } from "./EntrantAvatar";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { countSegmentBoundaryCrossings, entryAngles, hitTestWheel, normalizeTurn, segmentBoundaryRotations } from "./engine.mjs";
@@ -16,7 +18,7 @@ type DecodedGifFrame = CanvasImageSource & { close: () => void; displayWidth: nu
 type GifDecoder = { tracks: { ready: Promise<void>; selectedTrack?: { frameCount: number } | null }; decode: (options: { frameIndex: number }) => Promise<{ image: DecodedGifFrame }>; close: () => void };
 type GifDecoderConstructor = new (options: { data: ArrayBuffer; type: string }) => GifDecoder;
 type GifState = { decoder: GifDecoder; frameCount: number; frameIndex: number; nextAt: number; busy: boolean; bitmap: ImageBitmap | null };
-type RendererMetrics = { version: "wheel-renderer-v19"; geometryVersion: "physical-square-v114"; requestedDiameter: number; cssDiameter: number; physicalSide: number; centreCss: number; centrePhysical: number; outerRadius: number; faceRadius: number; hubRadius: number; size: number; outerDiameter: number; faceDiameter: number; faceToOuterRatio: number; hubToOuterRatio: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; canvasResizes: number; transformOrigin: string; currentRotation: number; lastReason: string; plan: WheelRenderPlan | null; geometry: WheelGeometry | null };
+type RendererMetrics = { version: "wheel-renderer-v19"; geometryVersion: "physical-square-v114"; requestedDiameter: number; cssDiameter: number; physicalSide: number; centreCss: number; centrePhysical: number; outerRadius: number; faceRadius: number; hubRadius: number; size: number; outerDiameter: number; faceDiameter: number; faceToOuterRatio: number; hubToOuterRatio: number; dpr: number; pixels: number; planBuilds: number; staticFaceRebuilds: number; faceComposites: number; gifLayerComposites: number; gifFramesDecoded: number; measureTextCalls: number; patternConstructions: number; imageCoverCalculations: number; resizeInvalidations: number; canvasResizes: number; transformOrigin: string; currentRotation: number; lastReason: string; plan: WheelRenderPlan | null; geometry: WheelGeometry | null; featureLabels?: { id: string; text: string; width: number; maxWidth: number; glyphs: number; glyphBaseline: number; textBaseline: number }[] };
   type SpinMetrics = { version: "wheel-spin-v2"; id: string; startAt: number; firstFrameAt: number | null; durationMs: number; startRotation: number; finalRotation: number; frameCount: number; lastFrameAt: number; lastFrameRotation: number; finalFrameRotation: number | null; expectedFinalFrameDelta: number | null; actualFinalFrameDelta: number | null; settledAt: number | null; completed: boolean; reducedMotion: boolean; mechanicsVersion: number; curveProfile: string; mechanicsRevision: number | null };
 type InstrumentedCanvas = HTMLCanvasElement & { __wheelRendererV19?: RendererMetrics; __wheelSpinV110?: SpinMetrics };
 type FaceCache = { size: number; ratio: number; pixels: number; geometry: WheelGeometry; plan: WheelRenderPlan; underlay: HTMLCanvasElement; foreground: HTMLCanvasElement };
@@ -49,9 +51,17 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     if (id !== lastTarget.current) { lastTarget.current = id; targetCallback.current?.(entry); }
   }, [pointerSegments]);
 
+  const decorationCanvas = useRef<HTMLCanvasElement>(null);
+  const featureForeground = useRef<HTMLCanvasElement>(null);
+  const decorationDraw = useRef<((time: number) => void) | null>(null);
+  const decorationVisible = useRef(true);
+  const hasEffects = useMemo(() => active.some(entry => effectiveAppearance(entry).effects?.kinds.length), [active]);
+
+
   const renderRotation = useCallback((rotorElement: HTMLDivElement, element: InstrumentedCanvas, degrees: number) => {
     renderedRotation.current = degrees;
     setRotorRotation(rotorElement, element, degrees);
+    decorationDraw.current?.(performance.now());
   }, []);
 
   useEffect(() => {
@@ -89,7 +99,24 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
       const underlay = layerCanvas(pixels); const foreground = layerCanvas(pixels); const measureContext = foreground.getContext("2d"); if (!measureContext) return;
       const measureLabel = (label: string, fontSize: number) => { metrics.measureTextCalls += 1; measureContext.font = `${WHEEL_LABEL_FONT_WEIGHT} ${fontSize}px ${WHEEL_LABEL_FONT_FAMILY}`; return measureContext.measureText(label).width; };
       const plan = createWheelRenderPlan(active, config, geometry, measureLabel, dimensions); metrics.planBuilds += 1; metrics.imageCoverCalculations += plan.segments.filter((segment) => segment.image).length;
-      drawUnderlay(underlay, plan, ratio, images, animatedIds, metrics); drawForeground(foreground, plan, ratio, config);
+      drawUnderlay(underlay, plan, ratio, images, animatedIds, metrics); drawForeground(foreground, plan, ratio, config, metrics);
+      if (decorationCanvas.current && featureForeground.current) {
+        ensureCanvasPixels(decorationCanvas.current, pixels); ensureCanvasPixels(featureForeground.current, pixels);
+        const labels = featureForeground.current.getContext('2d'); labels?.clearRect(0, 0, pixels, pixels); labels?.drawImage(foreground, 0, 0);
+        const effects = buildFeatureEffects(plan.segments, plan.radius, plan.hubRadius);
+        const motion = matchMedia('(prefers-reduced-motion: reduce)');
+        const featureMetrics = { draws: 0, totalMs: 0, maxMs: 0, segments: effects.length };
+        (decorationCanvas.current as HTMLCanvasElement & { __wheelFeatureMetrics?: typeof featureMetrics }).__wheelFeatureMetrics = featureMetrics;
+        decorationDraw.current = time => {
+          if (disposed || !decorationVisible.current || document.hidden) return;
+          const ctx = decorationCanvas.current?.getContext('2d'); if (!ctx) return;
+          const started = performance.now(); ctx.setTransform(ratio, 0, 0, ratio, 0, 0); ctx.clearRect(0, 0, size, size); ctx.save(); ctx.translate(plan.centre, plan.centre);
+          drawFeatureEffects(ctx, effects, plan.radius, plan.hubRadius, time, motion.matches); ctx.restore();
+          const work = performance.now() - started; featureMetrics.draws++; featureMetrics.totalMs += work; featureMetrics.maxMs = Math.max(featureMetrics.maxMs, work);
+          if (decorationCanvas.current!.dataset.featureReduced !== String(motion.matches)) decorationCanvas.current!.dataset.featureReduced = String(motion.matches);
+        };
+        decorationDraw.current(performance.now());
+      } else decorationDraw.current = null;
       ensureCanvasPixels(mechanicsElement, pixels); drawMechanicalOverlay(mechanicsElement, geometry, config.pointerAccent);
       face = { size, ratio, pixels, geometry, plan, underlay, foreground }; Object.assign(metrics, { requestedDiameter: geometry.requestedDiameter, cssDiameter: geometry.cssDiameter, physicalSide: geometry.physicalSide, centreCss: geometry.centreCss, centrePhysical: geometry.centrePhysical, outerRadius: geometry.outerRadius, faceRadius: geometry.faceRadius, hubRadius: geometry.hubRadius, size, outerDiameter: geometry.outerDiameter, faceDiameter: geometry.faceDiameter, faceToOuterRatio: geometry.faceToOuterRatio, hubToOuterRatio: geometry.hubToOuterRatio, dpr: ratio, pixels, transformOrigin: `${geometry.centreCss}px ${geometry.centreCss}px`, plan, geometry }); metrics.staticFaceRebuilds += 1; metrics.lastReason = reason; compose(reason);
     };
@@ -106,8 +133,19 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
     const resize = () => rebuild("resize", true); const observer = new ResizeObserver(resize); observer.observe(hostElement); window.addEventListener("resize", resize);
     void document.fonts?.ready.then(() => { if (!disposed) rebuild("fonts-ready"); });
     const ticker = animatedIds.size ? window.setInterval(() => { if (document.visibilityState === "visible") advanceGifs(images, gifs, () => { metrics.gifFramesDecoded += 1; compose("gif-frame"); }, () => disposed); }, 75) : null;
-    return () => { disposed = true; observer.disconnect(); window.removeEventListener("resize", resize); if (ticker != null) window.clearInterval(ticker); for (const state of gifs.values()) { state.bitmap?.close(); state.decoder.close(); } gifs.clear(); images.clear(); delete element.__wheelRendererV19; };
+    return () => { disposed = true; decorationDraw.current = null; observer.disconnect(); window.removeEventListener("resize", resize); if (ticker != null) window.clearInterval(ticker); for (const state of gifs.values()) { state.bitmap?.close(); state.decoder.close(); } gifs.clear(); images.clear(); delete element.__wheelRendererV19; };
   }, [active, config, segmentMedia, segmentPreviewUrls]);
+
+  useEffect(() => {
+    if (!hasEffects || !host.current) return;
+    let raf = 0; let disposed = false;
+    const motion = matchMedia('(prefers-reduced-motion: reduce)');
+    const sample = (now: number) => { raf = 0; if (disposed || !decorationVisible.current || document.hidden || spinning || motion.matches) return; decorationDraw.current?.(now); raf = requestAnimationFrame(sample); };
+    const sync = () => { cancelAnimationFrame(raf); raf = 0; if (!disposed && decorationVisible.current && !document.hidden) { decorationDraw.current?.(performance.now()); if (!spinning && !motion.matches) raf = requestAnimationFrame(sample); } };
+    const observer = new IntersectionObserver(([entry]) => { decorationVisible.current = entry.isIntersecting; sync(); }); observer.observe(host.current);
+    document.addEventListener('visibilitychange', sync); motion.addEventListener('change', sync); sync();
+    return () => { disposed = true; cancelAnimationFrame(raf); observer.disconnect(); document.removeEventListener('visibilitychange', sync); motion.removeEventListener('change', sync); };
+  }, [hasEffects, spinning]);
 
   useEffect(() => {
     if (!spinning) publishPointerTarget(rotation);
@@ -157,6 +195,7 @@ export function WheelCanvas({ entries, config, rotation, durationMs, spinning, a
       <div className="wheel-stage__pointer" aria-hidden="true"><span className="wheel-stage__pointer-housing"><i className="wheel-stage__pointer-blade" /><i className="wheel-stage__pointer-groove" /></span></div>
       <div ref={rotor} className="wheel-stage__rotor" style={{ transform: `rotate(${spinning && animation ? animation.startRotation : rotation}deg)`, transitionDuration: "0ms" }} data-spin-duration-ms={spinning && animation ? animation.durationMs : durationMs} data-wheel-rotation={spinning && animation ? animation.startRotation : rotation}>
         <WheelAvatarLayer entries={active} mode={config.entrantDisplay || "names"} /><canvas ref={canvas} role="img" aria-label={alternative} className={`wheel-stage__face${onSegmentSelect && !spinning ? " is-interactive" : ""}`} onClick={(event) => { if (spinning || !onSegmentSelect) return; const parent = event.currentTarget.parentElement; const stage = event.currentTarget.closest<HTMLElement>(".wheel-stage__geometry"); if (!parent || !stage) return; const stageRect = stage.getBoundingClientRect(); const size = (event.currentTarget as InstrumentedCanvas).__wheelRendererV19?.cssDiameter || parent.clientWidth; const transform = getComputedStyle(parent).transform; const matrix = transform === "none" ? null : new DOMMatrixReadOnly(transform); const renderedRotation = matrix ? Math.atan2(matrix.b, matrix.a) * 180 / Math.PI : rotation; const selected = hitTestWheel(active, { x: event.clientX - (stageRect.left + stageRect.width / 2) + size / 2, y: event.clientY - (stageRect.top + stageRect.height / 2) + size / 2 }, size, renderedRotation); if (selected) onSegmentSelect(selected, event.currentTarget); }} />
+        {hasEffects ? <><canvas ref={decorationCanvas} className="wheel-stage__feature-effects" aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1 }} /><canvas ref={featureForeground} aria-hidden="true" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 2 }} /></> : null}
       </div>
       <canvas ref={mechanics} className="wheel-stage__mechanics" aria-hidden="true" />
       {onCentreSpin ? <button type="button" className={`wheel-stage__hub is-spin-control${centreImageUrl ? " is-custom" : " is-default"}`} onClick={onCentreSpin} disabled={centreSpinDisabled} aria-label={centreSpinLabel}>{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</button> : <div className={`wheel-stage__hub${centreImageUrl ? " is-custom" : " is-default"}`} aria-hidden="true">{centreImageUrl ? <img src={centreImageUrl} alt="" decoding="async" /> : <WheelsBrandMark />}</div>}
@@ -170,18 +209,25 @@ function drawUnderlay(canvas: HTMLCanvasElement, plan: WheelRenderPlan, ratio: n
   if (!plan.segments.length) { context.beginPath(); context.arc(0, 0, plan.radius, 0, Math.PI * 2); context.fillStyle = "#171712"; context.fill(); context.restore(); return; }
   for (const segment of plan.segments) {
     segmentPath(context, segment, plan.radius); context.fillStyle = segment.style.color; context.fill();
+    drawFeatureFill(context, effectiveAppearance(segment.entry), segment.start, segment.end, plan.radius, plan.hubRadius);
     if (segment.style.mode === "pattern" && segment.pattern) { context.save(); context.clip(); drawSegmentPattern(context, segment.style, segment.radialAngle, plan.radius, segment.pattern); context.restore(); metrics.patternConstructions += 1; }
     if (segment.style.mode === "image" && !animatedIds.has(segment.style.imageAssetId)) { const image = images.get(segment.style.imageAssetId); if (image?.width && segment.image) { context.save(); context.clip(); drawCoverImage(context, image.source, image.width, image.height, segment.radialAngle, plan.radius, segment.span, segment.image); context.restore(); } }
   }
   context.restore();
 }
 
-function drawForeground(canvas: HTMLCanvasElement, plan: WheelRenderPlan, ratio: number, config: WheelConfig) {
+function drawForeground(canvas: HTMLCanvasElement, plan: WheelRenderPlan, ratio: number, config: WheelConfig, metrics: RendererMetrics) {
   const context = canvas.getContext("2d"); if (!context) return; context.setTransform(ratio, 0, 0, ratio, 0, 0); context.clearRect(0, 0, plan.size, plan.size); context.save(); context.translate(plan.centre, plan.centre);
+  metrics.featureLabels = [];
   for (const segment of plan.segments) {
     segmentPath(context, segment, plan.radius); context.strokeStyle = "rgba(8,8,6,.72)"; context.lineWidth = Math.max(1, plan.size * .0025); context.stroke();
+    const glyphs = drawFeatureMarks(context, effectiveAppearance(segment.entry), segment.start, segment.end, plan.radius, plan.hubRadius);
     if (!segment.label.visible) continue;
-    const useDarkLabel = config.labelContrast === "dark" || isExtraLight(segment.style.color); context.save(); context.rotate(segment.radialAngle); context.textAlign = "right"; context.textBaseline = "middle"; context.fillStyle = useDarkLabel ? "#171712" : "#fffdf3"; context.font = `${WHEEL_LABEL_FONT_WEIGHT} ${segment.label.fontSize}px ${WHEEL_LABEL_FONT_FAMILY}`; context.shadowColor = useDarkLabel ? "rgba(255,255,255,.62)" : "rgba(0,0,0,.78)"; context.shadowBlur = useDarkLabel ? 2 : 4; context.fillText(segment.label.text, segment.label.anchorX, 0); context.restore();
+    const useDarkLabel = config.labelContrast === "dark" || isExtraLight(segment.style.color); context.save(); context.rotate(segment.radialAngle); context.textAlign = "right"; context.textBaseline = "middle"; context.fillStyle = useDarkLabel ? "#171712" : "#fffdf3"; context.font = `${WHEEL_LABEL_FONT_WEIGHT} ${segment.label.fontSize}px ${WHEEL_LABEL_FONT_FAMILY}`; context.shadowColor = useDarkLabel ? "rgba(255,255,255,.62)" : "rgba(0,0,0,.78)"; context.shadowBlur = useDarkLabel ? 2 : 4; const maxWidth = glyphs ? Math.max(0, Math.min(segment.label.maxWidth, segment.label.anchorX - glyphs.textStart)) : segment.label.maxWidth;
+    const measure = (text: string) => { metrics.measureTextCalls++; return context.measureText(text).width; };
+    const text = glyphs ? fitFeatureLabel(segment.entry.label, maxWidth, measure) : segment.label.text;
+    if (glyphs) metrics.featureLabels.push({ id: segment.entry.id, text, width: measure(text), maxWidth, glyphs: glyphs.positions.length, glyphBaseline: 0, textBaseline: 0 });
+    context.fillText(text, segment.label.anchorX, 0); context.restore();
   }
   const gradient = context.createRadialGradient(0, 0, plan.radius * .5, 0, 0, plan.radius); gradient.addColorStop(0, "transparent"); gradient.addColorStop(1, "rgba(0,0,0,.34)"); context.beginPath(); context.arc(0, 0, plan.radius, 0, Math.PI * 2); context.fillStyle = gradient; context.fill(); context.strokeStyle = config.pointerAccent; context.lineWidth = Math.max(5, plan.size * .018); context.stroke(); context.restore();
 }
