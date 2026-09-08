@@ -1,6 +1,6 @@
 /* eslint-disable no-control-regex */
 /* global TextDecoder, TextEncoder, structuredClone */
-import { canonicalStringify, createPortableWheel, decodeBase64, parseWheelImport, sha256Hex } from "./portable.mjs";
+import { WHEEL_FILE_FORMAT_VERSION, canonicalStringify, createPortableWheel, decodeBase64, parseWheelImport, sha256Hex } from "./portable.mjs";
 
 export const STAGE_FILE_FORMAT_ID = "thirdrailify-stage";
 export const STAGE_FILE_FORMAT_VERSION = 1;
@@ -50,7 +50,7 @@ export async function parsePortableStage(input, options = {}) {
   for (let index = 0; index < document.stage.slots.length; index += 1) {
     const slot = document.stage.slots[index]; requireRecord(slot, "Stage slot"); rejectUnknown(slot, new Set(["order", "wheelKey"]), "Stage slot"); if (slot.order !== index || !wheelByKey.has(slot.wheelKey)) throw new Error("Stage slots must be complete, unique, and ordered from zero.");
     const inflated = inflateMedia(wheelByKey.get(slot.wheelKey), assets);
-    const parsed = await parseWheelImport(JSON.stringify({ format: "thirdrailify-wheel", formatVersion: 2, wheel: inflated }), { sourceName: `${options.sourceName || "Imported Stage"} / ${slot.wheelKey}`, defaultConfig: options.defaultConfig });
+    const parsed = await parseWheelImport(JSON.stringify({ format: "thirdrailify-wheel", formatVersion: WHEEL_FILE_FORMAT_VERSION, wheel: inflated }), { sourceName: `${options.sourceName || "Imported Stage"} / ${slot.wheelKey}`, defaultConfig: options.defaultConfig });
     proposals.push({ key: slot.wheelKey, proposal: parsed.proposals[0] });
   }
   if (new Set(document.stage.slots.map((slot) => slot.wheelKey)).size !== proposals.length) throw new Error("Stage wheel mappings must be one-to-one.");

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
+import { WinnerEntrantDetails } from './WinnerEntrantDetails';
 import { createPortal } from "react-dom";
 import type { Wheel, WheelEntry } from "./types";
 import { CELEBRATION_PROFILES } from "./celebrationProfiles.mjs";
@@ -25,7 +26,7 @@ export function StageWinnerCelebration({ results, portalRoot, onClose }: { resul
       <button ref={close} type="button" className="winner-dialog__close" onClick={onClose} aria-label="Close Stage results">×</button>
       <div className="winner-dialog__mark" aria-hidden="true"><WheelsBrandMark /></div><p className="eyebrow">STAGE RESULTS</p><h2 id="stage-results-title">WINNERS LOCKED.</h2>
       <p id="stage-results-detail">{results.every((result) => result.mode === "official") ? "Every result was selected and persisted by the Third Railify authority before animation." : "Stage summary · results marked not recorded are non-binding."}</p>
-      <div className="stage-results-grid">{results.map(({ position, wheel, entry, mode }) => { const colour = resolvedEntryStyle(entry, wheel.config).color; return <article key={`${position}:${wheel.slug}`} style={{ "--stage-result-colour": colour } as React.CSSProperties}><div><i aria-hidden="true" /><span>{wheel.title}</span></div><strong>{entry.label}</strong><small className={mode === "official" ? "is-official" : ""}>{mode === "official" ? "OFFICIAL · RECORDED" : `${mode.toUpperCase()} · NOT RECORDED`}</small></article>; })}</div>
+      <div className="stage-results-grid">{results.map(({ position, wheel, entry, mode }) => { const colour = resolvedEntryStyle(entry, wheel.config).color; return <article key={`${position}:${wheel.slug}`} style={{ "--stage-result-colour": colour } as React.CSSProperties}><div><i aria-hidden="true" /><span>{wheel.title}</span></div><WinnerEntrantDetails entry={entry} entries={wheel.entries} compact /><small className={mode === "official" ? "is-official" : ""}>{mode === "official" ? "OFFICIAL · RECORDED" : `${mode.toUpperCase()} · NOT RECORDED`}</small></article>; })}</div>
       <button type="button" className="button button--primary stage-results-close" onClick={onClose}>CLOSE RESULTS</button>
     </div>
   </div>, portalRoot);

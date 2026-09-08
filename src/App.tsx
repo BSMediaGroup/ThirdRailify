@@ -66,6 +66,8 @@ export function App() {
         <Route path="/wheels/:slug" element={<WheelPage />} />
         <Route path="/wheel" element={<Navigate to="/wheels" replace />} />
         <Route path="/polls" element={<PollsPage />} />
+        <Route path="/polls/abootnothing" element={<PollsPage aboot />} />
+        <Route path="/abootnothing" element={<Navigate to="/polls/abootnothing" replace />} />
         <Route path="/polls/new" element={<PollEditorPage create />} />
         <Route path="/polls/:slug/edit" element={<PollEditorPage />} />
         <Route path="/polls/:slug" element={<PollDetailPage />} />

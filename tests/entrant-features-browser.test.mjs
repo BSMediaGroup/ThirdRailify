@@ -65,6 +65,7 @@ test('real local awards render, participant overrides persist and shared surface
     }
     await page.getByRole('button', { name: 'Manage participants', exact: true }).click();
     const manager = page.locator('.participant-manager'); const first = manager.locator('.participant-row').first();
+    assert.match(await first.textContent(), /Subscription \/ Automatic/);
     await first.getByRole('button', { name: 'Features', exact: true }).click();
     const controls = first.locator('.entrant-appearance');
     await controls.getByLabel('Feature fill', { exact: true }).selectOption('gradient');
@@ -74,10 +75,10 @@ test('real local awards render, participant overrides persist and shared surface
     if (await manager.getByRole('button', { name: 'Save participants', exact: true }).isEnabled()) { await manager.getByRole('button', { name: 'Save participants', exact: true }).click(); await page.getByText('Authoritative participant revision saved.', { exact: true }).waitFor(); }
     const beforeAward = (await read()).wheel.entries[0].weight;
     await manager.getByRole('button', { name: 'Close participant manager', exact: true }).click();
-    await send(event(rules[2], 'Subscriber')); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
-    await page.waitForFunction(weight => document.querySelector('.wheel-stage__face')?.__wheelRendererV19?.plan?.segments.find(s => s.entry.label === 'Subscriber')?.entry.weight === weight, beforeAward + 20);
+    await send(event(rules[0], 'Subscriber')); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await page.waitForFunction(weight => document.querySelector('.wheel-stage__face')?.__wheelRendererV19?.plan?.segments.find(s => s.entry.label === 'Subscriber')?.entry.weight === weight, beforeAward + 150);
     await page.reload({ waitUntil: 'networkidle' });
-    const saved = (await read()).wheel.entries.find(e => e.label === 'Subscriber'); assert.equal(saved.weight, beforeAward + 20); assert.deepEqual(effectiveAppearance(saved).fill.colors, ['#123456', '#654321']); assert.deepEqual(effectiveAppearance(saved).icons, []); assert.equal(effectiveAppearance(saved).effects, null);
+    const saved = (await read()).wheel.entries.find(e => e.label === 'Subscriber'); assert.equal(saved.weight, beforeAward + 150); assert.deepEqual(effectiveAppearance(saved).fill.colors, ['#123456', '#654321']); assert.deepEqual(effectiveAppearance(saved).icons, []); assert.equal(effectiveAppearance(saved).effects, null);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true); assert.deepEqual(errors, []);
     if (width === 1440) {
       await page.goto(`${origin}/wheels/${slug}/edit`, { waitUntil: 'networkidle' });
@@ -90,7 +91,7 @@ test('real local awards render, participant overrides persist and shared surface
       const refreshed = await wheelAutomations(env, 'creator', slug, 'read', {}); for (const rule of rules) Object.assign(rule, refreshed.rules.find(r => r.id === rule.id));
       await page.goto(`${origin}/wheels/${slug}/present`, { waitUntil: 'networkidle' }); await page.locator('.wheel-stage__feature-effects').waitFor(); await page.screenshot({ path: `${output}/presentation.png` });
       await page.goto(`${origin}/wheels/stages/feature-stage`, { waitUntil: 'networkidle' }); await page.locator('.wheel-stage__face').first().waitFor(); assert.equal(await page.locator('.wheel-stage__feature-effects').count(), 2);
-      const giftBefore = (await read()).wheel.entries.find(e => e.label === 'Gift').weight; await send(event(rules[3], 'Gift')); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+      const giftBefore = (await read()).wheel.entries.find(e => e.label === 'Gift').weight; await send(event(rules[2], 'Gift')); await page.evaluate(() => window.dispatchEvent(new Event('focus')));
       await page.waitForFunction(weight => [...document.querySelectorAll('.wheel-stage__face')].every(c => c.__wheelRendererV19?.plan?.segments.find(s => s.entry.label === 'Gift')?.entry.weight === weight), giftBefore + 20);
       await page.screenshot({ path: `${output}/stage-final.png` });
       await page.goto(`${origin}/wheels/new`, { waitUntil: 'networkidle' }); await page.getByRole('heading', { name: 'Participant features', exact: true }).waitFor();
@@ -109,6 +110,7 @@ test('real local awards render, participant overrides persist and shared surface
       await page.getByText('Authoritative participant revision saved.', { exact: true }).waitFor();
       await manager.getByRole('button', { name: 'Close participant manager', exact: true }).click(); await page.reload({ waitUntil: 'networkidle' });
       const fresh = (await read()).wheel.entries; const manual = fresh.find(e => e.label === 'Manual renamed entrant');
+      assert.deepEqual(manual.identity, { version: 1, type: 'regular', origin: 'manual' });
       assert.equal(manual.weight, 3); assert.equal(manual.order, fresh.length - 2); assert.deepEqual(effectiveAppearance(manual).fill, FEATURE_PRESETS.gift.components.fill); assert.deepEqual(effectiveAppearance(manual).icons, []);
     }
     await context.close();

@@ -1,7 +1,7 @@
 import type { Poll, PollAccess } from "./types";
 export type PollError = Error & { code?: string; status?: number };
 export type PollListPayload = { ok: true; items: Poll[]; count: number; page: number; pageSize: number; total: number; totalPages: number; refreshedAt: string };
-export function listPolls(view = "open", search = "", page = 1, pageSize = 12) { return request<PollListPayload>(`/api/polls?view=${encodeURIComponent(view)}&search=${encodeURIComponent(search)}&page=${page}&pageSize=${pageSize}`); }
+export function listPolls(view = "open", search = "", page = 1, pageSize = 12, type = "") { return request<PollListPayload>(`/api/polls?view=${encodeURIComponent(view)}&search=${encodeURIComponent(search)}&page=${page}&pageSize=${pageSize}&type=${encodeURIComponent(type)}`); }
 export function getPoll(slug: string) { return request<{ ok: true; poll: Poll; access: PollAccess; refreshedAt: string }>(`/api/polls/${encodeURIComponent(slug)}`); }
 export function getCreatorAccess() { return request<{ ok: true; authenticated: boolean; canCreate: boolean; canManageAll: boolean }>("/api/polls/access"); }
 export function getRumbleDiscovery() { return request<import("./types").RumbleDiscovery>("/api/polls/discovery"); }

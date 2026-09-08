@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { WinnerEntrantDetails } from './WinnerEntrantDetails';
 import { createPortal } from "react-dom";
 import type { WheelEntry } from "./types";
 import {
@@ -12,6 +13,7 @@ import { CheckIcon, EyeOffIcon, TrashIcon } from "../components/Icons";
 
 type Props = {
   entry: WheelEntry;
+  entries?: WheelEntry[];
   official: boolean;
   message: string;
   celebrationEnabled: boolean;
@@ -29,6 +31,7 @@ type Props = {
 
 export function WinnerCelebration({
   entry,
+  entries,
   official,
   message,
   celebrationEnabled,
@@ -185,7 +188,7 @@ export function WinnerCelebration({
         <p id="winner-status" className="eyebrow">
           {message.replace("{winner}", entry.label)}
         </p>
-        <h2 id="winner-title">{entry.label}</h2>
+        <WinnerEntrantDetails entry={entry} entries={entries} titleId="winner-title" />
         <p id="winner-detail">
           {official
             ? "This result was selected and persisted by the Third Railify authority before the animation began."
@@ -230,7 +233,7 @@ export function WinnerCelebration({
               }}
               disabled={busy}
             >
-              <TrashIcon /> Remove all matching
+              <TrashIcon /> Remove matching type
             </button>
           </div>
         ) : null}

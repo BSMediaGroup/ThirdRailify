@@ -1,3 +1,4 @@
+import { entryIdentityLabel } from '../lib/entrant-identity.mjs';
 import { withLegacyEntryStyle } from "./segmentStyles.mjs";
 import { EntrantAppearanceControls } from '../components/EntrantAppearanceControls';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -709,7 +710,7 @@ export function AppearanceDialog({
                             <article key={entry.id}>
                               <span>
                                 <SegmentStylePreview style={value} media={segmentMedia} previewUrls={segmentPreviewUrls} label={`${entry.label} fill`} />
-                                {entry.label}
+                                {entry.label}<small>{entryIdentityLabel(entry.identity)}</small>
                               </span>
                               <button type="button" className="segment-style-action" onClick={() => setSegmentEditor({ kind: "entry", id: entry.id })}><span>Edit style</span></button>
                               <button
@@ -934,6 +935,7 @@ export function AppearanceDialog({
       {celebrationPreview ? (
         <WinnerCelebration
           entry={previewWinner}
+          entries={previewEntries}
           official={false}
           message="Winner preview: {winner}"
           celebrationEnabled={config.celebrationEnabled}

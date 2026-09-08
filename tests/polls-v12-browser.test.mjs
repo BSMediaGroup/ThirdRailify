@@ -169,6 +169,7 @@ const searchedViews = new Set();
 async function respond(route) {
   const url = new URL(route.request().url());
   const method = route.request().method();
+  if (url.pathname === "/api/polls" && url.searchParams.get("type") === "abootnothing") return json(route, { ok: true, items: [], count: 0, page: 1, pageSize: 4, total: 0, totalPages: 0, refreshedAt: new Date().toISOString() });
   if (url.pathname === "/api/auth/config") return json(route, { configured: true, emailSignupConfigured: false, turnstileSiteKey: null, oauthProviders: [], oauthProviderStates: [], publicOrigin: ORIGIN, adminOrigin: ORIGIN, environment: "test", cookieMode: "host-only" });
   if (url.pathname === "/api/auth/session") return json(route, session());
   if (url.pathname === "/api/polls/access") return json(route, { ok: true, authenticated: true, canCreate: true, canManageAll: false });

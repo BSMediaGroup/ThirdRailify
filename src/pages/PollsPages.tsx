@@ -31,9 +31,11 @@ import { GalleryHeroAtmosphere, PollSignalDiagram } from "../components/GalleryH
 import { EphemeralNotices } from "../components/EphemeralNotices";
 import { useMotionGate } from "../hooks/useMotionGate";
 import "../styles/polls.css";
+import "../styles/aboot-polls.css";
 import "../styles/gallery-heroes.css";
 
-export function PollsPage() {
+export function PollsPage({ aboot = false }: { aboot?: boolean }) {
+  const collection = aboot ? "abootnothing" : "";
   const { account, openAuth } = useAuth();
   const hero = useMotionGate<HTMLElement>();
   const [view, setView] = useState("all");
@@ -51,13 +53,16 @@ export function PollsPage() {
   const [pastPage, setPastPage] = useState(1);
   const [pastPages, setPastPages] = useState(0);
   const [canCreate, setCanCreate] = useState(false);
-  const openIds = useRef<string[]>([]);
+  const openPageItems = useRef(new Map<number, Poll[]>());
+  const [openPage, setOpenPage] = useState(1), [openPages, setOpenPages] = useState(0);
+  const quietOpenPage = useRef(1);
+  const quietPastPage = useRef(1);
   const loadPast = useCallback(async (page = 1, append = false, quiet = false) => {
     if (!quiet) setPastLoading(true);
     try {
-      const payload = await listPolls("closed", search, page, 12);
-      setPastItems((current) => append ? mergePolls(current, payload.items) : payload.items);
-      setPastPage(payload.page);
+      const payload = await listPolls("closed", search, page, 12, collection);
+      setPastItems((current) => append || quiet ? mergePolls(current, payload.items) : payload.items);
+      if (!quiet) setPastPage(payload.page);
       setPastPages(payload.totalPages);
       setPastError("");
     } catch (reason) {
@@ -65,26 +70,29 @@ export function PollsPage() {
     } finally {
       if (!quiet) setPastLoading(false);
     }
-  }, [search]);
-  const loadOpen = useCallback(async (quiet = false) => {
+  }, [search, collection]);
+  const loadOpen = useCallback(async (quiet = false, page = 1, append = false) => {
     if (!quiet) setOpenLoading(true);
     try {
-      const payload = await listPolls("open", search, 1, 24);
+      const payload = await listPolls("open", search, page, 24, collection);
       const nextIds = payload.items.map((item) => item.id);
-      if (quiet && openIds.current.some((id) => !nextIds.includes(id))) await loadPast(1, false, true);
-      openIds.current = nextIds;
-      setOpenItems(payload.items);
+      if (quiet && (openPageItems.current.get(page) || []).some((item) => !nextIds.includes(item.id))) await loadPast(1, false, true);
+      if (!quiet && !append) openPageItems.current.clear();
+      openPageItems.current.set(page, payload.items);
+      setOpenItems([...openPageItems.current.values()].reduce((all, items) => mergePolls(all, items), []));
+      if (!quiet) setOpenPage(payload.page);
+      setOpenPages(payload.totalPages);
       setOpenError("");
     } catch (reason) {
       setOpenError(message(reason));
     } finally {
       if (!quiet) setOpenLoading(false);
     }
-  }, [loadPast, search]);
+  }, [loadPast, search, collection]);
   const loadMine = useCallback(async () => {
     setMineLoading(true);
     try {
-      const payload = await listPolls("mine", search, 1, 48);
+      const payload = await listPolls("mine", search, 1, 48, collection);
       setMineItems(payload.items);
       setMineError("");
     } catch (reason) {
@@ -92,7 +100,7 @@ export function PollsPage() {
     } finally {
       setMineLoading(false);
     }
-  }, [search]);
+  }, [search, collection]);
   useEffect(() => {
     if (view === "all" || view === "open") void loadOpen();
     if (view === "all" || view === "closed") void loadPast();
@@ -104,9 +112,18 @@ export function PollsPage() {
   }, [account]);
   useCoordinatedPollRefresh(
     useCallback(() => {
-      if (openItems.length) void loadOpen(true);
-    }, [loadOpen, openItems.length]),
-    (view === "all" || view === "open") && openItems.length > 0,
+      if (openItems.length) {
+        const page = Math.min(quietOpenPage.current, Math.max(1, openPage));
+        quietOpenPage.current = page >= openPage ? 1 : page + 1;
+        void loadOpen(true, page);
+      }
+      if (pastItems.some(p => !p.credits?.settled && p.credits)) {
+        const page = Math.min(quietPastPage.current, Math.max(1, pastPage));
+        quietPastPage.current = page >= pastPage ? 1 : page + 1;
+        void loadPast(page, false, true);
+      }
+    }, [loadOpen, loadPast, openItems.length, openPage, pastItems, pastPage]),
+    ((view === "all" || view === "open") && openItems.length > 0) || pastItems.some(p => Boolean(p.credits?.unresolved)),
   );
   const changed = (poll: Poll) => {
     setSelected(poll);
@@ -116,7 +133,7 @@ export function PollsPage() {
   };
   return (
     <div className="polls-page">
-      <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
+      {aboot ? <header className="aboot-gallery-hero container"><Link to="/polls">← Back to Polls</Link><p className="eyebrow">THE THIRD RAIL · ABOOT NOTHING</p><h1>Two sides.<br /><em>One loud opinion.</em></h1><p>Pick your side. Follow the live matchups and revisit every past debate.</p><div className="aboot-gallery-hero__mark" aria-hidden="true"><span>A</span><b>VS</b><span>B</span></div></header> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
         <GalleryHeroAtmosphere variant="polls" />
         <div className="container polls-hero__grid">
           <div className="polls-hero__copy">
@@ -153,11 +170,13 @@ export function PollsPage() {
         </div>
         <div className="polls-trust-rail"><span><i aria-hidden="true" /><b>WEB</b> Direct audience choice</span><span><i aria-hidden="true" /><b>RUMBLE</b> Live chat signal</span><span><i aria-hidden="true" /><b>AUTHORITATIVE</b> One current vote per source</span></div>
       </section>
+      }
+      {!aboot ? <AbootFeature onQuickView={setSelected} /> : null}
       <section id="poll-directory" className="container poll-directory">
         <header>
           <div>
             <p className="eyebrow">PUBLIC SIGNALS</p>
-            <h2>Poll directory</h2>
+            <h2>{aboot ? "Aboot Nothing matchups" : "Poll directory"}</h2>
             <p>
               Open Polls refresh together. Closed results settle into a quieter,
               cache-friendly state.
@@ -187,8 +206,8 @@ export function PollsPage() {
             </label>
           </div>
         </header>
-        {view === "all" || view === "open" ? <PollDirectorySection title="Open Polls" eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} /> : null}
-        {view === "all" || view === "closed" ? <PollDirectorySection title="Past Polls" eyebrow="SETTLED SIGNALS" items={pastItems} loading={pastLoading} error={pastError} empty="No completed Polls yet." onQuickView={setSelected} footer={pastPage < pastPages ? <button className="button button--ghost poll-history-more" type="button" disabled={pastLoading} onClick={() => void loadPast(pastPage + 1, true)}>{pastLoading ? "Loading…" : "Load more Past Polls"}</button> : null} /> : null}
+        {view === "all" || view === "open" ? <PollDirectorySection title={aboot ? "Current Matchups" : "Open Polls"} eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} footer={openPage < openPages ? <button className="button button--ghost poll-history-more" type="button" disabled={openLoading} onClick={() => void loadOpen(false, openPage + 1, true)}>Load more Open Polls</button> : null} /> : null}
+        {view === "all" || view === "closed" ? <PollDirectorySection title={aboot ? "Past Matchups" : "Past Polls"} eyebrow="POLL HISTORY" items={pastItems} loading={pastLoading} error={pastError} empty="No completed Polls yet." onQuickView={setSelected} footer={pastPage < pastPages ? <button className="button button--ghost poll-history-more" type="button" disabled={pastLoading} onClick={() => void loadPast(pastPage + 1, true)}>{pastLoading ? "Loading…" : "Load more Past Polls"}</button> : null} /> : null}
         {view === "mine" ? <PollDirectorySection title="Your Polls" eyebrow="CREATOR LIBRARY" items={mineItems} loading={mineLoading} error={mineError} empty="You have not created a Poll yet." onQuickView={setSelected} /> : null}
       </section>
       {selected ? (
@@ -219,14 +238,32 @@ function mergePolls(current: Poll[], incoming: Poll[]) {
   return [...items.values()];
 }
 
+function AbootFeature({ onQuickView }: { onQuickView: (poll: Poll) => void }) {
+  const [items, setItems] = useState<Poll[]>([]); const [error, setError] = useState("");
+  const load = useCallback(() => { void listPolls("recent", "", 1, 4, "abootnothing").then(p => { setItems(p.items.filter(item => item.presentationType === "abootnothing")); setError(""); }).catch(() => setError("Matchups are temporarily unavailable.")); }, []);
+  useEffect(load, [load]);
+  useCoordinatedPollRefresh(load, items.some(p => p.state === "open" || Boolean(p.credits?.unresolved)));
+  return <section className="container aboot-feature"><header><div><p className="eyebrow">PICK A SIDE</p><h2>Aboot Nothing</h2></div><Link to="/polls/abootnothing">See all</Link></header>{error ? <p role="status">{error}</p> : items.length ? <div className="aboot-feature__row">{items.map(p => <PollCard key={p.id} poll={p} onQuickView={onQuickView} />)}</div> : <p>New matchups will appear here. <Link to="/polls/abootnothing">Explore Aboot Nothing</Link></p>}</section>;
+}
+function CreditStatus({ poll, detail = false }: { poll: Poll; detail?: boolean }) {
+  if (poll.credits === null) return <p className="poll-credit-status">Additional-vote status unavailable</p>;
+  if (!poll.credits?.unresolved) return null;
+  return <aside className="poll-credit-status" role="status"><strong>{poll.credits.unresolved} votes awaiting allocation</strong>{detail ? <p>{poll.credits.waiting} awaiting a message · {poll.credits.review} requiring review. These credits are excluded from current totals.</p> : null}</aside>;
+}
+function MatchupSubjects({ poll }: { poll: Poll }) {
+  const { winnerId } = pollOutcome(poll);
+  return <div className="aboot-subjects">{poll.options.slice(0, 2).map((option, index) => <div className={`aboot-subject${winnerId ? winnerId === option.id ? " is-winner" : " is-runner-up" : ""}`} key={option.id} style={{ "--subject-tint": poll.presentation?.colors?.[index] || (index ? "#a9b7da" : "#f3c928") } as React.CSSProperties}>{option.image ? <ResilientImage src={option.image.url} alt="" /> : <span className="aboot-subject__letter" aria-hidden="true">{option.label.slice(0, 1)}</span>}{winnerId === option.id ? <span className="aboot-winner-badge">Winner</span> : null}<strong>{option.label}</strong>{option.description ? <small>{option.description}</small> : null}</div>)}<b className="aboot-vs" aria-label="versus">VS</b></div>;
+}
 function PollCover({ poll, compact = false, children }: { poll: Poll; compact?: boolean; children?: React.ReactNode }) {
+  const aboot = poll.presentationType === "abootnothing";
   const accent = poll.theme?.accent || "#f3c928";
   const bannerUrl = poll.media?.banner?.url || "";
   const [failedBannerUrl, setFailedBannerUrl] = useState("");
   const showBanner = Boolean(bannerUrl && failedBannerUrl !== bannerUrl);
   return (
-    <div className={`poll-cover${compact ? " poll-cover--compact" : ""}${showBanner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
-      {showBanner ? <img src={bannerUrl} alt={`${poll.title} cover`} onError={() => setFailedBannerUrl(bannerUrl)} /> : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
+    <div className={`poll-cover${aboot ? " aboot-cover" : ""}${compact ? " poll-cover--compact" : ""}${showBanner ? " has-banner" : " is-generated"}`} style={{ "--poll-accent": accent } as React.CSSProperties}>
+      {aboot ? <>{poll.presentation?.context ? <p className="aboot-context eyebrow">{poll.presentation.context}</p> : null}<MatchupSubjects poll={poll} /></> : null}
+      {showBanner ? <img src={bannerUrl} alt={`${poll.title} cover`} onError={() => setFailedBannerUrl(bannerUrl)} /> : aboot ? null : <div className="poll-cover__fallback" aria-hidden="true"><span>{poll.title.trim().charAt(0).toUpperCase() || "P"}</span><svg viewBox="0 0 220 120"><path d="M122 4 72 66h38l-13 50 55-70h-39z" /></svg></div>}
       <div className="poll-cover__shade" />
       {children}
     </div>
@@ -265,6 +302,7 @@ function PollCard({
         <h3>{poll.title}</h3>
         <p>{poll.description || "A Third Railify audience Poll."}</p>
       </div>
+      <CreditStatus poll={poll} />
       <div className="poll-card__result">
         <span
           style={{
@@ -277,7 +315,7 @@ function PollCard({
           {poll.totalVotes} vote{poll.totalVotes === 1 ? "" : "s"}
         </b>
       </div>
-      {poll.state === "closed" ? <div className="poll-card__finals" aria-label={`Final results for ${poll.title}`}>{ranked.slice(0, 3).map((option) => { const percentage = poll.totalVotes ? (option.votes / poll.totalVotes) * 100 : 0; return <div key={option.id}><span><b>{option.label}</b><em>{percentage.toFixed(poll.totalVotes ? 1 : 0)}% · {option.votes}</em></span><i aria-hidden="true"><i style={{ width: `${percentage}%` }} /></i></div>; })}</div> : null}
+      {poll.state === "closed" ? <div className="poll-card__finals" aria-label={`${poll.credits?.unresolved ? "Current" : "Final"} results for ${poll.title}`}>{ranked.slice(0, 3).map((option) => { const percentage = poll.totalVotes ? (option.votes / poll.totalVotes) * 100 : 0; return <div key={option.id}><span><b>{option.label}</b><em>{percentage.toFixed(poll.totalVotes ? 1 : 0)}% · {option.votes}</em></span><i aria-hidden="true"><i style={{ width: `${percentage}%` }} /></i></div>; })}</div> : null}
       {!preview ? <footer>
         <span>
           By {poll.owner.displayName} ·{" "}
@@ -303,7 +341,8 @@ function pollOutcome(poll: Poll) {
   const ranked = [...poll.options].sort((a, b) => b.votes - a.votes || a.position - b.position);
   const highest = ranked[0]?.votes || 0;
   const leaders = highest > 0 ? ranked.filter((option) => option.votes === highest) : [];
-  return { leaders, tied: leaders.length > 1, topIds: new Set(leaders.map((option) => option.id)) };
+  const winnerId = poll.state === "closed" && poll.credits !== null && !poll.credits?.unresolved && leaders.length === 1 ? leaders[0].id : null;
+  return { leaders, winnerId, tied: leaders.length > 1, topIds: new Set(leaders.map((option) => option.id)) };
 }
 
 function PollQuickView({
@@ -323,6 +362,7 @@ function PollQuickView({
   const close = useRef<HTMLButtonElement>(null);
   useModalDialog(root, close, onClose);
   const { csrfToken } = useAuth();
+  useCoordinatedPollRefresh(useCallback(() => { void getPoll(poll.slug).then(p => onChanged(p.poll)).catch(() => undefined); }, [poll.slug, onChanged]), poll.state === "open" || Boolean(poll.credits?.unresolved));
   const [busy, setBusy] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -378,7 +418,7 @@ function PollQuickView({
             <span aria-hidden="true">&times;</span>
           </button>
         </PollCover>
-        {poll.state === "closed" ? <div className="poll-modal__summary"><strong>{pollOutcome(poll).tied ? "Tied top result" : poll.totalVotes ? "Final top result" : "Final result"}</strong><span>{poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}</span></div> : null}
+        {poll.state === "closed" ? <div className="poll-modal__summary"><strong>{pollOutcome(poll).tied ? "Tied top result" : poll.totalVotes ? poll.credits?.unresolved ? "Current top result" : "Final top result" : "No votes recorded"}</strong><span>{poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}</span></div> : null}
         <ResultOptions poll={poll} busy={busy} vote={vote} />
         <EphemeralNotices notice={notice} error={error} noticeTitle="Vote received" errorTitle="Vote unavailable" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />
         <footer>
@@ -426,9 +466,9 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   }, [load]);
   useCoordinatedPollRefresh(
     useCallback(() => {
-      if (poll?.state === "open") void load(true);
-    }, [load, poll?.state]),
-    poll?.state === "open",
+      if (poll?.state === "open" || poll?.credits?.unresolved) void load(true);
+    }, [load, poll?.state, poll?.credits?.unresolved]),
+    poll?.state === "open" || Boolean(poll?.credits?.unresolved),
   );
   usePageSeo(poll ? pollSeo(poll, popout) : null);
   const vote = async (optionId: string) => {
@@ -467,9 +507,9 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
   };
   const closeOwnedPoll = async () => {
     if (!poll || !access.isOwner || !csrfToken || poll.state !== "open") return;
-    if (!window.confirm(`Close “${poll.title}” and settle its final results? New votes will be rejected.`)) return;
+    if (!window.confirm(`Close “${poll.title}” and stop new votes? New votes will be rejected.`)) return;
     setBusy("close"); setError("");
-    try { const result = await lifecyclePoll(poll.slug, poll.revision, "close", csrfToken); setPoll(result.poll); setNotice("Poll closed. Final results are now settled."); }
+    try { const result = await lifecyclePoll(poll.slug, poll.revision, "close", csrfToken); setPoll(result.poll); setNotice("Poll closed. Any unresolved additional votes remain available for review."); }
     catch (reason) { setError(message(reason)); void load(true); }
     finally { setBusy(""); }
   };
@@ -509,8 +549,8 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
           </div>
           {!popout ? (
             <div className="poll-stage__actions">
-              <Link className="button button--primary poll-back-to-gallery" to="/polls">
-                ← Back to Polls
+              <Link className="button button--primary poll-back-to-gallery" to={poll.presentationType === "abootnothing" ? "/polls/abootnothing" : "/polls"}>
+                ← Back to {poll.presentationType === "abootnothing" ? "Aboot Nothing" : "Polls"}
               </Link>
               {access.canManage ? (
                 <Link
@@ -568,8 +608,9 @@ export function PollDetailPage({ popout = false }: { popout?: boolean }) {
           <span>
             {poll.state === "open"
               ? "Refreshing every 7 seconds while visible"
-              : "Final result"}
+              : poll.credits?.unresolved ? "Results awaiting reconciliation" : poll.credits === null ? "Reconciliation status unavailable" : "Final result"}
           </span>
+          {poll.ordinaryVoterIdentities !== undefined ? <span>{poll.ordinaryVoterIdentities} ordinary voting identities</span> : null}
           <span>
             {poll.rumbleEnabled
               ? "Rumble votes may lag 10–30 seconds"
@@ -592,20 +633,20 @@ function ResultOptions({
 }) {
   const outcome = pollOutcome(poll);
   return (
-    <div className="poll-options">
+    <><CreditStatus poll={poll} detail /><div className={`poll-options${poll.presentationType === "abootnothing" ? " aboot-vote-cards" : ""}`}>
       {poll.options.map((option) => {
         const percentage = poll.totalVotes
           ? (option.votes / poll.totalVotes) * 100
           : 0;
         const current = poll.currentVoteOptionId === option.id;
         return (
-          <article key={option.id} className={`${current ? "is-current" : ""}${option.image ? " has-image" : ""}${poll.state === "closed" && outcome.topIds.has(option.id) ? " is-top-result" : ""}`}>
+          <article key={option.id} className={`${current ? "is-current" : ""}${option.image ? " has-image" : ""}${poll.state === "closed" && outcome.topIds.has(option.id) ? " is-top-result" : ""}${poll.presentationType === "abootnothing" && outcome.winnerId ? outcome.winnerId === option.id ? " is-winner" : " is-runner-up" : ""}`}>
             <div
               className="poll-option__bar"
               style={
                 {
                   "--poll-result": `${percentage}%`,
-                  "--poll-accent": poll.theme?.accent || "#f3c928",
+                  "--poll-accent": poll.presentationType === "abootnothing" ? poll.presentation?.colors?.[option.position] || "#f3c928" : poll.theme?.accent || "#f3c928",
                 } as React.CSSProperties
               }
             />
@@ -613,11 +654,12 @@ function ResultOptions({
             <div className="poll-option__identity">
               <span>{String(option.position + 1).padStart(2, "0")}</span>
               <strong>{option.label}</strong>
-              {poll.state === "closed" && outcome.topIds.has(option.id) ? <small className="poll-option__outcome">{outcome.tied ? "TIED TOP RESULT" : "TOP RESULT"}</small> : null}
+              {poll.state === "closed" && outcome.topIds.has(option.id) ? <small className={`poll-option__outcome${poll.presentationType === "abootnothing" && outcome.winnerId === option.id ? " aboot-winner-badge" : ""}`}>{outcome.tied ? "TIED TOP RESULT" : poll.presentationType === "abootnothing" && outcome.winnerId === option.id ? "WINNER" : "TOP RESULT"}</small> : null}
               {option.description ? <small>{option.description}</small> : null}
             </div>
             <b>{percentage.toFixed(poll.totalVotes ? 1 : 0)}%</b>
-            <em>{option.votes}</em>
+            <em>{option.votes} votes</em>
+            <small className="poll-option-breakdown">Trigger: {option.trigger}{option.bonusVotes ? ` · ${option.ordinaryVotes || 0} ordinary + ${option.bonusVotes} additional` : ""}</small>
             {vote && poll.state === "open" ? (
               <button
                 type="button"
@@ -634,7 +676,7 @@ function ResultOptions({
           </article>
         );
       })}
-    </div>
+    </div></>
   );
 }
 
@@ -659,6 +701,9 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   const { loading: authLoading, account, csrfToken, openAuth } = useAuth();
   const [canCreate, setCanCreate] = useState(false);
   const [source, setSource] = useState<Poll | null>(null);
+  const [presentationType, setPresentationType] = useState<"regular" | "abootnothing">(new URLSearchParams(window.location.search).get("type") === "abootnothing" ? "abootnothing" : "regular");
+  const [subjectColors, setSubjectColors] = useState(["#f3c928", "#a9b7da"]);
+  const [episodeContext, setEpisodeContext] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [webVotingMode, setWebVotingMode] = useState<"anyone" | "signed_in">(
@@ -705,6 +750,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
             throw new Error("Owner or Admin access is required.");
           setSource(poll);
           setTitle(poll.title);
+          setPresentationType(poll.presentationType || "regular"); setSubjectColors(poll.presentation?.colors || ["#f3c928", "#a9b7da"]); setEpisodeContext(poll.presentation?.context || "");
           setDescription(poll.description || "");
           setWebVotingMode(poll.webVotingMode);
           setRumbleEnabled(poll.rumbleEnabled);
@@ -730,7 +776,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     setDiscoveryLoading(true);
     void getRumbleDiscovery().then((value) => {
       setDiscovery(value);
-      if (create && !sourceScope && value.source && value.botState !== "offline") setSourceScope(value.source.scope);
+      if (create && value.source && value.botState !== "offline") setSourceScope(current => current || value.source!.scope);
     }).catch(() => setDiscovery(null)).finally(() => setDiscoveryLoading(false));
   }, [account, create]);
   useEffect(() => {
@@ -749,11 +795,12 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
   const match = options.find(
     (option) => option.trigger && matchPollTrigger(option.trigger, testMessage),
   );
-  const structuralLocked = source?.state === "open";
+  const structuralLocked = source?.state === "open" || Boolean(source?.totalVotes || source?.credits?.unresolved || source?.credits?.committed);
   const liveStreams = discovery?.livestreams.filter((item) => item.isLive) || [];
   const streamNeedsChoice = rumbleEnabled && streamChoice === "automatic" && liveStreams.length > 1;
   const sourceInvalid = rumbleEnabled && !/^(?:user|channel):[A-Za-z0-9_-]{1,180}$/.test(sourceScope);
   const payload = () => ({
+    presentationType, presentation: { colors: subjectColors, context: episodeContext, featuredOrder: source?.presentation?.featuredOrder || 0 },
     title,
     description,
     webVotingMode,
@@ -764,7 +811,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     requestedIntervalSeconds: 15,
     revision: source?.revision,
     theme: { accent: themeAccent, layout: "bars" },
-    options: options.map((option) => ({ id: option.id, label: option.label, description: option.description, trigger: option.trigger })),
+    options: source?.state === "open" ? undefined : options.map((option) => ({ id: option.id, label: option.label, description: option.description, trigger: option.trigger })),
   });
   const save = async (event: FormEvent) => {
     event.preventDefault();
@@ -805,6 +852,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
     if (!source || !csrfToken || !option.id) return; setBusy(true); try { await removePollMedia(source.slug, "option", csrfToken, option.id); const poll = (await getPoll(source.slug)).poll; setSource(poll); setOptions(poll.options.map((item) => ({ id: item.id, label: item.label, description: item.description || "", trigger: item.trigger, image: item.image || null }))); setNotice("Option image removed."); } catch (reason) { setError(message(reason)); } finally { setBusy(false); }
   };
   const previewPoll: Poll = {
+    presentationType, presentation: { colors: subjectColors, context: episodeContext }, credits: source?.credits,
     id: source?.id || "preview", slug: source?.slug || "preview", title: title || "Your Poll title", description: description || "A polished audience choice, ready for the live signal.", state: source?.state || "draft", public: source?.public || false,
     webVotingMode, rumbleEnabled, rumbleSourceScope: sourceScope || null, livestreamMode, livestreamId: livestreamId || null, revision: source?.revision || 1, totalVotes: source?.totalVotes || 0,
     options: options.map((option, index) => ({ id: option.id || `preview-${index}`, position: index, label: option.label || `Option ${index + 1}`, description: option.description || null, trigger: option.trigger, normalizedTrigger: normalizePollTrigger(option.trigger), votes: source?.options[index]?.votes || 0, image: option.imagePreview ? { id: `preview-image-${index}`, purpose: "option", optionId: option.id, url: option.imagePreview, contentType: option.imageFile?.type || "image/png", byteSize: option.imageFile?.size || 0, width: 1, height: 1, createdAt: new Date().toISOString() } : option.image || null })),
@@ -891,6 +939,8 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
         <div>
           <section className="poll-editor-panel">
             <p className="eyebrow">01 · POLL IDENTITY</p>
+            <label><span>Collection</span><select value={presentationType} disabled={structuralLocked || options.length !== 2} onChange={event => setPresentationType(event.target.value as "regular" | "abootnothing")}><option value="regular">Regular Poll</option><option value="abootnothing">Aboot Nothing</option></select></label>
+            {presentationType === "abootnothing" ? <><label><span>Episode / context</span><input value={episodeContext} maxLength={160} onChange={event => setEpisodeContext(event.target.value)} /></label><div className="aboot-editor-colors">{subjectColors.map((color, index) => <label key={index}><span>Side {index + 1} colour</span><input type="color" value={color} onChange={event => setSubjectColors(values => values.map((value, i) => i === index ? event.target.value : value))} /></label>)}</div></> : null}
             <label>
               <span>Title</span>
               <input
@@ -1004,7 +1054,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
             </div>
             <button
               type="button"
-              disabled={structuralLocked || options.length >= 12}
+              disabled={structuralLocked || presentationType === "abootnothing" || options.length >= 12}
               onClick={() =>
                 setOptions((current) => [
                   ...current,
@@ -1063,6 +1113,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
         <aside>
           <section className="poll-editor-panel poll-live-preview">
             <p className="eyebrow">LIVE CARD PREVIEW</p>
+            {source?.votingPolicy ? <p className="poll-credit-status">Effective policy {source.votingPolicy.revision}: Rants {source.votingPolicy.policy.rantEnabled ? "enabled" : "disabled"}; gifts {source.votingPolicy.policy.giftEnabled ? "enabled" : "disabled"}. Gift allowance: {source.votingPolicy.policy.maxMessages} messages, {source.votingPolicy.policy.timeoutSeconds} seconds. Managed by authorized Admins in Automations.</p> : null}
             <PollCard poll={previewPoll} onQuickView={() => undefined} preview />
           </section>
           <section className="poll-editor-panel trigger-tester">
@@ -1144,7 +1195,7 @@ export function PollEditorPage({ create = false }: { create?: boolean }) {
 
 function Status({ poll }: { poll: Poll }) {
   return (
-    <span className={`poll-state poll-state--${poll.state}`}>{poll.state}</span>
+    <span className={`poll-state poll-state--${poll.state}`}>{poll.state === "closed" && poll.credits?.unresolved ? "Voting closed · Results awaiting reconciliation" : poll.state}</span>
   );
 }
 function State({

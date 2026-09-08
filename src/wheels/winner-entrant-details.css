@@ -1,0 +1,27 @@
+.winner-dialog:not(.stage-results-dialog):has(.winner-entrant) { width:min(820px,100%); max-height:calc(100dvh - 40px); overflow-y:auto; padding:32px; }
+.winner-entrant { min-width:0; margin:20px 0; text-align:left; }
+.winner-entrant__identity { display:flex; flex-wrap:nowrap; align-items:center; gap:12px; min-width:0; }
+.winner-entrant__identity .entrant-avatar { width:64px; height:64px; box-shadow:0 0 0 1px #81753c; }
+.winner-entrant__icons { display:inline-flex; flex:0 0 auto; flex-wrap:nowrap; align-items:center; gap:5px; color:#f3c928; }
+.winner-entrant__icons svg { display:block; width:30px; height:30px; fill:currentColor; stroke:#211b0b; stroke-width:.6; }
+.winner-dialog .winner-entrant__name { flex:1; min-width:0; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; overflow-wrap:normal; font-family:"American Captain","Arial Narrow",Impact,sans-serif; font-weight:400; font-size:clamp(30px,5.5vw,76px); line-height:1.15; }
+.winner-entrant__facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 18px; margin:18px 0 0; padding:16px; border:1px solid #454333; border-radius:8px; background:#11130ed9; }
+.winner-entrant__facts div { min-width:0; }
+.winner-entrant__facts dt { margin:0 0 3px; color:#b7b19d; font:600 10px "Geist Mono",monospace; text-transform:uppercase; letter-spacing:.05em; }
+.winner-entrant__facts dd { margin:0; color:#f3f0e5; font-size:14px; line-height:1.4; overflow-wrap:anywhere; }
+.winner-entrant__entry-type,
+.winner-entrant__full-name,.winner-entrant__effects { grid-column:1/-1; }
+.winner-entrant--compact { margin:14px 0; }
+.winner-entrant--compact .entrant-avatar { width:44px; height:44px; }
+.winner-entrant--compact .winner-entrant__icons svg { width:22px; height:22px; }
+.winner-dialog .winner-entrant--compact .winner-entrant__name { font-size:32px; }
+.winner-entrant--compact .winner-entrant__identity { gap:8px; }
+.winner-entrant--compact .winner-entrant__facts { padding:12px; }
+@media(max-width:620px) {
+  .winner-dialog:not(.stage-results-dialog):has(.winner-entrant) { padding:48px 16px 22px; }
+  .winner-entrant__identity { gap:8px; }
+  .winner-entrant__identity .entrant-avatar { width:44px; height:44px; }
+  .winner-entrant__icons svg { width:22px; height:22px; }
+  .winner-dialog .winner-entrant__name { font-size:32px; }
+  .winner-entrant__facts { padding:12px; }
+}

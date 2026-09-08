@@ -17,7 +17,7 @@ export type WheelImportProposal = {
 };
 export type WheelImportResult = { detectedFormat: "thirdrailify" | "wheel-of-names" | "generic-json"; formatLabel: string; version: number | null; sourceName: string; topLevelTitle?: string; configCount?: number; proposals: WheelImportProposal[] };
 export const WHEEL_FILE_FORMAT_ID: "thirdrailify-wheel";
-export const WHEEL_FILE_FORMAT_VERSION: 2;
+export const WHEEL_FILE_FORMAT_VERSION: 3;
 export const WHEEL_FILE_MIME: string;
 export const WHEEL_JSON_MIME: string;
 export const WHEEL_IMPORT_ACCEPT: string;

@@ -1,5 +1,11 @@
 # Third Railify V2 public site
 
+## Typed Wheel entry identity (local)
+
+Automatic awards now match the actor, Rumble source and event type. Subscription, gift, raid and regular slices with the same name remain distinct; imports retain classifications with fresh IDs and no automatic binding. Participant and winner details show the type. Legacy entries are reused only when complete receipt history proves their identity. See [`docs/WHEEL_ENTRANT_IDENTITY.md`](docs/WHEEL_ENTRANT_IDENTITY.md) for the shared `entrant-identity.*` contract, storage helper, tests and release sequence. **Migration 0042 was applied and verified on live Admin Commerce D1 at 2026-09-08 07:47:00 UTC after explicit user authorization. Application deployment remains pending: release Admin, then Public.**
+
+Winner celebration identity is shared by detail/Presentation, Appearance preview and Stage results through `src/wheels/WinnerEntrantDetails.tsx` and `src/wheels/winner-entrant-details.css`. It renders the accepted winner avatar, effective feature icons and full participant information without re-fetching or changing result authority. Browser coverage: `tests/winner-details-browser.test.mjs`.
+
 ## Automation cards and entrant appearance (local)
 
 Optional entrant features now share a versioned contract, normalized Canvas preview and reusable automation cards across Admin/Public. Target-ID grouping, accessible row-local switches, future-award appearance and manual participant overrides preserve the existing Wheel/receipt authority. Public's cached renderer draws gradients, vector marks and bounded annular effects across detail, Presentation, Stage and editors; safe content refresh waits while spins or editors hold the current snapshot.
@@ -326,3 +332,27 @@ The Admin-owned catalogue supplies merchant-only product/gallery images and an o
 `ProductDetailPage` opens its currently displayed sanitized image in a viewport-filling native dialog. Page and viewer thumbnails share exact-URL selection; catalogue order and distinct query strings are retained, with the current variant image appended when absent. Browsing never updates purchase variant, quantity, price or cart. The viewer provides previous/next, arrow keys, a lazy thumbnail rail, fit sizing, 100?300% zoom, bounded drag-pan and fit-mode touch swipes. Native modality, a focus loop, Escape/Close, return focus, fixed-body scroll preservation, dynamic viewport sizing and safe-area padding cover keyboard and mobile use. Failed images remain scoped; empty media cannot open the viewer. No new media URLs, provider calls or dependency were introduced.
 
 Tree additions: `src/components/ProductLightbox.tsx`, `src/styles/product-lightbox.css`, and `tests/product-lightbox-browser.test.mjs`. Integration and test script changes are in `src/pages/ProductDetailPage.tsx` and `package.json`; no files were removed. Run `npm run test:browser:product-gallery` with Node 22.16.0. It exercises the actual product route with distinguishable intercepted image fixtures at 1440?900, 768?1024, 390?844 and 844?390; screenshots are written to `.artifacts/product-lightbox/`. Browser checks include exact slide identity, viewport/contain geometry, purchase/cart preservation, gestures, modality, failed/empty/single-image states and repeated/route cleanup. Physical mobile devices, Safari/Firefox and assistive-technology sessions are not verified. Public deployment is still required; this work does not alter Admin or catalogue data.
+
+
+## Aboot Nothing Polls and additional votes (local, 2026-09-08)
+
+`/polls` includes a bounded four-item Aboot Nothing shelf. `/polls/abootnothing` provides the full searchable current/past collection; `/abootnothing` redirects permanently, with a client fallback. Existing canonical detail, edit, modal and popout surfaces share two-subject presentation, optional artwork and ordinary/additional-vote totals. Closed unresolved credits remain labelled and excluded from percentages; the shared refresh coordinator stops after settlement.
+
+Admin continues to own Polls, media, voting policies and credit accounting. No paid settings or reconciliation authority is granted to Public creators. See [the coupled contract, tests and rollout gates](../ThirdRailify-Admin/docs/POLLS_CREDITS_CONTRACT.md). This is local code only; no production enablement occurred.
+
+Poll tree additions/changes:
+
+```text
+src/styles/aboot-polls.css       Shared collection/comparison presentation (new)
+src/pages/PollsPages.tsx        Gallery, shelf, editor and shared Poll surfaces
+src/polls/{types,client}.ts     Sanitized collection, policy and credit projection
+src/App.tsx                    Static collection and alias routes
+functions/api/polls/[[path]].js Existing signed Admin relay; collection filtering
+public/_redirects              Permanent Aboot Nothing alias before SPA fallback
+tests/polls-browser.test.mjs    Existing normal Poll coverage and close semantics
+tests/polls-v12-browser.test.mjs Existing history fixture isolates the new shelf
+```
+
+Connected synthetic Bot -> signed Admin -> local D1/R2 -> Public relay -> browser acceptance lives in Admin `tests/poll-matchups-browser.test.mjs`. No files were removed. Concurrent Wheel edits are separate work.
+
+Settled Aboot Nothing winners use a gold glow and explicit WINNER badge; the losing side is muted. Shared styling covers collection cards and result surfaces. Ties and unresolved results retain neutral outcome treatment. Local visual evidence: `.artifacts/winner-emphasis/`.

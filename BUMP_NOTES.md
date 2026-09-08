@@ -1,5 +1,36 @@
 # Bump notes
 
+## 2026-09-08 - Wheel identity migration 0042 applied live
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- User explicitly authorized the remote migration. Applied only `0042_wheel_entrant_identity.sql` to Admin-owned `thirdrailify-commerce` at 07:47:00 UTC using an isolated migration directory and a private pre-migration export.
+- Verified identity column, unique index and actual authority readiness. Preserved 262 entries, 2639 total weight, 8 rules (3 enabled), 13 receipts; foreign-key check clean.
+- Application code was not deployed by this migration task. Evidence: Admin `.artifacts/migration-0042-live/verification.json` and `readiness.json`.
+
+## 2026-09-08 - Typed Wheel entry identity (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Replaced first-name-match automation accumulation with actor/source/event-type identity and a database uniqueness constraint. Same-name subscriptions, gifts, raids, chat, follows, Rants and regular entries remain distinct. Skip/accumulate applies within that identity across rules.
+- Existing IDs retain their private identity through edits and old-client saves. Legacy rows are adopted only with complete, unambiguous creation/receipt evidence; mixed histories keep their existing weight. Award and adoption writes remain atomic and replay protected.
+- Wheel v3 and Stage imports preserve types as independent imported entries with fresh IDs. Public projections and exports exclude automatic matching keys. Typed participant/import/winner details and type-scoped winner removal clarify same-name slices.
+- Added `docs/WHEEL_ENTRANT_IDENTITY.md`, mirrored identity contracts, an Admin storage helper, migration 0042 and D1/import/concurrency/legacy regression coverage. Existing appearance, glyph layout and spin mechanics remain unchanged.
+- Release prerequisite: apply 0042 to Admin Commerce D1 before Admin, then release Public. Tested locally; no remote migration or deployment for this change.
+
+## 2026-09-08 - Winner celebration participant details (local)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Single-Wheel/Presentation, Appearance preview and Stage winner popups share the accepted entrant avatar, effective icons, full name, weight, segment share, eligible-entry count and appearance settings. Existing manual None choices and image fallback are respected. The identity row stays on one line, with full names retained below and scrolling on smaller screens.
+- Added WinnerEntrantDetails.tsx, winner-entrant-details.css and responsive completed-spin browser coverage. Typecheck/build, scoped lint and deterministic driver checks accompany screenshot/geometry evidence in `.artifacts/winner-details/`. No files removed, schema changes or result/animation authority changes; no deployment.
+
 ## 2026-09-08 - Grouped automation cards and entrant feature treatments (local)
 
 CURRENT VER=0.1.0-alpha.0
@@ -987,3 +1018,21 @@ PENDING VER=0.1.0-alpha.0
 - Reproduced the user's 26-entrant Donations configuration locally with its unchanged 60-second duration and mechanics revision 14. In matching 36–50 second traces, aggregate FireAnimationFrame work fell from 773.650 to 248.083 ms (about 68%); rotor style readbacks were eliminated. Three initial untraced runs reduced RAF-work p95 from 0.6–0.7 to 0.2 ms. The severe intermittent approximately 70% stall was not reproduced reliably; mostly steady callback pacing and adverse Stage outliers are reported honestly in docs/WHEEL_RENDER_PERFORMANCE.md, alongside a separate whole-Wheel-visible repeat.
 - Validation: Wheel suite 107 passed / 1 deployment-only skipped; renderer effects 8 passed including saved-baseline comparison; renderer, six-Wheel mechanics, Stage and detail/editor browser suites 6 passed. Typecheck, maintained-source lint (0 errors, 3 existing warnings) and production build pass. Stale generic Canvas assertions/selectors in the maintained detail/editor test were corrected to check the already-existing face and stationary mechanics layers; original failures are retained in the local logs.
 - Added deterministic renderer tests, opt-in loopback-only profiling and summary scripts, and the focused evidence report; README explains the renderer ownership and new files. No files removed. Local evidence is under .artifacts/wheel-render-performance/. Concurrent participant/avatar/client/relay work is preserved. No Admin/reference repository edits by this task, backend/mechanics/automation change, migration, deployment, commit/push, Bot restart or production result mutation.
+
+
+## 2026-09-08 - Aboot Nothing Polls and durable additional votes (LOCAL ONLY)
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added the coupled Public/Admin Aboot Nothing collection and shared comparison presentation, durable paid-credit ledger, versioned policy windows, conservative message budgets, explicit closed-result reconciliation and protocol-2 Bot outbox.
+- Ordinary current votes retain weight one. Rants earn floor(cents/100); gifts earn total_gifts*5. Unresolved credits are conserved and excluded from totals until allocated. Existing creator/media/source authority is retained.
+- Root README documents new files; the Admin `docs/POLLS_CREDITS_CONTRACT.md` records exact migration 0041, acceptance results, provider limits and controlled rollout order. Versions are unchanged for this local milestone.
+- No remote migration/deployment/push, provider event, live vote, paid enablement or Bot restart. Concurrent unrelated workspace changes are preserved. The existing Admin heartbeat browser fixture mismatch remains a documented validation limitation.
+
+
+### Aboot Nothing winner emphasis (local)
+
+- Settled winners now have a gold rim/glow, tinted card and star WINNER badge across Public gallery/detail/modal/popout. Losing subjects use neutral backgrounds and desaturated artwork. Ties, zero-vote and unresolved results do not claim a winner.
+- Inspected 1440px/390px captures and corrected narrow-card text wrapping. Build/typecheck, focused lint and browser state/geometry checks pass; no deployment.
