@@ -1120,3 +1120,16 @@ PENDING VER=0.1.0-alpha.0
 Unconfigured match dimming (2026-09-08): increased the visible difference by lowering incomplete match opacity from 70% to 40% on Admin and Public. Hover, keyboard focus and print restore full opacity. Existing transition and reduced-motion behavior retained. CURRENT VER=0.1.0-alpha.0; PENDING VER=0.1.0-alpha.0. No new files or data changes.
 
 Verified stronger dimming release at 2026-09-08 12:10 UTC: both frontend builds and both connected browser tests pass, including 40% opacity and full hover/focus restoration. Stable JS/CSS match immutable deployments: Admin `3d14bcf` / `3aa6fb82.thirdrailify-admin.pages.dev`; Public `242f9c7` / `356ae0a1.thirdrailify.pages.dev`. Evidence in Admin `.artifacts/matchup-studio/live/stronger-dimming-release.json`; viewed Admin screenshot `browser-1788869275301/winner-hover.png`. No production data changed.
+
+
+## 2026-09-08 - Public Roadmaps gallery and short URL
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Rebuilt the Roadmaps landing page with a full-width black/gold hero, bespoke bracket-to-trophy artwork, gated ambient motion, season navigation and a three-step footer rail matching the Polls/Aboot visual language.
+- Added a searchable season grid with full-card links, cover artwork/fallback treatments and improved title/eyebrow spacing. Empty, loading, unavailable and no-search-match states have dedicated layouts; failed requests can be retried. The shared Aboot Roadmaps shelf uses the improved cards.
+- `/abootnothing/roadmap` and its trailing-slash version permanently redirect to `/polls/abootnothing/brackets`; a React route also covers client-side navigation.
+- Added `src/brackets/roadmap-gallery.css` and `tests/roadmap-gallery-browser.test.mjs`. Updated Roadmaps, App and existing redirect configuration; no backend, schema or private-draft publication changes.
+- Build/typecheck and scoped lint pass. The new browser test covers empty/published collections at 390/768/1440, search, error/retry, whole-card navigation, keyboard focus, reduced motion and the client-side alias. Existing connected Admin/Public publication, bracket interaction and privacy browser coverage passes. Screenshots inspected in `.artifacts/roadmap-gallery-1788872401040/` (published desktop/mobile and empty desktop).

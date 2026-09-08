@@ -1,0 +1,54 @@
+﻿.season-landing{background:#090907;color:#f4f0e7;min-height:80vh}
+.season-hero{position:relative;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 80% 45%,#57400c35,transparent 55%),#0c0c08;border-bottom:1px solid #f3c92838;padding-top:clamp(36px,5vw,72px)}
+.season-hero__grid{position:relative;z-index:1;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:clamp(24px,4vw,72px);padding-bottom:64px}
+.season-back{display:inline-block;color:#c9c3af;font-size:.9rem;margin-bottom:36px;text-decoration:none}
+.season-hero .eyebrow,.season-directory .eyebrow{color:var(--gold);font:600 .7rem var(--font-mono,monospace);letter-spacing:.16em;line-height:1.6}
+.season-hero h1{font-size:clamp(4.5rem,7.3vw,8.7rem);line-height:.94;letter-spacing:-.015em;margin:22px 0 28px;max-width:750px}
+.season-hero h1 em{font-style:normal;color:var(--gold)}
+.season-hero__intro{font-size:clamp(1.05rem,1.4vw,1.2rem);line-height:1.65;color:#bbb6a4;max-width:490px}
+.season-hero__actions{display:flex;gap:24px;flex-wrap:wrap;align-items:center;margin-top:30px}
+.season-landing .button{min-height:48px;display:inline-flex;align-items:center;justify-content:center;gap:22px;text-decoration:none}
+.season-text-link{color:#f4f0e7;text-decoration:none;border-bottom:1px solid #8a7729;padding:8px 0}
+.season-path{position:relative;transform:rotate(-3deg);padding:26px 18px 20px;border:1px solid #f3c92838;border-radius:20px;background:linear-gradient(130deg,#26220e66,#0e0e0a99);box-shadow:0 30px 70px #0007;min-width:0}
+.season-path:before{content:'';position:absolute;inset:12px;border:1px solid #f3c9280d;border-radius:12px;pointer-events:none}
+.season-path svg{display:block;width:100%;height:auto;overflow:visible;margin:10px 0 24px}
+.season-path__caption,.season-path__footer{display:flex;justify-content:space-between;gap:12px;color:#aaa38d;font:500 .57rem var(--font-mono,monospace);letter-spacing:.12em}
+.season-path__caption span:first-child,.season-path__footer b{color:#f3c928}
+.season-path__trophy{filter:drop-shadow(0 0 18px #f3c92828)}
+.is-motion-active .season-path__trophy{animation:season-trophy-glow 4s ease-in-out infinite alternate}
+@keyframes season-trophy-glow{to{filter:drop-shadow(0 0 30px #f3c92866)}}
+.season-hero__rail{position:relative;z-index:1;display:flex;justify-content:center;gap:clamp(25px,7vw,140px);flex-wrap:wrap;padding:22px 24px;border-top:1px solid #f3c92822;background:#f3c92805;color:#aaa38d;font:500 .63rem var(--font-mono,monospace);letter-spacing:.12em}
+.season-hero__rail b{color:var(--gold);margin-right:12px}
+.season-directory{padding-top:clamp(48px,6vw,90px);padding-bottom:72px;scroll-margin-top:110px}
+.season-directory__heading{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:34px}
+.season-directory__heading h2,.season-bottom h2{font-size:clamp(2.3rem,3.8vw,4rem);line-height:1.08;margin:10px 0 14px}
+.season-directory__heading p:not(.eyebrow){color:#aaa38d;font-size:1.05rem}
+.season-search{display:grid;gap:8px;min-width:240px;font-size:.85rem;color:#c5c0af}
+.season-search input{border:1px solid #f3c92833;background:#10100b;color:#f4f0e7;border-radius:8px;padding:13px 16px;min-width:0;width:100%}
+.season-count{font:500 .65rem var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.15em;color:#aaa38d;margin-bottom:20px}
+.season-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px}
+.season-card{display:flex;flex-direction:column;min-width:0;text-decoration:none!important;color:#f4f0e7!important;border:1px solid #f3c92828;border-radius:14px;overflow:hidden;background:#11110c;transition:border-color .2s,box-shadow .2s,transform .2s}
+.season-card:hover{border-color:#f3c928aa;box-shadow:0 16px 44px #0007;transform:translateY(-4px)}
+.season-card__art{aspect-ratio:16/10;position:relative;overflow:hidden;background:radial-gradient(at 70% 20%,#655015,#11100a 80%);border-bottom:1px solid #f3c92828}
+.season-card__art>img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.season-card:hover .season-card__art>img{transform:scale(1.04)}
+.season-card__badge{position:absolute;bottom:16px;left:20px;background:#080806da;color:#f3c928;border:1px solid #f3c92845;padding:7px 10px;border-radius:4px;font:600 .58rem var(--font-mono,monospace);text-transform:uppercase;letter-spacing:.1em}
+.season-card__placeholder{display:flex;flex-direction:column;gap:8px;justify-content:center;height:100%;padding:25px 28px 50px;transform:rotate(-4deg);color:#f3c928}
+.season-card__placeholder strong{font-family:var(--font-display,'American Captain',sans-serif);font-size:clamp(2rem,3.4vw,4rem);line-height:1}
+.season-card__placeholder>span{font:500 .55rem var(--font-mono,monospace);letter-spacing:.15em}
+.season-card__body{padding:26px;display:flex;flex:1;flex-direction:column}
+.season-card__body .bracket-eyebrow{margin:0 0 14px;line-height:1.6}
+.season-card__body h2{font-size:clamp(1.9rem,2.4vw,2.8rem);line-height:1.12;margin:0 0 15px;overflow-wrap:anywhere}
+.season-card__intro{color:#aaa38d!important;font-size:1rem;line-height:1.6;margin:0 0 28px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.season-card__open{display:flex;justify-content:space-between;color:#f3c928;margin-top:auto;padding-top:18px;border-top:1px solid #f3c92825;font-weight:600}
+.season-empty{padding:clamp(28px,5vw,60px);display:flex;align-items:center;gap:clamp(24px,5vw,65px);border:1px solid #f3c92830;border-radius:16px;background:radial-gradient(ellipse at 0% 50%,#f3c9280d,transparent 65%),#11110c}
+.season-empty__mark{display:grid;place-items:center;flex:none;width:140px;aspect-ratio:1;border:1px solid #f3c92855;border-radius:50%;color:#f3c928;font-size:4rem;font-family:var(--font-display,'American Captain',sans-serif);box-shadow:0 0 0 14px #f3c92805;transform:rotate(-10deg)}
+.season-empty h3{font-size:clamp(2rem,3vw,3rem);margin:14px 0;line-height:1.1}
+.season-empty p:not(.eyebrow){color:#bcb6a4;max-width:550px;line-height:1.6;margin-bottom:24px}
+.season-bottom{display:flex;justify-content:space-between;align-items:center;gap:30px;padding-top:50px;margin-top:55px;border-top:1px solid #f3c92825}
+.season-bottom h2{font-size:clamp(1.8rem,3vw,2.8rem)}
+.season-landing :focus-visible,.season-card:focus-visible{outline:3px solid #f3c928;outline-offset:5px}
+@media(min-width:1500px){.season-landing .container{max-width:1400px}}
+@media(max-width:1000px){.season-hero__grid{gap:24px}.season-path__caption,.season-path__footer{font-size:.45rem}.season-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.season-hero h1{font-size:clamp(3.8rem,8vw,6rem)}}
+@media(max-width:700px){.season-hero__grid{grid-template-columns:1fr;padding-bottom:36px}.season-hero h1{font-size:clamp(3.5rem,13vw,5.5rem)}.season-path{margin:18px 8px 0;max-width:500px}.season-path__caption,.season-path__footer{font-size:.55rem}.season-back{margin-bottom:24px}.season-hero__rail{justify-content:flex-start;gap:14px;font-size:.55rem}.season-directory__heading,.season-bottom{align-items:flex-start;flex-direction:column}.season-search{width:100%}.season-grid{grid-template-columns:1fr}.season-empty{align-items:flex-start;flex-direction:column}.season-empty__mark{width:80px;font-size:2.5rem}.season-card__placeholder strong{font-size:3rem}.season-hero__actions{gap:14px}}
+@media(prefers-reduced-motion:reduce){.season-landing *,.season-card,.season-card *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
