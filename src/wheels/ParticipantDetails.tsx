@@ -1,3 +1,4 @@
+import { EntrantAvatar } from "./EntrantAvatar";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "../components/Icons";
@@ -15,7 +16,7 @@ export function ParticipantDetails({ entry, entries, config, trigger, onClose }:
     return () => { document.removeEventListener("keydown", key); document.removeEventListener("pointerdown", pointer); trigger?.focus(); };
   }, [onClose, trigger]);
   return createPortal(<div ref={root} className="participant-detail" role="dialog" aria-modal="false" aria-labelledby="participant-detail-title">
-    <header><div><p>PARTICIPANT SIGNAL</p><h2 id="participant-detail-title">{entry.label}</h2></div><button ref={close} type="button" onClick={onClose} aria-label="Close participant details"><CloseIcon /></button></header>
+    <header><div><p>PARTICIPANT SIGNAL</p><div className="participant-detail__identity"><EntrantAvatar url={entry.avatarUrl} /><h2 id="participant-detail-title">{entry.label}</h2></div></div><button ref={close} type="button" onClick={onClose} aria-label="Close participant details"><CloseIcon /></button></header>
     <div className="participant-detail__chance"><i style={{ background: colour }} aria-hidden="true" /><div><strong>{formatProbability(odds.probability)}</strong><span>chance on the next spin</span></div></div>
     <dl><div><dt>Eligibility</dt><dd>{entry.state === "active" ? "Active / eligible" : "Hidden / not eligible"}</dd></div><div><dt>Entry weight</dt><dd>{entry.weight} of {odds.totalWeight}</dd></div><div><dt>Segment share</dt><dd>{formatProbability(odds.probability)}</dd></div><div><dt>Eligible entries</dt><dd>{odds.eligibleCount}</dd></div></dl>
     {duplicates > 1 ? <p className="participant-detail__duplicate">This is one of {duplicates} separate entries named “{entry.label}”. All matching active entries: <b>{formatProbability(odds.combinedProbability)} combined chance</b> ({odds.combinedWeight} of {odds.totalWeight} total weight).</p> : null}

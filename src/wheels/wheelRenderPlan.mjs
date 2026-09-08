@@ -86,7 +86,7 @@ export function segmentRenderPlan(segment, index, geometry, config, measureLabel
   const maxFontSize = Math.max(9, Math.min(18, geometry.size / (geometry.count > 20 ? 42 : 31)));
   const minFontSize = Math.min(9, maxFontSize);
   const labelRadius = geometry.radius - geometry.size * .055;
-  const labelMaxWidth = Math.max(1, geometry.radius * .64);
+  const labelMaxWidth = Math.max(1, geometry.radius * (config.entrantDisplay === "both" ? .34 : .64));
   const tangentSpan = Math.max(1, 2 * labelRadius * Math.sin(Math.min(Math.PI, span) / 2));
   const tangentAllowance = Math.max(minFontSize, tangentSpan - Math.max(4, geometry.size * .012));
   const measuredAtMax = Math.max(1, measureLabel(label, maxFontSize));
@@ -109,7 +109,7 @@ export function segmentRenderPlan(segment, index, geometry, config, measureLabel
     radialSpan: Object.freeze({ inner: geometry.hubRadius, outer: geometry.radius, length: geometry.radius - geometry.hubRadius }),
     tangentSpan: round(tangentSpan),
     style,
-    label: Object.freeze({ text: label, visible: index % geometry.density === 0 && span >= .025, fontSize, measuredWidth, maxWidth: round(labelMaxWidth), anchorX: round(labelRadius), anchorY: 0, baseline: "middle", orientation: radialAngle }),
+    label: Object.freeze({ text: label, visible: config.entrantDisplay !== "avatars" && index % geometry.density === 0 && span >= .025, fontSize, measuredWidth, maxWidth: round(labelMaxWidth), anchorX: round(labelRadius), anchorY: 0, baseline: "middle", orientation: radialAngle }),
     pattern,
     image,
   });

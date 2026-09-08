@@ -1,0 +1,23 @@
+.entrant-avatar { display: inline-flex; width: 52px; height: 52px; flex: 0 0 auto; border-radius: 50%; overflow: hidden; background: #181810; }
+.entrant-avatar img, .entrant-avatar svg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.participant-detail__identity { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.participant-detail__identity h2 { overflow-wrap: anywhere; min-width: 0; }
+.wheel-avatar-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.wheel-avatar-position { position: absolute; transform: translate(-50%, -50%); }
+.wheel-avatar-position .entrant-avatar { width: 100%; height: 100%; box-shadow: 0 0 0 1px #f3c928; }
+.participant-avatar-field { min-width: 0; }
+.wheel-editor-dialog__body--automations { grid-template-columns: minmax(0,1fr) !important; }
+.wheel-editor-dialog__body--automations .wheel-editor-dialog__preview { display: none; }
+.wheel-automations { padding: 16px; --ink: #f3f0e5; --gold: #f3c928; --line: #38382a; }
+.wheel-automations button { cursor: pointer; background: #202018; color: #f3f0e5; border: 1px solid #55503a; padding: 10px 14px; }
+.wheel-automations button:disabled { opacity: .5; cursor: not-allowed; }
+.wheel-automations .primary-button { background: #f3c928; color: #111; }
+.wheel-automations .event-editor { padding: 16px 0; }
+.wheel-editor-dialog__tabs { grid-template-columns: repeat(4,minmax(0,1fr)) !important; }
+@media(max-width:600px) { .wheel-editor-dialog__tabs { grid-template-columns: repeat(2,minmax(0,1fr)) !important; } .wheel-automations { padding: 10px; } }
+
+.wheel-editor-dialog__controls select { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #454536; background: #0d0e0a; color: #f3f0e5; font: inherit; }
+.participant-row .participant-avatar-field { grid-column: 1 / -1; grid-row: 2; }
+
+@media(min-width:901px) { .participant-manager .participant-row { grid-template-columns: 46px minmax(120px,1fr) 72px 120px auto auto auto; } }
+.participant-manager .segment-style-action { min-width: 0; }

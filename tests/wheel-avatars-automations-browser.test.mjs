@@ -1,0 +1,93 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { mkdir } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+import { chromium } from 'playwright-core';
+import { createCommerceDatabases, commerceEnvironment } from '../../ThirdRailify-Admin/tests/commerce-test-helpers.mjs';
+import { createWheel, saveWheel, getPublicWheel, mutateCreatorGrant, getPublicWheelMechanics } from '../../ThirdRailify-Admin/functions/_shared/wheels-core.js';
+import { wheelAutomations } from '../../ThirdRailify-Admin/functions/_shared/wheel-automations.js';
+
+const origin = 'http://127.0.0.1:4218';
+const output = '.artifacts/wheel-avatars-automations';
+test('public Wheel avatar modes, fallback card, and automation CRUD persist through real Admin local D1', async t => {
+  const h = await createCommerceDatabases(); t.after(h.dispose);
+  const env = commerceEnvironment(h, { THIRDRAILIFY_AUTH_RATE_LIMIT_SECRET: 'avatar-browser-rate' });
+  const now = new Date().toISOString();
+  for (const id of ['master', 'creator']) await h.authDb.prepare("INSERT INTO accounts(id,email_normalized,display_name,role,admin_level,status,email_verified_at,created_at,updated_at,source) VALUES (?,?,?,?,?,'active',?,?,?,?)").bind(id, `${id}@example.test`, id, id === 'master' ? 'admin' : 'user', id === 'master' ? 'master' : 'none', now, now, now, id === 'master' ? 'env_master' : 'test').run();
+  await mutateCreatorGrant(env, 'master', { accountId: 'creator', action: 'approve', mayCreate: true, maximumOwnedWheels: 4 });
+  const created = await createWheel(env, 'creator', { title: 'Avatar Browser Draw', visibility: 'public', lifecycle: 'active', config: {}, entries: [{ label: 'Alpha', weight: 2, avatarUrl: 'https://cdn.thirdrailify.com/fixture-avatar.svg' }, { label: 'Beta', weight: 1, avatarUrl: 'https://cdn.thirdrailify.com/missing-avatar.png' }, { label: 'Gamma', weight: 1 }] });
+  const slug = created.wheel.slug;
+  const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js','preview','--host','127.0.0.1','--port','4218'], { stdio: 'ignore' }); t.after(() => server.kill());
+  for (let i = 0; i < 50; i++) { try { if ((await fetch(origin)).ok) break; } catch { /* Wait for preview startup. */ } await new Promise(r => setTimeout(r, 100)); }
+  await mkdir(output, { recursive: true });
+  const browser = await chromium.launch({ executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true }); t.after(() => browser.close());
+  for (const width of [1440, 390]) {
+    const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: 'reduce' });
+    const page = await context.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
+    await page.route('https://cdn.thirdrailify.com/fixture-avatar.svg*', r => r.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#167d9c"/><circle cx="32" cy="25" r="14" fill="#fff"/><path d="M8 64V54a24 24 0 0148 0v10" fill="#f3c928"/></svg>' }));
+    await page.route('https://cdn.thirdrailify.com/missing-avatar.png', r => r.fulfill({ status: 404, body: '' }));
+    await page.route('**/api/**', async route => {
+      const path = new URL(route.request().url()).pathname, method = route.request().method();
+      const json = (body, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+      try {
+        if (path === '/api/auth/config') return json({ configured: true, publicOrigin: origin, adminOrigin: origin, oauthProviders: [], oauthProviderStates: [], environment: 'test' });
+        if (path === '/api/auth/session') return json({ ok: true, authenticated: true, csrfToken: 'fixture', access: { isAdmin: false, isMasterAdmin: false }, account: { id: 'creator', email: 'creator@example.test', displayName: 'Creator', avatarUrl: null, providers: ['email'], role: 'user', status: 'active', emailVerified: true } });
+        if (path === '/api/wheels/mechanics') return json(await getPublicWheelMechanics(env));
+        if (path === '/api/wheels/access') return json({ ok: true, authenticated: true, canCreate: true });
+        if (path === `/api/wheels/${slug}`) return json(method === 'PUT' ? await saveWheel(env, 'creator', slug, route.request().postDataJSON()) : await getPublicWheel(env, slug, 'creator'));
+        if (path.startsWith(`/api/wheels/${slug}/automations`)) return json(await wheelAutomations(env, 'creator', slug, method === 'GET' ? 'read' : path.split('/').at(-1), method === 'GET' ? {} : route.request().postDataJSON()));
+        return json({ ok: true, items: [] });
+      } catch (e) { return json({ message: e.message, issues: e.issues }, e.status || 400); }
+    });
+    await page.goto(`${origin}/wheels/${slug}/edit`, { waitUntil: 'networkidle' });
+    const editor = page.locator('.wheel-editor-dialog'); await editor.waitFor();
+    await editor.getByRole('tab', { name: 'settings', exact: true }).click();
+    await editor.getByLabel('Entrant display', { exact: false }).selectOption('both');
+    await editor.getByRole('button', { name: 'Save changes', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('.wheel-editor-dialog__header') || document.querySelector('.wheel-editor-dialog__tabs'));
+    await page.reload({ waitUntil: 'networkidle' });
+    await editor.getByRole('tab', { name: 'settings', exact: true }).click();
+    assert.equal(await editor.getByLabel('Entrant display', { exact: false }).inputValue(), 'both');
+    assert.equal(await editor.locator('.wheel-avatar-position').count(), 3);
+    await editor.screenshot({ path: `${output}/settings-both-${width}.png` });
+    await editor.getByLabel('Entrant display', { exact: false }).selectOption('avatars');
+    assert.equal(await editor.locator('canvas').first().evaluate(c => c.__wheelRendererV19.plan.segments.every(s => !s.label.visible)), true);
+    await editor.getByRole('button', { name: 'Save changes', exact: true }).click();
+    await editor.getByRole('tab', { name: 'automations', exact: true }).click();
+    await editor.getByRole('button', { name: 'Create automation', exact: true }).click();
+    const rule = editor.getByRole('form', { name: 'Automation rule editor' });
+    await rule.getByLabel('Rule name', { exact: true }).fill(`Any Rant ${width}`);
+    await rule.getByRole('combobox', { name: 'Event family', exact: true }).selectOption('rumble.rant');
+    const summary = rule.locator('summary').filter({ hasText: /custom source/i }); await summary.click();
+    const sourceInput = rule.locator('.event-source details input'); await sourceInput.fill('user:fixture');
+    await rule.getByLabel('Minimum amount in cents (optional)', { exact: true }).fill('100');
+    await rule.getByRole('button', { name: 'Test rule', exact: true }).click();
+    await rule.getByText('Matched', { exact: true }).waitFor();
+    await editor.locator('.wheel-editor-dialog__body').evaluate(e => { e.scrollTop = 0; });
+    await editor.screenshot({ path: `${output}/automation-rant-${width}.png` });
+    await rule.getByRole('button', { name: 'Save paused rule', exact: true }).click();
+    await editor.getByRole('heading', { name: `Any Rant ${width}`, exact: true }).waitFor();
+    await page.reload({ waitUntil: 'networkidle' });
+    await editor.getByRole('tab', { name: 'automations', exact: true }).click();
+    await editor.getByRole('heading', { name: `Any Rant ${width}`, exact: true }).waitFor();
+    await editor.screenshot({ path: `${output}/automation-saved-${width}.png` });
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+    await editor.getByRole('button', { name: 'Close wheel editor' }).click();
+    await page.locator('.participant-list button').filter({ hasText: 'Alpha' }).click();
+    await page.locator('.participant-detail img').waitFor();
+    await page.locator('.participant-detail').screenshot({ path: `${output}/avatar-card-${width}.png` });
+    await page.getByRole('button', { name: 'Close participant details' }).click();
+    await page.locator('.participant-list button').filter({ hasText: 'Beta' }).click();
+    await page.locator('.participant-detail .entrant-avatar svg').waitFor();
+    await page.getByRole('button', { name: 'Close participant details' }).click();
+    await page.getByRole('button', { name: 'Manage participants', exact: true }).click();
+    const manager = page.locator('.participant-manager');
+    await manager.getByLabel('Avatar image URL (optional)').last().fill(`https://cdn.thirdrailify.com/fixture-avatar.svg?width=${width}`);
+    await manager.screenshot({ path: `${output}/participant-avatars-${width}.png` });
+    await manager.getByRole('button', { name: 'Save participants', exact: true }).click();
+    await page.getByText('Authoritative participant revision saved.', { exact: true }).waitFor();
+    assert.equal((await getPublicWheel(env, slug, 'creator')).wheel.entries[2].avatarUrl, `https://cdn.thirdrailify.com/fixture-avatar.svg?width=${width}`);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+});

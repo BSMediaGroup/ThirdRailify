@@ -33,6 +33,10 @@ async function proxyRead(request, env, path, fetchImpl) {
     const response = await boundedFetch(fetchImpl, adminUrl(env, pathname), { method: request.method, headers }, 12_000);
     return forwardMedia(response, request.method === "HEAD");
   }
+  if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/automations$/.test(path)) {
+    if (!session) throw failure(401, "authentication_required", "Sign in to manage automations.");
+    return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId });
+  }
   if (path === "access" || path.endsWith("/access")) {
     if (!session) throw failure(401, "authentication_required", "Sign in to view wheel access.");
     const internal = path === "access" ? "access" : `${path.slice(0, -"/access".length)}/access`;
@@ -70,7 +74,8 @@ async function proxyWrite(request, env, path, fetchImpl) {
   try { input = JSON.parse(raw || "{}"); } catch { throw failure(400, "invalid_json", "The wheel request is invalid."); }
   if (!input || typeof input !== "object" || Array.isArray(input)) throw failure(400, "invalid_json", "The wheel request is invalid.");
   let internal;
-  if (!path && request.method === "POST") internal = "create";
+  if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/automations\/(save|delete|test)$/.test(path)) internal = path;
+  else if (!path && request.method === "POST") internal = "create";
   else if (path === "stages" && request.method === "POST") internal = "stages/create";
   else if (request.method === "PUT" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
   else if (request.method === "POST" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/lifecycle$/i.test(path)) internal = path;

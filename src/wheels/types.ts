@@ -3,6 +3,7 @@ import type { SegmentStyle } from "./segmentStyles.mjs";
 export type WheelEntry = {
   id: string;
   label: string;
+  avatarUrl?: string | null;
   order: number;
   weight: number;
   colour: string | null;
@@ -22,6 +23,7 @@ export type WheelThemePreset =
   | "night-signal"
   | "custom";
 export type WheelConfig = {
+  entrantDisplay?: "names" | "avatars" | "both";
   themePreset: WheelThemePreset;
   palette: string[];
   paletteStyles?: SegmentStyle[];
