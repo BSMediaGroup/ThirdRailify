@@ -375,3 +375,5 @@ Connected synthetic Bot -> signed Admin -> local D1/R2 -> Public relay -> browse
 Settled Aboot Nothing winners use a gold glow and explicit WINNER badge; the losing side is muted. Shared styling covers collection cards and result surfaces. Ties and unresolved results retain neutral outcome treatment. Local visual evidence: `.artifacts/winner-emphasis/`.
 
 Release preserves the deployed Aboot hero (`src/components/AbootNothingHero.tsx`, `src/styles/aboot-hero.css`) and Aboot SEO in `seo/site-seo.js`.
+
+Season Roadmap canvas repair (2026-09-08): measured source-to-opponent connectors, viewport-sized fullscreen, contender Focus and full-screen-compatible match lightboxes. Confirmed winners carry a trophy and gold hover shimmer/sparkles with reduced-motion support. Shared components are verified by the connected Admin/Public bracket browser suites; no new Public files or schema changes.
