@@ -1,3 +1,5 @@
+import { AbootNothingHero } from '../components/AbootNothingHero';
+import { RoadmapShelf } from '../brackets/Roadmaps';
 import {
   useCallback,
   useEffect,
@@ -133,7 +135,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
   };
   return (
     <div className="polls-page">
-      {aboot ? <header className="aboot-gallery-hero container"><Link to="/polls">← Back to Polls</Link><p className="eyebrow">THE THIRD RAIL · ABOOT NOTHING</p><h1>Two sides.<br /><em>One loud opinion.</em></h1><p>Pick your side. Follow the live matchups and revisit every past debate.</p><div className="aboot-gallery-hero__mark" aria-hidden="true"><span>A</span><b>VS</b><span>B</span></div></header> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
+      {aboot ? <AbootNothingHero /> : <section ref={hero.ref} className={`polls-hero gallery-hero${hero.active ? " is-motion-active" : ""}`} data-motion={hero.active ? "active" : "static"}>
         <GalleryHeroAtmosphere variant="polls" />
         <div className="container polls-hero__grid">
           <div className="polls-hero__copy">
@@ -206,7 +208,7 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
             </label>
           </div>
         </header>
-        {view === "all" || view === "open" ? <PollDirectorySection title={aboot ? "Current Matchups" : "Open Polls"} eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} footer={openPage < openPages ? <button className="button button--ghost poll-history-more" type="button" disabled={openLoading} onClick={() => void loadOpen(false, openPage + 1, true)}>Load more Open Polls</button> : null} /> : null}
+        {aboot ? <RoadmapShelf /> : null}{view === "all" || view === "open" ? <PollDirectorySection title={aboot ? "Current Matchups" : "Open Polls"} eyebrow="LIVE NOW" items={openItems} loading={openLoading} error={openError} empty="No Polls are open right now." onQuickView={setSelected} footer={openPage < openPages ? <button className="button button--ghost poll-history-more" type="button" disabled={openLoading} onClick={() => void loadOpen(false, openPage + 1, true)}>Load more Open Polls</button> : null} /> : null}
         {view === "all" || view === "closed" ? <PollDirectorySection title={aboot ? "Past Matchups" : "Past Polls"} eyebrow="POLL HISTORY" items={pastItems} loading={pastLoading} error={pastError} empty="No completed Polls yet." onQuickView={setSelected} footer={pastPage < pastPages ? <button className="button button--ghost poll-history-more" type="button" disabled={pastLoading} onClick={() => void loadPast(pastPage + 1, true)}>{pastLoading ? "Loading…" : "Load more Past Polls"}</button> : null} /> : null}
         {view === "mine" ? <PollDirectorySection title="Your Polls" eyebrow="CREATOR LIBRARY" items={mineItems} loading={mineLoading} error={mineError} empty="You have not created a Poll yet." onQuickView={setSelected} /> : null}
       </section>

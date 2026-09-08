@@ -1,4 +1,17 @@
 # Third Railify V2 public site
+## Aboot Nothing Season Roadmaps
+
+Read-only `/polls/abootnothing/brackets` and `/:slug` follow intentionally published Admin seasons, with responsive rounds, winner paths, eligible Poll links and match lightboxes. A new shelf links from the existing Aboot gallery. Private drafts and hidden Poll data remain protected. See [authority and release evidence](docs/MATCHUP_STUDIO.md).
+
+Created file tree (no removed files):
+```text
+functions/api/brackets/[[path]].js
+src/brackets/
+  Roadmaps.tsx, BracketCanvas.tsx, Lightbox.tsx
+  model.mjs, model.d.mts, types.ts, status.ts, brackets.css
+docs/MATCHUP_STUDIO.md
+```
+
 
 ## Typed Wheel entry identity (local)
 
@@ -356,3 +369,5 @@ tests/polls-v12-browser.test.mjs Existing history fixture isolates the new shelf
 Connected synthetic Bot -> signed Admin -> local D1/R2 -> Public relay -> browser acceptance lives in Admin `tests/poll-matchups-browser.test.mjs`. No files were removed. Concurrent Wheel edits are separate work.
 
 Settled Aboot Nothing winners use a gold glow and explicit WINNER badge; the losing side is muted. Shared styling covers collection cards and result surfaces. Ties and unresolved results retain neutral outcome treatment. Local visual evidence: `.artifacts/winner-emphasis/`.
+
+Release preserves the deployed Aboot hero (`src/components/AbootNothingHero.tsx`, `src/styles/aboot-hero.css`) and Aboot SEO in `seo/site-seo.js`.
