@@ -1149,3 +1149,16 @@ PENDING VER=0.1.0-alpha.0
 - Both builds/typechecks pass. Public scoped lint and responsive detail tests pass: winner/review state, Poll URL, violet gradient, original green tick and no horizontal overflow at 390/1440. Viewed local detail screenshots under Public `.artifacts/roadmap-gallery-1788874064189/`. Existing coupled bracket/editor browser coverage retained.
 
 - Deployed and verified at 2026-09-08 13:30 UTC: Admin `d3019d9` / `311afe18.thirdrailify-admin.pages.dev`; Public `2a82b6d` / `81add123.thirdrailify.pages.dev`. Stable JS/CSS match immutable release hashes on both domains. Read-only live Public browser checks confirm violet headers, unchanged green ticks, the new match detail and no dialog horizontal overflow at 1440/390. Evidence/screenshots: Public `.artifacts/match-detail-live/`. Concurrent main-workspace Poll edits preserved; no live result or publication mutation performed.
+
+
+## 2026-09-08 - Public roadmap path highlighting and width fitting
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Public match hover/keyboard focus now traces upstream inputs and the continuing route to the final, highlighting the corresponding SVG connectors without opening the detail modal. Pointer departure clears the temporary hover path.
+- Public Fit view measures the intrinsic complete tree and fills available width, including enlargement above 100%. Public roadmaps start in responsive width-fit mode; fullscreen and resize refit while this mode is active. Mobile retains its readable single-round view.
+- Manual zoom or Reset view disables automatic fitting; Reset stays at 100% until Fit view is selected again. Vertical page scrolling remains intact.
+- Build/typecheck, scoped lint, extended gallery/detail browser checks and connected publication/roadmap browser checks pass. Coverage includes initial fit, enlargement, fullscreen, resize, reset persistence, incoming hover paths, keyboard paths, and existing responsive/privacy behavior. Viewed `.artifacts/roadmap-gallery-1788874466597/fitted-hover-paths.png`.
+- Existing Public canvas, styles and browser test updated. No new files, Admin behavior, backend, publication or user result changes.

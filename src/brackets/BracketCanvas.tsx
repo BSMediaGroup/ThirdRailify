@@ -10,6 +10,7 @@ export function BracketCanvas({ bracket, onSelect, onEdit, onFocusContender, sel
   onFocusContender?: (id: string) => void; selected?: string; mediaBase?: string;
 }) {
   const { graph, decisions, sources, needsReview = [] } = bracket;
+  const [fitWidth, setFitWidth] = useState(true), [hovered, setHovered] = useState(''), [keyboardMatch, setKeyboardMatch] = useState('');
   const [zoom, setZoom] = useState(1), [round, setRound] = useState(0), [query, setQuery] = useState('');
   const [focused, setFocused] = useState(''), [pendingFocus, setPendingFocus] = useState(''), [message, setMessage] = useState('');
   const [fullscreen, setFullscreen] = useState(false), [edges, setEdges] = useState<Edge[]>([]);
@@ -17,7 +18,14 @@ export function BracketCanvas({ bracket, onSelect, onEdit, onFocusContender, sel
   const pan = useRef<{ x: number; y: number; left: number; top: number } | null>(null);
   const statusId = useId();
   const rounds = Array.from({ length: Math.log2(graph.size) }, (_, i) => i);
-  const activeMatch = focused || selected, path = activeMatch ? [activeMatch, ...descendants(graph, activeMatch)] : [];
+  const activeMatch = hovered || keyboardMatch || focused || selected;
+  const path = new Set<string>();
+  const traceInputs = (id: string) => {
+    if (path.has(id)) return;
+    path.add(id);
+    graph.matches.find(m => m.id === id)?.slots.forEach(slot => { if (slot.kind === 'winner' && slot.ref) traceInputs(slot.ref); });
+  };
+  if (activeMatch) { traceInputs(activeMatch); descendants(graph, activeMatch).forEach(id => path.add(id)); }
   const measure = useCallback(() => {
     const element = tree.current; if (!element) return;
     const bounds = element.getBoundingClientRect(), scale = bounds.width / element.offsetWidth || 1;
@@ -75,16 +83,29 @@ export function BracketCanvas({ bracket, onSelect, onEdit, onFocusContender, sel
     setRound(match.round); setFocused(match.id); setPendingFocus(match.id); onSelect?.(match);
     setMessage(`${contender.name}: round ${match.round + 1}, match ${match.position + 1}.${candidates.length > 1 ? ' Refine the name for another contender.' : ''}`);
   };
-  const fit = () => {
-    if (!viewport.current || !tree.current) return;
-    setZoom(Math.max(.1, Math.min(1, (viewport.current.clientWidth - 32) / tree.current.offsetWidth, document.fullscreenElement === shell.current ? (viewport.current.clientHeight - 32) / tree.current.offsetHeight : 1)));
-    viewport.current.scrollTo(0, 0);
-  };
+  const applyWidthFit = useCallback(() => {
+    const container = viewport.current, element = tree.current;
+    if (!container || !element) return;
+    // Mobile presents one round at a time; desktop measures the intrinsic complete tree.
+    const next = window.matchMedia('(max-width:600px)').matches ? 1 : Math.max(.05, (container.clientWidth - 2) / element.offsetWidth);
+    setZoom(current => Math.abs(current - next) < .001 ? current : next);
+  }, []);
+  useLayoutEffect(() => {
+    if (!fitWidth) return;
+    let frame = 0;
+    const update = () => { cancelAnimationFrame(frame); frame = requestAnimationFrame(applyWidthFit); };
+    const observer = new ResizeObserver(update);
+    if (viewport.current) observer.observe(viewport.current);
+    if (tree.current) observer.observe(tree.current);
+    window.addEventListener('resize', update); update();
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('resize', update); };
+  }, [fitWidth, applyWidthFit, graph.size, fullscreen]);
+  const fit = () => { setFitWidth(true); applyWidthFit(); viewport.current?.scrollTo(0, 0); };
   return <section ref={shell} className="bracket-canvas-shell" style={{ '--bracket-accent': graph.presentation.accent } as CSSProperties} aria-label="Season bracket">
     <div className="bracket-toolbar"><div>
-      <button onClick={() => setZoom(z => Math.max(.1, z - .1))} aria-label="Zoom out">&#8722;</button><output>{Math.round(zoom * 100)}%</output>
-      <button onClick={() => setZoom(z => Math.min(1.5, z + .1))} aria-label="Zoom in">+</button><button onClick={fit}>Fit view</button>
-      <button onClick={() => { setZoom(1); setFocused(''); setMessage(''); viewport.current?.scrollTo(0, 0); }}>Reset view</button>
+      <button onClick={() => { setFitWidth(false); setZoom(z => Math.max(.1, z - .1)); }} aria-label="Zoom out">&#8722;</button><output>{Math.round(zoom * 100)}%</output>
+      <button onClick={() => { setFitWidth(false); setZoom(z => Math.min(4, z + .1)); }} aria-label="Zoom in">+</button><button onClick={fit}>Fit view</button>
+      <button onClick={() => { setFitWidth(false); setZoom(1); setFocused(''); setMessage(''); viewport.current?.scrollTo(0, 0); }}>Reset view</button>
       <button onClick={() => { void (document.fullscreenElement ? document.exitFullscreen() : shell.current?.requestFullscreen())?.catch(() => setMessage('Fullscreen is unavailable in this browser.')); }}>{fullscreen ? 'Exit fullscreen' : 'Fullscreen'}</button>
       <button onClick={() => window.print()}>Print</button></div>
       <div><input aria-label="Find contender" aria-describedby={statusId} placeholder="Find a contender" value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); focus(); } }} /><button onClick={focus}>Focus</button></div>
@@ -95,13 +116,13 @@ export function BracketCanvas({ bracket, onSelect, onEdit, onFocusContender, sel
       onPointerDown={e => { if (e.pointerType === 'touch' || (e.target as HTMLElement).closest('button,input,a')) return; pan.current = { x: e.clientX, y: e.clientY, left: e.currentTarget.scrollLeft, top: e.currentTarget.scrollTop }; e.currentTarget.setPointerCapture(e.pointerId); }}
       onPointerMove={e => { if (pan.current) { e.currentTarget.scrollLeft = pan.current.left + pan.current.x - e.clientX; e.currentTarget.scrollTop = pan.current.top + pan.current.y - e.clientY; } }} onPointerUp={() => { pan.current = null; }} onPointerCancel={() => { pan.current = null; }}>
       <div ref={tree} className="bracket-tree" style={{ zoom } as CSSProperties}>
-        <svg className="bracket-connectors" aria-hidden="true">{edges.map(edge => <path key={edge.id} data-from={edge.from} data-to={edge.to} data-slot={edge.slot} d={edge.d} className={path.includes(edge.from) && path.includes(edge.to) ? 'is-path' : ''} />)}</svg>
+        <svg className="bracket-connectors" aria-hidden="true">{edges.map(edge => <path key={edge.id} data-from={edge.from} data-to={edge.to} data-slot={edge.slot} d={edge.d} className={path.has(edge.from) && path.has(edge.to) ? 'is-path' : ''} />)}</svg>
         {rounds.map(r => <div key={r} className={`bracket-round ${round === r ? 'is-mobile-round' : ''}`}><h3>{r === rounds.length - 1 ? 'The final' : `Round ${r + 1}`}</h3><div className="bracket-round-matches">{graph.matches.filter(m => m.round === r).sort((a,b) => a.position - b.position).map(m => {
           const pair = opponents(graph, m, decisions), d = decisions.find(x => x.matchId === m.id), source = sources[m.id], review = needsReview.includes(m.id);
           const complete = Boolean(d && !review && pair.some(c => c?.id === d.winnerId));
           const incomplete = !complete && pair.some((c, i) => !c && m.slots[i].kind !== 'bye');
           return <div className="bracket-match-space" key={m.id}><div className={`bracket-match-card${incomplete ? ' is-incomplete' : ''}`}>
-            <button data-match={m.id} className={`bracket-match ${path.includes(m.id) ? 'is-path' : ''} ${review ? 'needs-review' : ''}`} onClick={() => { setFocused(''); onSelect?.(m); }} onDoubleClick={() => onEdit?.(m)}>
+            <button onMouseEnter={() => setHovered(m.id)} onMouseLeave={() => setHovered('')} onFocus={() => setKeyboardMatch(m.id)} onBlur={() => setKeyboardMatch('')} data-match={m.id} className={`bracket-match ${path.has(m.id) ? 'is-path' : ''} ${review ? 'needs-review' : ''}`} onClick={() => { setFocused(''); onSelect?.(m); }} onDoubleClick={() => onEdit?.(m)}>
               <span className={`bracket-match-kicker${onEdit ? ' has-editor' : ''}${complete ? ' is-complete' : ''}`}>{complete ? <span className="bracket-header-sparkles" aria-hidden="true">{Array.from({ length: 5 }, (_, star) => <i key={star} style={{ "--spark-index": star } as CSSProperties} />)}</span> : null}Match {m.position + 1}<span className="bracket-match-status">{complete ? <svg className="bracket-complete-check" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8 3 3 7-7" /></svg> : null}{review ? 'Needs review' : d ? d.source === 'poll' ? 'Confirmed result' : d.source === 'bye' ? 'Bye' : 'Manual result' : statusLabel(source?.state)}</span></span>
               {pair.map((c, i) => { const winner = d?.winnerId === c?.id && !!c && !review; return <span key={m.slots[i].id} className={`bracket-opponent ${winner ? 'is-winner' : d && c && !review ? 'is-eliminated' : ''}`}><span className="bracket-seed">{c?.seed ?? '\u00b7'}</span>{c?.image ? <img src={mediaBase + c.image} alt="" /> : <span className="bracket-monogram" aria-hidden="true">{c?.name.slice(0,1) || '?'}</span>}<span className="bracket-name">{c?.name || (m.slots[i].kind === 'bye' ? 'Bye' : m.slots[i].kind === 'winner' ? `Winner of match ${(graph.matches.find(x => x.id === m.slots[i].ref)?.position || 0) + 1}` : 'Unassigned')} {winner ? <small>WINNER</small> : null}</span><strong className="bracket-score">{winner ? <span className="bracket-winner-feature" title="Winner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 3h10v6a5 5 0 0 1-10 0V3ZM7 5H3v2a4 4 0 0 0 5 4M17 5h4v2a4 4 0 0 1-5 4M12 14v4M8 21v-3h8v3M6 21h12" /></svg></span> : null}{source?.scores && c ? source.scores[c.id] ?? '\u2014' : d?.scores[i] ?? '\u2014'}</strong>{winner ? <span className="bracket-winner-sparkles" aria-hidden="true">{Array.from({ length: 6 }, (_, star) => <i key={star} style={{ '--spark-index': star } as CSSProperties} />)}</span> : null}</span>; })}
             </button>
