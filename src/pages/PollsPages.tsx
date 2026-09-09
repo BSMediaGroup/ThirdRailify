@@ -196,6 +196,20 @@ export function PollsPage({ aboot = false }: { aboot?: boolean }) {
     }, [loadUpcoming, upcomingItems.length, upcomingPage, loadOpen, loadPast, openItems.length, openPage, pastItems, pastPage]),
     ((view === "all" || view === "upcoming") && upcomingItems.length > 0) || ((view === "all" || view === "open") && openItems.length > 0) || pastItems.some(p => Boolean(p.credits?.unresolved)),
   );
+  // Recover even when the first request failed before any results were loaded.
+  useEffect(() => {
+    if (!openError && !upcomingError && !pastError && !mineError) return;
+    const recover = () => {
+      if (document.hidden) return;
+      if (openError && !openLoading && (view === 'all' || view === 'open')) void loadOpen();
+      if (upcomingError && !upcomingLoading && (view === 'all' || view === 'upcoming')) void loadUpcoming();
+      if (pastError && !pastLoading && (view === 'all' || view === 'closed')) void loadPast();
+      if (mineError && !mineLoading && view === 'mine') void loadMine();
+    };
+    const timer = window.setInterval(recover, 15000);
+    window.addEventListener('online', recover);
+    return () => { window.clearInterval(timer); window.removeEventListener('online', recover); };
+  }, [openError, upcomingError, pastError, mineError, openLoading, upcomingLoading, pastLoading, mineLoading, view, loadOpen, loadUpcoming, loadPast, loadMine]);
   const changed = (poll: Poll) => {
     setSelected(current => current?.id === poll.id ? poll : current);
     setOpenItems((current) => current.map((item) => item.id === poll.id ? poll : item));
@@ -488,15 +502,16 @@ function PollQuickView({
         aria-labelledby="poll-quick-title"
         ref={root}
       >
+          <button ref={close} className="poll-modal__close" type="button" onClick={onClose} aria-label="Close Poll quick view">
+            <span aria-hidden="true">&times;</span>
+          </button>
         <PollCover poll={poll}>
           <div className="poll-modal__cover-copy">
             <Status poll={poll} />
             <h2 id="poll-quick-title">{poll.title}</h2>
             <p>By {poll.owner.displayName}</p>
           </div>
-          <button ref={close} className="poll-modal__close" type="button" onClick={onClose} aria-label="Close Poll quick view">
-            <span aria-hidden="true">&times;</span>
-          </button>
+
         </PollCover>
         {poll.state === "closed" ? <div className="poll-modal__summary"><strong>{pollOutcome(poll).tied ? "Tied top result" : poll.totalVotes ? poll.credits?.unresolved ? "Current top result" : "Final top result" : "No votes recorded"}</strong><span>{poll.totalVotes} total vote{poll.totalVotes === 1 ? "" : "s"}</span></div> : null}
         <ResultOptions poll={poll} busy={busy} vote={vote} onChanged={onChanged} />
