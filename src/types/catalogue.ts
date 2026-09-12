@@ -25,7 +25,7 @@ export type CatalogueProduct = {
   variants?: CatalogueVariant[];
 };
 
-export type CatalogueVariant = { id: string; label: string; image?: string | null; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
+export type CatalogueVariant = { id: string; label: string; image?: string | null; images?: Array<{url:string;alt:string}>; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
 
 export type CatalogueCollection = { title: string; slug: string; description: string; displayOrder: number; productCount: number; productIds: string[] };
 

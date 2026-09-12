@@ -22,12 +22,14 @@ export const catalogueProvider: CatalogueProvider = {
   },
 };
 
-type CommerceVariant = { id: string; label: string; image?: string | null; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
+type CommerceVariant = { id: string; label: string; image?: string | null; images?: Array<{url:string;alt:string}>; size: string | null; color: string | null; options: Record<string, string>; unitAmount: number; currency: "CAD"; availability: "active" | "temporarily_out_of_stock" };
 type CommerceProduct = { saleRestriction?: CatalogueProduct["saleRestriction"]; id: string; slug: string; title: string; description: string; images: string[]; categories: string[]; collectionSlugs: string[]; tags: string[]; featured: boolean; featuredOrder: number | null; displayOrder: number; maxQuantity: number; available: boolean; price: { minUnitAmount: number; maxUnitAmount: number; label: string }; variants: CommerceVariant[] };
 type CommerceCollection = { title: string; slug: string; description: string; displayOrder: number; productCount: number; productIds: string[] };
 type CommerceCataloguePayload = { ok?: boolean; source?: string; checkoutEnabled?: boolean; checkoutReadiness?: CheckoutReadiness; updatedAt?: string | null; authority?: { currentProducts: number; reconciled: boolean }; collections: CommerceCollection[]; products: CommerceProduct[] };
 function toCatalogueProduct(product: CommerceProduct) {
   const optionTypes = [...new Set(product.variants.flatMap((variant) => Object.keys(variant.options)))];
+  const media = (url:string) => url.replace(/^https:\/\/cdn\.thirdrailify\.com(\/commerce-media\/[a-f0-9]{64}\.(?:jpg|png|webp))$/, '$1');
+  product = {...product,images:product.images.map(media),variants:product.variants.map(v=>({...v,image:v.image?media(v.image):null,images:v.images?.map(i=>({...i,url:media(i.url)}))}))};
   return { id: product.id, slug: product.slug, name: product.title, price: product.price.minUnitAmount / 100, formattedPrice: product.price.label, currency: "CAD" as const, optionTypes, image: product.images[0] || "", images: product.images, categories: product.categories, collectionSlugs: product.collectionSlugs, description: product.description, featured: product.featured, featuredOrder: product.featuredOrder, displayOrder: product.displayOrder, tags: product.tags, priceMinUnitAmount: product.price.minUnitAmount, priceMaxUnitAmount: product.price.maxUnitAmount, maxQuantity: product.maxQuantity, available: product.available, saleRestriction: product.saleRestriction, variants: product.variants };
 }
 

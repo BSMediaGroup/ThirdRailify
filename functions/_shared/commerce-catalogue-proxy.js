@@ -98,7 +98,8 @@ function normalizeVariant(input) {
   if (!id || !label || unitAmount === null || input?.currency !== "CAD") throw new Error("catalogue_variant_invalid");
   const options = input.options && typeof input.options === "object" && !Array.isArray(input.options) ? Object.fromEntries(Object.entries(input.options).slice(0, 12).map(([key, value]) => [boundedText(key, 80), boundedText(value, 120)]).filter(([key, value]) => key && value)) : {};
   const image = typeof input.image === "string" && input.image.length <= 4096 && safeHttps(input.image) ? input.image.trim() : null;
-  return { id, label, image, size: boundedText(input.size, 120) || null, color: boundedText(input.color, 120) || null, options, unitAmount, currency: "CAD", availability: input.availability === "temporarily_out_of_stock" ? "temporarily_out_of_stock" : "active" };
+  const images = (Array.isArray(input.images) ? input.images : []).slice(0,25).filter(i=>typeof i?.url==='string'&&i.url.length<=4096&&safeHttps(i.url)).map(i=>({url:i.url,alt:boundedText(i.alt,240)}));
+  return { id, label, image, images, size: boundedText(input.size, 120) || null, color: boundedText(input.color, 120) || null, options, unitAmount, currency: "CAD", availability: input.availability === "temporarily_out_of_stock" ? "temporarily_out_of_stock" : "active" };
 }
 
 function normalizePrice(input) { const minimum = integer(input?.minUnitAmount, 1, 100_000_000, null); const maximum = integer(input?.maxUnitAmount, 1, 100_000_000, null); if (minimum === null || maximum === null || maximum < minimum || input?.currency !== "CAD") throw new Error("catalogue_price_invalid"); return { currency: "CAD", minUnitAmount: minimum, maxUnitAmount: maximum, label: boundedText(input.label, 80) || formatCad(minimum) }; }

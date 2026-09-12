@@ -1,0 +1,196 @@
+- generic [active] [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - link "Third Railify Lab home" [ref=f4e3] [cursor=pointer]:
+      - /url: /
+      - generic [aria-hidden] [ref=f4e5]: LAB
+      - generic [ref=f4e6]:
+        - strong [ref=f4e7]:
+          - text: THIRD RAILIFY
+          - emphasis [ref=f4e8]: LAB
+        - generic [ref=f4e9]: THE CREATIVE WORKSHOP
+    - generic [ref=f4e11]:
+      - text: Untitled session /
+      - strong [ref=f4e12]: Image studio
+    - generic [ref=f4e13]:
+      - generic [ref=f4e14]: PRIVATE WORKSHOP
+      - button "Connections" [ref=f4e16] [cursor=pointer]
+      - button "Workspace layout options" [expanded] [ref=f4e21] [cursor=pointer]
+    - button "Account menu" [ref=f4e25] [cursor=pointer]:
+      - generic [aria-hidden] [ref=f4e27]: L
+      - generic [ref=f4e28]:
+        - strong [ref=f4e29]:
+          - generic [ref=f4e30]: Workshop account
+          - img "Account role" [ref=f4e31]
+        - generic [ref=f4e33]: Loading account
+  - generic [ref=f4e34]:
+    - generic [ref=f4e35]:
+      - tablist "Open project sessions" [ref=f4e36]
+      - generic [ref=f4e37]:
+        - button "New project session" [ref=f4e38] [cursor=pointer]
+        - button "Save project and research" [ref=f4e41] [cursor=pointer]
+        - button "Saved research conversations" [ref=f4e44] [cursor=pointer]
+        - button "Delete current conversation" [ref=f4e47] [cursor=pointer]
+        - button "New conversation in this project" [ref=f4e50] [cursor=pointer]
+        - button "Auto-hide project tabs" [ref=f4e53] [cursor=pointer]
+    - navigation "Workspace tools" [ref=f4e56]:
+      - generic [ref=f4e57]:
+        - button "Collapse left sidebar to icons" [expanded] [ref=f4e58] [cursor=pointer]
+        - button "Image studio" [ref=f4e61] [cursor=pointer]
+        - button "Thumbnail composer" [ref=f4e64] [cursor=pointer]
+        - button "Library and projects" [ref=f4e67] [cursor=pointer]
+        - button "Brand and assets" [ref=f4e70] [cursor=pointer]
+        - button "Workspace settings" [ref=f4e73] [cursor=pointer]
+      - button "Open quick guide" [ref=f4e76] [cursor=pointer]
+    - complementary [ref=f4e79]:
+      - generic [ref=f4e80]:
+        - generic [ref=f4e81]: 01 / CREATE
+        - heading "Generation settings" [level=2] [ref=f4e82]
+      - generic [ref=f4e83]:
+        - generic [ref=f4e84]:
+          - generic [ref=f4e85]: IMAGE PROVIDER
+          - group "Image provider" [ref=f4e86]:
+            - button "Replicate" [ref=f4e87] [cursor=pointer]
+            - button "GPT" [ref=f4e88] [cursor=pointer]
+            - button "Grok" [ref=f4e89] [cursor=pointer]
+        - generic [ref=f4e90]:
+          - generic [ref=f4e91]:
+            - generic [ref=f4e92]: MODEL
+            - generic [ref=f4e93]: LIVE SCHEMA
+          - button "F. FLUX.1 Schnell black-forest-labs" [ref=f4e94] [cursor=pointer]:
+            - generic [ref=f4e95]: F.
+            - generic [ref=f4e96]:
+              - strong [ref=f4e97]: FLUX.1 Schnell
+              - generic [ref=f4e98]: black-forest-labs
+          - button "Load model controls" [ref=f4e101] [cursor=pointer]
+          - paragraph [ref=f4e104]: Connect Replicate to load its actual model inputs.
+          - button "R black-forest-labs/flux-schnell" [ref=f4e106] [cursor=pointer]:
+            - generic [ref=f4e107]: R
+            - generic [ref=f4e108]: black-forest-labs/flux-schnell
+        - generic [ref=f4e111]:
+          - generic [ref=f4e112]:
+            - generic [ref=f4e113]: CREATIVE DIRECTION
+            - generic [ref=f4e114]: PROMPT PRESET
+            - button "Edit prompt presets" [ref=f4e115] [cursor=pointer]
+          - generic [ref=f4e118]:
+            - button "Original" [ref=f4e119] [cursor=pointer]
+            - button "Cinematic" [ref=f4e120] [cursor=pointer]
+            - button "Thumbnail" [ref=f4e121] [cursor=pointer]
+            - button "Railify" [ref=f4e122] [cursor=pointer]
+          - paragraph [ref=f4e123]: Presets append a visible art-direction line. They do not change safety settings.
+        - generic [ref=f4e124]:
+          - generic [ref=f4e125]:
+            - generic [ref=f4e126]: MODEL INPUTS
+            - generic [ref=f4e127]: —
+          - generic [ref=f4e128]: Model-specific controls appear here after lookup. No guessed settings are sent.
+        - group [ref=f4e131]:
+          - generic "Advanced input JSON" [ref=f4e132] [cursor=pointer]
+        - paragraph [ref=f4e136]: Generation uses your provider's API balance. No charge is created until you press Generate. Model pricing varies.
+    - separator "Resize generation settings" [ref=f4e137]
+    - main [ref=f4e138]:
+      - generic [ref=f4e139]:
+        - generic [ref=f4e140]:
+          - generic [ref=f4e141]: MAKE SOMETHING WORTH WATCHING
+          - heading "THE IMAGE STUDIO." [level=1] [ref=f4e142]
+        - button "Try a layout" [ref=f4e143] [cursor=pointer]
+      - generic [ref=f4e146]:
+        - generic [ref=f4e147]:
+          - generic [ref=f4e148]: CANVAS / ORIGINAL
+          - generic [ref=f4e149]:
+            - button "Zoom out" [ref=f4e150] [cursor=pointer]
+            - button "Zoom in" [ref=f4e153] [cursor=pointer]
+            - button "Fit to width · show full height" [ref=f4e156] [cursor=pointer]
+            - button "Fit to height" [ref=f4e159] [cursor=pointer]
+            - button "Fit within window" [ref=f4e162] [cursor=pointer]
+            - button "Pan image" [ref=f4e165] [cursor=pointer]
+            - button "Reset image view" [ref=f4e168] [cursor=pointer]
+            - button "Lock canvas to window height" [ref=f4e171] [cursor=pointer]
+            - button "Import a local image" [ref=f4e174] [cursor=pointer]
+            - button "Fullscreen canvas" [ref=f4e177] [cursor=pointer]
+        - region "Image canvas" [ref=f4e180]:
+          - generic [ref=f4e181]:
+            - generic [ref=f4e187]: FROM SPARK TO SCREEN
+            - heading [level=2] [ref=f4e188]:
+              - text: A BLANK CANVAS.
+              - emphasis [ref=f4e189]: ENDLESS DIRECTIONS.
+            - paragraph [ref=f4e190]: Write a prompt. Choose your model.Give your next idea somewhere to land.
+            - generic [ref=f4e191]:
+              - generic [ref=f4e192]: IMAGE GENERATION
+              - generic [ref=f4e194]: THUMBNAILS
+              - generic [ref=f4e196]: RESEARCH
+        - generic [ref=f4e197]:
+          - generic [ref=f4e198]: Original framing preserved · No image loaded
+          - generic [ref=f4e199]:
+            - button "Compose thumbnail" [disabled] [ref=f4e200]
+            - button "Download original image" [disabled] [ref=f4e203]
+      - generic [ref=f4e206]:
+        - generic [ref=f4e207]:
+          - generic [ref=f4e208]: THE BRIEF
+          - generic [ref=f4e211]: CTRL + ENTER TO GENERATE
+        - textbox "Generation prompt" [ref=f4e212]:
+          - /placeholder: Describe the image you have in mind. The subject, lighting, mood, composition…
+        - generic [ref=f4e213]:
+          - generic [ref=f4e214]: Your prompt. No hidden embellishment.
+          - button "Attach reference images" [ref=f4e215] [cursor=pointer]
+          - button "Generate ↗" [ref=f4e218] [cursor=pointer]:
+            - text: Generate
+            - generic [ref=f4e221]: ↗
+      - generic [ref=f4e222]:
+        - generic [ref=f4e223]:
+          - generic [ref=f4e224]:
+            - text: SESSION OUTPUTS
+            - generic [ref=f4e225]: "00"
+          - button "Open library" [ref=f4e226] [cursor=pointer]
+        - generic [ref=f4e229]: Your generations and imports will live here.
+    - separator "Resize research sidebar" [ref=f4e233]
+    - complementary [ref=f4e234]:
+      - generic [ref=f4e235]:
+        - generic [ref=f4e236]:
+          - generic [ref=f4e237]: 02 / THINKING SPACE
+          - heading "Research desk" [level=2] [ref=f4e238]
+        - generic [ref=f4e239]:
+          - button "Pop research into a window" [ref=f4e240] [cursor=pointer]
+          - link "Open research in a new tab" [ref=f4e243] [cursor=pointer]:
+            - /url: /research
+          - button "Collapse research sidebar" [ref=f4e246] [cursor=pointer]
+      - tablist [ref=f4e249]:
+        - tab "AI chat" [selected] [ref=f4e250] [cursor=pointer]
+        - tab "Google Images" [ref=f4e253] [cursor=pointer]
+      - generic [ref=f4e256]:
+        - group [ref=f4e257]:
+          - generic "Research model Choose model" [ref=f4e258] [cursor=pointer]:
+            - generic [ref=f4e259]: Research model
+            - generic [ref=f4e262]: Choose model
+          - combobox "Chat provider" [ref=f4e266]:
+            - option "GPT / OpenAI" [selected]
+            - option "Grok / SpaceXAI"
+          - generic [ref=f4e267]:
+            - combobox "Chat model" [ref=f4e268]:
+              - option "Loading chat models…" [selected]
+            - button "Refresh chat models" [ref=f4e269] [cursor=pointer]
+          - status
+          - paragraph [ref=f4e272]: Configure context and provider tools
+          - button "Context & tools" [ref=f4e273] [cursor=pointer]
+        - generic [ref=f4e277]:
+          - heading "A second pair of ideas." [level=3] [ref=f4e281]: A second pairof ideas.
+          - paragraph [ref=f4e282]: Explore a direction, sharpen a prompt, or work through a thumbnail concept.
+          - button "Brainstorm a matchup thumbnail ↗" [ref=f4e283] [cursor=pointer]:
+            - text: Brainstorm a matchup thumbnail
+            - generic [ref=f4e284]: ↗
+          - button "Build a stronger prompt ↗" [ref=f4e285] [cursor=pointer]:
+            - text: Build a stronger prompt
+            - generic [ref=f4e286]: ↗
+          - generic [ref=f4e287]: Image/document inputs and provider web/analysis tools are available. Tool access depends on the selected model. Sending may incur API charges.
+        - generic [ref=f4e288]:
+          - textbox "Ask your research assistant…" [ref=f4e289]
+          - generic [ref=f4e290]:
+            - generic [ref=f4e291]: LOCAL CONVERSATION
+            - button "Attach images or documents" [ref=f4e292] [cursor=pointer]
+            - button "System instructions and tools" [ref=f4e295] [cursor=pointer]
+            - button "Send chat message" [ref=f4e298] [cursor=pointer]
+        - paragraph [ref=f4e301]: Provider histories stay separate. Sending transmits this conversation to the selected provider.
+  - contentinfo [ref=f4e302]:
+    - generic [ref=f4e303]: Connecting to local server
+    - generic [ref=f4e306]: Keys stay server-side · Projects stay on this machine
+    - generic [ref=f4e307]:
+      - text: THIRD RAILIFY LAB
+      - generic [ref=f4e308]: 0.4 POC

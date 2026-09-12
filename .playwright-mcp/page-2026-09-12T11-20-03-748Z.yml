@@ -1,0 +1,16 @@
+- main [ref=f3e2]:
+  - img "Third Railify Lab" [ref=f3e3]
+  - paragraph [ref=f3e4]: THE CREATIVE WORKSHOP
+  - heading "YOUR NEXT IDEA STARTS HERE." [level=1] [ref=f3e5]: YOUR NEXT IDEASTARTS HERE.
+  - paragraph [ref=f3e6]: Sign in with your Third Railify account. Workshop access is managed by Admin.
+  - generic [ref=f3e7]:
+    - generic [ref=f3e8]:
+      - text: Email
+      - textbox "Email" [ref=f3e9]
+    - generic [ref=f3e10]:
+      - text: Password
+      - textbox "Password" [ref=f3e11]
+    - button "Sign in" [disabled] [ref=f3e12]
+  - status [ref=f3e13]: Workshop is temporarily unavailable.
+  - link "Account help" [ref=f3e14] [cursor=pointer]:
+    - /url: https://thirdrailify.com/account

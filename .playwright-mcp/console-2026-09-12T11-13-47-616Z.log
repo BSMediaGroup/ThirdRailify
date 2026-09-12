@@ -1,0 +1,9 @@
+[  320417ms] [ERROR] Loading the stylesheet 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Blinker:wght@400;600;700&family=Geist+Mono:wght@400;500;600&display=swap' violates the following Content Security Policy directive: "style-src 'self' 'unsafe-inline'". Note that 'style-src-elem' was not explicitly set, so 'style-src' is used as a fallback. The action has been blocked. @ http://127.0.0.1:8798/:0
+[  320541ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://127.0.0.1:8798/api/auth/session:0
+[  320545ms] Error: Workshop access is required.
+    at http://127.0.0.1:8798/session.js:3:114
+[  320593ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://127.0.0.1:8798/brand-fonts/body @ http://127.0.0.1:8798/login.html:0
+[  320593ms] [INFO] Slow network is detected. See https://www.chromestatus.com/feature/5636954674692096 for more details. Fallback font will be used while loading: http://127.0.0.1:8798/brand-fonts/display @ http://127.0.0.1:8798/login.html:0
+[  320598ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://127.0.0.1:8798/api/auth/config:0
+[  320628ms] [ERROR] Failed to load resource: the server responded with a status of 404 () @ http://127.0.0.1:8798/favicon.ico:0
+[  338456ms] [ERROR] Failed to load resource: the server responded with a status of 503 (Service Unavailable) @ http://127.0.0.1:8798/api/auth/session:0

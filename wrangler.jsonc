@@ -64,5 +64,11 @@
         "script_name": "thirdrailify-public-state"
       }
     ]
-  }
+  },
+  "r2_buckets": [
+    {
+      "binding": "THIRDRAILIFY_CATALOGUE_MEDIA",
+      "bucket_name": "thirdrailify-profile-media"
+    }
+  ]
 }
