@@ -74,7 +74,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
   try { input = JSON.parse(raw || "{}"); } catch { throw failure(400, "invalid_json", "The wheel request is invalid."); }
   if (!input || typeof input !== "object" || Array.isArray(input)) throw failure(400, "invalid_json", "The wheel request is invalid.");
   let internal;
-  if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/automations\/(save|delete|test)$/.test(path)) internal = path;
+  if (request.method === "POST" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/automations\/(save|delete|test|roster-save|roster-preview|roster-sync)$/.test(path)) internal = path;
   else if (!path && request.method === "POST") internal = "create";
   else if (path === "stages" && request.method === "POST") internal = "stages/create";
   else if (request.method === "PUT" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;

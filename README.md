@@ -1,5 +1,9 @@
 # Third Railify V2 public site
 
+## Self-paid subscriber and current-roster Wheel controls
+
+Authenticated Wheel editors share the Admin subscriber automation contract. Canonical `subscriber_self_paid` rules accept exact-500 self-paid evidence only; gifted recipients and review values are excluded. Current-roster panels use detected source identity, show provenance/freshness and preview status, and support add-missing or safe exact-managed synchronization without changing spin mechanics. Admin Commerce D1 remains the authority.
+
 ## Animated homepage show cards
 
 The three show illustrations use native SVG geometry and CSS animation in `src/components/ShowFeatureArt.tsx` and `src/styles/show-feature-art.css`. Duelling microphones, a retro TV with boxing gloves, and the news desk retain the original scenes without raster artwork. `useMotionGate` pauses them offscreen or in a hidden tab and respects reduced motion. Whole-card links lead to `/polls/abootnothing` (Aboot Nothing) and `/about` (Pop Culture Beat Down and News Hangout). Responsive browser evidence is in `.artifacts/show-features/`; run `node --test tests/show-features-browser.test.mjs` after building. Local implementation; not deployed by this task.

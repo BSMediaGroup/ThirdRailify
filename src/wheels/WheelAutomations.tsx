@@ -3,16 +3,18 @@ import { mergeRules, publishRule, removeRule, toggleRule, useRuleStore } from '.
 import { useCallback, useEffect, useState } from 'react';
 import { AutomationRuleEditor } from '../components/AutomationRuleEditor';
 import { AutomationRequestError, type Rule, type Readiness, type Discovery, type WheelChoice } from '../lib/automation-client';
+import type { RosterAuthority, RosterRule } from '../lib/automation-client';
+import { SubscriberRosterAutomation } from './SubscriberRosterAutomation';
 import { defaultAction } from '../lib/automation-model.mjs';
 import '../styles/trigger-studio.css';
 
-type Payload = { rules: Rule[]; readiness: Readiness; discovery: Discovery; wheels: WheelChoice[]; activity: { id: string; actor_label: string; outcome: string; awarded_entries: number }[] };
+type Payload = { rules: Rule[]; readiness: Readiness; discovery: Discovery; wheels: WheelChoice[]; rosters: RosterRule[]; rosterAuthorities: Record<string, RosterAuthority>; rosterReadiness?: { schema: boolean }; activity: { id: string; actor_label: string; outcome: string; awarded_entries: number }[] };
 export function WheelAutomations({ slug, csrf }: { slug: string; csrf: string }) {
   useRuleStore();
   const [data, setData] = useState<Payload | null>(null), [editor, setEditor] = useState<Rule | null>(null);
   const [error, setError] = useState(''), [busy, setBusy] = useState(false), [issues, setIssues] = useState<Record<string, string>>({});
   const request = useCallback(async <T,>(path: string, token?: string, body?: unknown): Promise<T> => {
-    const action = path === 'rules' ? 'save' : path === 'rules/delete' ? 'delete' : path;
+    const action = path === 'rules' ? 'save' : path === 'rules/delete' ? 'delete' : path === 'rosters' ? 'roster-save' : path === 'rosters/preview' ? 'roster-preview' : path === 'rosters/sync' ? 'roster-sync' : path;
     const response = await fetch(`/api/wheels/${encodeURIComponent(slug)}/automations${body ? `/${action}` : path.includes('?') ? `?${path.split('?')[1]}` : ''}`, { method: body ? 'POST' : 'GET', credentials: 'same-origin', cache: 'no-store', headers: { Accept: 'application/json', ...(body ? { 'Content-Type': 'application/json', 'X-CSRF-Token': token || '' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json();
     if (!response.ok) throw new AutomationRequestError(result.message || 'Automation request failed.', result.issues || [], response.status);
@@ -27,5 +29,6 @@ export function WheelAutomations({ slug, csrf }: { slug: string; csrf: string })
     {editor && data ? <AutomationRuleEditor rule={editor} rules={data.rules} wheels={data.wheels} discovery={data.discovery} readiness={data.readiness} request={request} csrf={csrf} busy={busy} canManage serverErrors={issues} onChange={r => { setEditor(r); setIssues({}); }} onSave={() => void mutate('rules', editor)} onClose={() => setEditor(null)} /> : null}
     <AutomationRuleList rules={mergeRules(data?.rules || [], data?.wheels[0]?.id || '__loading__')} scoped canManage={Boolean(data)} onEdit={rule => { setIssues({}); setEditor(rule); }} onToggle={rule => void toggleRule(rule, csrf, request)} onDelete={rule => { if (window.confirm(`Delete ${rule.name}? Existing entries remain.`)) void mutate('rules/delete', { id: rule.id, revision: rule.revision, confirm: 'DELETE' }); }} />
     {data?.activity.length ? <details><summary>Recent activity</summary>{data.activity.map(a => <p key={a.id}>{a.actor_label}: {a.outcome} · {a.awarded_entries} entries</p>)}</details> : null}
+    {data?.wheels[0] ? <SubscriberRosterAutomation rules={data.rosters || []} authorities={data.rosterAuthorities || {}} wheel={data.wheels[0]} discovery={data.discovery} request={request} csrf={csrf} reload={load} schemaReady={data.rosterReadiness?.schema !== false} /> : null}
   </section>;
 }

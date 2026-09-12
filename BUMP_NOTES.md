@@ -1,5 +1,14 @@
 # Bump notes
 
+## 2026-09-13 - Subscriber roster Wheel controls
+
+CURRENT VER=0.1.0-alpha.0
+
+PENDING VER=0.1.0-alpha.0
+
+- Added the authenticated current self-paid subscriber roster panel to Wheel automation, with detected source selection, disabled-by-default save, preview/sync, provenance, freshness, and stale-removal warnings.
+- Aligned event contracts on canonical `subscriber_self_paid` while retaining stable identity for legacy stored subscriber rules. Public remains a signed projection/relay; Admin owns classification and Wheel mutations.
+
 ## 2026-09-09 - Animated vector show feature cards (local)
 
 CURRENT VER=0.1.0-alpha.0
