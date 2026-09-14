@@ -50,6 +50,7 @@ test("Wheels V1.6 refinement exposes expanded palettes, reset, presentation navi
     readFile(new URL("../src/pages/WheelPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
   ]);
+  const compactPage = page.replace(/\s+/g, " ");
   const library = appearance.slice(appearance.indexOf("const WHEEL_PALETTES"), appearance.indexOf("];", appearance.indexOf("const WHEEL_PALETTES")) + 2);
   assert.equal([...library.matchAll(/\{\s+key:/g)].length, 30);
   for (const label of ["Electric Blue / White", "Midnight Blue / White", "Cobalt / Black", "Ice Blue / Navy / White", "Royal Blue Gradient", "Purple / White", "Pink / Black", "Gold / Purple", "Green / Black", "Sky / White / Navy"]) assert.ok(library.includes(label), `${label} is available`);
@@ -60,7 +61,7 @@ test("Wheels V1.6 refinement exposes expanded palettes, reset, presentation navi
   assert.match(page, /Wheel link copied to your clipboard/);
   assert.match(page, /Share options were unavailable, so the wheel link was copied instead/);
   assert.match(page, /summary\.slug\}\$\{presentation \? "\/present" : ""\}/);
-  assert.match(page, /<WheelNavigator neighbours=\{props\.neighbours\} locked=\{locked\} onNavigate=\{props\.onNavigate\} \/><\/>/);
+  assert.match(compactPage, /<WheelNavigator\s+neighbours=\{props\.neighbours\} locked=\{locked\} onNavigate=\{props\.onNavigate\} \/>\s*<\/>/);
   assert.match(styles, /\.wheel-control-heading h1\{font-size:clamp\(42px,4\.8vw,69px\)/);
   assert.match(styles, /\.wheel-navigator__direction\{min-height:56px;padding:7px 12px/);
   assert.match(styles, /\.wheel-control-page--presentation \.wheel-spin-console\{grid-template-columns:[^}]*minmax\(330px,1fr\)/);
@@ -72,10 +73,11 @@ test("the live wheel centre shares the existing spin authority and lock", async 
     readFile(new URL("../src/pages/WheelPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
   ]);
+  const compactPage = page.replace(/\s+/g, " ");
   assert.match(canvas, /onCentreSpin\?: \(\) => void/);
   assert.match(canvas, /className={`wheel-stage__hub is-spin-control/);
   assert.match(canvas, /disabled=\{centreSpinDisabled\}/);
-  assert.match(page, /onCentreSpin=\{interactive \? \(\) => void props\.onSpin\(\) : undefined\}/);
+  assert.match(compactPage, /onCentreSpin=\{\s*interactive \? \(\) => void props\.onSpin\(\) : undefined\s*\}/);
   assert.match(page, /centreSpinDisabled=\{spinDisabled\}/);
   assert.match(styles, /\.wheel-stage__hub\.is-spin-control:focus-visible/);
 });

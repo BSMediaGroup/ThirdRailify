@@ -1,0 +1,36 @@
+- generic [ref=f4e303]:
+  - banner [ref=f4e304]:
+    - link "Exit presentation mode" [ref=f4e305] [cursor=pointer]:
+      - /url: /wheels/identity-acceptance
+      - generic [ref=f4e308]: Exit
+    - generic [ref=f4e309]: Wheel Identity Acceptance
+    - button "Fullscreen" [ref=f4e310]
+  - main [ref=f4e317]:
+    - heading "Wheel Identity Acceptance presentation" [level=1] [ref=f4e318]
+    - button "Wheel owner and access details for Wheel Identity Acceptance" [ref=f4e321] [cursor=pointer]:
+      - generic [ref=f4e323]: UC
+      - generic:
+        - generic [ref=f4e324]: Owned by
+        - strong [ref=f4e325]: Unavailable creator
+    - generic [ref=f4e327]:
+      - generic [ref=f4e329]:
+        - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f4e332] [cursor=pointer]'
+        - button "Spin wheel from centre" [ref=f4e333] [cursor=pointer]
+      - generic:
+        - text: POINTER TARGET
+        - generic:
+          - strong: JIMTELLSYOU (RAID)
+        - generic: 30% chance · weight 3
+    - generic [ref=f4e336]:
+      - group "Draw mode" [ref=f4e338]:
+        - button "Practice spin" [pressed] [ref=f4e340]: Practice
+        - button "Official draw" [ref=f4e343]: Official
+      - button "Start demo spin" [ref=f4e347] [cursor=pointer]:
+        - generic [ref=f4e348]: SPIN WHEEL
+        - generic [ref=f4e349]: Local demo · not recorded
+      - generic [ref=f4e350]:
+        - button "Turn wheel sound off" [pressed] [ref=f4e351] [cursor=pointer]: Sound on
+        - button "Appearance" [ref=f4e355] [cursor=pointer]
+        - button "Fullscreen" [ref=f4e361] [cursor=pointer]
+    - status [ref=f4e364]
+  - status [ref=f4e365]: Loaded wheel Wheel Identity Acceptance

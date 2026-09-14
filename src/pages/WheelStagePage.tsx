@@ -202,8 +202,23 @@ export function WheelStagePage({
   const focused = normalizeFocus(params.get("focus"), available.length);
   const view: "overview" | "focus" = focused == null ? "overview" : "focus";
   const batchBusy = phase !== "idle";
-  useWheelRefresh(create ? '' : slug, loading || create || editorRequested || batchBusy || Object.values(spins).some(spin => spin.spinning || spin.requesting || Boolean(spin.result)),
-    () => getStage(slug), payload => { if (JSON.stringify(stage) !== JSON.stringify(payload.stage)) { setStage(payload.stage); setAccess(payload.access); } });
+  useWheelRefresh(
+    create ? "" : slug,
+    loading ||
+      create ||
+      editorRequested ||
+      batchBusy ||
+      Object.values(spins).some(
+        (spin) => spin.spinning || spin.requesting || Boolean(spin.result),
+      ),
+    () => getStage(slug),
+    (payload) => {
+      if (JSON.stringify(stage) !== JSON.stringify(payload.stage)) {
+        setStage(payload.stage);
+        setAccess(payload.access);
+      }
+    },
+  );
   const officialAllEligible = Boolean(
     account &&
     stage?.revision &&
@@ -566,14 +581,30 @@ export function WheelStagePage({
     >
       <div className="wheel-stage-page__background" aria-hidden="true" />
       <header className="stage-topbar">
-        <Link
-          className="stage-topbar__back"
-          to="/wheels"
-          aria-label="Exit Stage"
-        >
-          <BackIcon />
-          <span>Wheels</span>
-        </Link>
+        {view === "focus" ? (
+          <div className="stage-topbar__return">
+            <button
+              className="stage-topbar__back stage-topbar__back--accent"
+              type="button"
+              onClick={() => setFocus(null, "overview")}
+            >
+              <BackIcon />
+              <span>Back to Stage</span>
+            </button>
+            <Link className="stage-topbar__gallery" to="/wheels">
+              Gallery
+            </Link>
+          </div>
+        ) : (
+          <Link
+            className="stage-topbar__back"
+            to="/wheels"
+            aria-label="Exit Stage"
+          >
+            <BackIcon />
+            <span>Gallery</span>
+          </Link>
+        )}
         <div className="stage-topbar__identity">
           <WheelsBrandMark />
           <span>{stage?.title || "New Stage"}</span>
@@ -587,7 +618,7 @@ export function WheelStagePage({
           aria-label="Stage controls"
           className={batchBusy ? "stage-controls-disabled" : ""}
         >
-          {view === "focus" ? (
+          {focused === Number.MIN_SAFE_INTEGER ? (
             <button type="button" onClick={() => setFocus(null, "overview")}>
               ▦ Overview
             </button>
@@ -735,7 +766,11 @@ export function WheelStagePage({
           />
         ) : null}
       </main>
-      <EphemeralNotices error={error} errorTitle="Stage action unavailable" onDismissError={() => setError("")} />
+      <EphemeralNotices
+        error={error}
+        errorTitle="Stage action unavailable"
+        onDismissError={() => setError("")}
+      />
       {preflightIssues ? (
         <StagePreflightDialog
           issues={preflightIssues}
@@ -1249,7 +1284,13 @@ function useStageAudio() {
   }, []);
   const stopWheel = useCallback((index: number) => {
     const active = nodes.current.get(index);
-    if (active) for (const node of active) try { node.stop(); } catch { /* already stopped */ }
+    if (active)
+      for (const node of active)
+        try {
+          node.stop();
+        } catch {
+          /* already stopped */
+        }
     nodes.current.delete(index);
   }, []);
   const stopAll = useCallback(() => {
@@ -1274,15 +1315,15 @@ function useStageAudio() {
           Math.max(0.0001, profile.gain * gainScale),
           start + profile.attack,
         );
-        gain.gain.exponentialRampToValueAtTime(
-          0.0001,
-          start + profile.decay,
-        );
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + profile.decay);
         oscillator.connect(gain).connect(audio.destination);
         active.add(oscillator);
         oscillator.start(start);
         oscillator.stop(start + profile.decay + 0.01);
-        oscillator.addEventListener("ended", () => { active.delete(oscillator); if (!active.size) nodes.current.delete(wheelIndex); });
+        oscillator.addEventListener("ended", () => {
+          active.delete(oscillator);
+          if (!active.size) nodes.current.delete(wheelIndex);
+        });
       }
     },
     [],

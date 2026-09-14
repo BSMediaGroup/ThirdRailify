@@ -1,0 +1,272 @@
+- generic [ref=f6e4]:
+  - link "Skip to content" [ref=f6e5] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=f6e6]:
+    - generic [ref=f6e7]:
+      - link "Third Railify home" [ref=f6e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f6e10]:
+          - strong [ref=f6e11]: THIRD RAILIFY
+          - generic [ref=f6e12]: OFFICIAL
+      - navigation "Primary navigation" [ref=f6e13]:
+        - list [ref=f6e14]:
+          - listitem [ref=f6e15]:
+            - link "Home" [ref=f6e16] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f6e17]:
+            - link "Watch" [ref=f6e18] [cursor=pointer]:
+              - /url: /watch
+          - listitem [ref=f6e19]:
+            - link "The show" [ref=f6e21] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f6e22]:
+            - link "Shop" [ref=f6e23] [cursor=pointer]:
+              - /url: /shop
+          - listitem [ref=f6e24]:
+            - link "Community" [ref=f6e26] [cursor=pointer]:
+              - /url: /community
+          - listitem [ref=f6e27]:
+            - link "VIP" [ref=f6e28] [cursor=pointer]:
+              - /url: /vip
+      - generic [ref=f6e29]:
+        - button "Open cart, 0 items" [ref=f6e30] [cursor=pointer]:
+          - generic [ref=f6e34]: "0"
+        - button "Acceptance Creator account menu" [ref=f6e36] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f6e37]: A
+          - generic [ref=f6e38]:
+            - strong [ref=f6e39]:
+              - generic [ref=f6e40]: Acceptance Creator
+              - img "Regular User" [ref=f6e41]
+            - generic [ref=f6e45]: creator@example.test
+  - generic [ref=f6e46]:
+    - link [ref=f6e48] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f6e49]: "01"
+      - text: Home
+    - link [ref=f6e51] [cursor=pointer]:
+      - /url: /watch
+      - generic [ref=f6e52]: "02"
+      - text: Watch
+    - generic [ref=f6e53]:
+      - link [ref=f6e54] [cursor=pointer]:
+        - /url: /about
+        - generic [ref=f6e55]: "03"
+        - text: The show
+      - generic [ref=f6e56]:
+        - link [ref=f6e57] [cursor=pointer]:
+          - /url: /shawn
+          - text: Shawn
+        - link [ref=f6e60] [cursor=pointer]:
+          - /url: /gina
+          - text: Gina
+        - link [ref=f6e63] [cursor=pointer]:
+          - /url: /gaming
+          - text: Gaming
+    - link [ref=f6e67] [cursor=pointer]:
+      - /url: /shop
+      - generic [ref=f6e68]: "04"
+      - text: Shop
+    - generic [ref=f6e69]:
+      - link [ref=f6e70] [cursor=pointer]:
+        - /url: /community
+        - generic [ref=f6e71]: "05"
+        - text: Community
+      - generic [ref=f6e72]:
+        - link [ref=f6e73] [cursor=pointer]:
+          - /url: /friends
+          - text: Friends
+        - link [ref=f6e76] [cursor=pointer]:
+          - /url: /goats
+          - text: GOATS in the Wild
+        - link [ref=f6e79] [cursor=pointer]:
+          - /url: /wheels
+          - text: Wheels
+        - link [ref=f6e82] [cursor=pointer]:
+          - /url: /polls
+          - text: Polls
+    - link [ref=f6e86] [cursor=pointer]:
+      - /url: /vip
+      - generic [ref=f6e87]: "06"
+      - text: VIP
+    - link [ref=f6e88] [cursor=pointer]:
+      - /url: /account
+      - generic [ref=f6e89]: "07"
+      - text: Your account
+  - main [ref=f6e92]:
+    - generic [ref=f6e93]:
+      - generic [ref=f6e96]:
+        - main [ref=f6e97]:
+          - navigation "Breadcrumb" [ref=f6e98]:
+            - link "Back to wheels" [ref=f6e99] [cursor=pointer]:
+              - /url: /wheels
+            - generic [ref=f6e102]: WHEELS / PRIVATE DRAW / Wheel Identity Acceptance
+          - generic [ref=f6e103]:
+            - generic [ref=f6e104]:
+              - paragraph [ref=f6e105]: THIRD RAILIFY WHEEL
+              - heading "Wheel Identity Acceptance" [level=1] [ref=f6e106]
+              - generic [ref=f6e107]:
+                - paragraph [ref=f6e108]: Private local visual fixture
+                - button "Wheel owner and access details for Wheel Identity Acceptance" [ref=f6e110] [cursor=pointer]:
+                  - generic [ref=f6e112]: UC
+                  - generic:
+                    - generic [ref=f6e113]: Owned by
+                    - strong [ref=f6e114]: Unavailable creator
+            - generic [ref=f6e115]:
+              - button "Share wheel link" [ref=f6e116] [cursor=pointer]: Share
+              - link "Present" [ref=f6e122] [cursor=pointer]:
+                - /url: /wheels/identity-acceptance/present
+              - link "Edit" [ref=f6e125] [cursor=pointer]:
+                - /url: /wheels/identity-acceptance/edit
+          - generic [ref=f6e129]:
+            - generic [ref=f6e131]:
+              - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f6e134] [cursor=pointer]'
+              - button "Spin wheel from centre" [ref=f6e135] [cursor=pointer]
+            - generic:
+              - text: POINTER TARGET
+              - generic:
+                - strong: JIMTELLSYOU (RAID)
+              - generic: 30% chance · weight 3
+          - generic [ref=f6e138]:
+            - group "Draw mode" [ref=f6e140]:
+              - button "Practice spin" [pressed] [ref=f6e142]: Practice
+              - button "Official draw" [ref=f6e145]: Official
+            - button "Start demo spin" [ref=f6e149] [cursor=pointer]:
+              - generic [ref=f6e150]: SPIN WHEEL
+              - generic [ref=f6e151]: Local demo · not recorded
+            - generic [ref=f6e152]:
+              - button "Turn wheel sound off" [pressed] [ref=f6e153] [cursor=pointer]: Sound on
+              - button "Appearance" [ref=f6e157] [cursor=pointer]
+          - status [ref=f6e163]
+        - complementary [ref=f6e164]:
+          - generic [ref=f6e165]:
+            - generic [ref=f6e166]:
+              - generic [ref=f6e167]:
+                - generic [ref=f6e168]: "01"
+                - paragraph [ref=f6e169]: DRAW STATUS
+              - generic [ref=f6e170]: READY
+            - generic [ref=f6e171]:
+              - generic [ref=f6e172]:
+                - term [ref=f6e173]: Mode
+                - definition [ref=f6e174]: Official available
+              - generic [ref=f6e175]:
+                - term [ref=f6e176]: Wheel
+                - definition [ref=f6e177]: Hidden
+              - generic [ref=f6e178]:
+                - term [ref=f6e179]: Weighting
+                - definition [ref=f6e180]: Weighted segments
+              - generic [ref=f6e181]:
+                - term [ref=f6e182]: Official lock
+                - definition [ref=f6e183]: Open
+              - generic [ref=f6e184]:
+                - term [ref=f6e185]: Latest result
+                - definition [ref=f6e186]: JIMTELLSYOU (RAID)
+          - generic [ref=f6e187]:
+            - generic [ref=f6e188]:
+              - generic [ref=f6e189]:
+                - generic [ref=f6e190]: "02"
+                - heading "Participants" [level=2] [ref=f6e191]
+              - generic [ref=f6e192]: "8"
+              - button "Manage participants" [ref=f6e193]: Manage
+            - list [ref=f6e196]:
+              - listitem [ref=f6e197]:
+                - button "JIMTELLSYOU (RAID) A234502 3×" [ref=f6e198]:
+                  - generic [ref=f6e200]:
+                    - strong [ref=f6e201]: JIMTELLSYOU (RAID)
+                    - generic [ref=f6e202]: A234502
+                  - generic [ref=f6e203]: 3×
+              - listitem [ref=f6e204]:
+                - button "Demo GOAT 02 Subscriber A234503" [ref=f6e205]:
+                  - generic [ref=f6e207]:
+                    - strong [ref=f6e208]: Demo GOAT 02 Subscriber
+                    - generic [ref=f6e209]: A234503
+              - listitem [ref=f6e210]:
+                - button "Demo GOAT 03 A234504" [ref=f6e211]:
+                  - generic [ref=f6e213]:
+                    - strong [ref=f6e214]: Demo GOAT 03
+                    - generic [ref=f6e215]: A234504
+              - listitem [ref=f6e216]:
+                - button "Demo GOAT 04 A234505" [ref=f6e217]:
+                  - generic [ref=f6e219]:
+                    - strong [ref=f6e220]: Demo GOAT 04
+                    - generic [ref=f6e221]: A234505
+              - listitem [ref=f6e222]:
+                - button "Demo GOAT 05 A234506" [ref=f6e223]:
+                  - generic [ref=f6e225]:
+                    - strong [ref=f6e226]: Demo GOAT 05
+                    - generic [ref=f6e227]: A234506
+              - listitem [ref=f6e228]:
+                - button "Demo GOAT 06 A234507" [ref=f6e229]:
+                  - generic [ref=f6e231]:
+                    - strong [ref=f6e232]: Demo GOAT 06
+                    - generic [ref=f6e233]: A234507
+              - listitem [ref=f6e234]:
+                - button "Demo GOAT 07 A234508" [ref=f6e235]:
+                  - generic [ref=f6e237]:
+                    - strong [ref=f6e238]: Demo GOAT 07
+                    - generic [ref=f6e239]: A234508
+              - listitem [ref=f6e240]:
+                - button "Demo GOAT 08 A234509" [ref=f6e241]:
+                  - generic [ref=f6e243]:
+                    - strong [ref=f6e244]: Demo GOAT 08
+                    - generic [ref=f6e245]: A234509
+          - generic [ref=f6e246]:
+            - generic [ref=f6e247]:
+              - generic [ref=f6e248]:
+                - generic [ref=f6e249]: "03"
+                - heading "Official history" [level=2] [ref=f6e250]
+              - generic [ref=f6e251]: "0"
+              - button "Activity" [ref=f6e252]
+            - paragraph [ref=f6e253]: No recorded official results.
+      - status [ref=f6e254]: Loaded wheel Wheel Identity Acceptance
+  - contentinfo [ref=f6e255]:
+    - generic [ref=f6e256]:
+      - generic [ref=f6e257]:
+        - generic [ref=f6e260]:
+          - strong [ref=f6e261]: THIRD RAILIFY
+          - generic [ref=f6e262]: OFFICIAL
+        - paragraph [ref=f6e263]: A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.
+        - link "info@thirdrailify.com" [ref=f6e264] [cursor=pointer]:
+          - /url: mailto:info@thirdrailify.com
+      - generic [ref=f6e265]:
+        - heading "Explore" [level=2] [ref=f6e266]
+        - link "Watch" [ref=f6e267] [cursor=pointer]:
+          - /url: /watch
+        - link "Gaming" [ref=f6e268] [cursor=pointer]:
+          - /url: /gaming
+        - link "Wheels" [ref=f6e269] [cursor=pointer]:
+          - /url: /wheels
+        - link "Shawn" [ref=f6e270] [cursor=pointer]:
+          - /url: /shawn
+        - link "Gina" [ref=f6e271] [cursor=pointer]:
+          - /url: /gina
+        - link "Shop" [ref=f6e272] [cursor=pointer]:
+          - /url: /shop
+      - generic [ref=f6e273]:
+        - heading "Community" [level=2] [ref=f6e274]
+        - link "Friends" [ref=f6e275] [cursor=pointer]:
+          - /url: /friends
+        - link "Wild Goats" [ref=f6e276] [cursor=pointer]:
+          - /url: /goats
+        - link "Competition wheels" [ref=f6e277] [cursor=pointer]:
+          - /url: /wheels
+        - link "Live Polls" [ref=f6e278] [cursor=pointer]:
+          - /url: /polls
+        - link "VIP" [ref=f6e279] [cursor=pointer]:
+          - /url: /vip
+        - link "Donate" [ref=f6e280] [cursor=pointer]:
+          - /url: /donate
+      - generic [ref=f6e281]:
+        - heading "Policies" [level=2] [ref=f6e282]
+        - link "Terms" [ref=f6e283] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=f6e284] [cursor=pointer]:
+          - /url: /privacy
+        - link "Refunds" [ref=f6e285] [cursor=pointer]:
+          - /url: /refunds
+        - link "Accessibility" [ref=f6e286] [cursor=pointer]:
+          - /url: /accessibility
+        - link "Policy Library" [ref=f6e287] [cursor=pointer]:
+          - /url: /policies
+    - generic [ref=f6e288]:
+      - generic [ref=f6e289]: Third Railify · 2026
+      - button "Privacy choices" [ref=f6e291]

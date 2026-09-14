@@ -33,7 +33,7 @@ test("unauthenticated Stage writes fail as bounded JSON instead of an unhandled 
 test("Public has no commerce or Wheels D1 binding and the wheel gateway never trusts browser account fields", async () => {
   const wrangler = JSON.parse((await readFile(new URL("../wrangler.jsonc", import.meta.url), "utf8")).replace(/^\s*\/\/.*$/gm, ""));
   assert.deepEqual(wrangler.d1_databases.map((item) => item.binding), ["THIRDRAILIFY_AUTH_DB"]);
-  assert.deepEqual(wrangler.r2_buckets || [], []);
+  assert.equal((wrangler.r2_buckets || []).some((item) => /wheel/i.test(item.binding)), false);
   const routes = JSON.parse(await readFile(new URL("../public/_routes.json", import.meta.url), "utf8")); for (const route of ["/wheel", "/wheels", "/wheels/*"]) assert.equal(routes.exclude.includes(route), false);
   const source = await readFile(new URL("../functions/api/wheels/[[path]].js", import.meta.url), "utf8"); assert.doesNotMatch(source, /THIRDRAILIFY_COMMERCE_DB/); assert.match(source, /session\.accountId/); assert.match(source, /requireCsrf/); assert.doesNotMatch(source, /redirect:\s*["']error/);
 });

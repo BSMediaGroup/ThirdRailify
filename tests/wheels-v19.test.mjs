@@ -60,7 +60,7 @@ test("V1.9 renderer owns a cached local face and never sizes layout from the rot
   assert.match(source, /staticFaceRebuilds/);
   assert.match(source, /gifLayerComposites/);
   assert.match(source, /context\.setTransform\(face\.ratio/);
-  assert.match(source, /useMemo\(\(\) => entries\.filter/);
+  assert.match(source.replace(/\s+/g, " "), /useMemo\(\s*\(\) => entries\.filter/);
 });
 
 function metrics(segment) {

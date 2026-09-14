@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { WinnerEntrantDetails } from './WinnerEntrantDetails';
+import { WinnerEntrantDetails } from "./WinnerEntrantDetails";
 import { createPortal } from "react-dom";
 import type { WheelEntry } from "./types";
 import {
@@ -10,6 +10,7 @@ import {
 import { WheelsBrandMark } from "./WheelsBrandMark";
 import { trapFocus } from "./focusTrap";
 import { CheckIcon, EyeOffIcon, TrashIcon } from "../components/Icons";
+import { entryDisplayLabel } from "../lib/entrant-label.mjs";
 
 type Props = {
   entry: WheelEntry;
@@ -26,6 +27,7 @@ type Props = {
   canEdit: boolean;
   busy: boolean;
   onClose: () => void;
+  onCloseAndNext?: () => void;
   onAction: (action: "keep" | "hide" | "remove" | "remove-matching") => void;
 };
 
@@ -44,6 +46,7 @@ export function WinnerCelebration({
   canEdit,
   busy,
   onClose,
+  onCloseAndNext,
   onAction,
 }: Props) {
   const dialog = useRef<HTMLDivElement>(null);
@@ -179,23 +182,41 @@ export function WinnerCelebration({
         >
           ×
         </button>
-        <div className="winner-dialog__mark" aria-hidden="true">
-          <WheelsBrandMark />
-        </div>
-        <p className={`draw-badge ${official ? "is-official" : ""}`}>
-          {official ? "OFFICIAL DRAW · RECORDED" : "DEMO / NOT RECORDED"}
-        </p>
-        <p id="winner-status" className="eyebrow">
-          {message.replace("{winner}", entry.label)}
-        </p>
-        <WinnerEntrantDetails entry={entry} entries={entries} titleId="winner-title" />
-        <p id="winner-detail">
+        <header className="winner-dialog__header">
+          <div className="winner-dialog__mark" aria-hidden="true">
+            <WheelsBrandMark />
+          </div>
+          <div className="winner-dialog__status">
+            <p className={`draw-badge ${official ? "is-official" : ""}`}>
+              {official ? "OFFICIAL DRAW · RECORDED" : "PRACTICE · NOT RECORDED"}
+            </p>
+            <p id="winner-status" className="eyebrow">
+              {message.replace("{winner}", entryDisplayLabel(entry))}
+            </p>
+          </div>
+        </header>
+        <WinnerEntrantDetails
+          entry={entry}
+          entries={entries}
+          titleId="winner-title"
+        />
+        <p id="winner-detail" className="winner-dialog__proof">
           {official
             ? "This result was selected and persisted by the Third Railify authority before the animation began."
-            : "Demo result — not recorded as an official draw."}
+            : "Practice result — not recorded as an official draw."}
         </p>
         {canEdit ? (
           <div className="winner-actions">
+            {official && onCloseAndNext ? (
+              <button
+                className="button button--primary button--compact"
+                type="button"
+                onClick={onCloseAndNext}
+                disabled={busy}
+              >
+                <CheckIcon /> Close &amp; create next
+              </button>
+            ) : null}
             <button
               className="button button--secondary button--compact"
               type="button"

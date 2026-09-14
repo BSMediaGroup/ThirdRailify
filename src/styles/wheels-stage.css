@@ -2,6 +2,7 @@
 .stage-wheel-tile{box-sizing:border-box}
 .stage-topbar svg{width:18px;height:18px;flex:0 0 18px}.stage-topbar>div>svg{width:28px;height:28px;flex-basis:28px}
 .stage-topbar{box-sizing:border-box}
+.stage-topbar>.stage-topbar__return{display:flex;justify-self:start;gap:7px;text-align:left}.stage-topbar>.stage-topbar__return span{display:inline}.stage-topbar__back--accent{border-color:#f3c928!important;color:#15120a!important;background:#f3c928!important;font-weight:800!important}.stage-topbar__gallery{display:inline-flex;align-items:center;min-height:38px;padding:7px 10px;border:1px solid #3c3c31;color:#eeeade;background:#151610;text-decoration:none}.stage-topbar>.stage-topbar__identity{display:grid}
 .stage-wheel-tile__canvas .wheel-stage{box-sizing:border-box}
 .stage-focused-wheel__canvas{grid-column:1;grid-row:1/4}.stage-focused-wheel>header{grid-column:2;grid-row:1}.stage-focus-controls{grid-column:2;grid-row:2}.stage-dpad{grid-column:2;grid-row:3;align-self:start}
 .wheel-control-page,.wheel-stage-page{--wheels-page-max:1720px;--wheels-presentation-max:1920px;--wheels-stage-max:3320px}

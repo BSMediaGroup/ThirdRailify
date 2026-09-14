@@ -9,6 +9,7 @@ const directory = await readFile(new URL("../src/pages/WheelsPage.tsx", import.m
 const galleryOwner = await readFile(new URL("../src/wheels/GalleryOwnerInfo.tsx", import.meta.url), "utf8");
 const ownerStyles = await readFile(new URL("../src/styles/wheels-v110.css", import.meta.url), "utf8");
 const styles = await readFile(new URL("../src/styles/wheels-v111.css", import.meta.url), "utf8");
+const compact = (value) => value.replace(/\s+/g, " ");
 
 test("regular Wheel detail owns its wide composition instead of inheriting the shared container", () => {
   assert.match(wheelPage, /"wheel-control-layout wheel-detail-shell"/);
@@ -19,7 +20,7 @@ test("regular Wheel detail owns its wide composition instead of inheriting the s
 });
 
 test("regular and Presentation owner identity rests as an avatar and expands for hover or keyboard focus", () => {
-  assert.equal((wheelPage.match(/<WheelOwnerDetails wheel=\{wheel\} access=\{access\} disabled=\{!interactive\} \/>/g) || []).length, 2);
+  assert.equal((compact(wheelPage).match(/<WheelOwnerDetails wheel=\{wheel\} access=\{access\} disabled=\{!interactive\} \/>/g) || []).length, 2);
   assert.match(styles, /\.wheel-owner--identity\s*\{[^}]*height:\s*38px;[^}]*min-height:\s*38px;/s);
   assert.match(styles, /\.wheel-owner--identity \.wheel-owner__trigger\s*\{[^}]*height:\s*38px;[^}]*max-height:\s*38px;/s);
   assert.match(styles, /\.wheel-owner--identity > \.wheel-owner__trigger > \.wheel-owner__avatar\s*\{[^}]*width:\s*28px;[^}]*height:\s*28px;/s);
@@ -40,9 +41,9 @@ test("pointer target reader stays anchored to the wheel in regular and Presentat
 });
 
 test("Wheel segments open participant details in regular and Presentation modes", () => {
-  assert.match(wheelPage, /onSegmentSelect=\{interactive \? \(entry, trigger\) => props\.onParticipant\(entry, trigger\) : undefined\}/);
+  assert.match(compact(wheelPage), /onSegmentSelect=\{\s*interactive \? \(entry, trigger\) => props\.onParticipant\(entry, trigger\) : undefined\s*\}/);
   assert.doesNotMatch(wheelPage, /onSegmentSelect=\{!props\.presentation/);
-  assert.match(wheelPage, /\{participantDetail \? <ParticipantDetails/);
+  assert.match(compact(wheelPage), /\{participantDetail \? \( <ParticipantDetails/);
 });
 
 test("Presentation owner clears the navigator at the mobile breakpoint only", () => {
@@ -72,7 +73,7 @@ test("Wheel and Stage listings share one fixed card and artwork footprint", () =
 });
 
 test("Wheel and Stage gallery cards use circular owner avatars with hover and focus tooltips", () => {
-  assert.equal((directory.match(/<GalleryOwnerInfo /g) || []).length, 2);
+  assert.equal((compact(directory).match(/<GalleryOwnerInfo /g) || []).length, 2);
   assert.match(directory, /owner=\{wheel\.owner\}[\s\S]*itemType="Wheel"/);
   assert.match(directory, /owner=\{stage\.owner\}[\s\S]*itemType="Stage"/);
   assert.match(galleryOwner, /className="gallery-owner-info__trigger"/);

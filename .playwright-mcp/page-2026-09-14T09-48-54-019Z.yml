@@ -1,0 +1,78 @@
+- generic [ref=f4e1]:
+  - generic [ref=f4e303]:
+    - banner [ref=f4e304]:
+      - link "Exit presentation mode" [ref=f4e305] [cursor=pointer]:
+        - /url: /wheels/identity-acceptance
+        - generic [ref=f4e308]: Exit
+      - generic [ref=f4e309]: Wheel Identity Acceptance
+      - button "Fullscreen" [ref=f4e310]
+    - main [ref=f4e317]:
+      - heading "Wheel Identity Acceptance presentation" [level=1] [ref=f4e318]
+      - button "Wheel owner and access details for Wheel Identity Acceptance" [ref=f4e321] [cursor=pointer]:
+        - generic [ref=f4e323]: UC
+        - generic:
+          - generic [ref=f4e324]: Owned by
+          - strong [ref=f4e325]: Unavailable creator
+      - generic [ref=f4e327]:
+        - generic [ref=f4e329]:
+          - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f4e332] [cursor=pointer]'
+          - button "Start recorded official draw from wheel centre" [ref=f4e366] [cursor=pointer]
+        - generic:
+          - text: POINTER TARGET
+          - generic:
+            - strong: JIMTELLSYOU (RAID)
+          - generic: 30% chance · weight 3
+      - generic [ref=f4e336]:
+        - group "Draw mode" [ref=f4e338]:
+          - button "Practice spin" [ref=f4e340]: Practice
+          - button "Official draw" [pressed] [ref=f4e343]: Official
+        - button "Start recorded official draw" [ref=f4e367] [cursor=pointer]:
+          - generic [ref=f4e348]: SPIN WHEEL
+          - generic [ref=f4e349]: Server-selected · recorded
+        - generic [ref=f4e350]:
+          - button "Turn wheel sound off" [pressed] [ref=f4e351] [cursor=pointer]: Sound on
+          - button "Appearance" [ref=f4e355] [cursor=pointer]
+          - button "Fullscreen" [ref=f4e361] [cursor=pointer]
+      - status [ref=f4e364]: "Official result: JIMTELLSYOU (RAID)"
+    - status [ref=f4e365]: Loaded wheel Wheel Identity Acceptance
+  - dialog [ref=f4e421]:
+    - button "Close result" [active] [ref=f4e369]: ×
+    - banner [ref=f4e425]:
+      - generic [ref=f4e429]:
+        - paragraph [ref=f4e430]: OFFICIAL DRAW · RECORDED
+        - paragraph [ref=f4e431]: "Signal locked: JIMTELLSYOU (RAID)"
+    - region "Winner participant details" [ref=f4e432]:
+      - heading "JIMTELLSYOU" [level=2] [ref=f4e438]:
+        - generic [aria-hidden] [ref=f4e440]: (RAID)
+      - generic [ref=f4e441]:
+        - generic [ref=f4e442]:
+          - term [ref=f4e443]: Entry code
+          - definition [ref=f4e444]: A234502
+        - generic [ref=f4e445]:
+          - term [ref=f4e446]: Entry type
+          - definition [ref=f4e447]: Raid received / Automatic
+        - generic [ref=f4e448]:
+          - term [ref=f4e449]: Entry weight
+          - definition [ref=f4e450]: 3 of 10
+        - generic [ref=f4e451]:
+          - term [ref=f4e452]: Participant state
+          - definition [ref=f4e453]: Active
+        - generic [ref=f4e454]:
+          - term [ref=f4e455]: Segment share
+          - definition [ref=f4e456]: 30%
+        - generic [ref=f4e457]:
+          - term [ref=f4e458]: Eligible entries
+          - definition [ref=f4e459]: "8"
+      - generic [ref=f4e460]:
+        - img "Entrant appearance preview" [ref=f4e461]
+        - generic [ref=f4e462]:
+          - generic [ref=f4e463]: SLICE IDENTITY
+          - strong [ref=f4e464]: Wheel default
+          - generic [ref=f4e465]: No feature badges
+    - paragraph [ref=f4e374]: This result was selected and persisted by the Third Railify authority before the animation began.
+    - generic [ref=f4e466]:
+      - button "Close & create next" [ref=f4e467]
+      - button "Keep participant" [ref=f4e470]
+      - button "Hide winner" [ref=f4e473]
+      - button "Remove entry" [ref=f4e476]
+      - button "Remove matching type" [ref=f4e479]

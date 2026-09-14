@@ -1,0 +1,89 @@
+- generic [ref=f11e1]:
+  - generic [ref=f11e4]:
+    - banner [ref=f11e5]:
+      - link "Exit presentation mode" [ref=f11e6] [cursor=pointer]:
+        - /url: /wheels/identity-acceptance
+        - generic [ref=f11e9]: Exit
+      - generic [ref=f11e10]: Wheel Identity Acceptance
+      - button "Fullscreen" [ref=f11e11]
+    - main [ref=f11e18]:
+      - heading "Wheel Identity Acceptance presentation" [level=1] [ref=f11e19]
+      - button "Wheel owner and access details for Wheel Identity Acceptance" [ref=f11e22] [cursor=pointer]:
+        - generic [ref=f11e24]: UC
+        - generic:
+          - generic [ref=f11e25]: Owned by
+          - strong [ref=f11e26]: Unavailable creator
+      - navigation "Wheel gallery navigation" [ref=f11e27]:
+        - button "Previous wheel unavailable; start of gallery" [disabled] [ref=f11e28]:
+          - generic [ref=f11e29]: ← Previous
+          - generic [ref=f11e30]: Start of gallery
+        - paragraph [ref=f11e31]:
+          - strong [ref=f11e32]: 01 / 01
+        - button "Next wheel unavailable; end of gallery" [disabled] [ref=f11e33]:
+          - generic [ref=f11e34]: Next →
+          - generic [ref=f11e35]: End of gallery
+      - generic [ref=f11e37]:
+        - generic [ref=f11e39]:
+          - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f11e42] [cursor=pointer]'
+          - button "Start recorded official draw from wheel centre" [ref=f11e76] [cursor=pointer]
+        - generic:
+          - text: POINTER TARGET
+          - generic:
+            - strong: JIMTELLSYOU (RAID)
+          - generic: 30% chance · weight 3
+      - generic [ref=f11e46]:
+        - group "Draw mode" [ref=f11e48]:
+          - button "Practice spin" [ref=f11e50]: Practice
+          - button "Official draw" [pressed] [ref=f11e53]: Official
+        - button "Start recorded official draw" [ref=f11e77] [cursor=pointer]:
+          - generic [ref=f11e58]: SPIN WHEEL
+          - generic [ref=f11e59]: Server-selected · recorded
+        - generic [ref=f11e60]:
+          - button "Turn wheel sound off" [pressed] [ref=f11e61] [cursor=pointer]: Sound on
+          - button "Appearance" [ref=f11e65] [cursor=pointer]
+          - button "Fullscreen" [ref=f11e71] [cursor=pointer]
+      - status [ref=f11e74]: "Official result: JIMTELLSYOU (RAID)"
+    - status [ref=f11e75]: Loaded wheel Wheel Identity Acceptance
+  - generic [aria-hidden]:
+    - emphasis
+  - dialog [ref=f11e78]:
+    - button "Close result" [active] [ref=f11e79]: ×
+    - banner [ref=f11e80]:
+      - generic [ref=f11e84]:
+        - paragraph [ref=f11e85]: OFFICIAL DRAW · RECORDED
+        - paragraph [ref=f11e86]: "Signal locked: JIMTELLSYOU (RAID)"
+    - region "Winner participant details" [ref=f11e87]:
+      - heading "JIMTELLSYOU" [level=2] [ref=f11e93]:
+        - generic [aria-hidden] [ref=f11e95]: (RAID)
+      - generic [ref=f11e96]:
+        - generic [ref=f11e97]:
+          - term [ref=f11e98]: Entry code
+          - definition [ref=f11e99]: A234502
+        - generic [ref=f11e100]:
+          - term [ref=f11e101]: Entry type
+          - definition [ref=f11e102]: Raid received / Automatic
+        - generic [ref=f11e103]:
+          - term [ref=f11e104]: Entry weight
+          - definition [ref=f11e105]: 3 of 10
+        - generic [ref=f11e106]:
+          - term [ref=f11e107]: Participant state
+          - definition [ref=f11e108]: Active
+        - generic [ref=f11e109]:
+          - term [ref=f11e110]: Segment share
+          - definition [ref=f11e111]: 30%
+        - generic [ref=f11e112]:
+          - term [ref=f11e113]: Eligible entries
+          - definition [ref=f11e114]: "8"
+      - generic [ref=f11e115]:
+        - img "Entrant appearance preview" [ref=f11e116]
+        - generic [ref=f11e117]:
+          - generic [ref=f11e118]: SLICE IDENTITY
+          - strong [ref=f11e119]: Wheel default
+          - generic [ref=f11e120]: No feature badges
+    - paragraph [ref=f11e121]: This result was selected and persisted by the Third Railify authority before the animation began.
+    - generic [ref=f11e122]:
+      - button "Close & create next" [ref=f11e123]
+      - button "Keep participant" [ref=f11e126]
+      - button "Hide winner" [ref=f11e129]
+      - button "Remove entry" [ref=f11e132]
+      - button "Remove matching type" [ref=f11e135]

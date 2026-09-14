@@ -62,10 +62,10 @@ test("spin plans freeze the compiled mechanics snapshot and every visual mode sa
 });
 
 test("Stage Spin All snapshots one mechanics fetch outside its six-Wheel plan loop", async () => {
-  const source = await readFile(new URL("../src/pages/WheelStagePage.tsx", import.meta.url), "utf8"); const batch = source.slice(source.indexOf("const startSpinAll"), source.indexOf("const closeCombined"));
+  const source = await readFile(new URL("../src/pages/WheelStagePage.tsx", import.meta.url), "utf8"); const batch = source.slice(source.indexOf("const startSpinAll"), source.indexOf("const closeCombined")).replace(/\s+/g, " ");
   assert.ok(batch.indexOf("await getWheelMechanics()") < batch.indexOf("for (let index = 0; index < available.length"));
   assert.match(batch, /startAt = performance\.now\(\) \+ 48/); assert.match(batch, /mechanics:\s*mechanics\.mechanics,\s*mechanicsRevision:\s*mechanics\.revision/);
-  const canvas = await readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8"); assert.match(canvas, /spinRotationAtTime\(animation, elapsed\)/); assert.match(canvas, /progressAt\(animation\.compiledMechanics/); assert.match(canvas, /countSegmentBoundaryCrossings/); assert.doesNotMatch(canvas, /2\s*\*\s*u\s*-\s*u\s*\*\*\s*2/);
+  const canvas = (await readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8")).replace(/\s+/g, " "); assert.match(canvas, /spinRotationAtTime\(animation, elapsed\)/); assert.match(canvas, /progressAt\(\s*animation\.compiledMechanics/); assert.match(canvas, /countSegmentBoundaryCrossings/); assert.doesNotMatch(canvas, /2\s*\*\s*u\s*-\s*u\s*\*\*\s*2/);
 });
 
 test("compile result uses canonical Float64 tables", () => {

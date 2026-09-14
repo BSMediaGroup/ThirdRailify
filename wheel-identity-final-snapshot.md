@@ -1,0 +1,156 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e3]:
+    - link "Skip to content" [ref=f3e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - link "Third Railify home" [ref=f3e7] [cursor=pointer]:
+          - /url: /
+          - strong [ref=f3e10]: THIRD RAILIFY
+        - generic [ref=f3e12]:
+          - button "Open cart, 0 items" [ref=f3e13] [cursor=pointer]:
+            - generic [ref=f3e17]: "0"
+          - button "Acceptance Creator account menu" [ref=f3e19] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f3e20]: A
+          - button "Open navigation" [ref=f3e29] [cursor=pointer]
+    - main [ref=f3e32]:
+      - generic [ref=f3e33]:
+        - generic [ref=f3e36]:
+          - main [ref=f3e37]:
+            - navigation "Breadcrumb" [ref=f3e38]:
+              - link "Back to wheels" [ref=f3e39] [cursor=pointer]:
+                - /url: /wheels
+              - generic [ref=f3e42]: WHEELS / PRIVATE DRAW / Wheel Identity Acceptance
+            - generic [ref=f3e43]:
+              - generic [ref=f3e44]:
+                - paragraph [ref=f3e45]: THIRD RAILIFY WHEEL
+                - heading "Wheel Identity Acceptance" [level=1] [ref=f3e46]
+                - generic [ref=f3e47]
+              - generic [ref=f3e55]:
+                - button "Share wheel link" [ref=f3e56] [cursor=pointer]: Share
+                - link "Present" [ref=f3e62] [cursor=pointer]:
+                  - /url: /wheels/identity-acceptance/present
+                - link "Edit" [ref=f3e65] [cursor=pointer]:
+                  - /url: /wheels/identity-acceptance/edit
+            - generic [ref=f3e69]:
+              - generic [ref=f3e71]:
+                - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f3e74] [cursor=pointer]'
+                - button "Start recorded official draw from wheel centre" [ref=f3e226] [cursor=pointer]
+              - generic:
+                - text: POINTER TARGET
+                - generic
+                - generic: 30% chance · weight 3
+            - generic [ref=f3e78]:
+              - group "Draw mode" [ref=f3e80]:
+                - button "Practice spin" [ref=f3e82]: Practice
+                - button "Official draw" [pressed] [ref=f3e85]: Official
+              - button "Start recorded official draw" [ref=f3e227] [cursor=pointer]:
+                - generic [ref=f3e90]: SPIN WHEEL
+                - generic [ref=f3e91]: Server-selected · recorded
+              - generic [ref=f3e92]:
+                - button "Turn wheel sound off" [pressed] [ref=f3e93] [cursor=pointer]: Sound on
+                - button "Appearance" [ref=f3e97] [cursor=pointer]
+            - status [ref=f3e103]
+          - complementary [ref=f3e104]:
+            - generic [ref=f3e105]:
+              - paragraph [ref=f3e106]: DRAW STATUS
+              - generic [ref=f3e107]:
+                - generic [ref=f3e108]
+                - generic [ref=f3e111]
+                - generic [ref=f3e114]
+                - generic [ref=f3e117]
+                - generic [ref=f3e120]
+            - generic [ref=f3e123]:
+              - generic [ref=f3e124]:
+                - heading "Participants" [level=2] [ref=f3e125]
+                - generic [ref=f3e126]: "8"
+                - button "Manage participants" [ref=f3e127]: Manage
+              - list [ref=f3e130]:
+                - listitem [ref=f3e131]
+                - listitem [ref=f3e136]
+                - listitem [ref=f3e140]
+                - listitem [ref=f3e144]
+                - listitem [ref=f3e148]
+                - listitem [ref=f3e152]
+                - listitem [ref=f3e156]
+                - listitem [ref=f3e160]
+            - generic [ref=f3e164]:
+              - generic [ref=f3e165]:
+                - heading "Official history" [level=2] [ref=f3e166]
+                - generic [ref=f3e167]: "0"
+                - button "Activity" [ref=f3e168]
+              - paragraph [ref=f3e169]: No recorded official results.
+        - status [ref=f3e170]: Loaded wheel Wheel Identity Acceptance
+    - contentinfo [ref=f3e171]:
+      - generic [ref=f3e172]:
+        - generic [ref=f3e173]:
+          - strong [ref=f3e177]: THIRD RAILIFY
+          - paragraph [ref=f3e179]: A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.
+          - link "info@thirdrailify.com" [ref=f3e180] [cursor=pointer]:
+            - /url: mailto:info@thirdrailify.com
+        - generic [ref=f3e181]:
+          - heading "Explore" [level=2] [ref=f3e182]
+          - link "Watch" [ref=f3e183] [cursor=pointer]:
+            - /url: /watch
+          - link "Gaming" [ref=f3e184] [cursor=pointer]:
+            - /url: /gaming
+          - link "Wheels" [ref=f3e185] [cursor=pointer]:
+            - /url: /wheels
+          - link "Shawn" [ref=f3e186] [cursor=pointer]:
+            - /url: /shawn
+          - link "Gina" [ref=f3e187] [cursor=pointer]:
+            - /url: /gina
+          - link "Shop" [ref=f3e188] [cursor=pointer]:
+            - /url: /shop
+        - generic [ref=f3e189]:
+          - heading "Community" [level=2] [ref=f3e190]
+          - link "Friends" [ref=f3e191] [cursor=pointer]:
+            - /url: /friends
+          - link "Wild Goats" [ref=f3e192] [cursor=pointer]:
+            - /url: /goats
+          - link "Competition wheels" [ref=f3e193] [cursor=pointer]:
+            - /url: /wheels
+          - link "Live Polls" [ref=f3e194] [cursor=pointer]:
+            - /url: /polls
+          - link "VIP" [ref=f3e195] [cursor=pointer]:
+            - /url: /vip
+          - link "Donate" [ref=f3e196] [cursor=pointer]:
+            - /url: /donate
+        - generic [ref=f3e197]:
+          - heading "Policies" [level=2] [ref=f3e198]
+          - link "Terms" [ref=f3e199] [cursor=pointer]:
+            - /url: /terms
+          - link "Privacy" [ref=f3e200] [cursor=pointer]:
+            - /url: /privacy
+          - link "Refunds" [ref=f3e201] [cursor=pointer]:
+            - /url: /refunds
+          - link "Accessibility" [ref=f3e202] [cursor=pointer]:
+            - /url: /accessibility
+          - link "Policy Library" [ref=f3e203] [cursor=pointer]:
+            - /url: /policies
+      - generic [ref=f3e204]:
+        - generic [ref=f3e205]: Third Railify · 2026
+        - button "Privacy choices" [ref=f3e207]
+  - alertdialog [ref=f3e228]:
+    - banner [ref=f3e229]:
+      - generic [ref=f3e230]:
+        - paragraph [ref=f3e231]: OFFICIAL RESULT
+        - heading "Close & create next" [level=2] [ref=f3e232]
+        - paragraph [ref=f3e233]: This preserves the official winner, closes this Wheel into Past Wheels, and creates a private draft successor. Visual settings, media, access, and disabled automation definitions are copied.
+      - button "Cancel" [ref=f3e234]: ×
+    - generic [ref=f3e235]:
+      - generic [ref=f3e236]:
+        - generic [ref=f3e237]: Successor title
+        - textbox "Successor title" [ref=f3e238]: Wheel Identity Acceptance - Next
+      - generic [ref=f3e239]:
+        - checkbox "Copy current participants Off by default. When enabled, names, weights, state, media, style, and appearance are copied with fresh entry IDs and entrant codes." [ref=f3e240]
+        - generic [ref=f3e241]:
+          - generic [ref=f3e242]: Copy current participants
+          - generic [ref=f3e243]: Off by default. When enabled, names, weights, state, media, style, and appearance are copied with fresh entry IDs and entrant codes.
+      - generic [ref=f3e244]:
+        - generic [ref=f3e245]: Type CLOSE to confirm
+        - textbox "Type CLOSE to confirm" [ref=f3e246]
+      - paragraph [ref=f3e247]: "Not copied: results, activity receipts, counters, source bindings, roster contributions, or active automation state."
+    - contentinfo [ref=f3e248]:
+      - button "Cancel" [ref=f3e249]
+      - button "Close & create private draft" [disabled] [ref=f3e250]

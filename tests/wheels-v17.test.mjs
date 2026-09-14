@@ -12,6 +12,7 @@ import {
 } from "../src/wheels/celebrationProfiles.mjs";
 import {
   THIRD_RAIL_GOLD_CONFIG,
+  WHEEL_FILE_FORMAT_VERSION,
   createPortableWheel,
   parseWheelImport,
   serializePortableWheel,
@@ -113,7 +114,7 @@ test("custom config survives canonical V2 portability and legacy files default f
     entries,
   });
   const parsed = await parseWheelImport(serializePortableWheel(document));
-  assert.equal(document.formatVersion, 2);
+  assert.equal(document.formatVersion, WHEEL_FILE_FORMAT_VERSION);
   assert.equal(parsed.proposals[0].config.themePreset, "custom");
   assert.deepEqual(parsed.proposals[0].config.palette, ["#112233"]);
   assert.equal(parsed.proposals[0].config.pointerAccent, "#ABCDEF");

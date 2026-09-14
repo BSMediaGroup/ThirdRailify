@@ -1,6 +1,7 @@
 import { entryAngles } from "./engine.mjs";
 import { coverImageGeometry, patternDefinition } from "./segmentPatternGeometry.mjs";
 import { resolvedEntryStyle } from "./segmentStyles.mjs";
+import { entryDisplayLabel } from "../lib/entrant-label.mjs";
 
 export const WHEEL_LABEL_FONT_FAMILY = '"Geist Mono", monospace';
 export const WHEEL_LABEL_FONT_WEIGHT = 700;
@@ -82,7 +83,7 @@ export function segmentRenderPlan(segment, index, geometry, config, measureLabel
   const span = end - start;
   const radialAngle = midpoint - Math.PI / 2;
   const style = resolvedEntryStyle(entry, config);
-  const label = truncateLabel(entry.label, geometry.count);
+  const label = truncateLabel(entryDisplayLabel(entry, config.showEntrySuffix !== false), geometry.count);
   const maxFontSize = Math.max(9, Math.min(18, geometry.size / (geometry.count > 20 ? 42 : 31)));
   const minFontSize = Math.min(9, maxFontSize);
   const labelRadius = geometry.radius - geometry.size * .055;

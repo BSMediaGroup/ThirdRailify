@@ -4,8 +4,33 @@ export type WheelEntry = {
   identity?: import("../lib/entrant-identity.mjs").EntryIdentity | null;
   appearance?: import("../lib/entrant-appearance.mjs").Appearance | null;
   id: string;
+  code?: string | null;
   label: string;
-  avatarUrl?: string | null; customAvatarUrl?: string | null; sourceAvatarUrl?: string | null;
+  suffix?: string | null;
+  provenance?: {
+    origin:
+      | "manual"
+      | "automation"
+      | "roster"
+      | "imported"
+      | "template_copy"
+      | "legacy";
+    ruleId?: string | null;
+    ruleName?: string | null;
+    sourceBindings?: Array<{
+      provider: string;
+      sourceScope: string;
+      actorKey: string;
+      actorLabel: string;
+      entryType: string;
+      accumulationGroup: string;
+      originRuleId?: string | null;
+      originRuleName?: string | null;
+    }>;
+  };
+  avatarUrl?: string | null;
+  customAvatarUrl?: string | null;
+  sourceAvatarUrl?: string | null;
   order: number;
   weight: number;
   colour: string | null;
@@ -35,9 +60,22 @@ export type WheelConfig = {
   labelContrast: "light" | "dark";
   spinDurationMs: number;
   tickingSoundEnabled: boolean;
-  spinSoundPreset?: "classic-tick" | "relay-click" | "arc-pulse" | "mechanical-ratchet" | "soft-tick" | "silent";
+  spinSoundPreset?:
+    | "classic-tick"
+    | "relay-click"
+    | "arc-pulse"
+    | "mechanical-ratchet"
+    | "soft-tick"
+    | "silent";
   winnerSoundEnabled: boolean;
-  winnerSoundPreset?: "gold-rise" | "broadcast-hit" | "voltage-chime" | "crimson-impact" | "synth-fanfare" | "short-burst" | "silent";
+  winnerSoundPreset?:
+    | "gold-rise"
+    | "broadcast-hit"
+    | "voltage-chime"
+    | "crimson-impact"
+    | "synth-fanfare"
+    | "short-burst"
+    | "silent";
   celebrationEnabled: boolean;
   confettiEnabled: boolean;
   fireworksEnabled: boolean;
@@ -50,6 +88,7 @@ export type WheelConfig = {
   backgroundOverlayIntensity: number;
   winnerMessageTemplate: string;
   publicHistoryVisible: boolean;
+  showEntrySuffix?: boolean;
 };
 export type WheelMediaAsset = {
   id: string;
@@ -70,6 +109,7 @@ export type OfficialResult = {
   winningEntryId: string;
   winningLabel: string;
   winningWeight: number;
+  winningEntry?: WheelEntry | null;
   wheelRevision: number;
   snapshotHash: string;
   createdAt: string;
@@ -82,6 +122,7 @@ export type WheelAccess = {
   canSpinOfficially: boolean;
   editingLocked: boolean;
   officialSpinLocked: boolean;
+  closed?: boolean;
   revision?: number;
 };
 export type WheelOwner = {
@@ -97,11 +138,18 @@ export type Wheel = {
   owner: WheelOwner;
   createdAt: string;
   updatedAt: string;
+  closedAt?: string | null;
+  decidedResultId?: string | null;
+  successorWheelId?: string | null;
   participantCount: number;
   weighted: boolean;
   entries: WheelEntry[];
   config: WheelConfig;
-  media: { background: WheelMediaAsset | null; centre: WheelMediaAsset | null; segmentFills?: WheelMediaAsset[] };
+  media: {
+    background: WheelMediaAsset | null;
+    centre: WheelMediaAsset | null;
+    segmentFills?: WheelMediaAsset[];
+  };
   demoEnabled: boolean;
   officialEnabled: boolean;
   latestOfficialResult: OfficialResult | null;
@@ -121,12 +169,67 @@ export type WheelSummary = {
   latestOfficialAt: string | null;
   updatedAt?: string | null;
   directoryOrder?: number;
+  closedAt?: string | null;
+  successorWheelId?: string | null;
   owner?: WheelOwner;
 };
+export type WheelActivityItem = {
+  id: string;
+  createdAt: string;
+  eventType: string;
+  entrant: { code: string | null; label: string; suffix: string | null } | null;
+  awardDelta: number;
+  outcome: string;
+  reason: string | null;
+};
 export type StageWheelCapability = "Demo" | "Official" | "Edit";
-export type AccessibleWheelSummary = WheelSummary & { visibility: "public" | "private"; capability: StageWheelCapability; canEdit: boolean; canSpinOfficially: boolean };
-export type StageWheel = { position: number; reference?: string; unavailable: boolean; wheel: Wheel | null; access: WheelAccess | null };
-export type Stage = { slug: string; title: string; description: string | null; visibility: "public" | "private"; lifecycle: "active" | "archived"; revision?: number; updatedAt: string; wheels: StageWheel[] };
-export type StageAccess = { isOwner: boolean; isMasterAdmin: boolean; canEdit: boolean; revision?: number };
-export type StageSummary = { type: "stage"; slug: string; title: string; description: string | null; owner?: WheelOwner; wheelCount: number; visibility: "public"; wheels: Array<WheelSummary & { position: number }>; updatedAt: string };
-export type OwnedStageSummary = { slug: string; title: string; description: string | null; visibility: "public" | "private"; lifecycle: "active" | "archived"; wheelCount: number; revision: number; updatedAt: string };
+export type AccessibleWheelSummary = WheelSummary & {
+  visibility: "public" | "private";
+  capability: StageWheelCapability;
+  canEdit: boolean;
+  canSpinOfficially: boolean;
+};
+export type StageWheel = {
+  position: number;
+  reference?: string;
+  unavailable: boolean;
+  wheel: Wheel | null;
+  access: WheelAccess | null;
+};
+export type Stage = {
+  slug: string;
+  title: string;
+  description: string | null;
+  visibility: "public" | "private";
+  lifecycle: "active" | "archived";
+  revision?: number;
+  updatedAt: string;
+  wheels: StageWheel[];
+};
+export type StageAccess = {
+  isOwner: boolean;
+  isMasterAdmin: boolean;
+  canEdit: boolean;
+  revision?: number;
+};
+export type StageSummary = {
+  type: "stage";
+  slug: string;
+  title: string;
+  description: string | null;
+  owner?: WheelOwner;
+  wheelCount: number;
+  visibility: "public";
+  wheels: Array<WheelSummary & { position: number }>;
+  updatedAt: string;
+};
+export type OwnedStageSummary = {
+  slug: string;
+  title: string;
+  description: string | null;
+  visibility: "public" | "private";
+  lifecycle: "active" | "archived";
+  wheelCount: number;
+  revision: number;
+  updatedAt: string;
+};

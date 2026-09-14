@@ -1,0 +1,11 @@
+[     607ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/chunk-TYILIMWK.js?v=99120423:21550
+[     666ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=2f427066:4392
+[     666ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://127.0.0.1:5173/node_modules/.vite/deps/react-router-dom.js?v=2f427066:4392
+[    8342ms] IndexSizeError: Failed to execute 'arc' on 'CanvasRenderingContext2D': The radius provided (-0.06) is negative.
+    at drawMechanicalOverlay (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:1098:11)
+    at rebuild (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:317:7)
+    at resize (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:388:26)
+[    8344ms] IndexSizeError: Failed to execute 'arc' on 'CanvasRenderingContext2D': The radius provided (-0.06) is negative.
+    at drawMechanicalOverlay (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:1098:11)
+    at rebuild (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:317:7)
+    at ResizeObserver.resize (http://127.0.0.1:5173/src/wheels/WheelCanvas.tsx:388:26)

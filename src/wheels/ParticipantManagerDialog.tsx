@@ -1,6 +1,6 @@
-import { entryIdentityLabel } from '../lib/entrant-identity.mjs';
+import { entryIdentityLabel } from "../lib/entrant-identity.mjs";
 import { withLegacyEntryStyle } from "./segmentStyles.mjs";
-import { EntrantAppearanceControls } from '../components/EntrantAppearanceControls';
+import { EntrantAppearanceControls } from "../components/EntrantAppearanceControls";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { EntrantAvatar } from "./EntrantAvatar";
@@ -11,58 +11,829 @@ import { secureShuffle } from "./engine.mjs";
 import type { Wheel, WheelEntry } from "./types";
 import { useModalDialog } from "./dialog";
 import { SegmentStyleDialog, SegmentStylePreview } from "./SegmentStyleDialog";
-import { normalizePaletteStyles, resolvedEntryStyle, styleForEntry, type SegmentStyle } from "./segmentStyles.mjs";
+import {
+  normalizePaletteStyles,
+  resolvedEntryStyle,
+  styleForEntry,
+  type SegmentStyle,
+} from "./segmentStyles.mjs";
 
-export function ParticipantManagerDialog({ wheel, csrfToken, onClose, onSaved }: { wheel: Wheel; csrfToken: string; onClose: () => void; onSaved: (wheel: Wheel) => void }) {
+export function ParticipantManagerDialog({
+  wheel,
+  csrfToken,
+  onClose,
+  onSaved,
+}: {
+  wheel: Wheel;
+  csrfToken: string;
+  onClose: () => void;
+  onSaved: (wheel: Wheel) => void;
+}) {
   const [avatarEntryId, setAvatarEntryId] = useState<string | null>(null);
-  const [entries, setEntries] = useState(() => wheel.entries.map((entry) => ({ ...entry })));
-  const baseline = useRef(JSON.stringify(wheel.entries)); const [quick, setQuick] = useState(""); const [bulk, setBulk] = useState(""); const [search, setSearch] = useState(""); const [sort, setSort] = useState<"order" | "label" | "weight">("order"); const [busy, setBusy] = useState(false); const [error, setError] = useState(""); const [notice, setNotice] = useState(""); const [confirmClose, setConfirmClose] = useState(false); const [confirmClear, setConfirmClear] = useState(false); const root = useRef<HTMLDivElement>(null); const close = useRef<HTMLButtonElement>(null); const restoringHistory = useRef(false);
-  const [styleEntryId, setStyleEntryId] = useState<string | null>(null); const [stagedFiles, setStagedFiles] = useState<Map<string, File>>(() => new Map()); const previewUrls = useObjectUrlMap(stagedFiles);
-  const segmentMedia = useMemo(() => [...(wheel.media.segmentFills || []), ...[...stagedFiles].map(([id, file]) => ({ id, purpose: "segment_fill" as const, url: previewUrls[id] || "", contentType: file.type, byteSize: file.size, width: null, height: null, sha256: "", createdAt: "", fileName: file.name }))], [previewUrls, stagedFiles, wheel.media.segmentFills]);
-  const dirty = JSON.stringify(entries) !== baseline.current; const activeCount = entries.filter((entry) => entry.state === "active").length;
-  const duplicates = useMemo(() => { const counts = new Map<string, number>(); entries.forEach((entry) => counts.set(entry.label.toLowerCase(), (counts.get(entry.label.toLowerCase()) || 0) + 1)); return new Set([...counts].filter(([, count]) => count > 1).map(([label]) => label)); }, [entries]);
-  const visible = useMemo(() => { const filtered = entries.filter((entry) => entry.label.toLowerCase().includes(search.toLowerCase())); if (sort === "label") return [...filtered].sort((a, b) => a.label.localeCompare(b.label)); if (sort === "weight") return [...filtered].sort((a, b) => b.weight - a.weight || a.order - b.order); return filtered; }, [entries, search, sort]);
-  const requestClose = useCallback(() => { if (dirty) setConfirmClose(true); else onClose(); }, [dirty, onClose]); useModalDialog(root, close, requestClose, !styleEntryId);
-  useEffect(() => { const unload = (event: BeforeUnloadEvent) => { if (dirty) event.preventDefault(); }; const pop = () => { if (restoringHistory.current) { restoringHistory.current = false; return; } if (dirty) { restoringHistory.current = true; window.history.forward(); setConfirmClose(true); } }; window.addEventListener("beforeunload", unload); window.addEventListener("popstate", pop); return () => { window.removeEventListener("beforeunload", unload); window.removeEventListener("popstate", pop); }; }, [dirty]);
-  const normalize = (list: WheelEntry[]) => list.map((entry, order) => ({ ...entry, order }));
-  const add = (label: string, weight = 1, colour: string | null = null) => { const clean = label.trim().replace(/\s+/g, " ").slice(0, 120); if (!clean || entries.length >= 1000) return; setEntries((current) => [...current, { id: crypto.randomUUID(), identity: { version: 1, type: 'regular', origin: 'manual' }, label: clean, order: current.length, weight: Math.max(1, Math.min(100000, Math.trunc(weight) || 1)), colour: /^#[0-9a-f]{6}$/i.test(colour || "") ? colour!.toUpperCase() : null, style: null, state: "active" }]); };
-  const patch = (id: string, value: Partial<WheelEntry>) => setEntries((current) => normalize(current.map((entry) => entry.id === id ? { ...entry, ...value } : entry)));
-  const uploadAvatar = async (id: string, file: File) => {
-    if (file.size > 2 * 1024 * 1024) { setError("Choose an avatar image smaller than 2 MB."); return; }
-    setBusy(true); setError("");
-    try { const result = await uploadWheelMedia(wheel.slug, "avatar", file, csrfToken, file.name); const url = new URL(result.asset.url, window.location.origin).href; patch(id, { customAvatarUrl: url, avatarUrl: url }); setNotice("Image uploaded. Save participants to apply it."); }
-    catch (reason) { setError(reason instanceof Error ? reason.message : "Image upload failed."); }
-    finally { setBusy(false); }
+  const [entries, setEntries] = useState(() =>
+    wheel.entries.map((entry) => ({ ...entry })),
+  );
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [sourceFilter, setSourceFilter] = useState("all");
+  const [stateFilter, setStateFilter] = useState("all");
+  const baseline = useRef(JSON.stringify(wheel.entries));
+  const [quick, setQuick] = useState("");
+  const [bulk, setBulk] = useState("");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"order" | "label" | "weight">("order");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const close = useRef<HTMLButtonElement>(null);
+  const restoringHistory = useRef(false);
+  const [styleEntryId, setStyleEntryId] = useState<string | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<Map<string, File>>(
+    () => new Map(),
+  );
+  const previewUrls = useObjectUrlMap(stagedFiles);
+  const segmentMedia = useMemo(
+    () => [
+      ...(wheel.media.segmentFills || []),
+      ...[...stagedFiles].map(([id, file]) => ({
+        id,
+        purpose: "segment_fill" as const,
+        url: previewUrls[id] || "",
+        contentType: file.type,
+        byteSize: file.size,
+        width: null,
+        height: null,
+        sha256: "",
+        createdAt: "",
+        fileName: file.name,
+      })),
+    ],
+    [previewUrls, stagedFiles, wheel.media.segmentFills],
+  );
+  const dirty = JSON.stringify(entries) !== baseline.current;
+  const activeCount = entries.filter(
+    (entry) => entry.state === "active",
+  ).length;
+  const duplicates = useMemo(() => {
+    const counts = new Map<string, number>();
+    entries.forEach((entry) =>
+      counts.set(
+        entry.label.toLowerCase(),
+        (counts.get(entry.label.toLowerCase()) || 0) + 1,
+      ),
+    );
+    return new Set(
+      [...counts].filter(([, count]) => count > 1).map(([label]) => label),
+    );
+  }, [entries]);
+  const visible = useMemo(() => {
+    const query = search.toLowerCase();
+    const filtered = entries.filter(
+      (entry) =>
+        (!query ||
+          entry.label.toLowerCase().includes(query) ||
+          entry.code?.toLowerCase().includes(query)) &&
+        (typeFilter === "all" || entry.identity?.type === typeFilter) &&
+        (sourceFilter === "all" || entry.provenance?.origin === sourceFilter) &&
+        (stateFilter === "all" || entry.state === stateFilter),
+    );
+    if (sort === "label")
+      return [...filtered].sort((a, b) => a.label.localeCompare(b.label));
+    if (sort === "weight")
+      return [...filtered].sort(
+        (a, b) => b.weight - a.weight || a.order - b.order,
+      );
+    return filtered;
+  }, [entries, search, sort, sourceFilter, stateFilter, typeFilter]);
+  const requestClose = useCallback(() => {
+    if (dirty) setConfirmClose(true);
+    else onClose();
+  }, [dirty, onClose]);
+  useModalDialog(root, close, requestClose, !styleEntryId);
+  useEffect(() => {
+    const unload = (event: BeforeUnloadEvent) => {
+      if (dirty) event.preventDefault();
+    };
+    const pop = () => {
+      if (restoringHistory.current) {
+        restoringHistory.current = false;
+        return;
+      }
+      if (dirty) {
+        restoringHistory.current = true;
+        window.history.forward();
+        setConfirmClose(true);
+      }
+    };
+    window.addEventListener("beforeunload", unload);
+    window.addEventListener("popstate", pop);
+    return () => {
+      window.removeEventListener("beforeunload", unload);
+      window.removeEventListener("popstate", pop);
+    };
+  }, [dirty]);
+  const normalize = (list: WheelEntry[]) =>
+    list.map((entry, order) => ({ ...entry, order }));
+  const add = (label: string, weight = 1, colour: string | null = null) => {
+    const clean = label.trim().replace(/\s+/g, " ").slice(0, 120);
+    if (!clean || entries.length >= 1000) return;
+    setEntries((current) => [
+      ...current,
+      {
+        id: crypto.randomUUID(),
+        identity: { version: 1, type: "regular", origin: "manual" },
+        label: clean,
+        order: current.length,
+        weight: Math.max(1, Math.min(100000, Math.trunc(weight) || 1)),
+        colour: /^#[0-9a-f]{6}$/i.test(colour || "")
+          ? colour!.toUpperCase()
+          : null,
+        style: null,
+        state: "active",
+      },
+    ]);
   };
-  const move = (id: string, delta: number) => setEntries((current) => { const index = current.findIndex((entry) => entry.id === id); const target = index + delta; if (index < 0 || target < 0 || target >= current.length) return current; const next = [...current]; [next[index], next[target]] = [next[target], next[index]]; return normalize(next); });
-  const applyBulk = () => { for (const line of bulk.split(/\r?\n/).map((value) => value.trim()).filter(Boolean).slice(0, Math.max(0, 1000 - entries.length))) { const [label, weight, colour] = line.split(",").map((value) => value.trim()); add(label, Number(weight || 1), colour || null); } setBulk(""); };
-  const save = async () => { if (!wheel.revision) return; setBusy(true); setError(""); try { const replacements = new Map<string, string>(); const referenced = new Set(entries.filter((entry) => entry.style?.mode === "image").map((entry) => (entry.style as Extract<SegmentStyle, { mode: "image" }>).imageAssetId)); for (const [id, file] of stagedFiles) if (referenced.has(id)) { const uploaded = await uploadWheelMedia(wheel.slug, "segment-fill", file, csrfToken, file.name); replacements.set(id, uploaded.asset.id); } const savedEntries = entries.map((entry) => entry.style?.mode === "image" && replacements.has(entry.style.imageAssetId) ? { ...entry, style: { ...entry.style, imageAssetId: replacements.get(entry.style.imageAssetId)! } } : entry); const payload = await saveWheel(wheel.slug, { title: wheel.title, description: wheel.description, visibility: wheel.visibility, lifecycle: wheel.lifecycle, config: wheel.config, entries: savedEntries, revision: wheel.revision }, csrfToken); baseline.current = JSON.stringify(payload.wheel.entries); setEntries(payload.wheel.entries); setStagedFiles(new Map()); onSaved(payload.wheel); setNotice("Authoritative participant revision saved."); } catch (reason) { setError(reason instanceof Error ? reason.message : "Participants could not be saved."); } finally { setBusy(false); } };
+  const patch = (id: string, value: Partial<WheelEntry>) =>
+    setEntries((current) =>
+      normalize(
+        current.map((entry) =>
+          entry.id === id ? { ...entry, ...value } : entry,
+        ),
+      ),
+    );
+  const uploadAvatar = async (id: string, file: File) => {
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Choose an avatar image smaller than 2 MB.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const result = await uploadWheelMedia(
+        wheel.slug,
+        "avatar",
+        file,
+        csrfToken,
+        file.name,
+      );
+      const url = new URL(result.asset.url, window.location.origin).href;
+      patch(id, { customAvatarUrl: url, avatarUrl: url });
+      setNotice("Image uploaded. Save participants to apply it.");
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : "Image upload failed.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+  const move = (id: string, delta: number) =>
+    setEntries((current) => {
+      const index = current.findIndex((entry) => entry.id === id);
+      const target = index + delta;
+      if (index < 0 || target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return normalize(next);
+    });
+  const applyBulk = () => {
+    for (const line of bulk
+      .split(/\r?\n/)
+      .map((value) => value.trim())
+      .filter(Boolean)
+      .slice(0, Math.max(0, 1000 - entries.length))) {
+      const [label, weight, colour] = line
+        .split(",")
+        .map((value) => value.trim());
+      add(label, Number(weight || 1), colour || null);
+    }
+    setBulk("");
+  };
+  const save = async () => {
+    if (!wheel.revision) return;
+    setBusy(true);
+    setError("");
+    try {
+      const replacements = new Map<string, string>();
+      const referenced = new Set(
+        entries
+          .filter((entry) => entry.style?.mode === "image")
+          .map(
+            (entry) =>
+              (entry.style as Extract<SegmentStyle, { mode: "image" }>)
+                .imageAssetId,
+          ),
+      );
+      for (const [id, file] of stagedFiles)
+        if (referenced.has(id)) {
+          const uploaded = await uploadWheelMedia(
+            wheel.slug,
+            "segment-fill",
+            file,
+            csrfToken,
+            file.name,
+          );
+          replacements.set(id, uploaded.asset.id);
+        }
+      const savedEntries = entries.map((entry) =>
+        entry.style?.mode === "image" &&
+        replacements.has(entry.style.imageAssetId)
+          ? {
+              ...entry,
+              style: {
+                ...entry.style,
+                imageAssetId: replacements.get(entry.style.imageAssetId)!,
+              },
+            }
+          : entry,
+      );
+      const payload = await saveWheel(
+        wheel.slug,
+        {
+          title: wheel.title,
+          description: wheel.description,
+          visibility: wheel.visibility,
+          lifecycle: wheel.lifecycle,
+          config: wheel.config,
+          entries: savedEntries,
+          revision: wheel.revision,
+        },
+        csrfToken,
+      );
+      baseline.current = JSON.stringify(payload.wheel.entries);
+      setEntries(payload.wheel.entries);
+      setStagedFiles(new Map());
+      onSaved(payload.wheel);
+      setNotice("Authoritative participant revision saved.");
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Participants could not be saved.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
   const [featureEntryId, setFeatureEntryId] = useState<string | null>(null);
-  const paletteStyles = normalizePaletteStyles(wheel.config.paletteStyles, wheel.config.palette);
+  const paletteStyles = normalizePaletteStyles(
+    wheel.config.paletteStyles,
+    wheel.config.palette,
+  );
 
-  return createPortal(<div className="wheel-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !busy) requestClose(); }}><div ref={root} className="wheel-modal participant-manager" role="dialog" aria-modal="true" aria-labelledby="participant-manager-title">
-    <header className="wheel-modal__header"><div><p className="eyebrow">WHEEL CONTROL / PARTICIPANTS</p><h2 id="participant-manager-title">Manage participants</h2><span>{activeCount} active · {entries.length} / 1000 entries{dirty ? " · Unsaved changes" : ""}</span></div><button ref={close} type="button" onClick={requestClose} disabled={busy} aria-label="Close participant manager"><CloseIcon /></button></header>
-    <div className="participant-manager__body"><div className="privacy-warning"><strong>Public content warning</strong><p>Entries are publicly visible. Do not add email addresses, payment details, addresses, donation data, or other sensitive information.</p></div>
-      <div className="quick-add"><label><span>Quick-add participant</span><input value={quick} maxLength={120} onChange={(event) => setQuick(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); add(quick); setQuick(""); } }} /></label><button type="button" onClick={() => { add(quick); setQuick(""); }} disabled={!quick.trim() || entries.length >= 1000}>Add</button></div>
-      <details className="bulk-add"><summary>Bulk paste / CSV-like lines</summary><p>One participant per line. Optional: <code>Name, weight, #RRGGBB</code>.</p><textarea value={bulk} rows={5} onChange={(event) => setBulk(event.target.value)} /><button type="button" onClick={applyBulk} disabled={!bulk.trim() || entries.length >= 1000}>Add lines</button></details>
-      <div className="participant-tools"><label><span className="sr-only">Search participants</span><input type="search" value={search} placeholder="Search participants" onChange={(event) => setSearch(event.target.value)} /></label><label><span className="sr-only">Sort participants</span><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="order">Configured order</option><option value="label">Label A–Z</option><option value="weight">Highest weight</option></select></label><button type="button" onClick={() => setEntries((current) => normalize([...current].sort((a, b) => a.label.localeCompare(b.label))))}>Sort A–Z</button><button type="button" onClick={() => setEntries((current) => normalize([...current].reverse()))}>Reverse</button><button type="button" onClick={() => setEntries((current) => normalize(secureShuffle(current)))}>Secure shuffle</button><button type="button" className="danger" onClick={() => setConfirmClear(true)} disabled={!entries.length}>Clear all</button></div>
-      {confirmClear ? <div className="participant-manager__confirm" role="alert"><span>Clear every participant entry?</span><button type="button" onClick={() => setConfirmClear(false)}>Keep entries</button><button type="button" className="danger" onClick={() => { setEntries([]); setConfirmClear(false); }}>Clear all</button></div> : null}
-      <div className="participant-rows">{visible.map((entry) => <div className={`participant-row${duplicates.has(entry.label.toLowerCase()) ? " has-duplicate" : ""}`} key={entry.id}>
-        <button type="button" className="participant-portrait" aria-label={`Manage avatar for ${entry.label}`} onClick={() => setAvatarEntryId(avatarEntryId === entry.id ? null : entry.id)}><EntrantAvatar url={entry.avatarUrl} /><span>Edit image</span></button><div className="participant-row__order"><button type="button" onClick={() => move(entry.id, -1)} aria-label={`Move ${entry.label} up`}>↑</button><button type="button" onClick={() => move(entry.id, 1)} aria-label={`Move ${entry.label} down`}>↓</button><span>{entry.order + 1}</span></div>
-        <label><span>Label</span><small>{entryIdentityLabel(entry.identity)}</small><input aria-label="Label" value={entry.label} maxLength={120} onChange={(event) => patch(entry.id, { label: event.target.value })} />{duplicates.has(entry.label.toLowerCase()) ? <em>Duplicate label; separate entry retained.</em> : null}</label>
-        {avatarEntryId === entry.id ? <div className="participant-avatar-field"><div><strong>Participant image</strong><p>Use the API image by default, or replace it with a custom image. Unavailable images show the default icon.</p></div><label className="participant-avatar-upload"><span>Upload custom avatar</span><input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAvatar(entry.id, file); event.target.value = ""; }} /><small>PNG, JPEG or WebP. Up to 2 MB; maximum 2048 by 2048 pixels.</small></label><label><span>Custom avatar image URL (optional)</span><input type="url" placeholder="https://example.com/avatar.jpg" maxLength={2048} value={entry.customAvatarUrl ?? (!entry.sourceAvatarUrl ? entry.avatarUrl || "" : "")} onChange={(event) => patch(entry.id, { customAvatarUrl: event.target.value || null, avatarUrl: event.target.value || entry.sourceAvatarUrl || null })} /></label><button type="button" onClick={() => patch(entry.id, { customAvatarUrl: null, avatarUrl: entry.sourceAvatarUrl || null })}>Use API image</button><small>{entry.sourceAvatarUrl ? "API image available" : "No API image available ? using fallback when no custom image is set."}</small></div> : null}
-        <label><span>Weight</span><input type="number" min={1} max={100000} value={entry.weight} onChange={(event) => patch(entry.id, { weight: Math.max(1, Math.min(100000, Number(event.target.value) || 1)) })} /></label>
-        <button type="button" aria-expanded={featureEntryId === entry.id} onClick={() => setFeatureEntryId(featureEntryId === entry.id ? null : entry.id)}>Features</button>
+  return createPortal(
+    <div
+      className="wheel-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) requestClose();
+      }}
+    >
+      <div
+        ref={root}
+        className="wheel-modal participant-manager"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="participant-manager-title"
+      >
+        <header className="wheel-modal__header">
+          <div>
+            <p className="eyebrow">WHEEL CONTROL / PARTICIPANTS</p>
+            <h2 id="participant-manager-title">Manage participants</h2>
+            <span>
+              {activeCount} active · {entries.length} / 1000 entries
+              {dirty ? " · Unsaved changes" : ""}
+            </span>
+          </div>
+          <button
+            ref={close}
+            type="button"
+            onClick={requestClose}
+            disabled={busy}
+            aria-label="Close participant manager"
+          >
+            <CloseIcon />
+          </button>
+        </header>
+        <div className="participant-manager__body">
+          <div className="privacy-warning">
+            <strong>Public content warning</strong>
+            <p>
+              Entries are publicly visible. Do not add email addresses, payment
+              details, addresses, donation data, or other sensitive information.
+            </p>
+          </div>
+          <div className="quick-add">
+            <label>
+              <span>Quick-add participant</span>
+              <input
+                value={quick}
+                maxLength={120}
+                onChange={(event) => setQuick(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    add(quick);
+                    setQuick("");
+                  }
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                add(quick);
+                setQuick("");
+              }}
+              disabled={!quick.trim() || entries.length >= 1000}
+            >
+              Add
+            </button>
+          </div>
+          <details className="bulk-add">
+            <summary>Bulk paste / CSV-like lines</summary>
+            <p>
+              One participant per line. Optional:{" "}
+              <code>Name, weight, #RRGGBB</code>.
+            </p>
+            <textarea
+              value={bulk}
+              rows={5}
+              onChange={(event) => setBulk(event.target.value)}
+            />
+            <button
+              type="button"
+              onClick={applyBulk}
+              disabled={!bulk.trim() || entries.length >= 1000}
+            >
+              Add lines
+            </button>
+          </details>
+          <div className="participant-tools">
+            <label>
+              <span className="sr-only">Search participants</span>
+              <input
+                type="search"
+                value={search}
+                placeholder="Search participants"
+                onChange={(event) => setSearch(event.target.value)}
+              />
+            </label>
+            <label>
+              <span className="sr-only">Sort participants</span>
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value as typeof sort)}
+              >
+                <option value="order">Configured order</option>
+                <option value="label">Label A–Z</option>
+                <option value="weight">Highest weight</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() =>
+                setEntries((current) =>
+                  normalize(
+                    [...current].sort((a, b) => a.label.localeCompare(b.label)),
+                  ),
+                )
+              }
+            >
+              Sort A–Z
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setEntries((current) => normalize([...current].reverse()))
+              }
+            >
+              Reverse
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setEntries((current) => normalize(secureShuffle(current)))
+              }
+            >
+              Secure shuffle
+            </button>
+            <button
+              type="button"
+              className="danger"
+              onClick={() => setConfirmClear(true)}
+              disabled={!entries.length}
+            >
+              Clear all
+            </button>
+          </div>
+          <div className="participant-filters" aria-label="Participant filters">
+            <label>
+              <span>Entry type</span>
+              <select
+                value={typeFilter}
+                onChange={(event) => setTypeFilter(event.target.value)}
+              >
+                <option value="all">All types</option>
+                {[
+                  ...new Set(
+                    entries
+                      .map((entry) => entry.identity?.type)
+                      .filter(Boolean),
+                  ),
+                ].map((value) => (
+                  <option key={value} value={value}>
+                    {String(value).replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>Source</span>
+              <select
+                value={sourceFilter}
+                onChange={(event) => setSourceFilter(event.target.value)}
+              >
+                <option value="all">All sources</option>
+                {[
+                  ...new Set(
+                    entries
+                      .map((entry) => entry.provenance?.origin)
+                      .filter(Boolean),
+                  ),
+                ].map((value) => (
+                  <option key={value} value={value}>
+                    {String(value).replaceAll("_", " ")}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>State</span>
+              <select
+                value={stateFilter}
+                onChange={(event) => setStateFilter(event.target.value)}
+              >
+                <option value="all">All states</option>
+                <option value="active">Active</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </label>
+            <span>{visible.length} shown</span>
+          </div>
+          {confirmClear ? (
+            <div className="participant-manager__confirm" role="alert">
+              <span>Clear every participant entry?</span>
+              <button type="button" onClick={() => setConfirmClear(false)}>
+                Keep entries
+              </button>
+              <button
+                type="button"
+                className="danger"
+                onClick={() => {
+                  setEntries([]);
+                  setConfirmClear(false);
+                }}
+              >
+                Clear all
+              </button>
+            </div>
+          ) : null}
+          <div className="participant-rows">
+            {visible.map((entry) => (
+              <div
+                className={`participant-row${duplicates.has(entry.label.toLowerCase()) ? " has-duplicate" : ""}`}
+                key={entry.id}
+              >
+                <button
+                  type="button"
+                  className="participant-portrait"
+                  aria-label={`Manage avatar for ${entry.label}`}
+                  onClick={() =>
+                    setAvatarEntryId(
+                      avatarEntryId === entry.id ? null : entry.id,
+                    )
+                  }
+                >
+                  <EntrantAvatar url={entry.avatarUrl} />
+                  <span>Edit image</span>
+                </button>
+                <div className="participant-row__order">
+                  <button
+                    type="button"
+                    onClick={() => move(entry.id, -1)}
+                    aria-label={`Move ${entry.label} up`}
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => move(entry.id, 1)}
+                    aria-label={`Move ${entry.label} down`}
+                  >
+                    ↓
+                  </button>
+                  <span>{entry.order + 1}</span>
+                </div>
+                <label>
+                  <span>Label</span>
+                  <small>{entryIdentityLabel(entry.identity)}</small>
+                  <input
+                    aria-label="Label"
+                    value={entry.label}
+                    maxLength={120}
+                    onChange={(event) =>
+                      patch(entry.id, { label: event.target.value })
+                    }
+                  />
+                  {duplicates.has(entry.label.toLowerCase()) ? (
+                    <em>Duplicate label; separate entry retained.</em>
+                  ) : null}
+                </label>
+                <label className="participant-row__suffix">
+                  <span>Suffix</span>
+                  <small>Display only</small>
+                  <input
+                    aria-label="Display suffix"
+                    value={entry.suffix || ""}
+                    maxLength={32}
+                    placeholder="Optional"
+                    onChange={(event) =>
+                      patch(entry.id, { suffix: event.target.value || null })
+                    }
+                  />
+                </label>
+                <div className="participant-row__code">
+                  <span>Code</span>
+                  <code>{entry.code || "Assigned on save"}</code>
+                  <small>
+                    {entry.provenance?.ruleName ||
+                      entry.provenance?.origin?.replaceAll("_", " ") ||
+                      entryIdentityLabel(entry.identity)}
+                  </small>
+                </div>
+                {avatarEntryId === entry.id ? (
+                  <div className="participant-avatar-field">
+                    <div>
+                      <strong>Participant image</strong>
+                      <p>
+                        Use the API image by default, or replace it with a
+                        custom image. Unavailable images show the default icon.
+                      </p>
+                    </div>
+                    <label className="participant-avatar-upload">
+                      <span>Upload custom avatar</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        disabled={busy}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) void uploadAvatar(entry.id, file);
+                          event.target.value = "";
+                        }}
+                      />
+                      <small>
+                        PNG, JPEG or WebP. Up to 2 MB; maximum 2048 by 2048
+                        pixels.
+                      </small>
+                    </label>
+                    <label>
+                      <span>Custom avatar image URL (optional)</span>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/avatar.jpg"
+                        maxLength={2048}
+                        value={
+                          entry.customAvatarUrl ??
+                          (!entry.sourceAvatarUrl ? entry.avatarUrl || "" : "")
+                        }
+                        onChange={(event) =>
+                          patch(entry.id, {
+                            customAvatarUrl: event.target.value || null,
+                            avatarUrl:
+                              event.target.value ||
+                              entry.sourceAvatarUrl ||
+                              null,
+                          })
+                        }
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        patch(entry.id, {
+                          customAvatarUrl: null,
+                          avatarUrl: entry.sourceAvatarUrl || null,
+                        })
+                      }
+                    >
+                      Use API image
+                    </button>
+                    <small>
+                      {entry.sourceAvatarUrl
+                        ? "API image available"
+                        : "No API image available ? using fallback when no custom image is set."}
+                    </small>
+                  </div>
+                ) : null}
+                <label>
+                  <span>Weight</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100000}
+                    value={entry.weight}
+                    onChange={(event) =>
+                      patch(entry.id, {
+                        weight: Math.max(
+                          1,
+                          Math.min(100000, Number(event.target.value) || 1),
+                        ),
+                      })
+                    }
+                  />
+                </label>
+                <button
+                  type="button"
+                  aria-expanded={featureEntryId === entry.id}
+                  onClick={() =>
+                    setFeatureEntryId(
+                      featureEntryId === entry.id ? null : entry.id,
+                    )
+                  }
+                >
+                  Features
+                </button>
 
-        <button type="button" className="segment-style-action" onClick={() => setStyleEntryId(entry.id)}><SegmentStylePreview style={resolvedEntryStyle(entry, wheel.config)} media={segmentMedia} previewUrls={previewUrls} label={`${entry.label} fill`} /><span><b>Style</b><small>{resolvedEntryStyle(entry, wheel.config).mode}</small></span></button>
-        <button type="button" onClick={() => { const style = styleForEntry(entries, entry.id, paletteStyles); patch(entry.id, withLegacyEntryStyle(entry, style)); }}>Reset style</button><button type="button" onClick={() => patch(entry.id, { state: entry.state === "hidden" ? "active" : "hidden" })}>{entry.state === "hidden" ? "Unhide" : "Hide"}</button><button type="button" className="danger" onClick={() => setEntries((current) => normalize(current.filter((candidate) => candidate.id !== entry.id)))} aria-label={`Remove ${entry.label}`}>Remove</button>
-        {featureEntryId === entry.id ? <div className="participant-feature-controls"><EntrantAppearanceControls value={entry.appearance?.manual || {}} automatic={entry.appearance?.automatic} legacyFill={Boolean(entry.style || entry.colour)} onClearLegacy={() => patch(entry.id, { style: null, colour: null })} onChange={manual => patch(entry.id, { appearance: { ...entry.appearance, version: 1, manual } })} /></div> : null}
-      </div>)}</div>
-    </div>
-    <EphemeralNotices notice={notice} error={error} noticeTitle="Participants updated" errorTitle="Participants could not be updated" onDismissNotice={() => setNotice("")} onDismissError={() => setError("")} />{confirmClose ? <div className="wheel-modal__close-confirm" role="alert"><span>Discard unsaved participant changes?</span><button type="button" onClick={() => setConfirmClose(false)}>Keep editing</button><button type="button" className="danger" onClick={onClose}>Discard and close</button></div> : null}
-    <footer className="wheel-modal__footer"><button type="button" className="button button--secondary" onClick={() => { setEntries(JSON.parse(baseline.current)); setNotice("Unsaved participant changes discarded."); }} disabled={!dirty || busy}>Discard</button><button type="button" className="button button--primary" onClick={() => void save()} disabled={!dirty || busy || !entries.length}>{busy ? "Saving…" : "Save participants"}</button></footer>
-    {styleEntryId ? <SegmentStyleDialog label={entries.find((entry) => entry.id === styleEntryId)?.label || "Entrant"} value={resolvedEntryStyle(entries.find((entry) => entry.id === styleEntryId)!, wheel.config)} media={segmentMedia} previewUrls={previewUrls} onFile={(file) => { const id = crypto.randomUUID(); setStagedFiles((current) => new Map(current).set(id, file)); return id; }} onApply={(style) => patch(styleEntryId, withLegacyEntryStyle(entries.find(entry => entry.id === styleEntryId)!, style))} onClose={() => setStyleEntryId(null)} /> : null}
-  </div></div>, document.body);
+                <button
+                  type="button"
+                  className="segment-style-action"
+                  onClick={() => setStyleEntryId(entry.id)}
+                >
+                  <SegmentStylePreview
+                    style={resolvedEntryStyle(entry, wheel.config)}
+                    media={segmentMedia}
+                    previewUrls={previewUrls}
+                    label={`${entry.label} fill`}
+                  />
+                  <span>
+                    <b>Style</b>
+                    <small>
+                      {resolvedEntryStyle(entry, wheel.config).mode}
+                    </small>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const style = styleForEntry(
+                      entries,
+                      entry.id,
+                      paletteStyles,
+                    );
+                    patch(entry.id, withLegacyEntryStyle(entry, style));
+                  }}
+                >
+                  Reset style
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    patch(entry.id, {
+                      state: entry.state === "hidden" ? "active" : "hidden",
+                    })
+                  }
+                >
+                  {entry.state === "hidden" ? "Unhide" : "Hide"}
+                </button>
+                <button
+                  type="button"
+                  className="danger"
+                  onClick={() =>
+                    setEntries((current) =>
+                      normalize(
+                        current.filter(
+                          (candidate) => candidate.id !== entry.id,
+                        ),
+                      ),
+                    )
+                  }
+                  aria-label={`Remove ${entry.label}`}
+                >
+                  Remove
+                </button>
+                {featureEntryId === entry.id ? (
+                  <div className="participant-feature-controls">
+                    <EntrantAppearanceControls
+                      value={entry.appearance?.manual || {}}
+                      automatic={entry.appearance?.automatic}
+                      legacyFill={Boolean(entry.style || entry.colour)}
+                      onClearLegacy={() =>
+                        patch(entry.id, { style: null, colour: null })
+                      }
+                      onChange={(manual) =>
+                        patch(entry.id, {
+                          appearance: {
+                            ...entry.appearance,
+                            version: 1,
+                            manual,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </div>
+        <EphemeralNotices
+          notice={notice}
+          error={error}
+          noticeTitle="Participants updated"
+          errorTitle="Participants could not be updated"
+          onDismissNotice={() => setNotice("")}
+          onDismissError={() => setError("")}
+        />
+        {confirmClose ? (
+          <div className="wheel-modal__close-confirm" role="alert">
+            <span>Discard unsaved participant changes?</span>
+            <button type="button" onClick={() => setConfirmClose(false)}>
+              Keep editing
+            </button>
+            <button type="button" className="danger" onClick={onClose}>
+              Discard and close
+            </button>
+          </div>
+        ) : null}
+        <footer className="wheel-modal__footer">
+          <button
+            type="button"
+            className="button button--secondary"
+            onClick={() => {
+              setEntries(JSON.parse(baseline.current));
+              setNotice("Unsaved participant changes discarded.");
+            }}
+            disabled={!dirty || busy}
+          >
+            Discard
+          </button>
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => void save()}
+            disabled={!dirty || busy || !entries.length}
+          >
+            {busy ? "Saving…" : "Save participants"}
+          </button>
+        </footer>
+        {styleEntryId ? (
+          <SegmentStyleDialog
+            label={
+              entries.find((entry) => entry.id === styleEntryId)?.label ||
+              "Entrant"
+            }
+            value={resolvedEntryStyle(
+              entries.find((entry) => entry.id === styleEntryId)!,
+              wheel.config,
+            )}
+            media={segmentMedia}
+            previewUrls={previewUrls}
+            onFile={(file) => {
+              const id = crypto.randomUUID();
+              setStagedFiles((current) => new Map(current).set(id, file));
+              return id;
+            }}
+            onApply={(style) =>
+              patch(
+                styleEntryId,
+                withLegacyEntryStyle(
+                  entries.find((entry) => entry.id === styleEntryId)!,
+                  style,
+                ),
+              )
+            }
+            onClose={() => setStyleEntryId(null)}
+          />
+        ) : null}
+      </div>
+    </div>,
+    document.body,
+  );
 }
 
-function useObjectUrlMap(files: Map<string, File>) { const [urls, setUrls] = useState<Record<string, string>>({}); useEffect(() => { const next: Record<string, string> = {}; for (const [id, file] of files) next[id] = URL.createObjectURL(file); setUrls(next); return () => { for (const url of Object.values(next)) URL.revokeObjectURL(url); }; }, [files]); return urls; }
+function useObjectUrlMap(files: Map<string, File>) {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const next: Record<string, string> = {};
+    for (const [id, file] of files) next[id] = URL.createObjectURL(file);
+    setUrls(next);
+    return () => {
+      for (const url of Object.values(next)) URL.revokeObjectURL(url);
+    };
+  }, [files]);
+  return urls;
+}

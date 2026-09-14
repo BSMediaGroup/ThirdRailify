@@ -56,6 +56,9 @@ async function proxyRead(request, env, path, fetchImpl) {
     const response = await boundedFetch(fetchImpl, adminUrl(env, "/api/wheels/mechanics"), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
     return forwardJson(response, response.ok ? response.headers.get("cache-control") || "public, max-age=30" : "no-store");
   }
+  if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/activity$/i.test(path) && session) {
+    return signedProxy(env, fetchImpl, 'POST', `/api/wheels/internal/${path}/read`, { accountId: session.accountId, input: { cursor: requestUrl.searchParams.get('cursor'), limit: requestUrl.searchParams.get('limit') } });
+  }
   if (path && session) return signedProxy(env, fetchImpl, "POST", `/api/wheels/internal/${path}/read`, { accountId: session.accountId, input: { ruleId: new URL(request.url).searchParams.get("ruleId") || "" } });
   const targetPath = `/api/wheels${path ? `/${encodePath(path)}` : ""}${new URL(request.url).search}`;
   const response = await boundedFetch(fetchImpl, adminUrl(env, targetPath), { method: "GET", headers: { Accept: "application/json" } }, 8_000);
@@ -82,7 +85,7 @@ async function proxyWrite(request, env, path, fetchImpl) {
   else if (request.method === "POST" && /^stages\/[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/spin-all$/i.test(path)) internal = path;
   else if (request.method === "PUT" && /^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]$/i.test(path)) internal = `${path}/save`;
   else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/spins$/i.test(path)) internal = path;
-  else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/(?:winner-action|lifecycle)$/i.test(path)) internal = path;
+  else if (/^[a-z0-9][a-z0-9-]{1,78}[a-z0-9]\/(?:winner-action|lifecycle|close-and-create-next)$/i.test(path)) internal = path;
   else if (request.method === "DELETE" && media) internal = path;
   else throw failure(404, "wheel_route_not_found", "The wheel action was not found.");
   return signedProxy(env, fetchImpl, request.method, `/api/wheels/internal/${internal}`, { accountId: session.accountId, input });

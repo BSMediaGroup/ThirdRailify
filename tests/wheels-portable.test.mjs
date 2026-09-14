@@ -17,7 +17,7 @@ import {
 } from "../src/wheels/portable.mjs";
 
 const entries = [
-  { id: "authoritative-id-must-not-export", label: "Beta", order: 1, weight: 2, colour: "#d50f25", state: "hidden" },
+  { id: "authoritative-id-must-not-export", label: "Beta", suffix: "(RAID)", order: 1, weight: 2, colour: "#d50f25", state: "hidden" },
   { id: "another-authoritative-id", label: "Alpha", order: 0, weight: 1, colour: null, state: "active" },
 ];
 const wheel = { slug: "source-only", title: "Portable test", description: "Creator content", config: { ...THIRD_RAIL_GOLD_CONFIG, palette: [...THIRD_RAIL_GOLD_CONFIG.palette] }, entries };
@@ -26,6 +26,8 @@ test("canonical .twl serialization is deterministic, ordered, hashed, and author
   const document = await createPortableWheel(wheel, { exportedAt: "2026-08-29T00:00:00.000Z", generatorVersion: "test", sourceSlug: "source-only" });
   assert.equal(document.format, WHEEL_FILE_FORMAT_ID); assert.equal(document.formatVersion, WHEEL_FILE_FORMAT_VERSION);
   assert.deepEqual(document.wheel.entries.map((entry) => entry.label), ["Alpha", "Beta"]);
+  assert.deepEqual(document.wheel.entries.map((entry) => entry.suffix), [null, "(RAID)"]);
+  assert.equal(document.wheel.settings.showEntrySuffix, true);
   assert.deepEqual(document.wheel.entries.map((entry) => entry.color), [null, "#D50F25"]);
   assert.equal(document.integrity.wheelPayload, await sha256Hex(canonicalStringify(document.wheel)));
   const text = serializePortableWheel(document); assert.equal(text, serializePortableWheel(document)); assert.match(text, /\n\s{2}"format"/);
@@ -35,7 +37,7 @@ test("canonical .twl serialization is deterministic, ordered, hashed, and author
 test(".twl and ordinary JSON round-trip to fresh entry identity", async () => {
   const document = await createPortableWheel(wheel, { exportedAt: "2026-08-29T00:00:00.000Z" }); const text = serializePortableWheel(document);
   for (const sourceName of ["portable.twl", "portable.json", "misleading.wheel"]) {
-    const parsed = await parseWheelImport(text, { sourceName }); assert.equal(parsed.detectedFormat, "thirdrailify"); assert.equal(parsed.proposals[0].integrityStatus, "verified"); assert.deepEqual(parsed.proposals[0].entries.map((entry) => entry.label), ["Alpha", "Beta"]); assert.equal(parsed.proposals[0].entries.some((entry) => entries.some((original) => original.id === entry.id)), false);
+    const parsed = await parseWheelImport(text, { sourceName }); assert.equal(parsed.detectedFormat, "thirdrailify"); assert.equal(parsed.proposals[0].integrityStatus, "verified"); assert.deepEqual(parsed.proposals[0].entries.map((entry) => entry.label), ["Alpha", "Beta"]); assert.deepEqual(parsed.proposals[0].entries.map((entry) => entry.suffix), [null, "(RAID)"]); assert.equal(parsed.proposals[0].entries.some((entry) => entries.some((original) => original.id === entry.id)), false);
   }
 });
 

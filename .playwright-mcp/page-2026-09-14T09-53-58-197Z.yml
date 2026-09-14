@@ -1,0 +1,215 @@
+- generic [ref=f9e4]:
+  - link "Skip to content" [ref=f9e5] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=f9e6]:
+    - generic [ref=f9e7]:
+      - link "Third Railify home" [ref=f9e8] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f9e10]:
+          - strong [ref=f9e11]: THIRD RAILIFY
+          - generic [ref=f9e12]: OFFICIAL
+      - navigation "Primary navigation" [ref=f9e13]:
+        - list [ref=f9e14]:
+          - listitem [ref=f9e15]:
+            - link "Home" [ref=f9e16] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f9e17]:
+            - link "Watch" [ref=f9e18] [cursor=pointer]:
+              - /url: /watch
+          - listitem [ref=f9e19]:
+            - link "The show" [ref=f9e21] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f9e22]:
+            - link "Shop" [ref=f9e23] [cursor=pointer]:
+              - /url: /shop
+          - listitem [ref=f9e24]:
+            - link "Community" [ref=f9e26] [cursor=pointer]:
+              - /url: /community
+          - listitem [ref=f9e27]:
+            - link "VIP" [ref=f9e28] [cursor=pointer]:
+              - /url: /vip
+      - generic [ref=f9e29]:
+        - button "Open cart, 0 items" [ref=f9e30] [cursor=pointer]:
+          - generic [ref=f9e34]: "0"
+        - button "Acceptance Creator account menu" [ref=f9e36] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f9e37]: A
+          - generic [ref=f9e38]:
+            - strong [ref=f9e39]:
+              - generic [ref=f9e40]: Acceptance Creator
+              - img "Regular User" [ref=f9e41]
+            - generic [ref=f9e45]: creator@example.test
+  - generic [ref=f9e46]:
+    - link [ref=f9e48] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f9e49]: "01"
+      - text: Home
+    - link [ref=f9e51] [cursor=pointer]:
+      - /url: /watch
+      - generic [ref=f9e52]: "02"
+      - text: Watch
+    - generic [ref=f9e53]:
+      - link [ref=f9e54] [cursor=pointer]:
+        - /url: /about
+        - generic [ref=f9e55]: "03"
+        - text: The show
+      - generic [ref=f9e56]:
+        - link [ref=f9e57] [cursor=pointer]:
+          - /url: /shawn
+          - text: Shawn
+        - link [ref=f9e60] [cursor=pointer]:
+          - /url: /gina
+          - text: Gina
+        - link [ref=f9e63] [cursor=pointer]:
+          - /url: /gaming
+          - text: Gaming
+    - link [ref=f9e67] [cursor=pointer]:
+      - /url: /shop
+      - generic [ref=f9e68]: "04"
+      - text: Shop
+    - generic [ref=f9e69]:
+      - link [ref=f9e70] [cursor=pointer]:
+        - /url: /community
+        - generic [ref=f9e71]: "05"
+        - text: Community
+      - generic [ref=f9e72]:
+        - link [ref=f9e73] [cursor=pointer]:
+          - /url: /friends
+          - text: Friends
+        - link [ref=f9e76] [cursor=pointer]:
+          - /url: /goats
+          - text: GOATS in the Wild
+        - link [ref=f9e79] [cursor=pointer]:
+          - /url: /wheels
+          - text: Wheels
+        - link [ref=f9e82] [cursor=pointer]:
+          - /url: /polls
+          - text: Polls
+    - link [ref=f9e86] [cursor=pointer]:
+      - /url: /vip
+      - generic [ref=f9e87]: "06"
+      - text: VIP
+    - link [ref=f9e88] [cursor=pointer]:
+      - /url: /account
+      - generic [ref=f9e89]: "07"
+      - text: Your account
+  - main [ref=f9e92]:
+    - generic [ref=f9e93]:
+      - generic [ref=f9e94]:
+        - generic [ref=f9e95]:
+          - generic [ref=f9e96]:
+            - paragraph [ref=f9e97]: THIRD RAILIFY DRAW CONTROL
+            - heading [level=1] [ref=f9e98]:
+              - text: SPIN THE
+              - emphasis [ref=f9e99]: RAIL.
+            - paragraph [ref=f9e100]: Public competition Wheels and multi-wheel Stages built for raid calls, giveaways, games, and live show segments—with a clean line between practice and recorded official draws.
+            - generic [ref=f9e101]:
+              - link "Build a Wheel" [ref=f9e102] [cursor=pointer]:
+                - /url: /wheels/new
+              - link "Build a Stage" [ref=f9e105] [cursor=pointer]:
+                - /url: /wheels/stages/new
+              - link "Explore public draws" [ref=f9e106] [cursor=pointer]:
+                - /url: "#wheel-directory"
+          - generic [aria-hidden] [ref=f9e109]:
+            - generic [ref=f9e115]:
+              - generic [ref=f9e116]: DRAW ENGINE
+              - generic [ref=f9e117]: ARMED / 08
+            - generic [ref=f9e118]:
+              - generic [ref=f9e119]: RESULT AUTHORITY
+              - generic [ref=f9e120]: SERVER LOCK
+            - generic [ref=f9e139]:
+              - generic [ref=f9e140]: DEMO READY
+              - generic [ref=f9e142]: OFFICIAL SAFE
+        - generic [ref=f9e143]:
+          - generic [ref=f9e144]:
+            - generic [ref=f9e146]: PUBLIC
+            - text: View and demo-spin
+          - generic [ref=f9e147]:
+            - generic [ref=f9e149]: APPROVED
+            - text: Create Wheels and Stages
+          - generic [ref=f9e150]:
+            - generic [ref=f9e152]: OFFICIAL
+            - text: Server-selected and recorded
+      - generic [ref=f9e153]:
+        - generic [ref=f9e154]:
+          - generic [ref=f9e155]:
+            - paragraph [ref=f9e156]: PUBLIC SIGNALS
+            - heading "Wheels and Stages" [level=2] [ref=f9e157]
+            - paragraph [ref=f9e158]: Every listed item is active and public. Hidden, private, and archived work never appears here.
+          - generic [ref=f9e159]:
+            - generic [ref=f9e160]:
+              - generic [ref=f9e161]: Search draws
+              - searchbox "Search draws" [ref=f9e162]
+            - generic [ref=f9e163]:
+              - generic [ref=f9e164]: Sort
+              - combobox "Sort" [ref=f9e165]:
+                - option "Recently updated" [selected]
+                - option "Title A–Z"
+                - option "Most participants"
+        - generic [ref=f9e166]:
+          - heading "No public Wheels or Stages are live yet." [level=3] [ref=f9e169]
+          - paragraph [ref=f9e170]: That is an authoritative empty state. Approved creators can publish the first one.
+      - generic [ref=f9e171]:
+        - article [ref=f9e172]:
+          - text: "01"
+          - heading "Practice in public." [level=2] [ref=f9e173]
+          - paragraph [ref=f9e174]: Anonymous visitors use local cryptographic selection. Demo outcomes are never written to result history.
+        - article [ref=f9e175]:
+          - text: "02"
+          - heading "Draw with authority." [level=2] [ref=f9e176]
+          - paragraph [ref=f9e177]: Approved spinners choose Official mode. The server selects and persists the winner before motion begins.
+        - article [ref=f9e178]:
+          - text: "03"
+          - heading "Keep the record." [level=2] [ref=f9e179]
+          - paragraph [ref=f9e180]: Revision, participant snapshot hash, immutable winner label, and audit context remain attached to every official result.
+  - contentinfo [ref=f9e181]:
+    - generic [ref=f9e182]:
+      - generic [ref=f9e183]:
+        - generic [ref=f9e186]:
+          - strong [ref=f9e187]: THIRD RAILIFY
+          - generic [ref=f9e188]: OFFICIAL
+        - paragraph [ref=f9e189]: A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.
+        - link "info@thirdrailify.com" [ref=f9e190] [cursor=pointer]:
+          - /url: mailto:info@thirdrailify.com
+      - generic [ref=f9e191]:
+        - heading "Explore" [level=2] [ref=f9e192]
+        - link "Watch" [ref=f9e193] [cursor=pointer]:
+          - /url: /watch
+        - link "Gaming" [ref=f9e194] [cursor=pointer]:
+          - /url: /gaming
+        - link "Wheels" [ref=f9e195] [cursor=pointer]:
+          - /url: /wheels
+        - link "Shawn" [ref=f9e196] [cursor=pointer]:
+          - /url: /shawn
+        - link "Gina" [ref=f9e197] [cursor=pointer]:
+          - /url: /gina
+        - link "Shop" [ref=f9e198] [cursor=pointer]:
+          - /url: /shop
+      - generic [ref=f9e199]:
+        - heading "Community" [level=2] [ref=f9e200]
+        - link "Friends" [ref=f9e201] [cursor=pointer]:
+          - /url: /friends
+        - link "Wild Goats" [ref=f9e202] [cursor=pointer]:
+          - /url: /goats
+        - link "Competition wheels" [ref=f9e203] [cursor=pointer]:
+          - /url: /wheels
+        - link "Live Polls" [ref=f9e204] [cursor=pointer]:
+          - /url: /polls
+        - link "VIP" [ref=f9e205] [cursor=pointer]:
+          - /url: /vip
+        - link "Donate" [ref=f9e206] [cursor=pointer]:
+          - /url: /donate
+      - generic [ref=f9e207]:
+        - heading "Policies" [level=2] [ref=f9e208]
+        - link "Terms" [ref=f9e209] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=f9e210] [cursor=pointer]:
+          - /url: /privacy
+        - link "Refunds" [ref=f9e211] [cursor=pointer]:
+          - /url: /refunds
+        - link "Accessibility" [ref=f9e212] [cursor=pointer]:
+          - /url: /accessibility
+        - link "Policy Library" [ref=f9e213] [cursor=pointer]:
+          - /url: /policies
+    - generic [ref=f9e214]:
+      - generic [ref=f9e215]: Third Railify · 2026
+      - button "Privacy choices" [ref=f9e217]

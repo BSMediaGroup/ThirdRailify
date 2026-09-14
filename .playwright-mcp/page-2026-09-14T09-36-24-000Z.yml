@@ -1,0 +1,674 @@
+- generic [ref=f3e1]:
+  - generic [ref=f3e3]:
+    - link "Skip to content" [ref=f3e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - link "Third Railify home" [ref=f3e7] [cursor=pointer]:
+          - /url: /
+          - strong [ref=f3e10]: THIRD RAILIFY
+        - generic [ref=f3e12]:
+          - button "Open cart, 0 items" [ref=f3e13] [cursor=pointer]:
+            - generic [ref=f3e17]: "0"
+          - button "Acceptance Creator account menu" [ref=f3e19] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f3e20]: A
+          - button "Open navigation" [ref=f3e29] [cursor=pointer]
+    - main [ref=f3e32]:
+      - generic [ref=f3e33]:
+        - generic [ref=f3e36]:
+          - main [ref=f3e37]:
+            - navigation "Breadcrumb" [ref=f3e38]:
+              - link "Back to wheels" [ref=f3e39] [cursor=pointer]:
+                - /url: /wheels
+              - generic [ref=f3e42]: WHEELS / PRIVATE DRAW / Wheel Identity Acceptance
+            - generic [ref=f3e43]:
+              - generic [ref=f3e44]:
+                - paragraph [ref=f3e45]: THIRD RAILIFY WHEEL
+                - heading "Wheel Identity Acceptance" [level=1] [ref=f3e46]
+                - generic [ref=f3e47]:
+                  - paragraph [ref=f3e48]: Private local visual fixture
+                  - button "Wheel owner and access details for Wheel Identity Acceptance" [ref=f3e50] [cursor=pointer]:
+                    - generic [ref=f3e52]: UC
+                    - generic:
+                      - generic [ref=f3e53]: Owned by
+                      - strong [ref=f3e54]: Unavailable creator
+              - generic [ref=f3e55]:
+                - button "Share wheel link" [ref=f3e56] [cursor=pointer]: Share
+                - link "Present" [ref=f3e62] [cursor=pointer]:
+                  - /url: /wheels/identity-acceptance/present
+                - link "Edit" [ref=f3e65] [cursor=pointer]:
+                  - /url: /wheels/identity-acceptance/edit
+            - generic [ref=f3e69]:
+              - generic [ref=f3e71]:
+                - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f3e74] [cursor=pointer]'
+                - button "Start recorded official draw from wheel centre" [ref=f3e226] [cursor=pointer]
+              - generic:
+                - text: POINTER TARGET
+                - generic:
+                  - strong: JIMTELLSYOU (RAID)
+                - generic: 30% chance · weight 3
+            - generic [ref=f3e78]:
+              - group "Draw mode" [ref=f3e80]:
+                - button "Practice spin" [ref=f3e82]: Practice
+                - button "Official draw" [pressed] [ref=f3e85]: Official
+              - button "Start recorded official draw" [ref=f3e227] [cursor=pointer]:
+                - generic [ref=f3e90]: SPIN WHEEL
+                - generic [ref=f3e91]: Server-selected · recorded
+              - generic [ref=f3e92]:
+                - button "Turn wheel sound off" [pressed] [ref=f3e93] [cursor=pointer]: Sound on
+                - button "Appearance" [ref=f3e97] [cursor=pointer]
+            - status [ref=f3e103]
+          - complementary [ref=f3e104]:
+            - generic [ref=f3e105]:
+              - paragraph [ref=f3e106]: DRAW STATUS
+              - generic [ref=f3e107]:
+                - generic [ref=f3e108]:
+                  - term [ref=f3e109]: Mode
+                  - definition [ref=f3e110]: Official available
+                - generic [ref=f3e111]:
+                  - term [ref=f3e112]: Wheel
+                  - definition [ref=f3e113]: Hidden
+                - generic [ref=f3e114]:
+                  - term [ref=f3e115]: Weighting
+                  - definition [ref=f3e116]: Weighted segments
+                - generic [ref=f3e117]:
+                  - term [ref=f3e118]: Official lock
+                  - definition [ref=f3e119]: Open
+                - generic [ref=f3e120]:
+                  - term [ref=f3e121]: Latest result
+                  - definition [ref=f3e122]: JIMTELLSYOU (RAID)
+            - generic [ref=f3e123]:
+              - generic [ref=f3e124]:
+                - heading "Participants" [level=2] [ref=f3e125]
+                - generic [ref=f3e126]: "8"
+                - button "Manage participants" [ref=f3e127]: Manage
+              - list [ref=f3e130]:
+                - listitem [ref=f3e131]:
+                  - button "JIMTELLSYOU (RAID) 3×" [ref=f3e132]:
+                    - generic [ref=f3e134]: JIMTELLSYOU (RAID)
+                    - generic [ref=f3e135]: 3×
+                - listitem [ref=f3e136]:
+                  - button "Demo GOAT 02 Subscriber" [ref=f3e137]
+                - listitem [ref=f3e140]:
+                  - button "Demo GOAT 03" [ref=f3e141]
+                - listitem [ref=f3e144]:
+                  - button "Demo GOAT 04" [ref=f3e145]
+                - listitem [ref=f3e148]:
+                  - button "Demo GOAT 05" [ref=f3e149]
+                - listitem [ref=f3e152]:
+                  - button "Demo GOAT 06" [ref=f3e153]
+                - listitem [ref=f3e156]:
+                  - button "Demo GOAT 07" [ref=f3e157]
+                - listitem [ref=f3e160]:
+                  - button "Demo GOAT 08" [ref=f3e161]
+            - generic [ref=f3e164]:
+              - generic [ref=f3e165]:
+                - heading "Official history" [level=2] [ref=f3e166]
+                - generic [ref=f3e167]: "0"
+                - button "Activity" [ref=f3e168]
+              - paragraph [ref=f3e169]: No recorded official results.
+        - status [ref=f3e170]: Loaded wheel Wheel Identity Acceptance
+    - contentinfo [ref=f3e171]:
+      - generic [ref=f3e172]:
+        - generic [ref=f3e173]:
+          - strong [ref=f3e177]: THIRD RAILIFY
+          - paragraph [ref=f3e179]: A daily podcast with news, crime, pop culture, and a reliable failure to stay on topic.
+          - link "info@thirdrailify.com" [ref=f3e180] [cursor=pointer]:
+            - /url: mailto:info@thirdrailify.com
+        - generic [ref=f3e181]:
+          - heading "Explore" [level=2] [ref=f3e182]
+          - link "Watch" [ref=f3e183] [cursor=pointer]:
+            - /url: /watch
+          - link "Gaming" [ref=f3e184] [cursor=pointer]:
+            - /url: /gaming
+          - link "Wheels" [ref=f3e185] [cursor=pointer]:
+            - /url: /wheels
+          - link "Shawn" [ref=f3e186] [cursor=pointer]:
+            - /url: /shawn
+          - link "Gina" [ref=f3e187] [cursor=pointer]:
+            - /url: /gina
+          - link "Shop" [ref=f3e188] [cursor=pointer]:
+            - /url: /shop
+        - generic [ref=f3e189]:
+          - heading "Community" [level=2] [ref=f3e190]
+          - link "Friends" [ref=f3e191] [cursor=pointer]:
+            - /url: /friends
+          - link "Wild Goats" [ref=f3e192] [cursor=pointer]:
+            - /url: /goats
+          - link "Competition wheels" [ref=f3e193] [cursor=pointer]:
+            - /url: /wheels
+          - link "Live Polls" [ref=f3e194] [cursor=pointer]:
+            - /url: /polls
+          - link "VIP" [ref=f3e195] [cursor=pointer]:
+            - /url: /vip
+          - link "Donate" [ref=f3e196] [cursor=pointer]:
+            - /url: /donate
+        - generic [ref=f3e197]:
+          - heading "Policies" [level=2] [ref=f3e198]
+          - link "Terms" [ref=f3e199] [cursor=pointer]:
+            - /url: /terms
+          - link "Privacy" [ref=f3e200] [cursor=pointer]:
+            - /url: /privacy
+          - link "Refunds" [ref=f3e201] [cursor=pointer]:
+            - /url: /refunds
+          - link "Accessibility" [ref=f3e202] [cursor=pointer]:
+            - /url: /accessibility
+          - link "Policy Library" [ref=f3e203] [cursor=pointer]:
+            - /url: /policies
+      - generic [ref=f3e204]:
+        - generic [ref=f3e205]: Third Railify · 2026
+        - button "Privacy choices" [ref=f3e207]
+  - dialog [ref=f3e251]:
+    - banner [ref=f3e252]:
+      - generic [ref=f3e253]:
+        - paragraph [ref=f3e254]: WHEEL CONTROL / APPEARANCE
+        - heading "Tune the broadcast stage." [level=2] [ref=f3e255]
+      - button "Close appearance without saving" [active] [ref=f3e256]: ×
+    - tablist "Appearance sections" [ref=f3e257]:
+      - tab "theme" [selected] [ref=f3e258]
+      - tab "background" [ref=f3e259]
+      - tab "centre" [ref=f3e260]
+      - tab "celebration" [ref=f3e261]
+    - generic [ref=f3e262]:
+      - complementary [ref=f3e263]:
+        - 'img "Wheel with 8 active participants: JIMTELLSYOU (RAID), Demo GOAT 02 Subscriber, Demo GOAT 03, Demo GOAT 04, Demo GOAT 05, Demo GOAT 06, Demo GOAT 07, Demo GOAT 08." [ref=f3e268]'
+        - paragraph [ref=f3e272]: Changes preview here before they are published.
+      - generic [ref=f3e273]:
+        - paragraph [ref=f3e274]: Choose a Third Railify palette or build a custom 1–5 colour sequence. Applying any palette intentionally redistributes every entrant; individual colours can then be edited or reset to their active palette position.
+        - generic [ref=f3e275]:
+          - button "Reset all palette colours" [ref=f3e276]: Reset palette to Third Rail Gold
+          - generic [ref=f3e280]: Replaces palette colours and complete segment styles locally; Save appearance remains required.
+        - generic [ref=f3e281]:
+          - button "Third Rail Gold slot 1 Third Rail Gold slot 2 Third Rail Gold slot 3 Third Rail Gold slot 4 Third Rail Gold Signature 4 tone" [ref=f3e282]:
+            - generic [ref=f3e283]:
+              - img "Third Rail Gold slot 1" [ref=f3e284]
+              - img "Third Rail Gold slot 2" [ref=f3e285]
+              - img "Third Rail Gold slot 3" [ref=f3e286]
+              - img "Third Rail Gold slot 4" [ref=f3e287]
+            - generic [ref=f3e288]: Third Rail Gold
+            - generic [ref=f3e289]: Signature 4 tone
+          - button "Live Wire Crimson slot 1 Live Wire Crimson slot 2 Live Wire Crimson slot 3 Live Wire Crimson slot 4 Live Wire Crimson Signature 4 tone" [ref=f3e290]:
+            - generic [ref=f3e291]:
+              - img "Live Wire Crimson slot 1" [ref=f3e292]
+              - img "Live Wire Crimson slot 2" [ref=f3e293]
+              - img "Live Wire Crimson slot 3" [ref=f3e294]
+              - img "Live Wire Crimson slot 4" [ref=f3e295]
+            - generic [ref=f3e296]: Live Wire Crimson
+            - generic [ref=f3e297]: Signature 4 tone
+          - button "Gina Violet slot 1 Gina Violet slot 2 Gina Violet slot 3 Gina Violet slot 4 Gina Violet Signature 4 tone" [ref=f3e298]:
+            - generic [ref=f3e299]:
+              - img "Gina Violet slot 1" [ref=f3e300]
+              - img "Gina Violet slot 2" [ref=f3e301]
+              - img "Gina Violet slot 3" [ref=f3e302]
+              - img "Gina Violet slot 4" [ref=f3e303]
+            - generic [ref=f3e304]: Gina Violet
+            - generic [ref=f3e305]: Signature 4 tone
+          - button "High Voltage Mono slot 1 High Voltage Mono slot 2 High Voltage Mono slot 3 High Voltage Mono slot 4 High Voltage Mono Signature 4 tone" [ref=f3e306]:
+            - generic [ref=f3e307]:
+              - img "High Voltage Mono slot 1" [ref=f3e308]
+              - img "High Voltage Mono slot 2" [ref=f3e309]
+              - img "High Voltage Mono slot 3" [ref=f3e310]
+              - img "High Voltage Mono slot 4" [ref=f3e311]
+            - generic [ref=f3e312]: High Voltage Mono
+            - generic [ref=f3e313]: Signature 4 tone
+          - button "Signal Teal slot 1 Signal Teal slot 2 Signal Teal slot 3 Signal Teal slot 4 Signal Teal Signature 4 tone" [ref=f3e314]:
+            - generic [ref=f3e315]:
+              - img "Signal Teal slot 1" [ref=f3e316]
+              - img "Signal Teal slot 2" [ref=f3e317]
+              - img "Signal Teal slot 3" [ref=f3e318]
+              - img "Signal Teal slot 4" [ref=f3e319]
+            - generic [ref=f3e320]: Signal Teal
+            - generic [ref=f3e321]: Signature 4 tone
+          - button "After Hours slot 1 After Hours slot 2 After Hours slot 3 After Hours slot 4 After Hours Signature 4 tone" [ref=f3e322]:
+            - generic [ref=f3e323]:
+              - img "After Hours slot 1" [ref=f3e324]
+              - img "After Hours slot 2" [ref=f3e325]
+              - img "After Hours slot 3" [ref=f3e326]
+              - img "After Hours slot 4" [ref=f3e327]
+            - generic [ref=f3e328]: After Hours
+            - generic [ref=f3e329]: Signature 4 tone
+          - button "High Voltage Hazard slot 1 High Voltage Hazard slot 2 High Voltage Hazard slot 3 High Voltage Hazard slot 4 High Voltage Hazard Patterned 4 tone" [ref=f3e330]:
+            - generic [ref=f3e331]:
+              - img "High Voltage Hazard slot 1" [ref=f3e332]
+              - img "High Voltage Hazard slot 2" [ref=f3e333]
+              - img "High Voltage Hazard slot 3" [ref=f3e334]
+              - img "High Voltage Hazard slot 4" [ref=f3e337]
+            - generic [ref=f3e338]: High Voltage Hazard
+            - generic [ref=f3e339]: Patterned 4 tone
+          - button "Rail Strike slot 1 Rail Strike slot 2 Rail Strike slot 3 Rail Strike slot 4 Rail Strike Patterned 4 tone" [ref=f3e340]:
+            - generic [ref=f3e341]:
+              - img "Rail Strike slot 1" [ref=f3e342]
+              - img "Rail Strike slot 2" [ref=f3e343]
+              - img "Rail Strike slot 3" [ref=f3e346]
+              - img "Rail Strike slot 4" [ref=f3e347]
+            - generic [ref=f3e348]: Rail Strike
+            - generic [ref=f3e349]: Patterned 4 tone
+          - button "GOATED Circuit slot 1 GOATED Circuit slot 2 GOATED Circuit slot 3 GOATED Circuit slot 4 GOATED Circuit Patterned 4 tone" [ref=f3e350]:
+            - generic [ref=f3e351]:
+              - img "GOATED Circuit slot 1" [ref=f3e352]
+              - img "GOATED Circuit slot 2" [ref=f3e353]
+              - img "GOATED Circuit slot 3" [ref=f3e354]
+              - img "GOATED Circuit slot 4" [ref=f3e357]
+            - generic [ref=f3e358]: GOATED Circuit
+            - generic [ref=f3e359]: Patterned 4 tone
+          - button "Night Signal slot 1 Night Signal slot 2 Night Signal slot 3 Night Signal slot 4 Night Signal Patterned 4 tone" [ref=f3e360]:
+            - generic [ref=f3e361]:
+              - img "Night Signal slot 1" [ref=f3e362]
+              - img "Night Signal slot 2" [ref=f3e363]
+              - img "Night Signal slot 3" [ref=f3e364]
+              - img "Night Signal slot 4" [ref=f3e365]
+            - generic [ref=f3e366]: Night Signal
+            - generic [ref=f3e367]: Patterned 4 tone
+          - button "Red / Gold Duo slot 1 Red / Gold Duo slot 2 Red / Gold Duo 2 tone" [ref=f3e368]:
+            - generic [ref=f3e369]:
+              - img "Red / Gold Duo slot 1" [ref=f3e370]
+              - img "Red / Gold Duo slot 2" [ref=f3e371]
+            - generic [ref=f3e372]: Red / Gold Duo
+            - generic [ref=f3e373]: 2 tone
+          - button "Red / Charcoal / Gold slot 1 Red / Charcoal / Gold slot 2 Red / Charcoal / Gold slot 3 Red / Charcoal / Gold 3 tone" [ref=f3e374]:
+            - generic [ref=f3e375]:
+              - img "Red / Charcoal / Gold slot 1" [ref=f3e376]
+              - img "Red / Charcoal / Gold slot 2" [ref=f3e377]
+              - img "Red / Charcoal / Gold slot 3" [ref=f3e378]
+            - generic [ref=f3e379]: Red / Charcoal / Gold
+            - generic [ref=f3e380]: 3 tone
+          - button "Silver Gradient slot 1 Silver Gradient slot 2 Silver Gradient slot 3 Silver Gradient slot 4 Silver Gradient slot 5 Silver Gradient Tonal 5 step" [ref=f3e381]:
+            - generic [ref=f3e382]:
+              - img "Silver Gradient slot 1" [ref=f3e383]
+              - img "Silver Gradient slot 2" [ref=f3e384]
+              - img "Silver Gradient slot 3" [ref=f3e385]
+              - img "Silver Gradient slot 4" [ref=f3e386]
+              - img "Silver Gradient slot 5" [ref=f3e387]
+            - generic [ref=f3e388]: Silver Gradient
+            - generic [ref=f3e389]: Tonal 5 step
+          - button "Crimson Gradient slot 1 Crimson Gradient slot 2 Crimson Gradient slot 3 Crimson Gradient slot 4 Crimson Gradient slot 5 Crimson Gradient Tonal 5 step" [ref=f3e390]:
+            - generic [ref=f3e391]:
+              - img "Crimson Gradient slot 1" [ref=f3e392]
+              - img "Crimson Gradient slot 2" [ref=f3e393]
+              - img "Crimson Gradient slot 3" [ref=f3e394]
+              - img "Crimson Gradient slot 4" [ref=f3e395]
+              - img "Crimson Gradient slot 5" [ref=f3e396]
+            - generic [ref=f3e397]: Crimson Gradient
+            - generic [ref=f3e398]: Tonal 5 step
+          - button "Blue / Red Duo slot 1 Blue / Red Duo slot 2 Blue / Red Duo 2 tone" [ref=f3e399]:
+            - generic [ref=f3e400]:
+              - img "Blue / Red Duo slot 1" [ref=f3e401]
+              - img "Blue / Red Duo slot 2" [ref=f3e402]
+            - generic [ref=f3e403]: Blue / Red Duo
+            - generic [ref=f3e404]: 2 tone
+          - button "Blue / Red Gradient slot 1 Blue / Red Gradient slot 2 Blue / Red Gradient slot 3 Blue / Red Gradient slot 4 Blue / Red Gradient slot 5 Blue / Red Gradient Blend 5 step" [ref=f3e405]:
+            - generic [ref=f3e406]:
+              - img "Blue / Red Gradient slot 1" [ref=f3e407]
+              - img "Blue / Red Gradient slot 2" [ref=f3e408]
+              - img "Blue / Red Gradient slot 3" [ref=f3e409]
+              - img "Blue / Red Gradient slot 4" [ref=f3e410]
+              - img "Blue / Red Gradient slot 5" [ref=f3e411]
+            - generic [ref=f3e412]: Blue / Red Gradient
+            - generic [ref=f3e413]: Blend 5 step
+          - button "Emerald Gradient slot 1 Emerald Gradient slot 2 Emerald Gradient slot 3 Emerald Gradient slot 4 Emerald Gradient slot 5 Emerald Gradient Tonal 5 step" [ref=f3e414]:
+            - generic [ref=f3e415]:
+              - img "Emerald Gradient slot 1" [ref=f3e416]
+              - img "Emerald Gradient slot 2" [ref=f3e417]
+              - img "Emerald Gradient slot 3" [ref=f3e418]
+              - img "Emerald Gradient slot 4" [ref=f3e419]
+              - img "Emerald Gradient slot 5" [ref=f3e420]
+            - generic [ref=f3e421]: Emerald Gradient
+            - generic [ref=f3e422]: Tonal 5 step
+          - button "Green / Gold Duo slot 1 Green / Gold Duo slot 2 Green / Gold Duo 2 tone" [ref=f3e423]:
+            - generic [ref=f3e424]:
+              - img "Green / Gold Duo slot 1" [ref=f3e425]
+              - img "Green / Gold Duo slot 2" [ref=f3e426]
+            - generic [ref=f3e427]: Green / Gold Duo
+            - generic [ref=f3e428]: 2 tone
+          - button "Gold Gradient slot 1 Gold Gradient slot 2 Gold Gradient slot 3 Gold Gradient slot 4 Gold Gradient slot 5 Gold Gradient Tonal 5 step" [ref=f3e429]:
+            - generic [ref=f3e430]:
+              - img "Gold Gradient slot 1" [ref=f3e431]
+              - img "Gold Gradient slot 2" [ref=f3e432]
+              - img "Gold Gradient slot 3" [ref=f3e433]
+              - img "Gold Gradient slot 4" [ref=f3e434]
+              - img "Gold Gradient slot 5" [ref=f3e435]
+            - generic [ref=f3e436]: Gold Gradient
+            - generic [ref=f3e437]: Tonal 5 step
+          - button "Navy / Silver / Red slot 1 Navy / Silver / Red slot 2 Navy / Silver / Red slot 3 Navy / Silver / Red 3 tone" [ref=f3e438]:
+            - generic [ref=f3e439]:
+              - img "Navy / Silver / Red slot 1" [ref=f3e440]
+              - img "Navy / Silver / Red slot 2" [ref=f3e441]
+              - img "Navy / Silver / Red slot 3" [ref=f3e442]
+            - generic [ref=f3e443]: Navy / Silver / Red
+            - generic [ref=f3e444]: 3 tone
+          - button "Electric Blue / White slot 1 Electric Blue / White slot 2 Electric Blue / White 2 tone" [ref=f3e445]:
+            - generic [ref=f3e446]:
+              - img "Electric Blue / White slot 1" [ref=f3e447]
+              - img "Electric Blue / White slot 2" [ref=f3e448]
+            - generic [ref=f3e449]: Electric Blue / White
+            - generic [ref=f3e450]: 2 tone
+          - button "Midnight Blue / White slot 1 Midnight Blue / White slot 2 Midnight Blue / White 2 tone" [ref=f3e451]:
+            - generic [ref=f3e452]:
+              - img "Midnight Blue / White slot 1" [ref=f3e453]
+              - img "Midnight Blue / White slot 2" [ref=f3e454]
+            - generic [ref=f3e455]: Midnight Blue / White
+            - generic [ref=f3e456]: 2 tone
+          - button "Cobalt / Black slot 1 Cobalt / Black slot 2 Cobalt / Black 2 tone" [ref=f3e457]:
+            - generic [ref=f3e458]:
+              - img "Cobalt / Black slot 1" [ref=f3e459]
+              - img "Cobalt / Black slot 2" [ref=f3e460]
+            - generic [ref=f3e461]: Cobalt / Black
+            - generic [ref=f3e462]: 2 tone
+          - button "Ice Blue / Navy / White slot 1 Ice Blue / Navy / White slot 2 Ice Blue / Navy / White slot 3 Ice Blue / Navy / White 3 tone" [ref=f3e463]:
+            - generic [ref=f3e464]:
+              - img "Ice Blue / Navy / White slot 1" [ref=f3e465]
+              - img "Ice Blue / Navy / White slot 2" [ref=f3e466]
+              - img "Ice Blue / Navy / White slot 3" [ref=f3e467]
+            - generic [ref=f3e468]: Ice Blue / Navy / White
+            - generic [ref=f3e469]: 3 tone
+          - button "Royal Blue Gradient slot 1 Royal Blue Gradient slot 2 Royal Blue Gradient slot 3 Royal Blue Gradient slot 4 Royal Blue Gradient slot 5 Royal Blue Gradient Tonal 5 step" [ref=f3e470]:
+            - generic [ref=f3e471]:
+              - img "Royal Blue Gradient slot 1" [ref=f3e472]
+              - img "Royal Blue Gradient slot 2" [ref=f3e473]
+              - img "Royal Blue Gradient slot 3" [ref=f3e474]
+              - img "Royal Blue Gradient slot 4" [ref=f3e475]
+              - img "Royal Blue Gradient slot 5" [ref=f3e476]
+            - generic [ref=f3e477]: Royal Blue Gradient
+            - generic [ref=f3e478]: Tonal 5 step
+          - button "Purple / White slot 1 Purple / White slot 2 Purple / White 2 tone" [ref=f3e479]:
+            - generic [ref=f3e480]:
+              - img "Purple / White slot 1" [ref=f3e481]
+              - img "Purple / White slot 2" [ref=f3e482]
+            - generic [ref=f3e483]: Purple / White
+            - generic [ref=f3e484]: 2 tone
+          - button "Pink / Black slot 1 Pink / Black slot 2 Pink / Black 2 tone" [ref=f3e485]:
+            - generic [ref=f3e486]:
+              - img "Pink / Black slot 1" [ref=f3e487]
+              - img "Pink / Black slot 2" [ref=f3e488]
+            - generic [ref=f3e489]: Pink / Black
+            - generic [ref=f3e490]: 2 tone
+          - button "Gold / Purple slot 1 Gold / Purple slot 2 Gold / Purple 2 tone" [ref=f3e491]:
+            - generic [ref=f3e492]:
+              - img "Gold / Purple slot 1" [ref=f3e493]
+              - img "Gold / Purple slot 2" [ref=f3e494]
+            - generic [ref=f3e495]: Gold / Purple
+            - generic [ref=f3e496]: 2 tone
+          - button "Green / Black slot 1 Green / Black slot 2 Green / Black 2 tone" [ref=f3e497]:
+            - generic [ref=f3e498]:
+              - img "Green / Black slot 1" [ref=f3e499]
+              - img "Green / Black slot 2" [ref=f3e500]
+            - generic [ref=f3e501]: Green / Black
+            - generic [ref=f3e502]: 2 tone
+          - button "Sky / White / Navy slot 1 Sky / White / Navy slot 2 Sky / White / Navy slot 3 Sky / White / Navy 3 tone" [ref=f3e503]:
+            - generic [ref=f3e504]:
+              - img "Sky / White / Navy slot 1" [ref=f3e505]
+              - img "Sky / White / Navy slot 2" [ref=f3e506]
+              - img "Sky / White / Navy slot 3" [ref=f3e507]
+            - generic [ref=f3e508]: Sky / White / Navy
+            - generic [ref=f3e509]: 3 tone
+        - region "Custom palette editor" [ref=f3e510]:
+          - generic [ref=f3e512]:
+            - paragraph [ref=f3e513]: CUSTOM PALETTE
+            - heading "Build your own signal." [level=3] [ref=f3e514]
+            - generic [ref=f3e515]: Choose up to five solid, patterned, or image styles plus one wheel accent.
+          - generic [ref=f3e521]:
+            - article [ref=f3e522]:
+              - button "Custom palette style 1 Style 1 Solid colour" [ref=f3e523]:
+                - img "Custom palette style 1" [ref=f3e524]
+                - generic [ref=f3e525]:
+                  - generic [ref=f3e526]: Style 1
+                  - generic [ref=f3e527]: Solid colour
+              - generic [ref=f3e528]:
+                - button "Move custom palette color 1 left" [disabled] [ref=f3e529]: ←
+                - button "Move custom palette color 1 right" [ref=f3e530]: →
+                - button "Remove custom palette color 1" [ref=f3e531]: ×
+            - article [ref=f3e532]:
+              - button "Custom palette style 2 Style 2 Solid colour" [ref=f3e533]:
+                - img "Custom palette style 2" [ref=f3e534]
+                - generic [ref=f3e535]:
+                  - generic [ref=f3e536]: Style 2
+                  - generic [ref=f3e537]: Solid colour
+              - generic [ref=f3e538]:
+                - button "Move custom palette color 2 left" [ref=f3e539]: ←
+                - button "Move custom palette color 2 right" [ref=f3e540]: →
+                - button "Remove custom palette color 2" [ref=f3e541]: ×
+            - article [ref=f3e542]:
+              - button "Custom palette style 3 Style 3 Solid colour" [ref=f3e543]:
+                - img "Custom palette style 3" [ref=f3e544]
+                - generic [ref=f3e545]:
+                  - generic [ref=f3e546]: Style 3
+                  - generic [ref=f3e547]: Solid colour
+              - generic [ref=f3e548]:
+                - button "Move custom palette color 3 left" [ref=f3e549]: ←
+                - button "Move custom palette color 3 right" [ref=f3e550]: →
+                - button "Remove custom palette color 3" [ref=f3e551]: ×
+            - article [ref=f3e552]:
+              - button "Custom palette style 4 Style 4 Solid colour" [ref=f3e553]:
+                - img "Custom palette style 4" [ref=f3e554]
+                - generic [ref=f3e555]:
+                  - generic [ref=f3e556]: Style 4
+                  - generic [ref=f3e557]: Solid colour
+              - generic [ref=f3e558]:
+                - button "Move custom palette color 4 left" [ref=f3e559]: ←
+                - button "Move custom palette color 4 right" [disabled] [ref=f3e560]: →
+                - button "Remove custom palette color 4" [ref=f3e561]: ×
+          - button "+ Add style" [ref=f3e562]
+          - generic [ref=f3e563]:
+            - generic [ref=f3e564]:
+              - text: Accent
+              - generic [ref=f3e565]: Independent rim, pointer and stage signal.
+            - textbox "Custom palette accent picker" [ref=f3e566]: "#f3c928"
+            - textbox "Custom palette accent hex" [ref=f3e567]: "#F3C928"
+          - generic [ref=f3e568]:
+            - button "Reset custom palette" [ref=f3e569]
+            - button "Apply custom palette" [ref=f3e570]
+        - generic [ref=f3e571]:
+          - generic [ref=f3e572]:
+            - generic [ref=f3e573]: Current wheel accent
+            - generic [ref=f3e574]: Manually tune the rim, selector pointer and background signal after applying a palette.
+          - textbox "Wheel accent colour picker" [ref=f3e575]: "#f3c928"
+          - textbox "Wheel accent hex colour" [ref=f3e576]: "#F3C928"
+        - generic [ref=f3e577]:
+          - generic [ref=f3e578]:
+            - generic [ref=f3e579]: Generated wheel ticks
+            - checkbox "Generated wheel ticks" [ref=f3e580] [cursor=pointer]
+          - generic [ref=f3e581]:
+            - text: Spin sound preset
+            - combobox "Spin sound preset" [ref=f3e582]:
+              - option "Classic tick" [selected]
+              - option "Relay click"
+              - option "Arc pulse"
+              - option "Mechanical ratchet"
+              - option "Soft tick"
+              - option "Silent"
+          - button "Preview sound" [disabled] [ref=f3e583]
+          - text: Generated locally with Web Audio; preview creates no wheel API request.
+        - generic [ref=f3e584]:
+          - generic [ref=f3e585]:
+            - text: Find entrant
+            - textbox "Find entrant" [ref=f3e586]:
+              - /placeholder: Search by label
+          - generic [ref=f3e587]:
+            - article [ref=f3e588]:
+              - generic [ref=f3e589]:
+                - img "JIMTELLSYOU fill" [ref=f3e590]
+                - text: JIMTELLSYOU
+                - generic [ref=f3e591]: Raid received / Automatic
+              - button "Edit style" [ref=f3e592]
+              - button "Reset" [ref=f3e594]
+              - group [ref=f3e595]:
+                - generic "Entrant features" [ref=f3e596]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e597]:
+              - generic [ref=f3e598]:
+                - img "Demo GOAT 02 fill" [ref=f3e599]
+                - text: Demo GOAT 02
+                - generic [ref=f3e600]: Regular entry / Manual
+              - button "Edit style" [ref=f3e601]
+              - button "Reset" [ref=f3e603]
+              - group [ref=f3e604]:
+                - generic "Entrant features" [ref=f3e605]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e606]:
+              - generic [ref=f3e607]:
+                - img "Demo GOAT 03 fill" [ref=f3e608]
+                - text: Demo GOAT 03
+                - generic [ref=f3e609]: Regular entry / Manual
+              - button "Edit style" [ref=f3e610]
+              - button "Reset" [ref=f3e612]
+              - group [ref=f3e613]:
+                - generic "Entrant features" [ref=f3e614]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e615]:
+              - generic [ref=f3e616]:
+                - img "Demo GOAT 04 fill" [ref=f3e617]
+                - text: Demo GOAT 04
+                - generic [ref=f3e618]: Regular entry / Manual
+              - button "Edit style" [ref=f3e619]
+              - button "Reset" [ref=f3e621]
+              - group [ref=f3e622]:
+                - generic "Entrant features" [ref=f3e623]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e624]:
+              - generic [ref=f3e625]:
+                - img "Demo GOAT 05 fill" [ref=f3e626]
+                - text: Demo GOAT 05
+                - generic [ref=f3e627]: Regular entry / Manual
+              - button "Edit style" [ref=f3e628]
+              - button "Reset" [ref=f3e630]
+              - group [ref=f3e631]:
+                - generic "Entrant features" [ref=f3e632]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e633]:
+              - generic [ref=f3e634]:
+                - img "Demo GOAT 06 fill" [ref=f3e635]
+                - text: Demo GOAT 06
+                - generic [ref=f3e636]: Regular entry / Manual
+              - button "Edit style" [ref=f3e637]
+              - button "Reset" [ref=f3e639]
+              - group [ref=f3e640]:
+                - generic "Entrant features" [ref=f3e641]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e642]:
+              - generic [ref=f3e643]:
+                - img "Demo GOAT 07 fill" [ref=f3e644]
+                - text: Demo GOAT 07
+                - generic [ref=f3e645]: Regular entry / Manual
+              - button "Edit style" [ref=f3e646]
+              - button "Reset" [ref=f3e648]
+              - group [ref=f3e649]:
+                - generic "Entrant features" [ref=f3e650]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+            - article [ref=f3e651]:
+              - generic [ref=f3e652]:
+                - img "Demo GOAT 08 fill" [ref=f3e653]
+                - text: Demo GOAT 08
+                - generic [ref=f3e654]: Regular entry / Manual
+              - button "Edit style" [ref=f3e655]
+              - button "Reset" [ref=f3e657]
+              - group [ref=f3e658]:
+                - generic "Entrant features" [ref=f3e659]
+                - option "Automatic / existing fill" [selected]
+                - option "Wheel palette"
+                - option "Custom gradient"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected icons"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Inner edge"
+                - option "Outer edge"
+                - option "Both edges"
+                - option "Automatic" [selected]
+                - option "None"
+                - option "Selected effects"
+    - contentinfo [ref=f3e660]:
+      - button "Reset to default" [ref=f3e661]
+      - button "Discard" [ref=f3e662]
+      - button "Save appearance" [ref=f3e663]

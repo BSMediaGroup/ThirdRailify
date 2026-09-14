@@ -72,11 +72,12 @@ test("V1.14 source has one full-square rotor and no obsolete inset geometry", as
     readFile(new URL("../src/wheels/WheelCanvas.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/styles/wheels.css", import.meta.url), "utf8"),
   ]);
-  assert.match(canvas, /geometryVersion: "physical-square-v114"/);
-  assert.match(canvas, /setGeometryAttributes\(frameElement, geometry\)/);
-  assert.match(canvas, /rotorElement\.style\.transformOrigin = `\$\{geometry\.centreCss\}px \$\{geometry\.centreCss\}px`/);
-  assert.match(canvas, /createWheelRenderPlan\(active, config, geometry,/);
-  assert.doesNotMatch(canvas, /Math\.floor\(geometry\.canvasCssSide\)/);
+  const compactCanvas = canvas.replace(/\s+/g, " ");
+  assert.match(compactCanvas, /geometryVersion: "physical-square-v114"/);
+  assert.match(compactCanvas, /setGeometryAttributes\(frameElement, geometry\)/);
+  assert.match(compactCanvas, /rotorElement\.style\.transformOrigin = `\$\{geometry\.centreCss\}px \$\{geometry\.centreCss\}px`/);
+  assert.match(compactCanvas, /createWheelRenderPlan\(\s*active, config, geometry,/);
+  assert.doesNotMatch(compactCanvas, /Math\.floor\(geometry\.canvasCssSide\)/);
   assert.match(css, /\.wheel-stage__geometry\{[^}]*aspect-ratio:1\/1/);
   assert.match(css, /\.wheel-stage__rotor\{[^}]*inset:0[^}]*inline-size:100%[^}]*block-size:100%/);
   assert.doesNotMatch(css, /--wheel-rotor-inset/);

@@ -1,4 +1,5 @@
 import { effectiveAppearance } from '../src/lib/entrant-appearance.mjs';
+import { entryDisplayLabel } from '../src/lib/entrant-label.mjs';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
@@ -37,7 +38,7 @@ function mount(componentSource = source, overrides = {}) {
     return node;
   };
   const context = {
-    effectiveAppearance, ...engine, ...mechanics, ...renderPlan, React: { createElement },
+    effectiveAppearance, entryDisplayLabel, ...engine, ...mechanics, ...renderPlan, React: { createElement },
     WheelAvatarLayer: () => null, WheelsBrandMark: () => null,
     pointerAccentShades: () => ({}),
     useRef: value => { const ref = { current: value }; refs.push(ref); return ref; },
@@ -52,7 +53,7 @@ function mount(componentSource = source, overrides = {}) {
     context.getComputedStyle = node => ({ transform: node.style.transform });
     context.DOMMatrixReadOnly = class { constructor(value) { const angle = Number(value.match(/rotate\((.*?)deg\)/)[1]) * Math.PI / 180; this.a = Math.cos(angle); this.b = Math.sin(angle); } };
   }
-  const compiled = ts.transpileModule(componentSource.replace(/^import .*;\r?\n/gm, '').replace('export function WheelCanvas', 'function WheelCanvas'), { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText;
+  const compiled = ts.transpileModule(componentSource.replace(/^import\s+(?:[\s\S]*?\s+from\s+)?["'][^"']+["'];\r?\n/gm, '').replace('export function WheelCanvas', 'function WheelCanvas'), { compilerOptions: { target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.React } }).outputText;
   const component = vm.runInNewContext(`${compiled}\nWheelCanvas`, context);
   component({ entries, config, rotation: plan.finalRotation, durationMs: plan.durationMs, spinning: true, animation: plan, onSpinEnd: () => completed++, onBoundaryCrossing: count => ticks.push(count), onPointerTargetChange: entry => targets.push(entry?.id), ...overrides });
   const cleanups = effects.slice(1).map(fn => fn());
